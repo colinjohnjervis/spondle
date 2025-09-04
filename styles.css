@@ -1,0 +1,46 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 1rem;
+}
+
+header h1 {
+  margin: 0;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  padding: 0;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+}
+
+.intro {
+  padding: 2rem;
+  text-align: center;
+}
+
+.featured-events {
+  padding: 2rem;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.event-card {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  width: 200px;
+  border-radius: 5px;
+}
