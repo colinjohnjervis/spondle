@@ -70,11 +70,11 @@
     <div class="container nav" role="navigation" aria-label="Primary">
       <div class="brand">
         <span class="logo" aria-hidden="true"></span>
-        <a href="/" aria-label="Spondle home">Spondle</a>
+        <a href="index.html" aria-label="Spondle home">Spondle</a>
       </div>
       <div class="actions">
-        <a class="btn" href="#events">Explore Events</a>
-        <a class="btn primary" href="#organisers">For Organisers</a>
+        <a class="btn" href="events.html">Explore Events</a>
+        <a class="btn primary" href="organisers.html">For Organisers</a>
       </div>
     </div>
   </header>
@@ -91,8 +91,8 @@
             and gives organisers powerful tools to publish once and display everywhere.
           </p>
           <div class="cta-row">
-            <a class="btn primary" href="#events">Find events near me</a>
-            <a class="btn" href="#organisers">List an event</a>
+            <a class="btn primary" href="events.html">Find events near me</a>
+            <a class="btn" href="organisers.html">List an event</a>
           </div>
         </div>
         <aside class="hero-card" aria-label="Highlights">
@@ -135,7 +135,7 @@
             <div class="meta">The Louisiana • 19:30–22:30</div>
             <div class="row">
               <span class="chip">Free Entry</span>
-              <a href="#" aria-label="Share via WhatsApp" title="Share via WhatsApp">Share</a>
+              <a href="#" aria-label="Share via WhatsApp" title="Share">Share</a>
             </div>
           </div>
         </article>
@@ -194,8 +194,8 @@
           <li>Ticketing & Stripe integration</li>
         </ul>
         <div class="cta-row">
-          <a class="btn primary" href="#signup">Join the beta</a>
-          <a class="btn" href="#docs">Developer widget</a>
+          <a class="btn primary" href="organisers.html#signup">Join the beta</a>
+          <a class="btn" href="organisers.html#widget">Developer widget</a>
         </div>
       </div>
     </section>
@@ -218,7 +218,7 @@
         e.preventDefault();
         const card = a.closest('[data-event-id]');
         const title = card.querySelector('h3')?.textContent?.trim() || 'Event';
-        const url = location.origin;
+        const url = location.origin + '/events.html';
         const text = encodeURIComponent(`${title} — found on Spondle: ${url}`);
         const wa = `https://wa.me/?text=${text}`;
         const tw = `https://twitter.com/intent/tweet?text=${text}`;
