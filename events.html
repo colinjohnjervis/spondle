@@ -1,83 +1,56 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Spondle — Events</title>
-  <link rel="stylesheet" href="styles.css"/>
-</head>
-<body>
-  <header>
-    <div class="container nav">
-      <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
-      <div class="actions">
-        <a class="btn primary" href="events.html">Explore Events</a>
-        <a class="btn" href="organisers.html">For Organisers</a>
-      </div>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="section">
-      <h1>Explore Events</h1>
-      <p class="tagline">Find events by category, location, or date. (Search and filters coming soon!)</p>
-    </section>
-
-    <section class="section" id="results">
-      <div class="grid" id="grid"></div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
-  </footer>
-
-  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <!-- Optional: app.js; if missing we’ll render sample cards -->
-  <script src="app.js"></script>
-  <script>
-    const grid = document.getElementById('grid');
-
-    // Try to use real events if app.js is present
-    const hasApp = typeof window.SpondleApp !== 'undefined' && typeof SpondleApp.getAllEvents === 'function';
-    const events = hasApp ? SpondleApp.getAllEvents() : [];
-
-    if (events.length) {
-      grid.innerHTML = events.map(ev => `
-        <article class="card">
-          <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-            <div class="thumb"><span class="badge">${ev.city || ''} • ${ev.dateLabel || ''}</span>${ev.category || ''}</div>
-            <div class="content">
-              <h3>${ev.title}</h3>
-              <p class="meta">${ev.venue || ''}${ev.time ? ' • '+ev.time : ''}</p>
-              <div class="row"><span class="chip">${ev.price || 'Free'}</span><span class="muted">Details →</span></div>
-            </div>
-          </a>
-        </article>
-      `).join('');
-    } else {
-      // Sample cards as fallback
-      grid.innerHTML = `
-        <article class="card">
-          <a href="event.html?id=sample-1" style="display:block;color:inherit">
-            <div class="thumb"><span class="badge">Bristol • 12 Sep</span>🎵 Live Music</div>
-            <div class="content"><h3>The Harbourside Sessions</h3><p class="meta">The Louisiana</p><div class="row"><span class="chip">Free Entry</span><span class="muted">Details →</span></div></div>
-          </a>
-        </article>
-        <article class="card">
-          <a href="event.html?id=sample-2" style="display:block;color:inherit">
-            <div class="thumb"><span class="badge">Manchester • 14 Sep</span>🎭 Comedy</div>
-            <div class="content"><h3>Friday Night Laughs</h3><p class="meta">Northern Quarter</p><div class="row"><span class="chip">£12</span><span class="muted">Details →</span></div></div>
-          </a>
-        </article>
-        <article class="card">
-          <a href="event.html?id=sample-3" style="display:block;color:inherit">
-            <div class="thumb"><span class="badge">Cardiff • 15 Sep</span>🏞 Community</div>
-            <div class="content"><h3>Riverside Street Food</h3><p class="meta">Market Square</p><div class="row"><span class="chip">Family</span><span class="muted">Details →</span></div></div>
-          </a>
-        </article>
-      `;
-    }
-  </script>
-</body>
-</html>
+<div class="grid">
+  <article class="card">
+    <a href="event.html?id=sample-1">
+      <div class="thumb"><span class="badge">Bristol • 12 Sep</span>🎵 Live Music</div>
+      <div class="content"><h3>The Harbourside Sessions</h3><p class="meta">The Louisiana</p><div class="row"><span class="chip">Free Entry</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-2">
+      <div class="thumb"><span class="badge">Manchester • 14 Sep</span>🎭 Comedy</div>
+      <div class="content"><h3>Friday Night Laughs</h3><p class="meta">Northern Quarter</p><div class="row"><span class="chip">£12</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-3">
+      <div class="thumb"><span class="badge">Cardiff • 15 Sep</span>🏞 Community</div>
+      <div class="content"><h3>Riverside Street Food</h3><p class="meta">Market Square</p><div class="row"><span class="chip">Family</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-4">
+      <div class="thumb"><span class="badge">Leeds • 18 Sep</span>🍺 Food & Drink</div>
+      <div class="content"><h3>Craft Beer Festival</h3><p class="meta">City Brewery Hall</p><div class="row"><span class="chip">£20</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-5">
+      <div class="thumb"><span class="badge">London • 20 Sep</span>💿 Market</div>
+      <div class="content"><h3>Vintage Vinyl Market</h3><p class="meta">Camden Market</p><div class="row"><span class="chip">Free Entry</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-6">
+      <div class="thumb"><span class="badge">Brighton • 22 Sep</span>🎬 Film</div>
+      <div class="content"><h3>Outdoor Cinema Night</h3><p class="meta">Brighton Seafront</p><div class="row"><span class="chip">£10</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-7">
+      <div class="thumb"><span class="badge">Birmingham • 25 Sep</span>💻 Networking</div>
+      <div class="content"><h3>Tech Meetup & Networking</h3><p class="meta">TechHub Central</p><div class="row"><span class="chip">Free</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-8">
+      <div class="thumb"><span class="badge">Glasgow • 27 Sep</span>🏃‍♂️ Sports</div>
+      <div class="content"><h3>Charity Fun Run</h3><p class="meta">Kelvingrove Park</p><div class="row"><span class="chip">£15 Donation</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+  <article class="card">
+    <a href="event.html?id=sample-9">
+      <div class="thumb"><span class="badge">Liverpool • 30 Sep</span>📖 Arts & Culture</div>
+      <div class="content"><h3>Open Mic Poetry Night</h3><p class="meta">The Verse Bar</p><div class="row"><span class="chip">Free Entry</span><span class="muted">Details →</span></div></div>
+    </a>
+  </article>
+</div>
