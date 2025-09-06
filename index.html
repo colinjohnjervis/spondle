@@ -1,19 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Spondle — Discover & Share Events Across the UK</title>
-  <meta name="description" content="Spondle helps you discover and share events across the UK. Simple tools for organisers, effortless discovery for attendees." />
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Spondle — Discover Events</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
   <header>
-    <div class="container nav" role="navigation" aria-label="Primary">
-      <div class="brand">
-        <span class="logo" aria-hidden="true"></span>
-        <a href="index.html" aria-label="Spondle home">Spondle</a>
-      </div>
+    <div class="container nav">
+      <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
         <a class="btn" href="events.html">Explore Events</a>
         <a class="btn primary" href="organisers.html">For Organisers</a>
@@ -22,21 +18,19 @@
   </header>
 
   <main class="container">
+    <!-- Hero Section -->
     <section class="hero">
       <div class="hero-inner">
         <div>
           <div class="eyebrow">UK • Events for everyone</div>
           <h1>Discover, share & showcase events — all in one place</h1>
-          <p class="tagline">
-            From intimate quizzes to arena shows, Spondle makes it effortless to find what’s on near you,
-            and gives organisers powerful tools to publish once and display everywhere.
-          </p>
+          <p class="tagline">From intimate quizzes to arena shows, Spondle makes it effortless to find what’s on near you, and gives organisers powerful tools to publish once and display everywhere.</p>
           <div class="cta-row">
             <a class="btn primary" href="events.html">Find events near me</a>
             <a class="btn" href="organisers.html">List an event</a>
           </div>
         </div>
-        <aside class="hero-card" aria-label="Highlights">
+        <div class="hero-card">
           <strong>Why Spondle?</strong>
           <ul>
             <li>Smart search by postcode & distance</li>
@@ -44,116 +38,80 @@
             <li>Embeddable widget to show your events on your website</li>
             <li>Series & multi-venue scheduling in minutes</li>
           </ul>
-        </aside>
-      </div>
-      <div class="features" aria-label="Key features">
-        <div class="feature">
-          <h3>Postcode-powered discovery</h3>
-          <p class="muted">Search with UK postcodes and filters that actually make sense.</p>
-        </div>
-        <div class="feature">
-          <h3>Private or community-only</h3>
-          <p class="muted">Restrict events by postcode radius or member lists when needed.</p>
-        </div>
-        <div class="feature">
-          <h3>Ready for ticketing</h3>
-          <p class="muted">Start simple, add ticketing later — the platform’s built for it.</p>
         </div>
       </div>
     </section>
 
-    <section id="events" class="section" aria-labelledby="events-title">
-      <h2 id="events-title">Trending this week</h2>
-      <div class="grid" role="list">
-        <article class="card" role="listitem" data-event-id="sample-1">
-          <a href="event.html?id=sample-1" style="display:block;color:inherit">
-            <div class="thumb" aria-label="Event image">
-              <span class="badge">Bristol • 12 Sep</span>🎵 Live Music
-            </div>
-            <div class="content">
-              <h3>The Harbourside Sessions</h3>
-              <div class="meta">The Louisiana • 19:30–22:30</div>
-              <div class="row">
-                <span class="chip">Free Entry</span>
-                <span class="muted">Details →</span>
-              </div>
-            </div>
-          </a>
-        </article>
+    <!-- Features Section -->
+    <section class="section">
+      <h2>Postcode-powered discovery</h2>
+      <p>Search with UK postcodes and filters that actually make sense.</p>
+    </section>
 
-        <article class="card" role="listitem" data-event-id="sample-2">
-          <a href="event.html?id=sample-2" style="display:block;color:inherit">
-            <div class="thumb">
-              <span class="badge">Manchester • 14 Sep</span>🎭 Comedy
-            </div>
-            <div class="content">
-              <h3>Friday Night Laughs</h3>
-              <div class="meta">Northern Quarter • 20:00–22:00</div>
-              <div class="row">
-                <span class="chip">£12</span>
-                <span class="muted">Details →</span>
-              </div>
-            </div>
-          </a>
-        </article>
+    <section class="section">
+      <h2>Private or community-only</h2>
+      <p>Restrict events by postcode radius or member lists when needed.</p>
+    </section>
 
-        <article class="card" role="listitem" data-event-id="sample-3">
-          <a href="event.html?id=sample-3" style="display:block;color:inherit">
-            <div class="thumb">
-              <span class="badge">Cardiff • 15 Sep</span>🏞 Community
-            </div>
-            <div class="content">
-              <h3>Riverside Street Food</h3>
-              <div class="meta">Market Square • 11:00–17:00</div>
-              <div class="row">
-                <span class="chip">Family</span>
-                <span class="muted">Details →</span>
-              </div>
-            </div>
-          </a>
+    <section class="section">
+      <h2>Ready for ticketing</h2>
+      <p>Start simple, add ticketing later — the platform’s built for it.</p>
+    </section>
+
+    <!-- Trending Events -->
+    <section class="section">
+      <h2>Trending this week</h2>
+      <div class="grid">
+        <article class="card">
+          <div class="thumb"><span class="badge">Bristol • 12 Sep</span>🎵 Live Music</div>
+          <div class="content">
+            <h3>The Harbourside Sessions</h3>
+            <p class="meta">The Louisiana</p>
+            <div class="row"><span class="chip">Free Entry</span><a href="event.html?id=sample-1">Details →</a></div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="thumb"><span class="badge">Manchester • 14 Sep</span>🎭 Comedy</div>
+          <div class="content">
+            <h3>Friday Night Laughs</h3>
+            <p class="meta">Northern Quarter</p>
+            <div class="row"><span class="chip">£12</span><a href="event.html?id=sample-2">Details →</a></div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="thumb"><span class="badge">Cardiff • 15 Sep</span>🏞 Community</div>
+          <div class="content">
+            <h3>Riverside Street Food</h3>
+            <p class="meta">Market Square</p>
+            <div class="row"><span class="chip">Family</span><a href="event.html?id=sample-3">Details →</a></div>
+          </div>
         </article>
       </div>
     </section>
 
-    <section id="organisers" class="section organiser" aria-labelledby="org-title">
+    <!-- Organiser Promo -->
+    <section class="section organiser">
       <div>
-        <h2 id="org-title">Tools for organisers</h2>
-        <p class="tagline">
-          Publish once on Spondle, show your listings everywhere with our embeddable widget,
-          and keep audiences updated automatically when details change.
-        </p>
-        <ul>
-          <li>Create single events, series, or multi-venue tours</li>
-          <li>Optional approval & moderation flows</li>
-          <li>Postcode radius restrictions for community events</li>
-          <li>Attendee notifications for time/venue updates</li>
-        </ul>
+        <h2>For organisers & venues</h2>
+        <p>Publish once, display everywhere. Your events can sync automatically to your own website with an embeddable widget, while also appearing on Spondle’s platform.</p>
       </div>
-      <div class="hero-card">
-        <strong>Coming soon (prototype roadmap)</strong>
+      <div>
         <ul>
-          <li>Account types: Attendee, Organiser, Venue, Artist</li>
-          <li>Save & follow events with notification preferences</li>
-          <li>Offer marketplace (restaurants & local partners)</li>
-          <li>Ticketing & Stripe integration</li>
+          <li>Upload your events easily</li>
+          <li>Promote across social media</li>
+          <li>Integrate ticketing later</li>
+          <li>Team accounts for larger orgs</li>
         </ul>
-        <div class="cta-row">
-          <a class="btn primary" href="organisers.html#signup">Join the beta</a>
-          <a class="btn" href="organisers.html#widget">Developer widget</a>
-        </div>
       </div>
     </section>
   </main>
 
   <footer>
     <div class="container foot">
-      <div>© <span id="y"></span> Spondle • Made in the UK</div>
-      <div><a href="#contact">Contact</a> · <a href="#privacy">Privacy</a></div>
+      <div>© <span id="y"></span> Spondle</div>
     </div>
   </footer>
 
-  <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
-  </script>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 </body>
 </html>
