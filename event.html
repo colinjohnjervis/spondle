@@ -22,68 +22,40 @@
   </main>
 
   <footer>
-    <div class="container foot">
-      <div>© <span id="y"></span> Spondle</div>
-    </div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent=new Date().getFullYear();</script>
+
+  <!-- Optional: app.js (if present it will be used, otherwise we’ll fall back) -->
   <script src="app.js"></script>
   <script src="share.js"></script>
   <script>
-    // Fallback demo data (in case no real events yet)
+    // Fallback demo data (used if no real event is found)
     const FALLBACK = {
       "sample-1": {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol", dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"🎵 Live Music", address:"Wapping Rd, Bristol", postcode:"BS1 6UA", description:"An intimate evening of live indie and alt performances on the harbourside."},
       "sample-2": {id:"sample-2", title:"Friday Night Laughs", city:"Manchester", dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12", category:"🎭 Comedy", address:"Oldham St, Manchester", postcode:"M1 1JQ", description:"A fast-paced showcase of up-and-coming comedians and surprise headliners."},
       "sample-3": {id:"sample-3", title:"Riverside Street Food", city:"Cardiff", dateLabel:"15 Sep", venue:"Market Square", time:"11:00–17:00", price:"Family", category:"🏞 Community", address:"Market Rd, Cardiff", postcode:"CF5 1QE", description:"Local vendors, global flavours. Family-friendly with live acoustic sets."}
     };
 
+    const section = document.getElementById("event-section");
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
-    let data = SpondleApp.getEventById(id);
+
+    // Try to read from app.js if it exists, otherwise undefined
+    const hasApp = typeof window.SpondleApp !== 'undefined' && typeof SpondleApp.getEventById === 'function';
+    let data = hasApp ? SpondleApp.getEventById(id) : null;
     if (!data) data = FALLBACK[id];
 
-    const section = document.getElementById("event-section");
     if (!data) {
       section.innerHTML = `<p class="muted">Sorry, we couldn’t find that event.</p>
                            <a class="btn" href="events.html">Back to events</a>`;
     } else {
-      const html = `
+      section.innerHTML = `
         <div class="hero-card">
-          <div class="eyebrow">${data.city || ''} ${data.dateLabel ? '• '+data.dateLabel : ''}</div>
+          <div class="eyebrow">${data.city || ''}${data.dateLabel ? ' • '+data.dateLabel : ''}</div>
           <h1 style="margin:.2em 0 .4em">${data.title}</h1>
           <p class="tagline">${data.category || ''}</p>
         </div>
         <div class="thumb" style="margin:14px 0;border-radius:14px;">
-          <span class="badge">${(data.city||'')}${data.dateLabel?' • '+data.dateLabel:''}</span>${data.category||''}
-        </div>
-        <div class="hero-card" id="details-card">
-          <strong>Details</strong>
-          <ul style="margin:10px 0 0 20px">
-            ${row('Venue', data.venue)}
-            ${row('Time', data.time)}
-            ${row('Price', data.price)}
-            ${row('Address', (data.address||'') + (data.postcode? ', '+data.postcode:''))}
-          </ul>
-          <p style="margin:12px 0 0">${data.description || ''}</p>
-          <div class="cta-row">
-            ${data.postcode ? `<a class="btn" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.postcode)}">Get directions</a>` : ''}
-            <a class="btn" href="events.html">Back to events</a>
-          </div>
-          <div id="share-mount"></div>
-        </div>`;
-      section.innerHTML = html;
-
-      // Mount Share Bar with title + URL
-      const shareMount = document.getElementById('share-mount');
-      const eventUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(data.id)}`;
-      SpondleShare.ShareBar(shareMount, { title: data.title, url: eventUrl });
-    }
-
-    function row(label, val) {
-      if (!val) return '';
-      return `<li><b>${label}:</b> ${val}</li>`;
-    }
-  </script>
-</body>
-</html>
+          <span class="badge">${(
