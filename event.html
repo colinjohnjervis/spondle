@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spondle — Event</title>
+  <meta name="description" content="Event details on Spondle." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <a href="index.html" aria-label="Spondle home">Spondle</a>
+      </div>
+      <div class="actions">
+        <a class="btn" href="events.html">Explore Events</a>
+        <a class="btn primary" href="organisers.html">For Organisers</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section" id="event-section" aria-live="polite">
+      <!-- Filled by JS -->
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot">
+      <div>© <span id="y"></span> Spondle • Made in the UK</div>
+      <div><a href="index.html#contact">Contact</a> · <a href="index.html#privacy">Privacy</a></div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // Mock event data (prototype). Later this will come from the API.
+    const EVENTS = {
+      "sample-1": {
+        id: "sample-1",
+        title: "The Harbourside Sessions",
+        city: "Bristol",
+        dateLabel: "12 Sep",
+        venue: "The Louisiana",
+        time: "19:30–22:30",
+        price: "Free Entry",
+        category: "🎵 Live Music",
+        address: "Wapping Rd, Bristol",
+        postcode: "BS1 6UA",
+        description: "An intimate evening of live indie and alt performances on the harbourside.",
+      },
+      "sample-2": {
+        id: "sample-2",
+        title: "Friday Night Laughs",
+        city: "Manchester",
+        dateLabel: "14 Sep",
+        venue: "Northern Quarter",
+        time: "20:00–22:00",
+        price: "£12",
+        category: "🎭 Comedy",
+        address: "Oldham St, Manchester",
+        postcode: "M1 1JQ",
+        description: "A fast-paced showcase of up-and-coming comedians and surprise headliners.",
+      },
+      "sample-3": {
+        id: "sample-3",
+        title: "Riverside Street Food",
+        city: "Cardiff",
+        dateLabel: "15 Sep",
+        venue: "Market Square",
+        time: "11:00–17:00",
+        price: "Family",
+        category: "🏞 Community",
+        address: "Market Rd, Cardiff",
+        postcode: "CF5 1QE",
+        description: "Local vendors, global flavours. Family-friendly with live acoustic sets.",
+      }
+    };
+
+    // Utility to create elements
+    const el = (tag, attrs={}, html="") => {
+      const n = document.createElement(tag);
+      Object.entries(attrs).forEach(([k,v]) => n.setAttribute(k, v));
+      if (html) n.innerHTML = html;
+      return n;
+    };
+
+    const params = new URLSearchParams(location.search);
+    const id = params.get("id");
+    const data = EVENTS[id];
+
+    const section = document.getElementById("event-section");
+
+    if (!data) {
+      section.append(
+        el("p", {class:"muted"}, "Sorry, we couldn’t find that event."),
+        (()=>{
+          const a = el("a", {href:"events.html", class:"btn"}, "Back to events");
+          const wrap = el("div"); wrap.append(a); return wrap;
+        })()
+      );
+    } else {
+      // Header block
+      const header = el("div", {class:"hero-card"}, `
+        <div class="eyebrow">${data.city} • ${data.dateLabel}</div>
+        <h1 style="margin:.2em 0 .4em">${data.title}</h1>
+        <p class="tagline">${data.category}</p>
+      `);
+
+      // Media/thumb substitute
+      const media = el("div", {class:"thumb", style:"margin:14px 0;border-radius:14px;"}, `
+        <span class="badge">${data.city} • ${data.dateLabel}</span>
+        ${data.category}
+      `);
+
+      // Details / meta
+      const details = el("div", {class:"hero-card"}, `
+        <strong>Details</strong>
+        <ul style="margin:10px 0 0 20px">
+          <li><b>Venue:</b> ${data.venue}</li>
+          <li><b>Time:</b> ${data.time}</li>
+          <li><b>Price:</b> ${data.price}</li>
+          <li><b>Address:</b> ${data.address}, ${data.postcode}</li>
+        </ul>
+        <p style="margin:12px 0 0">${data.description}</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#" id="share">Share</a>
+          <a class="btn" href="events.html">Back to events</a>
+        </div>
+      `);
+
+      // Organiser widget teaser (placeholder)
+      const widget = el("div", {class:"organiser", style:"margin-top:18px"}, `
+        <div>
+          <h2 style="margin:0 0 6px">Hosted by ${data.venue}</h2>
+          <p class="tagline">Soon, organisers will manage events here and embed them on their website with a simple widget.</p>
+          <pre style="overflow:auto;background:#0f131c;border:1px solid #2a3042;border-radius:10px;padding:12px"><code>&lt;div id="spondle-widget" data-organiser="YOUR_ORG_ID"&gt;&lt;/div&gt;
+&lt;script src="https://cdn.spondle.com/widget.min.js" async&gt;&lt;/script&gt;</code></pre>
+        </div>
+        <div class="hero-card">
+          <strong>What attendees see</strong>
+          <ul>
+            <li>Up-to-date times and venue details</li>
+            <li>Share to WhatsApp / X / Facebook</li>
+            <li>(Later) Bookmark and get change notifications</li>
+          </ul>
+        </div>
+      `);
+
+      section.append(header, media, details, widget);
+
+      // Share handler
+      document.getElementById("share").addEventListener("click", (e)=>{
+        e.preventDefault();
+        const url = location.href;
+        const text = encodeURIComponent(`${data.title} — found on Spondle: ${url}`);
+        const wa = `https://wa.me/?text=${text}`;
+        const tw = `https://twitter.com/intent/tweet?text=${text}`;
+        window.open(/Android|iPhone/i.test(navigator.userAgent) ? wa : tw, '_blank');
+      });
+    }
+  </script>
+</body>
+</html>
