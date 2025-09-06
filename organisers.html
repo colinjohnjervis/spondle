@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spondle — For Organisers</title>
+  <meta name="description" content="Publish events once, display everywhere. Smart tools for venues, promoters and performers." />
+  <style>
+    :root{--bg:#0e0f12;--panel:#151820;--muted:#a7b0c0;--text:#e8eef7;--brand:#6bf0a8;--brand-2:#8bc6ff;--card:#1c2130;}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 20px}
+    header{position:sticky;top:0;background:rgba(14,15,18,.7);backdrop-filter:blur(8px);border-bottom:1px solid #212533}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:inline-block}
+    .actions{display:flex;gap:10px}
+    .btn{padding:10px 14px;border:1px solid #2a3042;border-radius:10px;background:#12151d;color:var(--text)}
+    .btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#0b1020;border:0;font-weight:700}
+    h1{margin:.3em 0 .2em;font-size:clamp(26px,4vw,40px)}
+    .tagline{color:var(--muted)}
+    .hero{padding:26px 0 10px}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:16px 0}
+    .card{background:var(--card);border:1px solid #22283a;border-radius:14px;padding:16px}
+    .card h3{margin:0 0 6px}
+    .list{margin:8px 0 0 20px;color:var(--muted)}
+    .panel{margin-top:18px;background:var(--panel);border:1px solid #22283a;border-radius:16px;padding:18px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    footer{margin-top:24px;border-top:1px solid #22283a}
+    .foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;padding:18px 0;color:var(--muted);font-size:.95rem}
+    @media (max-width:900px){
+      .cards{grid-template-columns:1fr 1fr}
+      .split{grid-template-columns:1fr}
+    }
+    @media (max-width:560px){
+      .cards{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <a href="index.html" aria-label="Spondle home">Spondle</a>
+      </div>
+      <div class="actions">
+        <a class="btn" href="events.html">Explore Events</a>
+        <a class="btn primary" href="organisers.html">For Organisers</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Publish once. Display everywhere.</h1>
+      <p class="tagline">Spondle gives venues, promoters and performers the tools to create events in minutes, embed them on your own site, and reach new audiences across the UK.</p>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn primary" href="#signup">Create organiser account</a>
+        <a class="btn" href="#widget">Get the website widget</a>
+      </div>
+    </section>
+
+    <section class="cards" aria-label="Benefits">
+      <div class="card">
+        <h3>Lightning-fast event creation</h3>
+        <ul class="list">
+          <li>Create single events, series or tours</li>
+          <li>Clone & edit future dates in seconds</li>
+          <li>Multi-venue scheduling made simple</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Control who sees what</h3>
+        <ul class="list">
+          <li>Public, private, or postcode-radius only</li>
+          <li>Optional moderation & keyword filters</li>
+          <li>Audit trail for edits</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Share & grow your audience</h3>
+        <ul class="list">
+          <li>One-click sharing to WhatsApp, X, Facebook</li>
+          <li>Attendee notifications for time/venue changes</li>
+          <li>Future ticketing & offer partnerships</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="widget" class="panel split" aria-label="Widget">
+      <div>
+        <h2 style="margin:0 0 6px">Embeddable Widget (Preview)</h2>
+        <p class="tagline">Drop a tiny snippet on your website to display your Spondle events automatically. Style it to match your brand.</p>
+        <pre style="overflow:auto;background:#0f131c;border:1px solid #2a3042;border-radius:10px;padding:12px"><code>&lt;!-- Spondle Events Widget --&gt;
+&lt;div id="spondle-widget" data-organiser="YOUR_ORG_ID"&gt;&lt;/div&gt;
+&lt;script src="https://cdn.spondle.com/widget.min.js" async&gt;&lt;/script&gt;</code></pre>
+        <p class="muted">This is a placeholder API and script URL for now — we’ll wire it up in the prototype phase.</p>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px">What it will do</h3>
+        <ul class="list">
+          <li>Auto-pulls your events from Spondle</li>
+          <li>Filters by dates, categories, tags</li>
+          <li>Matches your site’s fonts & colours</li>
+          <li>No coding needed</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="signup" class="panel" aria-label="How to get started">
+      <h2 style="margin:0 0 6px">Get started</h2>
+      <ol class="list" style="margin-left:20px">
+        <li>Create your organiser account</li>
+        <li>Add your venue(s) or artist profile(s)</li>
+        <li>Create your first event — or clone a past one</li>
+        <li>Choose visibility: public, private, or community radius</li>
+        <li>Share your link or embed the widget</li>
+      </ol>
+      <div style="margin-top:12px">
+        <a class="btn primary" href="#signup-form">Join the beta</a>
+        <a class="btn" href="events.html">Preview your listings</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot">
+      <div>© <span id="y"></span> Spondle • Made in the UK</div>
+      <div><a href="index.html#contact">Contact</a> · <a href="index.html#privacy">Privacy</a></div>
+    </div>
+  </footer>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
