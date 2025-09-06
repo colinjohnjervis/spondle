@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Spondle — Events</title>
+  <meta name="description" content="Browse events across the UK. Search by keyword, postcode and radius." />
+  <style>
+    :root{--bg:#0e0f12;--panel:#151820;--muted:#a7b0c0;--text:#e8eef7;--brand:#6bf0a8;--brand-2:#8bc6ff;--card:#1c2130;}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:0 20px}
+    header{position:sticky;top:0;background:rgba(14,15,18,.7);backdrop-filter:blur(8px);border-bottom:1px solid #212533}
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:inline-block}
+    .actions{display:flex;gap:10px}
+    .btn{padding:10px 14px;border:1px solid #2a3042;border-radius:10px;background:#12151d;color:var(--text)}
+    .btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#0b1020;border:0;font-weight:700}
+    .page-title{padding:26px 0 6px}
+    h1{margin:.2em 0 .2em;font-size:clamp(26px,4vw,40px)}
+    .muted{color:var(--muted)}
+    .filters{margin:10px 0 18px;background:var(--panel);border:1px solid #22283a;border-radius:14px;padding:14px}
+    .filters form{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px}
+    .input,select{width:100%;padding:10px 12px;background:#0f131c;border:1px solid #2a3042;border-radius:10px;color:var(--text)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .card{background:var(--card);border:1px solid #22283a;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+    .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#2a3146,#1f2536);display:flex;align-items:center;justify-content:center;color:#cbd6ff;font-weight:700;position:relative}
+    .badge{position:absolute;margin:10px;padding:6px 10px;border-radius:999px;background:#111726;border:1px solid #2a3042;font-size:.8rem}
+    .content{padding:14px}
+    .meta{color:var(--muted);font-size:.92rem}
+    .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+    .chip{font-size:.8rem;color:#0b1020;background:var(--brand);padding:4px 8px;border-radius:999px}
+    .pager{display:flex;gap:8px;justify-content:center;margin:18px 0}
+    .pager .btn{padding:8px 12px}
+    footer{margin-top:24px;border-top:1px solid #22283a}
+    .foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;padding:18px 0;color:var(--muted);font-size:.95rem}
+    @media (max-width:900px){
+      .filters form{grid-template-columns:1fr 1fr 1fr}
+      .grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:560px){
+      .filters form{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <a href="index.html" aria-label="Spondle home">Spondle</a>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="events.html">Explore Events</a>
+        <a class="btn" href="organisers.html">For Organisers</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="page-title">
+      <h1>Events</h1>
+      <p class="muted">Search by keyword, postcode and distance. (Prototype — filters are UI only for now.)</p>
+    </section>
+
+    <section class="filters" aria-label="Filters">
+      <form onsubmit="return false" id="filters">
+        <input class="input" type="text" placeholder="Keyword e.g. comedy, jazz, quiz" aria-label="Keyword" />
+        <input class="input" type="text" placeholder="Postcode e.g. BS1 4QA" aria-label="Postcode" />
+        <select aria-label="Radius (miles)" class="input">
+          <option>5 miles</option><option>10 miles</option><option selected>25 miles</option><option>50 miles</option><option>Nationwide</option>
+        </select>
+        <input class="input" type="date" aria-label="Date" />
+        <button class="btn primary" id="apply">Search</button>
+      </form>
+    </section>
+
+    <section aria-labelledby="results-title">
+      <h2 id="results-title" style="margin:0 0 10px">Results near you</h2>
+      <div class="grid" role="list" id="results">
+        <!-- Sample cards -->
+        <article class="card" role="listitem">
+          <div class="thumb"><span class="badge">London • 12 Sep</span>🎵 Live Music</div>
+          <div class="content">
+            <h3 style="margin:0 0 6px">Southbank Sessions</h3>
+            <div class="meta">Southbank Centre • 19:30–22:15</div>
+            <div class="row"><span class="chip">£18</span><a href="#" title="Share">Share</a></div>
+          </div>
+        </article>
+        <article class="card" role="listitem">
+          <div class="thumb"><span class="badge">Leeds • 13 Sep</span>🎭 Comedy</div>
+          <div class="content">
+            <h3 style="margin:0 0 6px">Saturday Standup</h3>
+            <div class="meta">Call Lane • 20:00–22:00</div>
+            <div class="row"><span class="chip">£12</span><a href="#" title="Share">Share</a></div>
+          </div>
+        </article>
+        <article class="card" role="listitem">
+          <div class="thumb"><span class="badge">Bristol • 15 Sep</span>🏞 Community</div>
+          <div class="content">
+            <h3 style="margin:0 0 6px">Quayside Market</h3>
+            <div class="meta">Harbourside • 10:00–16:00</div>
+            <div class="row"><span class="chip">Free</span><a href="#" title="Share">Share</a></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="pager">
+        <a href="#" class="btn">← Prev</a>
+        <span class="muted" aria-live="polite">Page 1 of 5</span>
+        <a href="#" class="btn">Next →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot">
+      <div>© <span id="y"></span> Spondle • Made in the UK</div>
+      <div><a href="index.html#contact">Contact</a> · <a href="index.html#privacy">Privacy</a></div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+    // Placeholder filter hook (UI only)
+    document.getElementById('apply').addEventListener('click', () => {
+      alert('Search triggered (prototype). In production this will call the API with your filters.');
+    });
+    // Simple share links (WhatsApp on mobile, X on desktop)
+    document.querySelectorAll('.card a[title="Share"]').forEach(a=>{
+      a.addEventListener('click',e=>{
+        e.preventDefault();
+        const card = a.closest('.card');
+        const title = card.querySelector('h3')?.textContent?.trim() || 'Event';
+        const url = location.href;
+        const text = encodeURIComponent(`${title} — found on Spondle: ${url}`);
+        const wa = `https://wa.me/?text=${text}`;
+        const tw = `https://twitter.com/intent/tweet?text=${text}`;
+        window.open(/Android|iPhone/i.test(navigator.userAgent) ? wa : tw, '_blank');
+      });
+    });
+  </script>
+</body>
+</html>
