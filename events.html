@@ -43,28 +43,36 @@
       <h2 id="results-title">Results near you</h2>
       <div class="grid" role="list" id="results">
         <article class="card" role="listitem">
-          <div class="thumb"><span class="badge">London • 12 Sep</span>🎵 Live Music</div>
-          <div class="content">
-            <h3>Southbank Sessions</h3>
-            <div class="meta">Southbank Centre • 19:30–22:15</div>
-            <div class="row"><span class="chip">£18</span><a href="#" title="Share">Share</a></div>
-          </div>
+          <a href="event.html?id=sample-1" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">London • 12 Sep</span>🎵 Live Music</div>
+            <div class="content">
+              <h3>Southbank Sessions</h3>
+              <div class="meta">Southbank Centre • 19:30–22:15</div>
+              <div class="row"><span class="chip">£18</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
         </article>
+
         <article class="card" role="listitem">
-          <div class="thumb"><span class="badge">Leeds • 13 Sep</span>🎭 Comedy</div>
-          <div class="content">
-            <h3>Saturday Standup</h3>
-            <div class="meta">Call Lane • 20:00–22:00</div>
-            <div class="row"><span class="chip">£12</span><a href="#" title="Share">Share</a></div>
-          </div>
+          <a href="event.html?id=sample-2" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">Leeds • 13 Sep</span>🎭 Comedy</div>
+            <div class="content">
+              <h3>Saturday Standup</h3>
+              <div class="meta">Call Lane • 20:00–22:00</div>
+              <div class="row"><span class="chip">£12</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
         </article>
+
         <article class="card" role="listitem">
-          <div class="thumb"><span class="badge">Bristol • 15 Sep</span>🏞 Community</div>
-          <div class="content">
-            <h3>Quayside Market</h3>
-            <div class="meta">Harbourside • 10:00–16:00</div>
-            <div class="row"><span class="chip">Free</span><a href="#" title="Share">Share</a></div>
-          </div>
+          <a href="event.html?id=sample-3" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">Bristol • 15 Sep</span>🏞 Community</div>
+            <div class="content">
+              <h3>Quayside Market</h3>
+              <div class="meta">Harbourside • 10:00–16:00</div>
+              <div class="row"><span class="chip">Free</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
         </article>
       </div>
 
@@ -87,18 +95,6 @@
     document.getElementById('y').textContent = new Date().getFullYear();
     document.getElementById('apply').addEventListener('click', () => {
       alert('Search triggered (prototype). In production this will call the API with your filters.');
-    });
-    document.querySelectorAll('.card a[title="Share"]').forEach(a=>{
-      a.addEventListener('click',e=>{
-        e.preventDefault();
-        const card = a.closest('.card');
-        const title = card.querySelector('h3')?.textContent?.trim() || 'Event';
-        const url = location.href;
-        const text = encodeURIComponent(`${title} — found on Spondle: ${url}`);
-        const wa = `https://wa.me/?text=${text}`;
-        const tw = `https://twitter.com/intent/tweet?text=${text}`;
-        window.open(/Android|iPhone/i.test(navigator.userAgent) ? wa : tw, '_blank');
-      });
     });
   </script>
 </body>
