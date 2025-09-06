@@ -66,45 +66,51 @@
       <h2 id="events-title">Trending this week</h2>
       <div class="grid" role="list">
         <article class="card" role="listitem" data-event-id="sample-1">
-          <div class="thumb" aria-label="Event image">
-            <span class="badge">Bristol • 12 Sep</span>🎵 Live Music
-          </div>
-          <div class="content">
-            <h3>The Harbourside Sessions</h3>
-            <div class="meta">The Louisiana • 19:30–22:30</div>
-            <div class="row">
-              <span class="chip">Free Entry</span>
-              <a href="#" aria-label="Share via WhatsApp" title="Share">Share</a>
+          <a href="event.html?id=sample-1" style="display:block;color:inherit">
+            <div class="thumb" aria-label="Event image">
+              <span class="badge">Bristol • 12 Sep</span>🎵 Live Music
             </div>
-          </div>
+            <div class="content">
+              <h3>The Harbourside Sessions</h3>
+              <div class="meta">The Louisiana • 19:30–22:30</div>
+              <div class="row">
+                <span class="chip">Free Entry</span>
+                <span class="muted">Details →</span>
+              </div>
+            </div>
+          </a>
         </article>
 
         <article class="card" role="listitem" data-event-id="sample-2">
-          <div class="thumb">
-            <span class="badge">Manchester • 14 Sep</span>🎭 Comedy
-          </div>
-          <div class="content">
-            <h3>Friday Night Laughs</h3>
-            <div class="meta">Northern Quarter • 20:00–22:00</div>
-            <div class="row">
-              <span class="chip">£12</span>
-              <a href="#" title="Share">Share</a>
+          <a href="event.html?id=sample-2" style="display:block;color:inherit">
+            <div class="thumb">
+              <span class="badge">Manchester • 14 Sep</span>🎭 Comedy
             </div>
-          </div>
+            <div class="content">
+              <h3>Friday Night Laughs</h3>
+              <div class="meta">Northern Quarter • 20:00–22:00</div>
+              <div class="row">
+                <span class="chip">£12</span>
+                <span class="muted">Details →</span>
+              </div>
+            </div>
+          </a>
         </article>
 
         <article class="card" role="listitem" data-event-id="sample-3">
-          <div class="thumb">
-            <span class="badge">Cardiff • 15 Sep</span>🏞 Community
-          </div>
-          <div class="content">
-            <h3>Riverside Street Food</h3>
-            <div class="meta">Market Square • 11:00–17:00</div>
-            <div class="row">
-              <span class="chip">Family</span>
-              <a href="#" title="Share">Share</a>
+          <a href="event.html?id=sample-3" style="display:block;color:inherit">
+            <div class="thumb">
+              <span class="badge">Cardiff • 15 Sep</span>🏞 Community
             </div>
-          </div>
+            <div class="content">
+              <h3>Riverside Street Food</h3>
+              <div class="meta">Market Square • 11:00–17:00</div>
+              <div class="row">
+                <span class="chip">Family</span>
+                <span class="muted">Details →</span>
+              </div>
+            </div>
+          </a>
         </article>
       </div>
     </section>
@@ -148,18 +154,6 @@
 
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
-    document.querySelectorAll('.card a[title="Share"]').forEach(a=>{
-      a.addEventListener('click',e=>{
-        e.preventDefault();
-        const card = a.closest('[data-event-id]');
-        const title = card.querySelector('h3')?.textContent?.trim() || 'Event';
-        const url = location.origin + '/events.html';
-        const text = encodeURIComponent(`${title} — found on Spondle: ${url}`);
-        const wa = `https://wa.me/?text=${text}`;
-        const tw = `https://twitter.com/intent/tweet?text=${text}`;
-        window.open(/Android|iPhone/i.test(navigator.userAgent) ? wa : tw, '_blank');
-      });
-    });
   </script>
 </body>
 </html>
