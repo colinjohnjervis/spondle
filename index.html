@@ -3,13 +3,18 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Spondle — Discover Events</title>
+  <title>Spondle — Discover & Share Events Across the UK</title>
+  <meta name="description" content="Find what's on near you. Share events with friends. Simple tools for organisers to publish once and display everywhere.">
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
+  <!-- Header -->
   <header>
-    <div class="container nav">
-      <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
+    <div class="container nav" role="navigation" aria-label="Primary">
+      <div class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <a href="index.html" aria-label="Spondle home">Spondle</a>
+      </div>
       <div class="actions">
         <a class="btn" href="events.html">Explore Events</a>
         <a class="btn primary" href="organisers.html">For Organisers</a>
@@ -18,100 +23,181 @@
   </header>
 
   <main class="container">
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero">
       <div class="hero-inner">
         <div>
           <div class="eyebrow">UK • Events for everyone</div>
           <h1>Discover, share & showcase events — all in one place</h1>
-          <p class="tagline">From intimate quizzes to arena shows, Spondle makes it effortless to find what’s on near you, and gives organisers powerful tools to publish once and display everywhere.</p>
-          <div class="cta-row">
-            <a class="btn primary" href="events.html">Find events near me</a>
-            <a class="btn" href="organisers.html">List an event</a>
-          </div>
+          <p class="tagline">
+            From intimate quizzes to arena shows, Spondle makes it effortless to find what’s on near you,
+            and gives organisers powerful tools to publish once and display everywhere.
+          </p>
+
+          <!-- Quick Search (UI only for now) -->
+          <form onsubmit="return false" style="display:grid;gap:10px;margin-top:18px;max-width:560px">
+            <input class="input" id="q" placeholder="Try: comedy in Manchester, BS1 live music, food market..." aria-label="Search events"/>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <input class="input" id="postcode" placeholder="Postcode e.g. BS1 4QA" aria-label="Postcode"/>
+              <select class="input" id="radius" aria-label="Radius">
+                <option>5 miles</option><option>10 miles</option><option selected>25 miles</option><option>50 miles</option><option>Nationwide</option>
+              </select>
+            </div>
+            <div class="cta-row">
+              <a class="btn primary" href="events.html" id="searchBtn">Search events</a>
+              <a class="btn" href="organisers.html">List an event</a>
+            </div>
+          </form>
         </div>
-        <div class="hero-card">
+
+        <!-- Why Spondle -->
+        <aside class="hero-card" aria-label="Highlights">
           <strong>Why Spondle?</strong>
           <ul>
-            <li>Smart search by postcode & distance</li>
-            <li>One-click social sharing (WhatsApp, X, Facebook)</li>
-            <li>Embeddable widget to show your events on your website</li>
+            <li>Postcode-powered discovery</li>
+            <li>One-click sharing (WhatsApp, X, Facebook)</li>
+            <li>Embeddable widget for your own website</li>
             <li>Series & multi-venue scheduling in minutes</li>
           </ul>
-        </div>
+        </aside>
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="section">
-      <h2>Postcode-powered discovery</h2>
-      <p>Search with UK postcodes and filters that actually make sense.</p>
-    </section>
-
-    <section class="section">
-      <h2>Private or community-only</h2>
-      <p>Restrict events by postcode radius or member lists when needed.</p>
-    </section>
-
-    <section class="section">
-      <h2>Ready for ticketing</h2>
-      <p>Start simple, add ticketing later — the platform’s built for it.</p>
-    </section>
-
-    <!-- Trending Events -->
-    <section class="section">
-      <h2>Trending this week</h2>
-      <div class="grid">
-        <article class="card">
-          <div class="thumb"><span class="badge">Bristol • 12 Sep</span>🎵 Live Music</div>
-          <div class="content">
-            <h3>The Harbourside Sessions</h3>
-            <p class="meta">The Louisiana</p>
-            <div class="row"><span class="chip">Free Entry</span><a href="event.html?id=sample-1">Details →</a></div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"><span class="badge">Manchester • 14 Sep</span>🎭 Comedy</div>
-          <div class="content">
-            <h3>Friday Night Laughs</h3>
-            <p class="meta">Northern Quarter</p>
-            <div class="row"><span class="chip">£12</span><a href="event.html?id=sample-2">Details →</a></div>
-          </div>
-        </article>
-        <article class="card">
-          <div class="thumb"><span class="badge">Cardiff • 15 Sep</span>🏞 Community</div>
-          <div class="content">
-            <h3>Riverside Street Food</h3>
-            <p class="meta">Market Square</p>
-            <div class="row"><span class="chip">Family</span><a href="event.html?id=sample-3">Details →</a></div>
-          </div>
-        </article>
+    <!-- Quick Categories -->
+    <section class="section" aria-label="Categories">
+      <div class="cta-row" style="flex-wrap:wrap">
+        <a class="btn" href="events.html">🎵 Live Music</a>
+        <a class="btn" href="events.html">🎭 Comedy</a>
+        <a class="btn" href="events.html">🍺 Food & Drink</a>
+        <a class="btn" href="events.html">🎬 Film</a>
+        <a class="btn" href="events.html">🏞 Community</a>
+        <a class="btn" href="events.html">💻 Networking</a>
+        <a class="btn" href="events.html">🏃‍♂️ Sports</a>
+        <a class="btn" href="events.html">📖 Arts & Culture</a>
       </div>
     </section>
 
-    <!-- Organiser Promo -->
-    <section class="section organiser">
+    <!-- Trending -->
+    <section id="events" class="section" aria-labelledby="events-title">
+      <h2 id="events-title">Trending this week</h2>
+      <div class="grid" role="list">
+        <!-- 1 -->
+        <article class="card" role="listitem">
+          <a href="event.html?id=sample-1" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">Bristol • 12 Sep</span>🎵 Live Music</div>
+            <div class="content">
+              <h3>The Harbourside Sessions</h3>
+              <div class="meta">The Louisiana • 19:30–22:30</div>
+              <div class="row"><span class="chip">Free Entry</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
+        </article>
+        <!-- 2 -->
+        <article class="card" role="listitem">
+          <a href="event.html?id=sample-2" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">Manchester • 14 Sep</span>🎭 Comedy</div>
+            <div class="content">
+              <h3>Friday Night Laughs</h3>
+              <div class="meta">Northern Quarter • 20:00–22:00</div>
+              <div class="row"><span class="chip">£12</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
+        </article>
+        <!-- 3 -->
+        <article class="card" role="listitem">
+          <a href="event.html?id=sample-3" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">Cardiff • 15 Sep</span>🏞 Community</div>
+            <div class="content">
+              <h3>Riverside Street Food</h3>
+              <div class="meta">Market Square • 11:00–17:00</div>
+              <div class="row"><span class="chip">Family</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
+        </article>
+        <!-- 4 -->
+        <article class="card" role="listitem">
+          <a href="event.html?id=sample-5" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">London • 20 Sep</span>💿 Market</div>
+            <div class="content">
+              <h3>Vintage Vinyl Market</h3>
+              <div class="meta">Camden Market • 10:00–18:00</div>
+              <div class="row"><span class="chip">Free Entry</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
+        </article>
+        <!-- 5 -->
+        <article class="card" role="listitem">
+          <a href="event.html?id=sample-6" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">Brighton • 22 Sep</span>🎬 Film</div>
+            <div class="content">
+              <h3>Outdoor Cinema Night</h3>
+              <div class="meta">Seafront • 20:30–23:00</div>
+              <div class="row"><span class="chip">£10</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
+        </article>
+        <!-- 6 -->
+        <article class="card" role="listitem">
+          <a href="event.html?id=sample-4" style="display:block;color:inherit">
+            <div class="thumb"><span class="badge">Leeds • 18 Sep</span>🍺 Food & Drink</div>
+            <div class="content">
+              <h3>Craft Beer Festival</h3>
+              <div class="meta">City Brewery Hall • 12:00–23:00</div>
+              <div class="row"><span class="chip">£20</span><span class="muted">Details →</span></div>
+            </div>
+          </a>
+        </article>
+      </div>
+      <div class="cta-row" style="margin-top:18px">
+        <a class="btn" href="events.html">See all events</a>
+      </div>
+    </section>
+
+    <!-- Organisers promo -->
+    <section id="organisers" class="section organiser" aria-labelledby="org-title">
       <div>
-        <h2>For organisers & venues</h2>
-        <p>Publish once, display everywhere. Your events can sync automatically to your own website with an embeddable widget, while also appearing on Spondle’s platform.</p>
-      </div>
-      <div>
+        <h2 id="org-title">Tools for organisers</h2>
+        <p class="tagline">
+          Publish once on Spondle, show your listings everywhere with our embeddable widget,
+          and keep audiences updated automatically when details change.
+        </p>
         <ul>
-          <li>Upload your events easily</li>
-          <li>Promote across social media</li>
-          <li>Integrate ticketing later</li>
-          <li>Team accounts for larger orgs</li>
+          <li>Create single events, series, or multi-venue tours</li>
+          <li>Optional approval & moderation</li>
+          <li>Postcode radius restrictions for community events</li>
+          <li>Attendee notifications for time/venue updates</li>
         </ul>
+      </div>
+      <div class="hero-card">
+        <strong>Coming soon (prototype roadmap)</strong>
+        <ul>
+          <li>Account types: Attendee, Organiser, Venue, Artist</li>
+          <li>Save & follow events with notification preferences</li>
+          <li>Offer marketplace (restaurants & local partners)</li>
+          <li>Ticketing & Stripe integration</li>
+        </ul>
+        <div class="cta-row">
+          <a class="btn primary" href="organisers.html">Join the beta</a>
+          <a class="btn" href="events.html">Explore events</a>
+        </div>
       </div>
     </section>
   </main>
 
+  <!-- Footer -->
   <footer>
     <div class="container foot">
-      <div>© <span id="y"></span> Spondle</div>
+      <div>© <span id="y"></span> Spondle • Made in the UK</div>
     </div>
   </footer>
 
-  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+    // Prototype search handler (navigate to Events page for now)
+    document.getElementById('searchBtn').addEventListener('click', (e) => {
+      // Later: capture q/postcode/radius and pass as query params
+      // For now we just go to the Events page
+    });
+  </script>
 </body>
 </html>
