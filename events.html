@@ -3,27 +3,34 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Spondle — Events</title>
+  <title>Spondle — Events (DEBUG)</title>
   <link rel="stylesheet" href="styles.css"/>
 
-  <!-- Ensure heart is always visible -->
+  <!-- DEBUG banner styles -->
   <style>
-    .card { position: relative; }
-    .thumb { position: relative; }
-    .fav-overlay {
-      position: absolute; top: 10px; right: 10px; z-index: 5;
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 40px; height: 40px;
-      border: 1px solid #2a3042; border-radius: 999px;
-      background: #0f131c; color: #e8eef7; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,.35);
+    #debug-banner{
+      position:fixed; inset:auto 0 0 0; z-index:9999;
+      background:#ff2d55; color:#0b1020; text-align:center;
+      padding:6px 10px; font-weight:800; letter-spacing:.3px
     }
-    .fav-overlay:hover { border-color: #3a425a; }
-    .fav-overlay[aria-pressed="true"]{ background: #1a232f; border-color:#3a425a }
+    .card{ position:relative }
+    .thumb{ position:relative }
+    .fav-overlay{
+      position:absolute; top:10px; right:10px; z-index:50;
+      display:inline-flex; align-items:center; justify-content:center;
+      width:40px; height:40px; border:1px solid #2a3042; border-radius:999px;
+      background:#0f131c; color:#e8eef7; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.35)
+    }
+    .fav-overlay:hover{ border-color:#3a425a }
+    .fav-overlay[aria-pressed="true"]{ background:#1a232f; border-color:#3a425a }
   </style>
 </head>
 <body>
-  <header>
+  <!-- DEBUG banner -->
+  <div id="debug-banner">DEBUG BUILD • events.html v3 • If you can’t see this, the new file isn’t deployed/cached</div>
+
+  <header style="margin-top:34px">
     <div class="container nav">
       <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
@@ -39,21 +46,15 @@
       <p class="tagline">Use the search and filters to narrow things down. (Prototype — client-side only)</p>
     </section>
 
-    <!-- Filter & Sort bar -->
+    <!-- Filter & Sort bar (unchanged) -->
     <section class="section hero-card" style="display:grid;gap:10px">
       <div style="display:grid;gap:10px">
         <input class="input" id="q" placeholder="Search title, venue, city…"/>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
           <select class="input" id="category">
             <option value="">All categories</option>
-            <option>Live Music</option>
-            <option>Comedy</option>
-            <option>Food & Drink</option>
-            <option>Film</option>
-            <option>Community</option>
-            <option>Networking</option>
-            <option>Sports</option>
-            <option>Arts & Culture</option>
+            <option>Live Music</option><option>Comedy</option><option>Food & Drink</option><option>Film</option>
+            <option>Community</option><option>Networking</option><option>Sports</option><option>Arts & Culture</option>
           </select>
           <select class="input" id="city">
             <option value="">All cities</option>
@@ -61,11 +62,8 @@
             <option>London</option><option>Brighton</option><option>Birmingham</option><option>Glasgow</option><option>Liverpool</option>
           </select>
           <select class="input" id="price">
-            <option value="">Any price</option>
-            <option value="free">Free</option>
-            <option value="paid">Paid</option>
+            <option value="">Any price</option><option value="free">Free</option><option value="paid">Paid</option>
           </select>
-          <!-- Future placeholders -->
           <input class="input" id="postcode" placeholder="Postcode (future)" />
           <select class="input" id="radius">
             <option>5 miles</option><option>10 miles</option><option selected>25 miles</option><option>50 miles</option><option>Nationwide</option>
@@ -79,7 +77,6 @@
           <button class="btn" id="reset">Reset</button>
           <span id="count" class="muted"></span>
         </div>
-
         <div class="cta-row">
           <label for="sort" class="muted" style="align-self:center">Sort:</label>
           <select class="input" id="sort" style="width:200px">
@@ -104,22 +101,20 @@
     <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
   </footer>
 
-  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <!-- Auth for favourites -->
+  <script>document.getElementById('y').textContent = new Date().getFullYear(); console.log('DEBUG events.html v3 loaded');</script>
   <script src="auth.js"></script>
-
   <script>
-    // --- Sample data ---
+    // Data
     const EVENTS = [
-      {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",       time:"19:30–22:30", price:"Free Entry",    category:"Live Music"},
-      {id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter",     time:"20:00–22:00", price:"£12",            category:"Comedy"},
-      {id:"sample-3", title:"Riverside Street Food",     city:"Cardiff",   dateLabel:"15 Sep", venue:"Market Square",        time:"11:00–17:00", price:"Family",         category:"Community"},
-      {id:"sample-4", title:"Craft Beer Festival",       city:"Leeds",     dateLabel:"18 Sep", venue:"City Brewery Hall",    time:"12:00–23:00", price:"£20",            category:"Food & Drink"},
-      {id:"sample-5", title:"Vintage Vinyl Market",      city:"London",    dateLabel:"20 Sep", venue:"Camden Market",        time:"10:00–18:00", price:"Free Entry",     category:"Market"},
-      {id:"sample-6", title:"Outdoor Cinema Night",      city:"Brighton",  dateLabel:"22 Sep", venue:"Brighton Seafront",    time:"20:30–23:00", price:"£10",            category:"Film"},
-      {id:"sample-7", title:"Tech Meetup & Networking",  city:"Birmingham",dateLabel:"25 Sep", venue:"TechHub Central",      time:"18:00–21:00", price:"Free",           category:"Networking"},
-      {id:"sample-8", title:"Charity Fun Run",           city:"Glasgow",   dateLabel:"27 Sep", venue:"Kelvingrove Park",     time:"09:00–12:00", price:"£15 Donation",   category:"Sports"},
-      {id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar",        time:"19:00–22:00", price:"Free Entry",     category:"Arts & Culture"},
+      {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"Live Music"},
+      {id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12", category:"Comedy"},
+      {id:"sample-3", title:"Riverside Street Food",     city:"Cardiff",   dateLabel:"15 Sep", venue:"Market Square", time:"11:00–17:00", price:"Family", category:"Community"},
+      {id:"sample-4", title:"Craft Beer Festival",       city:"Leeds",     dateLabel:"18 Sep", venue:"City Brewery Hall", time:"12:00–23:00", price:"£20", category:"Food & Drink"},
+      {id:"sample-5", title:"Vintage Vinyl Market",      city:"London",    dateLabel:"20 Sep", venue:"Camden Market", time:"10:00–18:00", price:"Free Entry", category:"Market"},
+      {id:"sample-6", title:"Outdoor Cinema Night",      city:"Brighton",  dateLabel:"22 Sep", venue:"Brighton Seafront", time:"20:30–23:00", price:"£10", category:"Film"},
+      {id:"sample-7", title:"Tech Meetup & Networking",  city:"Birmingham",dateLabel:"25 Sep", venue:"TechHub Central", time:"18:00–21:00", price:"Free", category:"Networking"},
+      {id:"sample-8", title:"Charity Fun Run",           city:"Glasgow",   dateLabel:"27 Sep", venue:"Kelvingrove Park", time:"09:00–12:00", price:"£15 Donation", category:"Sports"},
+      {id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar", time:"19:00–22:00", price:"Free Entry", category:"Arts & Culture"},
     ];
 
     const grid = document.getElementById('grid');
@@ -127,36 +122,27 @@
     const empty = document.getElementById('empty');
     const $ = id => document.getElementById(id);
 
-    // Prefill from URL
-    const url = new URL(location.href);
-    const qp = Object.fromEntries(url.searchParams.entries());
+    // URL prefill
+    const qp = Object.fromEntries(new URL(location.href).searchParams.entries());
     ['q','category','city','price','postcode','radius','sort'].forEach(k=>{ if(qp[k]) $(k).value = qp[k]; });
 
     // Helpers
     const CURRENT_YEAR = new Date().getFullYear();
     const MONTHS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
-    function parseDateLabel(label="") {
+    const parseDateLabel = (label="")=>{
       const m = label.trim().toLowerCase().match(/^(\d{1,2})\s+([a-z]{3})/i);
-      if (!m) return null;
-      const d = parseInt(m[1], 10);
-      const mon = MONTHS.indexOf(m[2].slice(0,3).toLowerCase());
-      if (mon < 0) return null;
-      return new Date(CURRENT_YEAR, mon, d);
-    }
-    function parsePrice(p="") {
-      const s = String(p).toLowerCase();
-      if (s.includes("free")) return 0;
-      const match = s.match(/£\s*([\d]+(\.\d+)?)/);
-      if (match) return parseFloat(match[1]);
-      return Number.POSITIVE_INFINITY;
-    }
+      if(!m) return null; const d=+m[1]; const mon=MONTHS.indexOf(m[2].slice(0,3)); if(mon<0) return null; return new Date(CURRENT_YEAR,mon,d);
+    };
+    const parsePrice = (p="")=>{
+      const s=String(p).toLowerCase(); if(s.includes("free")) return 0; const m=s.match(/£\s*([\d]+(\.\d+)?)/); return m?parseFloat(m[1]):Number.POSITIVE_INFINITY;
+    };
     const SORTS = {
-      "":            { cmp: null },
-      "dateAsc":     { cmp: (a,b)=> (parseDateLabel(a.dateLabel)?.getTime() ?? 9e15) - (parseDateLabel(b.dateLabel)?.getTime() ?? 9e15) },
-      "priceAsc":    { cmp: (a,b)=> parsePrice(a.price) - parsePrice(b.price) },
-      "priceDesc":   { cmp: (a,b)=> parsePrice(b.price) - parsePrice(a.price) },
-      "titleAsc":    { cmp: (a,b)=> (a.title||"").localeCompare(b.title||"") },
-      "cityAsc":     { cmp: (a,b)=> (a.city||"").localeCompare(b.city||"") },
+      "":{cmp:null},
+      "dateAsc":{cmp:(a,b)=>(parseDateLabel(a.dateLabel)?.getTime()??9e15)-(parseDateLabel(b.dateLabel)?.getTime()??9e15)},
+      "priceAsc":{cmp:(a,b)=>parsePrice(a.price)-parsePrice(b.price)},
+      "priceDesc":{cmp:(a,b)=>parsePrice(b.price)-parsePrice(a.price)},
+      "titleAsc":{cmp:(a,b)=>(a.title||"").localeCompare(b.title||"")},
+      "cityAsc":{cmp:(a,b)=>(a.city||"").localeCompare(b.city||"")}
     };
 
     function applyFilters(){
@@ -167,38 +153,27 @@
       const sortKey = $('sort').value;
 
       let list = EVENTS.slice();
-
-      if (q) {
-        list = list.filter(e =>
-          (e.title||'').toLowerCase().includes(q) ||
-          (e.venue||'').toLowerCase().includes(q) ||
-          (e.city||'').toLowerCase().includes(q) ||
-          (e.category||'').toLowerCase().includes(q)
-        );
-      }
-      if (cat)  list = list.filter(e => (e.category||'').toLowerCase() === cat.toLowerCase());
-      if (city) list = list.filter(e => (e.city||'').toLowerCase() === city.toLowerCase());
-      if (price === 'free') list = list.filter(e => (e.price||'').toLowerCase().includes('free'));
-      else if (price === 'paid') list = list.filter(e => !((e.price||'').toLowerCase().includes('free')));
+      if(q){ list = list.filter(e => (e.title||'').toLowerCase().includes(q) || (e.venue||'').toLowerCase().includes(q) || (e.city||'').toLowerCase().includes(q) || (e.category||'').toLowerCase().includes(q)); }
+      if(cat)  list = list.filter(e => (e.category||'').toLowerCase() === cat.toLowerCase());
+      if(city) list = list.filter(e => (e.city||'').toLowerCase() === city.toLowerCase());
+      if(price==='free') list = list.filter(e => (e.price||'').toLowerCase().includes('free'));
+      else if(price==='paid') list = list.filter(e => !((e.price||'').toLowerCase().includes('free')));
 
       const entry = SORTS[sortKey] || SORTS[""];
-      if (entry.cmp) list = list.slice().sort(entry.cmp);
+      if(entry.cmp) list = list.slice().sort(entry.cmp);
 
       render(list);
       updateURL();
     }
 
     function render(list){
-      if (!list.length) {
-        grid.innerHTML = '';
-        empty.style.display = 'block';
-        count.textContent = '0 results';
-        return;
+      if(!list.length){
+        grid.innerHTML=''; empty.style.display='block'; count.textContent='0 results'; return;
       }
-      empty.style.display = 'none';
+      empty.style.display='none';
       count.textContent = `${list.length} result${list.length>1?'s':''}`;
 
-      grid.innerHTML = list.map(ev => {
+      grid.innerHTML = list.map(ev=>{
         const emoji = categoryEmoji(ev.category);
         const isFav = !!window.SpondleAuth?.isFavourite?.(ev.id);
         return `
@@ -213,7 +188,6 @@
                 <div class="row"><span class="chip">${ev.price || 'Free'}</span><span class="muted">Details →</span></div>
               </div>
             </a>
-            <!-- FAV outside the link so it can’t be covered -->
             <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${isFav ? 'true' : 'false'}" aria-label="Save to favourites" title="Save">
               ${isFav ? '♥' : '♡'}
             </button>
@@ -221,14 +195,13 @@
         `;
       }).join('');
 
-      // Wire favourites buttons
+      // Hook up ♥
       grid.querySelectorAll('button[data-fav]').forEach(btn=>{
         btn.addEventListener('click', (e)=>{
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault(); e.stopPropagation();
           const id = btn.getAttribute('data-fav');
           const user = window.SpondleAuth?.currentUser?.();
-          if (!user) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+          if(!user){ location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
           SpondleAuth.toggleFavourite(id);
           const now = SpondleAuth.isFavourite(id);
           btn.setAttribute('aria-pressed', now ? 'true' : 'false');
@@ -260,22 +233,18 @@
       const postcode = $('postcode').value.trim(); if (postcode) params.set('postcode', postcode);
       const radius = $('radius').value; if (radius) params.set('radius', radius);
       const sortKey = $('sort').value; if (sortKey) params.set('sort', sortKey);
-      const newURL = location.pathname + (params.toString() ? `?${params}` : '');
-      history.replaceState(null, '', newURL);
+      history.replaceState(null, '', location.pathname + (params.toString()?`?${params}`:''));
     }
 
-    // Events
-    $('apply').addEventListener('click', applyFilters);
-    $('reset').addEventListener('click', () => {
-      ['q','category','city','price','postcode','radius','sort'].forEach(id => {
-        const el = $(id);
-        if (el.tagName==='SELECT') el.selectedIndex = 0; else el.value='';
+    document.getElementById('apply').addEventListener('click', applyFilters);
+    document.getElementById('reset').addEventListener('click', ()=>{
+      ['q','category','city','price','postcode','radius','sort'].forEach(id=>{
+        const el=$(id); if(el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
       });
       applyFilters();
     });
-    $('sort').addEventListener('change', applyFilters);
+    document.getElementById('sort').addEventListener('change', applyFilters);
 
-    // Initial render
     applyFilters();
   </script>
 </body>
