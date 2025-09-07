@@ -1,65 +1,286 @@
-/* ===== Visual polish pack ===== */
-
-/* Inputs (your pages use .input but had no styling) */
-.input{
-  width:100%;
-  padding:10px 12px;
-  border:1px solid #2a3042;
-  border-radius:10px;
-  background:#0f131c;
-  color:var(--text);
-  outline:none;
+/* ===== Base Variables ===== */
+:root {
+  --bg: #0e0f12;
+  --panel: #151820;
+  --muted: #a7b0c0;
+  --text: #e8eef7;
+  --brand: #6bf0a8;
+  --brand-2: #8bc6ff;
+  --card: #1c2130;
 }
-.input::placeholder{color:#7f8aa3}
-.input:focus{border-color:#3a80ff; box-shadow:0 0 0 3px rgba(59,130,246,.25)}
 
-/* Buttons: focus states & subtle press */
-.btn:focus-visible{outline:none; box-shadow:0 0 0 3px rgba(107,240,168,.25)}
-.btn:active{transform:translateY(1px)}
+/* ===== Reset & Base ===== */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+a { color: inherit; text-decoration: none; }
 
-/* Cards: hover lift */
-.card{
+/* ===== Layout Containers ===== */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.section {
+  padding: 24px 0;
+}
+.hero {
+  padding: 36px 0;
+}
+.hero-inner {
+  display: grid;
+  gap: 24px;
+}
+@media (min-width: 800px) {
+  .hero-inner {
+    grid-template-columns: 3fr 2fr;
+    align-items: start;
+  }
+}
+
+/* ===== Header ===== */
+header {
+  position: sticky;
+  top: 0;
+  background: rgba(14, 15, 18, 0.7);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #212533;
+  z-index: 10;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+.logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  display: inline-block;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 10px 14px;
+  border: 1px solid #2a3042;
+  border-radius: 10px;
+  background: #12151d;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  transition: background .2s, border-color .2s, transform .1s;
+}
+.btn:hover {
+  border-color: #3a425a;
+}
+.btn.primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #0b1020;
+  border: 0;
+  font-weight: 700;
+}
+.cta-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--card);
+  border: 1px solid #22283a;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-  box-shadow: 0 0 0 rgba(0,0,0,0);
 }
-.card:hover{
+.card:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(0,0,0,.25);
-  border-color:#2e3650;
+  border-color: #2e3650;
+}
+.card .content {
+  padding: 14px;
+}
+.meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.chip {
+  display: inline-block;
+  background: #111726;
+  border: 1px solid #2a3042;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.85rem;
 }
 
-/* Thumbs: gentle sheen */
-.thumb{
-  position:relative;
-  overflow:hidden;
+/* ===== Thumbnails & Badges ===== */
+.thumb {
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg,#2a3146,#1f2536);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd6ff;
+  font-weight: 700;
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
 }
-.thumb::after{
+.thumb::after {
   content:"";
   position:absolute; inset:0;
   background: radial-gradient(70% 60% at 70% 0%, rgba(139,198,255,.18), transparent 60%);
   pointer-events:none;
 }
+.badge {
+  position: absolute;
+  margin: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #111726;
+  border: 1px solid #2a3042;
+  font-size: 0.8rem;
+  backdrop-filter: blur(2px);
+}
 
-/* Headings: optional gradient accent */
-.gradient-text{
+/* ===== Hero Cards ===== */
+.hero-card {
+  background: var(--panel);
+  border: 1px solid #22283a;
+  border-radius: 16px;
+  padding: 18px;
+}
+.eyebrow {
+  color: var(--brand);
+  font-weight: 700;
+  font-size: .9rem;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+}
+.tagline {
+  color: var(--muted);
+  max-width: 52ch;
+}
+
+/* ===== Grid Layout ===== */
+.grid {
+  display: grid;
+  gap: 20px;
+}
+@media (min-width: 700px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+/* ===== Footer ===== */
+footer {
+  margin-top: 36px;
+  border-top: 1px solid #1c2233;
+}
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 18px 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* ===== Share Bar ===== */
+.sharebar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.share-icons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.share-icons .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #2a3042;
+  border-radius: 10px;
+  background: #12151d;
+  cursor: pointer;
+}
+.share-icons .icon:hover {
+  border-color: #3a425a;
+}
+.sharebar .share-native {
+  padding: 8px 12px;
+}
+.share-toast {
+  color: var(--brand);
+  font-size: .95rem;
+}
+
+/* ===== Inputs ===== */
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #2a3042;
+  border-radius: 10px;
+  background: #0f131c;
+  color: var(--text);
+  outline: none;
+}
+.input::placeholder {
+  color: #7f8aa3;
+}
+.input:focus {
+  border-color: #3a80ff;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.25);
+}
+
+/* ===== Buttons: Focus & Press ===== */
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(107,240,168,.25);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* ===== Typography & Muted Links ===== */
+.gradient-text {
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
+.muted { color: var(--muted); }
+.muted:hover { color: #c7d2e5; }
 
-/* Tiny badge polish */
-.badge{ backdrop-filter: blur(2px) }
-
-/* Muted links hover */
-.muted{ color: var(--muted) }
-.muted:hover{ color: #c7d2e5 }
-
-/* Footer: softer */
-footer{ border-top:1px solid #1c2233 }
-
-/* Motion respect */
-@media (prefers-reduced-motion: reduce){
-  .card{ transition:none }
-  .btn:active{ transform:none }
+/* ===== Motion Safety ===== */
+@media (prefers-reduced-motion: reduce) {
+  .card { transition: none; }
+  .btn:active { transform: none; }
 }
