@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Spondle — Find events near you</title>
-  <link rel="stylesheet" href="styles.css?v=13"/>
+  <link rel="stylesheet" href="styles.css?v=14"/>
 </head>
 <body>
   <header>
@@ -12,9 +12,7 @@
       <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
         <a class="btn primary" href="events.html">Explore Events</a>
-        <a class="btn" href="favourites.html">
-          Favourites <span class="badge" data-fav-count style="display:none">0</span>
-        </a>
+        <a class="btn" href="favourites.html">Favourites <span class="badge" data-fav-count style="display:none">0</span></a>
         <a class="btn" href="organisers.html">For Organisers</a>
       </div>
     </div>
@@ -37,11 +35,11 @@
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v14</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <script src="favs.js?v=13"></script>
+  <script src="favs.js?v=14"></script>
   <script>
     const EVENTS = [
       { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",    time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
@@ -59,25 +57,28 @@
         return `
           <article class="card">
             <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-              <div class="thumb"><span class="badge">${ev.city} • ${ev.dateLabel}</span> 🎫 ${ev.category}</div>
+              <div class="thumb">
+                <span class="badge">${ev.city || ""} • ${ev.dateLabel || ""}</span>
+                🎫 ${ev.category || ""}
+              </div>
               <div class="content">
                 <h3>${ev.title}</h3>
-                <p class="meta">${ev.venue}${ev.time ? ' • '+ev.time : ''}</p>
-                <div class="row"><span class="chip">${ev.price || 'Free'}</span><span class="muted">Details →</span></div>
+                <p class="meta">${ev.venue || ""}${ev.time ? " • " + ev.time : ""}</p>
+                <div class="row"><span class="chip">${ev.price || "Free"}</span><span class="muted">Details →</span></div>
               </div>
             </a>
-            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id) ? 'true':'false'}" title="Save">${heart}</button>
+            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id) ? "true":"false"}" title="Save">${heart}</button>
           </article>
         `;
       }).join('');
 
       homeGrid.querySelectorAll('button[data-fav]').forEach(btn=>{
-        btn.addEventListener('click', (e)=>{
+        btn.addEventListener('click',(e)=>{
           e.preventDefault(); e.stopPropagation();
           const id = btn.getAttribute('data-fav');
           const now = Favs.toggle(id);
-          btn.setAttribute('aria-pressed', now ? 'true':'false');
-          btn.textContent = now ? '♥':'♡';
+          btn.setAttribute('aria-pressed', now ? "true":"false");
+          btn.textContent = now ? "♥":"♡";
         });
       });
     }
