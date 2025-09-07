@@ -16,7 +16,11 @@
     }
     .fav-overlay[aria-pressed="true"]{ background:#1a232f; border-color:#3a425a }
     .fav-overlay:hover{ border-color:#3a425a }
-    .badge{ display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 6px; border-radius:999px; background:#23304a; color:#d9e6ff; font-size:12px; }
+    .badge{
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:22px; height:22px; padding:0 6px; border-radius:999px;
+      background:#23304a; color:#d9e6ff; font-size:12px; margin-left:6px;
+    }
   </style>
 </head>
 <body>
@@ -52,7 +56,7 @@
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <script src="favs.js"></script>
+  <script src="favs.js?v=3"></script>
   <script>
     const EVENTS = [
       { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",    time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
