@@ -1,41 +1,11 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Spondle — Event</title>
-
-  <!-- Inline CSS so this page never breaks styling -->
-  <style>
-    :root{--bg:#0e0f12;--panel:#151820;--muted:#a7b0c0;--text:#e8eef7;--brand:#6bf0a8;--brand-2:#8bc6ff;--card:#1c2130}
-    *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-    a{color:inherit;text-decoration:none}
-    header{position:sticky;top:0;background:rgba(14,15,18,.7);backdrop-filter:blur(8px);border-bottom:1px solid #212533}
-    .container{max-width:1100px;margin:0 auto;padding:0 20px}
-    .nav{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
-    .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:inline-block}
-    .actions{display:flex;gap:10px}
-    .btn{padding:10px 14px;border:1px solid #2a3042;border-radius:10px;background:#12151d;color:var(--text);cursor:pointer;font:inherit}
-    .btn:hover{border-color:#3a425a}
-    .btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#0b1020;border:0;font-weight:700}
-    .section{padding:24px 0}
-    .hero-card{background:var(--panel);border:1px solid #22283a;border-radius:16px;padding:18px}
-    .tagline{color:var(--muted);max-width:52ch}
-    .eyebrow{color:var(--brand);font-weight:700;font-size:.9rem;letter-spacing:.6px;text-transform:uppercase}
-    .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#2a3146,#1f2536);display:flex;align-items:center;justify-content:center;color:#cbd6ff;font-weight:700;position:relative;border-radius:14px;margin:14px 0;overflow:hidden}
-    .badge{position:absolute;margin:10px;padding:6px 10px;border-radius:999px;background:#111726;border:1px solid #2a3042;font-size:.8rem;backdrop-filter:blur(2px)}
-    .cta-row{margin-top:14px;display:flex;gap:12px;flex-wrap:wrap}
-    footer{margin-top:36px;border-top:1px solid #22283a}
-    .foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;padding:18px 0;color:var(--muted);font-size:.95rem}
-    /* Share bar */
-    .sharebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .share-icons{display:flex;gap:8px;align-items:center}
-    .share-icons .icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid #2a3042;border-radius:10px;background:#12151d;cursor:pointer}
-    .share-icons .icon:hover{border-color:#3a425a}
-    .sharebar .share-native{padding:8px 12px}
-    .share-toast{color:var(--brand);font-size:.95rem}
-  </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spondle – Event Details</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
   <header>
@@ -43,116 +13,154 @@
       <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
         <a class="btn" href="events.html">Explore Events</a>
-        <a class="btn primary" href="organisers.html">For Organisers</a>
+        <a class="btn" href="favourites.html">Favourites <span class="badge" data-fav-count style="display:none">0</span></a>
+        <a class="btn" href="organisers.html">For Organisers</a>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <section class="section" id="event-section" aria-live="polite"></section>
+    <!-- Event Header -->
+    <section class="section">
+      <a href="javascript:history.back()" class="muted">← Back</a>
+      <h1 id="title" style="margin-top:8px">Event</h1>
+      <p id="meta" class="tagline">Loading details…</p>
+    </section>
+
+    <!-- Event Content -->
+    <section class="section hero-card" id="content">
+      <div class="grid" style="grid-template-columns: 1.5fr 1fr;">
+        <!-- Left: details -->
+        <div id="details">
+          <div class="thumb" style="height:220px; display:flex; align-items:flex-end; padding:12px;">
+            <span class="badge" id="badge">City • Date</span>
+            <span style="margin-left:8px">🎫 <span id="category">Category</span></span>
+          </div>
+
+          <div class="content">
+            <h3 style="margin-bottom:6px">About this event</h3>
+            <p id="desc" class="meta">
+              This is a placeholder description. When organisers add a description,
+              it will appear here with full details like running order, age limits,
+              accessibility, and more.
+            </p>
+
+            <div class="row" style="margin-top:14px">
+              <span class="chip" id="price">Free</span>
+              <span class="muted" id="time">19:30–22:30</span>
+              <span class="muted" id="venue">The Venue</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: actions -->
+        <aside>
+          <div class="hero-card" style="display:grid; gap:10px">
+            <button id="favBtn" class="btn" aria-pressed="false" title="Save to favourites">♡ Save</button>
+            <button id="shareBtn" class="btn">Share</button>
+            <button id="calendarBtn" class="btn" title="Coming soon">Add to Calendar (soon)</button>
+            <button id="ticketsBtn" class="btn primary" title="Coming soon">Get Tickets (soon)</button>
+          </div>
+
+          <div class="hero-card" style="margin-top:14px">
+            <h3 style="margin-bottom:8px">Venue</h3>
+            <p class="meta" id="venueBlock">The Venue</p>
+          </div>
+        </aside>
+      </div>
+    </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v16</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <!-- Auth for favourites -->
-  <script src="auth.js"></script>
-
+  <script src="favs.js?v=16"></script>
   <script>
-    // ------- Dummy events (sample-*) -------
-    const FALLBACK = {
-      "sample-1": {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol", dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"🎵 Live Music", address:"Wapping Rd, Bristol", postcode:"BS1 6UA", description:"An intimate evening of live indie and alt performances on the harbourside."},
-      "sample-2": {id:"sample-2", title:"Friday Night Laughs", city:"Manchester", dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12", category:"🎭 Comedy", address:"Oldham St, Manchester", postcode:"M1 1JQ", description:"A fast-paced showcase of up-and-coming comedians and surprise headliners."},
-      "sample-3": {id:"sample-3", title:"Riverside Street Food", city:"Cardiff", dateLabel:"15 Sep", venue:"Market Square", time:"11:00–17:00", price:"Family", category:"🏞 Community", address:"Market Rd, Cardiff", postcode:"CF5 1QE", description:"Local vendors, global flavours. Family-friendly with live acoustic sets."},
-      "sample-4": {id:"sample-4", title:"Craft Beer Festival", city:"Leeds", dateLabel:"18 Sep", venue:"City Brewery Hall", time:"12:00–23:00", price:"£20", category:"🍺 Food & Drink", address:"Brewery Lane, Leeds", postcode:"LS1 2XY", description:"Explore over 100 craft beers from top UK breweries, plus live music and street food."},
-      "sample-5": {id:"sample-5", title:"Vintage Vinyl Market", city:"London", dateLabel:"20 Sep", venue:"Camden Market", time:"10:00–18:00", price:"Free Entry", category:"💿 Market", address:"Camden High St, London", postcode:"NW1 8NH", description:"A vinyl lover's paradise: stalls of records, collectibles, and retro gear."},
-      "sample-6": {id:"sample-6", title:"Outdoor Cinema Night", city:"Brighton", dateLabel:"22 Sep", venue:"Brighton Seafront", time:"20:30–23:00", price:"£10", category:"🎬 Film", address:"Brighton Seafront", postcode:"BN1 1EE", description:"Watch cult classics under the stars with food trucks and cosy blankets."},
-      "sample-7": {id:"sample-7", title:"Tech Meetup & Networking", city:"Birmingham", dateLabel:"25 Sep", venue:"TechHub Central", time:"18:00–21:00", price:"Free", category:"💻 Networking", address:"Innovation Way, Birmingham", postcode:"B1 1AA", description:"Connect with local developers, startups, and tech leaders. Talks + free pizza."},
-      "sample-8": {id:"sample-8", title:"Charity Fun Run", city:"Glasgow", dateLabel:"27 Sep", venue:"Kelvingrove Park", time:"09:00–12:00", price:"£15 Donation", category:"🏃‍♂️ Sports", address:"Kelvingrove Park, Glasgow", postcode:"G3 7LH", description:"5K charity fun run through Glasgow’s scenic park. All ages welcome."},
-      "sample-9": {id:"sample-9", title:"Open Mic Poetry Night", city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar", time:"19:00–22:00", price:"Free Entry", category:"📖 Arts & Culture", address:"Hope St, Liverpool", postcode:"L1 9BX", description:"Celebrate spoken word and poetry with local talent. Sign up slots available."}
-    };
+    // --- Sample data (same IDs as other pages) ---
+    const EVENTS = [
+      { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",    time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
+      { id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12",          category:"Comedy" },
+      { id:"sample-3", title:"Riverside Street Food",     city:"Cardiff",   dateLabel:"15 Sep", venue:"Market Square",    time:"11:00–17:00", price:"Family",       category:"Community" },
+      { id:"sample-4", title:"Craft Beer Festival",       city:"Leeds",     dateLabel:"18 Sep", venue:"City Brewery Hall",time:"12:00–23:00", price:"£20",          category:"Food & Drink" },
+      { id:"sample-5", title:"Vintage Vinyl Market",      city:"London",    dateLabel:"20 Sep", venue:"Camden Market",    time:"10:00–18:00", price:"Free Entry",   category:"Market" },
+      { id:"sample-6", title:"Outdoor Cinema Night",      city:"Brighton",  dateLabel:"22 Sep", venue:"Brighton Seafront",time:"20:30–23:00", price:"£10",          category:"Film" },
+      { id:"sample-7", title:"Tech Meetup & Networking",  city:"Birmingham",dateLabel:"25 Sep", venue:"TechHub Central",  time:"18:00–21:00", price:"Free",         category:"Networking" },
+      { id:"sample-8", title:"Charity Fun Run",           city:"Glasgow",   dateLabel:"27 Sep", venue:"Kelvingrove Park", time:"09:00–12:00", price:"£15 Donation", category:"Sports" },
+      { id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar",    time:"19:00–22:00", price:"Free Entry",   category:"Arts & Culture" },
+    ];
+    const mapById = Object.fromEntries(EVENTS.map(e => [e.id, e]));
 
-    const section = document.getElementById("event-section");
-    const params = new URLSearchParams(location.search);
-    const id = params.get("id");
-    const data = FALLBACK[id];
+    // --- Helpers ---
+    function getParam(name){
+      const url = new URL(location.href);
+      return url.searchParams.get(name);
+    }
 
-    if (!data) {
-      section.innerHTML = `<p class="tagline">Sorry, we couldn’t find that event.</p>
-                           <a class="btn" href="events.html">Back to events</a>`;
-    } else {
-      section.innerHTML = `
-        <div class="hero-card">
-          <div class="eyebrow">${data.city}${data.dateLabel ? ' • '+data.dateLabel : ''}</div>
-          <h1 style="margin:.2em 0 .4em">${data.title}</h1>
-          <p class="tagline">${data.category || ''}</p>
-        </div>
+    function setText(id, value){
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || "";
+    }
 
-        <div class="thumb">
-          <span class="badge">${data.city}${data.dateLabel ? ' • '+data.dateLabel : ''}</span>${data.category || ''}
-        </div>
+    // --- Render ---
+    const id = getParam("id");
+    const ev = mapById[id];
 
-        <div class="hero-card" id="details-card">
-          <strong>Details</strong>
-          <ul style="margin:10px 0 0 20px">
-            ${row('Venue', data.venue)}
-            ${row('Time', data.time)}
-            ${row('Price', data.price)}
-            ${row('Address', (data.address||'') + (data.postcode ? ', '+data.postcode : ''))}
-          </ul>
-          <p style="margin:12px 0 0">${data.description || ''}</p>
+    (function render(){
+      if (!ev) {
+        document.getElementById("title").textContent = "Event not found";
+        document.getElementById("meta").textContent = "This event may have been removed.";
+        document.getElementById("content").style.display = "none";
+        return;
+      }
 
-          <div class="cta-row">
-            <button class="btn" id="favBtn" aria-label="Save to favourites">♡ Save</button>
-            ${data.postcode ? `<a class="btn" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.postcode)}">Get directions</a>` : ''}
-            <a class="btn" href="events.html">Back to events</a>
-          </div>
-
-          <div id="share-mount"></div>
-        </div>
-      `;
+      document.getElementById("title").textContent = ev.title;
+      document.getElementById("meta").textContent = `${ev.city} • ${ev.dateLabel} • ${ev.category}`;
+      setText("category", ev.category);
+      setText("price", ev.price || "Free");
+      setText("time", ev.time || "");
+      setText("venue", ev.venue || "");
+      setText("venueBlock", ev.venue || "");
+      setText("badge", `${ev.city || ""} • ${ev.dateLabel || ""}`);
 
       // Favourite button
-      const favBtn = document.getElementById('favBtn');
-      const updateFav = ()=> favBtn.textContent = (window.SpondleAuth?.isFavourite?.(data.id) ? '♥ Saved' : '♡ Save');
-      updateFav();
-      favBtn.addEventListener('click', ()=>{
-        const u = window.SpondleAuth?.currentUser?.();
-        if (!u) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
-        window.SpondleAuth.toggleFavourite(data.id);
-        updateFav();
+      const favBtn = document.getElementById("favBtn");
+      const favNow = Favs.has(ev.id);
+      favBtn.setAttribute("aria-pressed", favNow ? "true" : "false");
+      favBtn.textContent = favNow ? "♥ Saved" : "♡ Save";
+      favBtn.addEventListener("click", ()=>{
+        const now = Favs.toggle(ev.id);
+        favBtn.setAttribute("aria-pressed", now ? "true" : "false");
+        favBtn.textContent = now ? "♥ Saved" : "♡ Save";
       });
 
-      // Inline share bar
-      const shareMount = document.getElementById('share-mount');
-      const eventUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(data.id)}`;
-      shareMount.appendChild(makeShareBar({ title: data.title, url: eventUrl }));
-    }
-
-    function row(label, val){ return val ? `<li><b>${label}:</b> ${val}</li>` : ''; }
-
-    function makeShareBar({ title, url }) {
-      const bar = document.createElement('div'); bar.className='sharebar';
-      const nativeBtn = document.createElement('button'); nativeBtn.className='btn share-native'; nativeBtn.textContent='📲 Share';
-      nativeBtn.addEventListener('click', async () => {
-        if (navigator.share) { try { await navigator.share({ title, text:title, url }); } catch {} }
-        else { try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch {} }
+      // Share button
+      const shareBtn = document.getElementById("shareBtn");
+      shareBtn.addEventListener("click", async ()=>{
+        const shareData = {
+          title: ev.title,
+          text: `${ev.title} — ${ev.venue || ""} • ${ev.city || ""} • ${ev.dateLabel || ""}`,
+          url: location.href
+        };
+        if (navigator.share) {
+          try { await navigator.share(shareData); } catch(e){}
+        } else {
+          // Fallback: mailto
+          const subj = encodeURIComponent(`Check this out: ${ev.title}`);
+          const body = encodeURIComponent(`${shareData.text}\n\n${location.href}`);
+          location.href = `mailto:?subject=${subj}&body=${body}`;
+        }
       });
-      const icons = document.createElement('div'); icons.className='share-icons';
-      icons.innerHTML = `
-        <a class="icon" href="https://wa.me/?text=${encodeURIComponent(title)}%20${encodeURIComponent(url)}" target="_blank" rel="noopener" title="WhatsApp">🟢</a>
-        <a class="icon" href="https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}" target="_blank" rel="noopener" title="X (Twitter)">✖️</a>
-        <a class="icon" href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}" target="_blank" rel="noopener" title="Facebook">📘</a>
-        <a class="icon" href="mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(title)}%0A${encodeURIComponent(url)}" title="Email">✉️</a>
-        <button class="icon" id="copyLink" title="Copy link">🔗</button>
-      `;
-      const toastEl = document.createElement('span'); toastEl.className='share-toast'; toastEl.hidden=true; toastEl.textContent='Link copied';
-      icons.querySelector('#copyLink').addEventListener('click', async ()=>{ try{ await navigator.clipboard.writeText(url); toast('Link copied'); }catch{} });
-      bar.appendChild(nativeBtn); bar.appendChild(icons); bar.appendChild(toastEl); return bar;
-      function toast(msg){ toastEl.textContent=msg; toastEl.hidden=false; setTimeout(()=>toastEl.hidden=true,1200); }
-    }
+
+      // Placeholder buttons
+      document.getElementById("calendarBtn").addEventListener("click", ()=>{
+        alert("Add to Calendar is coming soon. We’ll support Google, Apple, and Outlook.");
+      });
+      document.getElementById("ticketsBtn").addEventListener("click", ()=>{
+        alert("Ticket purchasing is coming soon. Stay tuned!");
+      });
+    })();
   </script>
 </body>
 </html>
