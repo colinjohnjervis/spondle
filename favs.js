@@ -1,4 +1,3 @@
-// Simple favourites via localStorage, shared across pages
 (function(){
   const KEY = "spondle:favs";
   function getSet(){ try{ return new Set(JSON.parse(localStorage.getItem(KEY)||"[]")); }catch(e){ return new Set(); } }
