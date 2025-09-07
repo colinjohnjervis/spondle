@@ -3,34 +3,17 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Spondle — Events (DEBUG)</title>
+  <title>Spondle — Events (DEBUG v4)</title>
   <link rel="stylesheet" href="styles.css"/>
-
-  <!-- DEBUG banner styles -->
   <style>
-    #debug-banner{
-      position:fixed; inset:auto 0 0 0; z-index:9999;
-      background:#ff2d55; color:#0b1020; text-align:center;
-      padding:6px 10px; font-weight:800; letter-spacing:.3px
-    }
-    .card{ position:relative }
-    .thumb{ position:relative }
-    .fav-overlay{
-      position:absolute; top:10px; right:10px; z-index:50;
-      display:inline-flex; align-items:center; justify-content:center;
-      width:40px; height:40px; border:1px solid #2a3042; border-radius:999px;
-      background:#0f131c; color:#e8eef7; cursor:pointer;
-      box-shadow:0 4px 12px rgba(0,0,0,.35)
-    }
-    .fav-overlay:hover{ border-color:#3a425a }
-    .fav-overlay[aria-pressed="true"]{ background:#1a232f; border-color:#3a425a }
+    /* Loud debug banner */
+    #debug-v4{background:#ffd54a;color:#1b1b1b;padding:8px 12px;font-weight:800;letter-spacing:.3px;text-align:center}
   </style>
 </head>
 <body>
-  <!-- DEBUG banner -->
-  <div id="debug-banner">DEBUG BUILD • events.html v3 • If you can’t see this, the new file isn’t deployed/cached</div>
+  <div id="debug-v4">DEBUG v4 • If you can’t see this banner, the new events.html isn’t being served</div>
 
-  <header style="margin-top:34px">
+  <header>
     <div class="container nav">
       <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
@@ -46,15 +29,21 @@
       <p class="tagline">Use the search and filters to narrow things down. (Prototype — client-side only)</p>
     </section>
 
-    <!-- Filter & Sort bar (unchanged) -->
+    <!-- Filter & Sort bar -->
     <section class="section hero-card" style="display:grid;gap:10px">
       <div style="display:grid;gap:10px">
         <input class="input" id="q" placeholder="Search title, venue, city…"/>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
           <select class="input" id="category">
             <option value="">All categories</option>
-            <option>Live Music</option><option>Comedy</option><option>Food & Drink</option><option>Film</option>
-            <option>Community</option><option>Networking</option><option>Sports</option><option>Arts & Culture</option>
+            <option>Live Music</option>
+            <option>Comedy</option>
+            <option>Food & Drink</option>
+            <option>Film</option>
+            <option>Community</option>
+            <option>Networking</option>
+            <option>Sports</option>
+            <option>Arts & Culture</option>
           </select>
           <select class="input" id="city">
             <option value="">All cities</option>
@@ -62,7 +51,9 @@
             <option>London</option><option>Brighton</option><option>Birmingham</option><option>Glasgow</option><option>Liverpool</option>
           </select>
           <select class="input" id="price">
-            <option value="">Any price</option><option value="free">Free</option><option value="paid">Paid</option>
+            <option value="">Any price</option>
+            <option value="free">Free</option>
+            <option value="paid">Paid</option>
           </select>
           <input class="input" id="postcode" placeholder="Postcode (future)" />
           <select class="input" id="radius">
@@ -77,6 +68,7 @@
           <button class="btn" id="reset">Reset</button>
           <span id="count" class="muted"></span>
         </div>
+
         <div class="cta-row">
           <label for="sort" class="muted" style="align-self:center">Sort:</label>
           <select class="input" id="sort" style="width:200px">
@@ -101,20 +93,22 @@
     <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
   </footer>
 
-  <script>document.getElementById('y').textContent = new Date().getFullYear(); console.log('DEBUG events.html v3 loaded');</script>
+  <script>document.getElementById('y').textContent = new Date().getFullYear(); console.log('DEBUG v4 loaded');</script>
+  <!-- Load auth if present (heart will still render even if this fails) -->
   <script src="auth.js"></script>
+
   <script>
-    // Data
+    // --- Data ---
     const EVENTS = [
-      {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"Live Music"},
-      {id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12", category:"Comedy"},
-      {id:"sample-3", title:"Riverside Street Food",     city:"Cardiff",   dateLabel:"15 Sep", venue:"Market Square", time:"11:00–17:00", price:"Family", category:"Community"},
-      {id:"sample-4", title:"Craft Beer Festival",       city:"Leeds",     dateLabel:"18 Sep", venue:"City Brewery Hall", time:"12:00–23:00", price:"£20", category:"Food & Drink"},
-      {id:"sample-5", title:"Vintage Vinyl Market",      city:"London",    dateLabel:"20 Sep", venue:"Camden Market", time:"10:00–18:00", price:"Free Entry", category:"Market"},
-      {id:"sample-6", title:"Outdoor Cinema Night",      city:"Brighton",  dateLabel:"22 Sep", venue:"Brighton Seafront", time:"20:30–23:00", price:"£10", category:"Film"},
-      {id:"sample-7", title:"Tech Meetup & Networking",  city:"Birmingham",dateLabel:"25 Sep", venue:"TechHub Central", time:"18:00–21:00", price:"Free", category:"Networking"},
-      {id:"sample-8", title:"Charity Fun Run",           city:"Glasgow",   dateLabel:"27 Sep", venue:"Kelvingrove Park", time:"09:00–12:00", price:"£15 Donation", category:"Sports"},
-      {id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar", time:"19:00–22:00", price:"Free Entry", category:"Arts & Culture"},
+      {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",       time:"19:30–22:30", price:"Free Entry",    category:"Live Music"},
+      {id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter",     time:"20:00–22:00", price:"£12",            category:"Comedy"},
+      {id:"sample-3", title:"Riverside Street Food",     city:"Cardiff",   dateLabel:"15 Sep", venue:"Market Square",        time:"11:00–17:00", price:"Family",         category:"Community"},
+      {id:"sample-4", title:"Craft Beer Festival",       city:"Leeds",     dateLabel:"18 Sep", venue:"City Brewery Hall",    time:"12:00–23:00", price:"£20",            category:"Food & Drink"},
+      {id:"sample-5", title:"Vintage Vinyl Market",      city:"London",    dateLabel:"20 Sep", venue:"Camden Market",        time:"10:00–18:00", price:"Free Entry",     category:"Market"},
+      {id:"sample-6", title:"Outdoor Cinema Night",      city:"Brighton",  dateLabel:"22 Sep", venue:"Brighton Seafront",    time:"20:30–23:00", price:"£10",            category:"Film"},
+      {id:"sample-7", title:"Tech Meetup & Networking",  city:"Birmingham",dateLabel:"25 Sep", venue:"TechHub Central",      time:"18:00–21:00", price:"Free",           category:"Networking"},
+      {id:"sample-8", title:"Charity Fun Run",           city:"Glasgow",   dateLabel:"27 Sep", venue:"Kelvingrove Park",     time:"09:00–12:00", price:"£15 Donation",   category:"Sports"},
+      {id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar",        time:"19:00–22:00", price:"Free Entry",     category:"Arts & Culture"},
     ];
 
     const grid = document.getElementById('grid');
@@ -175,39 +169,44 @@
 
       grid.innerHTML = list.map(ev=>{
         const emoji = categoryEmoji(ev.category);
-        const isFav = !!window.SpondleAuth?.isFavourite?.(ev.id);
+        const isFav = !!(window.SpondleAuth && SpondleAuth.isFavourite && SpondleAuth.isFavourite(ev.id));
+        const heart = isFav ? '♥' : '♡';
         return `
           <article class="card">
             <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-              <div class="thumb">
-                <span class="badge">${ev.city || ''} • ${ev.dateLabel || ''}</span>${emoji} ${ev.category || ''}
-              </div>
+              <div class="thumb"><span class="badge">${ev.city || ''} • ${ev.dateLabel || ''}</span>${emoji} ${ev.category || ''}</div>
               <div class="content">
                 <h3>${ev.title}</h3>
                 <p class="meta">${ev.venue || ''}${ev.time ? ' • '+ev.time : ''}</p>
-                <div class="row"><span class="chip">${ev.price || 'Free'}</span><span class="muted">Details →</span></div>
+                <div class="row">
+                  <span class="chip">${ev.price || 'Free'}</span>
+                  <span class="muted">Details →</span>
+                </div>
+                <!-- Heart INSIDE card content so it’s always visible -->
+                <div class="cta-row" style="margin-top:10px">
+                  <button class="btn" data-fav="${ev.id}" aria-label="Save to favourites">${heart} Save</button>
+                </div>
               </div>
             </a>
-            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${isFav ? 'true' : 'false'}" aria-label="Save to favourites" title="Save">
-              ${isFav ? '♥' : '♡'}
-            </button>
           </article>
         `;
       }).join('');
 
-      // Hook up ♥
-      grid.querySelectorAll('button[data-fav]').forEach(btn=>{
-        btn.addEventListener('click', (e)=>{
-          e.preventDefault(); e.stopPropagation();
-          const id = btn.getAttribute('data-fav');
-          const user = window.SpondleAuth?.currentUser?.();
-          if(!user){ location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
-          SpondleAuth.toggleFavourite(id);
-          const now = SpondleAuth.isFavourite(id);
-          btn.setAttribute('aria-pressed', now ? 'true' : 'false');
-          btn.textContent = now ? '♥' : '♡';
+      // Wire hearts only if auth is present
+      if (window.SpondleAuth && SpondleAuth.toggleFavourite) {
+        grid.querySelectorAll('button[data-fav]').forEach(btn=>{
+          btn.addEventListener('click', (e)=>{
+            e.preventDefault(); e.stopPropagation();
+            const id = btn.getAttribute('data-fav');
+            const user = SpondleAuth.currentUser && SpondleAuth.currentUser();
+            if(!user){ location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+            SpondleAuth.toggleFavourite(id);
+            btn.textContent = (SpondleAuth.isFavourite(id) ? '♥' : '♡') + ' Save';
+          });
         });
-      });
+      } else {
+        console.warn('auth.js not loaded — heart buttons are visual only');
+      }
     }
 
     function categoryEmoji(cat=''){
