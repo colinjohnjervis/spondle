@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Spondle — Event</title>
 
-  <!-- Inline CSS just for this page to avoid any path issues -->
+  <!-- Inline CSS so this page never breaks styling -->
   <style>
     :root{--bg:#0e0f12;--panel:#151820;--muted:#a7b0c0;--text:#e8eef7;--brand:#6bf0a8;--brand-2:#8bc6ff;--card:#1c2130}
     *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
@@ -23,8 +23,8 @@
     .hero-card{background:var(--panel);border:1px solid #22283a;border-radius:16px;padding:18px}
     .tagline{color:var(--muted);max-width:52ch}
     .eyebrow{color:var(--brand);font-weight:700;font-size:.9rem;letter-spacing:.6px;text-transform:uppercase}
-    .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#2a3146,#1f2536);display:flex;align-items:center;justify-content:center;color:#cbd6ff;font-weight:700;position:relative;border-radius:14px;margin:14px 0}
-    .badge{position:absolute;margin:10px;padding:6px 10px;border-radius:999px;background:#111726;border:1px solid #2a3042;font-size:.8rem}
+    .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#2a3146,#1f2536);display:flex;align-items:center;justify-content:center;color:#cbd6ff;font-weight:700;position:relative;border-radius:14px;margin:14px 0;overflow:hidden}
+    .badge{position:absolute;margin:10px;padding:6px 10px;border-radius:999px;background:#111726;border:1px solid #2a3042;font-size:.8rem;backdrop-filter:blur(2px)}
     .cta-row{margin-top:14px;display:flex;gap:12px;flex-wrap:wrap}
     footer{margin-top:36px;border-top:1px solid #22283a}
     .foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;padding:18px 0;color:var(--muted);font-size:.95rem}
@@ -56,10 +56,12 @@
     <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
   </footer>
 
-  <script>
-    document.getElementById('y').textContent = new Date().getFullYear();
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <!-- Auth for favourites -->
+  <script src="auth.js"></script>
 
-    // ------- Dummy events (clearly marked sample-*) -------
+  <script>
+    // ------- Dummy events (sample-*) -------
     const FALLBACK = {
       "sample-1": {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol", dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"🎵 Live Music", address:"Wapping Rd, Bristol", postcode:"BS1 6UA", description:"An intimate evening of live indie and alt performances on the harbourside."},
       "sample-2": {id:"sample-2", title:"Friday Night Laughs", city:"Manchester", dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12", category:"🎭 Comedy", address:"Oldham St, Manchester", postcode:"M1 1JQ", description:"A fast-paced showcase of up-and-coming comedians and surprise headliners."},
@@ -72,10 +74,10 @@
       "sample-9": {id:"sample-9", title:"Open Mic Poetry Night", city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar", time:"19:00–22:00", price:"Free Entry", category:"📖 Arts & Culture", address:"Hope St, Liverpool", postcode:"L1 9BX", description:"Celebrate spoken word and poetry with local talent. Sign up slots available."}
     };
 
+    const section = document.getElementById("event-section");
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
     const data = FALLBACK[id];
-    const section = document.getElementById("event-section");
 
     if (!data) {
       section.innerHTML = `<p class="tagline">Sorry, we couldn’t find that event.</p>
@@ -101,15 +103,29 @@
             ${row('Address', (data.address||'') + (data.postcode ? ', '+data.postcode : ''))}
           </ul>
           <p style="margin:12px 0 0">${data.description || ''}</p>
+
           <div class="cta-row">
+            <button class="btn" id="favBtn" aria-label="Save to favourites">♡ Save</button>
             ${data.postcode ? `<a class="btn" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.postcode)}">Get directions</a>` : ''}
             <a class="btn" href="events.html">Back to events</a>
           </div>
+
           <div id="share-mount"></div>
         </div>
       `;
 
-      // Minimal inline Share bar (no external files)
+      // Favourite button
+      const favBtn = document.getElementById('favBtn');
+      const updateFav = ()=> favBtn.textContent = (window.SpondleAuth?.isFavourite?.(data.id) ? '♥ Saved' : '♡ Save');
+      updateFav();
+      favBtn.addEventListener('click', ()=>{
+        const u = window.SpondleAuth?.currentUser?.();
+        if (!u) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
+        window.SpondleAuth.toggleFavourite(data.id);
+        updateFav();
+      });
+
+      // Inline share bar
       const shareMount = document.getElementById('share-mount');
       const eventUrl = `${location.origin}${location.pathname}?id=${encodeURIComponent(data.id)}`;
       shareMount.appendChild(makeShareBar({ title: data.title, url: eventUrl }));
