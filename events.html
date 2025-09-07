@@ -6,11 +6,12 @@
   <title>Spondle — Events</title>
   <link rel="stylesheet" href="styles.css"/>
 
-  <!-- Small, local style to ensure the heart is always visible -->
+  <!-- Ensure heart is always visible -->
   <style>
+    .card { position: relative; }
     .thumb { position: relative; }
     .fav-overlay {
-      position: absolute; top: 10px; right: 10px;
+      position: absolute; top: 10px; right: 10px; z-index: 5;
       display: inline-flex; align-items: center; justify-content: center;
       width: 40px; height: 40px;
       border: 1px solid #2a3042; border-radius: 999px;
@@ -199,16 +200,12 @@
 
       grid.innerHTML = list.map(ev => {
         const emoji = categoryEmoji(ev.category);
-        const pressed = window.SpondleAuth?.isFavourite?.(ev.id) ? 'true' : 'false';
-        const label = pressed === 'true' ? '♥' : '♡';
+        const isFav = !!window.SpondleAuth?.isFavourite?.(ev.id);
         return `
           <article class="card">
             <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
               <div class="thumb">
                 <span class="badge">${ev.city || ''} • ${ev.dateLabel || ''}</span>${emoji} ${ev.category || ''}
-                <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${pressed}" aria-label="Save to favourites" title="Save">
-                  ${label}
-                </button>
               </div>
               <div class="content">
                 <h3>${ev.title}</h3>
@@ -216,11 +213,15 @@
                 <div class="row"><span class="chip">${ev.price || 'Free'}</span><span class="muted">Details →</span></div>
               </div>
             </a>
+            <!-- FAV outside the link so it can’t be covered -->
+            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${isFav ? 'true' : 'false'}" aria-label="Save to favourites" title="Save">
+              ${isFav ? '♥' : '♡'}
+            </button>
           </article>
         `;
       }).join('');
 
-      // Wire favourites buttons (stop link navigation)
+      // Wire favourites buttons
       grid.querySelectorAll('button[data-fav]').forEach(btn=>{
         btn.addEventListener('click', (e)=>{
           e.preventDefault();
@@ -229,9 +230,9 @@
           const user = window.SpondleAuth?.currentUser?.();
           if (!user) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
           SpondleAuth.toggleFavourite(id);
-          const isNow = SpondleAuth.isFavourite(id);
-          btn.setAttribute('aria-pressed', isNow ? 'true' : 'false');
-          btn.textContent = isNow ? '♥' : '♡';
+          const now = SpondleAuth.isFavourite(id);
+          btn.setAttribute('aria-pressed', now ? 'true' : 'false');
+          btn.textContent = now ? '♥' : '♡';
         });
       });
     }
