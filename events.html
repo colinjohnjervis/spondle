@@ -23,11 +23,11 @@
       <p class="tagline">Use the search and filters to narrow things down. (Prototype — client-side only)</p>
     </section>
 
-    <!-- Filter bar -->
+    <!-- Filter & Sort bar -->
     <section class="section hero-card" style="display:grid;gap:10px">
       <div style="display:grid;gap:10px">
         <input class="input" id="q" placeholder="Search title, venue, city…"/>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
           <select class="input" id="category">
             <option value="">All categories</option>
             <option>Live Music</option>
@@ -49,18 +49,34 @@
             <option value="free">Free</option>
             <option value="paid">Paid</option>
           </select>
-          <button class="btn" id="reset">Reset</button>
-        </div>
-
-        <!-- (Optional placeholders for future) -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <!-- Future fields (placeholders) -->
           <input class="input" id="postcode" placeholder="Postcode (future)" />
           <select class="input" id="radius">
             <option>5 miles</option><option>10 miles</option><option selected>25 miles</option><option>50 miles</option><option>Nationwide</option>
           </select>
         </div>
       </div>
-      <div class="cta-row"><button class="btn primary" id="apply">Apply filters</button><span id="count" class="muted"></span></div>
+
+      <div class="cta-row" style="align-items:center;justify-content:space-between">
+        <div class="cta-row">
+          <button class="btn primary" id="apply">Apply filters</button>
+          <button class="btn" id="reset">Reset</button>
+          <span id="count" class="muted"></span>
+        </div>
+
+        <!-- Sort dropdown -->
+        <div class="cta-row">
+          <label for="sort" class="muted" style="align-self:center">Sort:</label>
+          <select class="input" id="sort" style="width:200px">
+            <option value="">Relevance</option>
+            <option value="dateAsc">Date — soonest first</option>
+            <option value="priceAsc">Price — low to high</option>
+            <option value="priceDesc">Price — high to low</option>
+            <option value="titleAsc">Title — A to Z</option>
+            <option value="cityAsc">City — A to Z</option>
+          </select>
+        </div>
+      </div>
     </section>
 
     <section class="section">
@@ -76,17 +92,17 @@
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
 
-    // --- Sample data (same as event.html) ---
+    // --- Sample data (same IDs as event.html) ---
     const EVENTS = [
-      {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol", dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"Live Music"},
-      {id:"sample-2", title:"Friday Night Laughs", city:"Manchester", dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12", category:"Comedy"},
-      {id:"sample-3", title:"Riverside Street Food", city:"Cardiff", dateLabel:"15 Sep", venue:"Market Square", time:"11:00–17:00", price:"Family", category:"Community"},
-      {id:"sample-4", title:"Craft Beer Festival", city:"Leeds", dateLabel:"18 Sep", venue:"City Brewery Hall", time:"12:00–23:00", price:"£20", category:"Food & Drink"},
-      {id:"sample-5", title:"Vintage Vinyl Market", city:"London", dateLabel:"20 Sep", venue:"Camden Market", time:"10:00–18:00", price:"Free Entry", category:"Market"},
-      {id:"sample-6", title:"Outdoor Cinema Night", city:"Brighton", dateLabel:"22 Sep", venue:"Brighton Seafront", time:"20:30–23:00", price:"£10", category:"Film"},
-      {id:"sample-7", title:"Tech Meetup & Networking", city:"Birmingham", dateLabel:"25 Sep", venue:"TechHub Central", time:"18:00–21:00", price:"Free", category:"Networking"},
-      {id:"sample-8", title:"Charity Fun Run", city:"Glasgow", dateLabel:"27 Sep", venue:"Kelvingrove Park", time:"09:00–12:00", price:"£15 Donation", category:"Sports"},
-      {id:"sample-9", title:"Open Mic Poetry Night", city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar", time:"19:00–22:00", price:"Free Entry", category:"Arts & Culture"},
+      {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",       time:"19:30–22:30", price:"Free Entry",    category:"Live Music"},
+      {id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter",     time:"20:00–22:00", price:"£12",            category:"Comedy"},
+      {id:"sample-3", title:"Riverside Street Food",     city:"Cardiff",   dateLabel:"15 Sep", venue:"Market Square",        time:"11:00–17:00", price:"Family",         category:"Community"},
+      {id:"sample-4", title:"Craft Beer Festival",       city:"Leeds",     dateLabel:"18 Sep", venue:"City Brewery Hall",    time:"12:00–23:00", price:"£20",            category:"Food & Drink"},
+      {id:"sample-5", title:"Vintage Vinyl Market",      city:"London",    dateLabel:"20 Sep", venue:"Camden Market",        time:"10:00–18:00", price:"Free Entry",     category:"Market"},
+      {id:"sample-6", title:"Outdoor Cinema Night",      city:"Brighton",  dateLabel:"22 Sep", venue:"Brighton Seafront",    time:"20:30–23:00", price:"£10",            category:"Film"},
+      {id:"sample-7", title:"Tech Meetup & Networking",  city:"Birmingham",dateLabel:"25 Sep", venue:"TechHub Central",      time:"18:00–21:00", price:"Free",           category:"Networking"},
+      {id:"sample-8", title:"Charity Fun Run",           city:"Glasgow",   dateLabel:"27 Sep", venue:"Kelvingrove Park",     time:"09:00–12:00", price:"£15 Donation",   category:"Sports"},
+      {id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar",        time:"19:00–22:00", price:"Free Entry",     category:"Arts & Culture"},
     ];
 
     // --- Elements ---
@@ -95,7 +111,7 @@
     const empty = document.getElementById('empty');
     const $ = id => document.getElementById(id);
 
-    // Pre-fill from URL
+    // --- URL params → form prefill ---
     const url = new URL(location.href);
     const qp = Object.fromEntries(url.searchParams.entries());
     if (qp.q) $('q').value = qp.q;
@@ -104,13 +120,50 @@
     if (qp.price) $('price').value = qp.price;
     if (qp.postcode) $('postcode').value = qp.postcode;
     if (qp.radius) $('radius').value = qp.radius;
+    if (qp.sort) $('sort').value = qp.sort;
 
-    // Filtering logic
+    // --- Helpers: parsing & normalization ---
+    const CURRENT_YEAR = new Date().getFullYear();
+    const MONTHS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+
+    function parseDateLabel(label="") {
+      // expects formats like "12 Sep" → Date(CURRENT_YEAR, 8, 12)
+      const m = label.trim().toLowerCase().match(/^(\d{1,2})\s+([a-z]{3})/i);
+      if (!m) return null;
+      const d = parseInt(m[1], 10);
+      const mon = MONTHS.indexOf(m[2].slice(0,3).toLowerCase());
+      if (mon < 0) return null;
+      return new Date(CURRENT_YEAR, mon, d);
+    }
+
+    function parsePrice(p="") {
+      const s = String(p).toLowerCase();
+      if (s.includes("free")) return 0;
+      const match = s.match(/£\s*([\d]+(\.\d+)?)/);
+      if (match) return parseFloat(match[1]);
+      // Unknown / non-numeric prices go to the end when sorting ascending
+      return Number.POSITIVE_INFINITY;
+    }
+
+    // --- SORTS registry (extensible) ---
+    // Add new keys here later (e.g., 'distanceAsc') and a comparator.
+    const SORTS = {
+      "":            { label: "Relevance",       cmp: null }, // null means keep filtered order
+      "dateAsc":     { label: "Date — soonest",  cmp: (a,b)=> (parseDateLabel(a.dateLabel)?.getTime() ?? 9e15) - (parseDateLabel(b.dateLabel)?.getTime() ?? 9e15) },
+      "priceAsc":    { label: "Price — low→high",cmp: (a,b)=> parsePrice(a.price) - parsePrice(b.price) },
+      "priceDesc":   { label: "Price — high→low",cmp: (a,b)=> parsePrice(b.price) - parsePrice(a.price) },
+      "titleAsc":    { label: "Title — A→Z",     cmp: (a,b)=> (a.title||"").localeCompare(b.title||"") },
+      "cityAsc":     { label: "City — A→Z",      cmp: (a,b)=> (a.city||"").localeCompare(b.city||"") },
+      // "distanceAsc": { label: "Distance — near→far", cmp: (a,b)=> (a._distance||1e9) - (b._distance||1e9) } // future
+    };
+
+    // --- Filtering logic ---
     function applyFilters(){
       const q = $('q').value.trim().toLowerCase();
       const cat = $('category').value;
       const city = $('city').value;
       const price = $('price').value; // '', 'free', 'paid'
+      const sortKey = $('sort').value;
 
       let list = EVENTS.slice();
 
@@ -129,6 +182,10 @@
       } else if (price === 'paid') {
         list = list.filter(e => !((e.price||'').toLowerCase().includes('free')));
       }
+
+      // Apply sort if comparator exists
+      const entry = SORTS[sortKey] || SORTS[""];
+      if (entry.cmp) list = list.slice().sort(entry.cmp);
 
       render(list);
       updateURL();
@@ -173,7 +230,7 @@
       if (c.includes('arts')) return '📖';
       if (c.includes('market')) return '🛍️';
       return '🎫';
-      }
+    }
 
     function updateURL(){
       const params = new URLSearchParams();
@@ -183,15 +240,21 @@
       const price = $('price').value; if (price) params.set('price', price);
       const postcode = $('postcode').value.trim(); if (postcode) params.set('postcode', postcode);
       const radius = $('radius').value; if (radius) params.set('radius', radius);
+      const sortKey = $('sort').value; if (sortKey) params.set('sort', sortKey);
       const newURL = location.pathname + (params.toString() ? `?${params}` : '');
       history.replaceState(null, '', newURL);
     }
 
+    // Events
     $('apply').addEventListener('click', applyFilters);
     $('reset').addEventListener('click', () => {
-      ['q','category','city','price','postcode','radius'].forEach(id => { const el = $(id); if (el.tagName==='SELECT') el.selectedIndex = 0; else el.value=''; });
+      ['q','category','city','price','postcode','radius','sort'].forEach(id => {
+        const el = $(id);
+        if (el.tagName==='SELECT') el.selectedIndex = 0; else el.value='';
+      });
       applyFilters();
     });
+    $('sort').addEventListener('change', applyFilters);
 
     // Initial render with any pre-filled params
     applyFilters();
