@@ -4,24 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Spondle — Find events near you</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <style>
-    .card{ position:relative; }
-    .fav-overlay{
-      position:absolute; top:10px; right:10px; z-index:5;
-      display:inline-flex; align-items:center; justify-content:center;
-      width:40px; height:40px; border-radius:999px;
-      border:1px solid #2a3042; background:#0f131c; color:#e8eef7; cursor:pointer;
-      box-shadow:0 4px 12px rgba(0,0,0,.35); font-size:18px;
-    }
-    .fav-overlay[aria-pressed="true"]{ background:#1a232f; border-color:#3a425a }
-    .fav-overlay:hover{ border-color:#3a425a }
-    .badge{
-      display:inline-flex; align-items:center; justify-content:center;
-      min-width:22px; height:22px; padding:0 6px; border-radius:999px;
-      background:#23304a; color:#d9e6ff; font-size:12px; margin-left:6px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css?v=10"/>
 </head>
 <body>
   <header>
@@ -29,7 +12,9 @@
       <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
         <a class="btn primary" href="events.html">Explore Events</a>
-        <a class="btn" href="favourites.html">Favourites <span class="badge" data-fav-count style="display:none">0</span></a>
+        <a class="btn" href="favourites.html">
+          Favourites <span class="badge" data-fav-count style="display:none">0</span>
+        </a>
         <a class="btn" href="organisers.html">For Organisers</a>
       </div>
     </div>
