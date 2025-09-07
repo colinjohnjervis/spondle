@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Spondle — Create account</title>
+<link rel="stylesheet" href="styles.css"/>
+</head><body>
+<header>
+  <div class="container nav">
+    <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
+    <div class="actions">
+      <a class="btn" href="events.html">Explore Events</a>
+      <a class="btn primary" href="login.html">Sign in</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="section hero-card" style="max-width:520px;margin:32px auto">
+    <h1>Create your account</h1>
+    <div style="display:grid;gap:10px;margin-top:12px">
+      <input class="input" id="name" placeholder="Name (optional)"/>
+      <input class="input" id="email" placeholder="Email"/>
+      <input class="input" id="password" placeholder="Password" type="password"/>
+      <button class="btn primary" id="go">Create account</button>
+      <p class="muted">Already have an account? <a href="login.html">Sign in</a>.</p>
+      <p class="muted" id="msg" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+
+<footer><div class="container foot"><div>© <span id="y"></span> Spondle</div></div></footer>
+<script>document.getElementById('y').textContent=new Date().getFullYear();</script>
+<script src="auth.js"></script>
+<script>
+  const msg = document.getElementById('msg');
+  document.getElementById('go').addEventListener('click', ()=>{
+    msg.textContent='';
+    try {
+      SpondleAuth.signup({ name: val('name'), email: val('email'), password: val('password') });
+      const redirect = new URLSearchParams(location.search).get('next') || 'events.html';
+      location.href = redirect;
+    } catch(e){ msg.textContent = e.message; }
+  });
+  function val(id){ return document.getElementById(id).value.trim(); }
+</script>
+</body></html>
