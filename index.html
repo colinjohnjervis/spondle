@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Spondle — Find events near you</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <link rel="stylesheet" href="styles.css?v=16">
+  <link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body>
   <header>
@@ -36,7 +36,7 @@
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v16</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v17</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
@@ -62,7 +62,7 @@
               <div class="content">
                 <h3>${ev.title}</h3>
                 <p class="meta">${ev.venue || ""}${ev.time ? " • " + ev.time : ""}</p>
-                <div class="row"><span class="chip">${ev.price || "Free"}</span><span class="muted">Details →</span></div>
+                <div class="row"><span class="chip">${ev.price || "Free"}</span></div>
               </div>
             </a>
             <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id) ? "true":"false"}" title="Save">${heart}</button>
