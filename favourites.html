@@ -4,17 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Spondle – My Favourites</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <style>
-    .empty { text-align:center; padding:40px 0; color:#9fb0c8; }
-    .card { position: relative; }
-    .unfave { position:absolute; top:10px; right:10px; }
-    .badge{
-      display:inline-flex; align-items:center; justify-content:center;
-      min-width:22px; height:22px; padding:0 6px; border-radius:999px;
-      background:#23304a; color:#d9e6ff; font-size:12px; margin-left:6px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css?v=14"/>
 </head>
 <body>
   <header>
@@ -31,21 +21,21 @@
   <main class="container">
     <section class="section">
       <h1>My Favourites</h1>
-      <p class="tagline">Events you’ve saved. These are stored on this device for now.</p>
+      <p class="tagline">Events you’ve saved. Stored on this device for now.</p>
     </section>
 
     <section class="section">
       <div class="grid" id="grid"></div>
-      <div id="empty" class="empty" style="display:none">You haven’t saved anything yet. <a href="events.html">Find events</a>.</div>
+      <p id="empty" class="tagline" style="display:none">You haven’t saved anything yet. <a href="events.html">Find events</a>.</p>
     </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v14</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <script src="favs.js?v=3"></script>
+  <script src="favs.js?v=14"></script>
   <script>
     const EVENTS = [
       { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",    time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
@@ -58,46 +48,39 @@
       { id:"sample-8", title:"Charity Fun Run",           city:"Glasgow",   dateLabel:"27 Sep", venue:"Kelvingrove Park", time:"09:00–12:00", price:"£15 Donation", category:"Sports" },
       { id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar",    time:"19:00–22:00", price:"Free Entry",   category:"Arts & Culture" },
     ];
-    const mapById = Object.fromEntries(EVENTS.map(e=>[e.id, e]));
-
+    const mapById = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
     const grid = document.getElementById('grid');
     const empty = document.getElementById('empty');
 
     function render(){
       const favIds = Favs.all();
-      if (!favIds.length){
-        grid.innerHTML = '';
-        empty.style.display = 'block';
-        return;
-      }
-      empty.style.display = 'none';
+      if(!favIds.length){ grid.innerHTML=""; empty.style.display="block"; return; }
+      empty.style.display="none";
       grid.innerHTML = favIds.map(id=>{
-        const ev = mapById[id];
-        if (!ev) return '';
+        const ev = mapById[id]; if(!ev) return '';
         return `
           <article class="card">
             <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-              <div class="thumb"><span class="badge">${ev.city} • ${ev.dateLabel}</span> 🎫 ${ev.category}</div>
+              <div class="thumb"><span class="badge">${ev.city || ""} • ${ev.dateLabel || ""}</span> 🎫 ${ev.category || ""}</div>
               <div class="content">
                 <h3>${ev.title}</h3>
-                <p class="meta">${ev.venue}${ev.time ? ' • '+ev.time : ''}</p>
-                <div class="row"><span class="chip">${ev.price || 'Free'}</span><span class="muted">Details →</span></div>
+                <p class="meta">${ev.venue || ""}${ev.time ? " • " + ev.time : ""}</p>
+                <div class="row"><span class="chip">${ev.price || "Free"}</span><span class="muted">Details →</span></div>
               </div>
             </a>
-            <button class="btn unfave" data-unfave="${ev.id}">Remove</button>
+            <button class="btn" data-unfave="${ev.id}" style="position:absolute;top:10px;right:10px">Remove</button>
           </article>
         `;
       }).join('');
 
       grid.querySelectorAll('[data-unfave]').forEach(btn=>{
-        btn.addEventListener('click', (e)=>{
+        btn.addEventListener('click',e=>{
           e.preventDefault(); e.stopPropagation();
           Favs.remove(btn.getAttribute('data-unfave'));
           render();
         });
       });
     }
-
     render();
   </script>
 </body>
