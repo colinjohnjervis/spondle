@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Spondle – Events</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css"/>
   <style>
-    /* Make the heart always visible */
-    .card { position: relative; }
+    .card{ position:relative; }
     .fav-overlay{
-      position: absolute; top: 10px; right: 10px; z-index: 5;
-      display:inline-flex;align-items:center;justify-content:center;
-      width:40px;height:40px;border-radius:999px;
-      border:1px solid #2a3042;background:#0f131c;color:#e8eef7;cursor:pointer;
-      box-shadow:0 4px 12px rgba(0,0,0,.35); font-size:18px; line-height:1;
+      position:absolute; top:10px; right:10px; z-index:5;
+      display:inline-flex; align-items:center; justify-content:center;
+      width:40px; height:40px; border-radius:999px;
+      border:1px solid #2a3042; background:#0f131c; color:#e8eef7; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.35); font-size:18px;
     }
     .fav-overlay[aria-pressed="true"]{ background:#1a232f; border-color:#3a425a }
     .fav-overlay:hover{ border-color:#3a425a }
+    .badge{ display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 6px; border-radius:999px; background:#23304a; color:#d9e6ff; font-size:12px; }
   </style>
 </head>
 <body>
   <header>
     <div class="container nav">
-      <div class="brand">
-        <span class="logo"></span>
-        <a href="index.html">Spondle</a>
-      </div>
+      <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
         <a class="btn primary" href="events.html">Explore Events</a>
+        <a class="btn" href="favourites.html">Favourites <span class="badge" data-fav-count style="display:none">0</span></a>
         <a class="btn" href="organisers.html">For Organisers</a>
       </div>
     </div>
@@ -39,10 +37,9 @@
       <p class="tagline">Use search and filters to find events you’ll love.</p>
     </section>
 
-    <!-- Filters -->
     <section class="section hero-card" style="display:grid;gap:10px">
       <div style="display:grid;gap:10px">
-        <input class="input" id="q" placeholder="Search title, venue, city…" />
+        <input class="input" id="q" placeholder="Search title, venue, city…"/>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
           <select class="input" id="category">
             <option value="">All categories</option>
@@ -57,7 +54,7 @@
           <select class="input" id="price">
             <option value="">Any price</option><option value="free">Free</option><option value="paid">Paid</option>
           </select>
-          <input class="input" id="postcode" placeholder="Postcode (future)" />
+          <input class="input" id="postcode" placeholder="Postcode (future)"/>
           <select class="input" id="radius">
             <option>5 miles</option><option>10 miles</option><option selected>25 miles</option><option>50 miles</option><option>Nationwide</option>
           </select>
@@ -84,7 +81,6 @@
       </div>
     </section>
 
-    <!-- Events Grid -->
     <section class="section">
       <div class="grid" id="grid"></div>
       <p id="empty" class="tagline" style="display:none">No events match your filters. Try clearing them.</p>
@@ -92,15 +88,12 @@
   </main>
 
   <footer>
-    <div class="container foot">
-      <div>© <span id="y"></span> Spondle</div>
-    </div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle</div></div>
   </footer>
 
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <script src="favs.js"></script>
   <script>
-    document.getElementById("y").textContent = new Date().getFullYear();
-
-    // --- Dummy events ---
     const EVENTS = [
       { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",    time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
       { id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12",          category:"Comedy" },
@@ -113,17 +106,10 @@
       { id:"sample-9", title:"Open Mic Poetry Night",     city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar",    time:"19:00–22:00", price:"Free Entry",   category:"Arts & Culture" },
     ];
 
-    // --- Simple favourites using localStorage (no auth required) ---
-    const FAV_KEY = "spondle:favs";
-    const getFavs = () => new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]"));
-    const setFavs = (set) => localStorage.setItem(FAV_KEY, JSON.stringify([...set]));
-    const isFav = (id) => getFavs().has(id);
-    const toggleFav = (id) => { const s=getFavs(); s.has(id)?s.delete(id):s.add(id); setFavs(s); return s.has(id); };
-
     const grid = document.getElementById("grid");
     const count = document.getElementById("count");
     const empty = document.getElementById("empty");
-    const $ = (id) => document.getElementById(id);
+    const $ = id => document.getElementById(id);
 
     const parsePrice = (p="") => {
       const s = String(p).toLowerCase();
@@ -152,35 +138,28 @@
       count.textContent = `${list.length} result${list.length>1?"s":""}`;
 
       grid.innerHTML = list.map(ev=>{
-        const heart = isFav(ev.id) ? "♥" : "♡";
+        const heart = Favs.has(ev.id) ? "♥" : "♡";
         return `
           <article class="card">
             <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-              <div class="thumb">
-                <span class="badge">${ev.city || ""} • ${ev.dateLabel || ""}</span>
-                🎫 ${ev.category || ""}
-              </div>
+              <div class="thumb"><span class="badge">${ev.city} • ${ev.dateLabel}</span> 🎫 ${ev.category}</div>
               <div class="content">
                 <h3>${ev.title}</h3>
-                <p class="meta">${ev.venue || ""}${ev.time ? " • " + ev.time : ""}</p>
-                <div class="row">
-                  <span class="chip">${ev.price || "Free"}</span>
-                  <span class="muted">Details →</span>
-                </div>
+                <p class="meta">${ev.venue}${ev.time ? " • " + ev.time : ""}</p>
+                <div class="row"><span class="chip">${ev.price || "Free"}</span><span class="muted">Details →</span></div>
               </div>
             </a>
-            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${isFav(ev.id) ? "true":"false"}" title="Save">${heart}</button>
+            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id) ? "true":"false"}" title="Save">${heart}</button>
           </article>
         `;
       }).join('');
 
-      // Wire up hearts (outside the link)
+      // Hook hearts
       grid.querySelectorAll('button[data-fav]').forEach(btn=>{
         btn.addEventListener('click',(e)=>{
-          e.preventDefault();
-          e.stopPropagation();
+          e.preventDefault(); e.stopPropagation();
           const id = btn.getAttribute('data-fav');
-          const now = toggleFav(id);
+          const now = Favs.toggle(id);
           btn.setAttribute('aria-pressed', now ? "true":"false");
           btn.textContent = now ? "♥":"♡";
         });
@@ -215,14 +194,12 @@
     document.getElementById("apply").addEventListener("click", applyFilters);
     document.getElementById("reset").addEventListener("click", () => {
       ["q","category","city","price","postcode","radius","sort"].forEach(id=>{
-        const el = $(id);
-        if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
+        const el = $(id); if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
       });
       applyFilters();
     });
     document.getElementById("sort").addEventListener("change", applyFilters);
 
-    // Initial render
     applyFilters();
   </script>
 </body>
