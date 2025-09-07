@@ -1,5 +1,3 @@
-<!-- favs.js -->
-<script>
 // Simple favourites via localStorage, shared across pages
 (function(){
   const KEY = "spondle:favs";
@@ -22,4 +20,3 @@
   };
   document.addEventListener('DOMContentLoaded', Favs.renderBadge);
 })();
-</script>
