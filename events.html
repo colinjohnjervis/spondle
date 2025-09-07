@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Spondle — Events</title>
   <link rel="stylesheet" href="styles.css"/>
+
+  <!-- Small, local style to ensure the heart is always visible -->
+  <style>
+    .thumb { position: relative; }
+    .fav-overlay {
+      position: absolute; top: 10px; right: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px;
+      border: 1px solid #2a3042; border-radius: 999px;
+      background: #0f131c; color: #e8eef7; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,.35);
+    }
+    .fav-overlay:hover { border-color: #3a425a; }
+    .fav-overlay[aria-pressed="true"]{ background: #1a232f; border-color:#3a425a }
+  </style>
 </head>
 <body>
   <header>
@@ -64,7 +79,6 @@
           <span id="count" class="muted"></span>
         </div>
 
-        <!-- Sort dropdown -->
         <div class="cta-row">
           <label for="sort" class="muted" style="align-self:center">Sort:</label>
           <select class="input" id="sort" style="width:200px">
@@ -90,11 +104,11 @@
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <!-- Auth for favourites (must be before the main script so functions exist) -->
+  <!-- Auth for favourites -->
   <script src="auth.js"></script>
 
   <script>
-    // --- Sample data (same IDs as event.html) ---
+    // --- Sample data ---
     const EVENTS = [
       {id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",       time:"19:30–22:30", price:"Free Entry",    category:"Live Music"},
       {id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter",     time:"20:00–22:00", price:"£12",            category:"Comedy"},
@@ -120,7 +134,6 @@
     // Helpers
     const CURRENT_YEAR = new Date().getFullYear();
     const MONTHS = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
-
     function parseDateLabel(label="") {
       const m = label.trim().toLowerCase().match(/^(\d{1,2})\s+([a-z]{3})/i);
       if (!m) return null;
@@ -129,15 +142,13 @@
       if (mon < 0) return null;
       return new Date(CURRENT_YEAR, mon, d);
     }
-
     function parsePrice(p="") {
       const s = String(p).toLowerCase();
       if (s.includes("free")) return 0;
       const match = s.match(/£\s*([\d]+(\.\d+)?)/);
       if (match) return parseFloat(match[1]);
-      return Number.POSITIVE_INFINITY; // unknown → end for ascending
+      return Number.POSITIVE_INFINITY;
     }
-
     const SORTS = {
       "":            { cmp: null },
       "dateAsc":     { cmp: (a,b)=> (parseDateLabel(a.dateLabel)?.getTime() ?? 9e15) - (parseDateLabel(b.dateLabel)?.getTime() ?? 9e15) },
@@ -145,7 +156,6 @@
       "priceDesc":   { cmp: (a,b)=> parsePrice(b.price) - parsePrice(a.price) },
       "titleAsc":    { cmp: (a,b)=> (a.title||"").localeCompare(b.title||"") },
       "cityAsc":     { cmp: (a,b)=> (a.city||"").localeCompare(b.city||"") },
-      // future: distanceAsc
     };
 
     function applyFilters(){
@@ -189,33 +199,39 @@
 
       grid.innerHTML = list.map(ev => {
         const emoji = categoryEmoji(ev.category);
-        const favText = window.SpondleAuth?.isFavourite(ev.id) ? '♥ Saved' : '♡ Save';
+        const pressed = window.SpondleAuth?.isFavourite?.(ev.id) ? 'true' : 'false';
+        const label = pressed === 'true' ? '♥' : '♡';
         return `
           <article class="card">
             <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-              <div class="thumb"><span class="badge">${ev.city || ''} • ${ev.dateLabel || ''}</span>${emoji} ${ev.category || ''}</div>
+              <div class="thumb">
+                <span class="badge">${ev.city || ''} • ${ev.dateLabel || ''}</span>${emoji} ${ev.category || ''}
+                <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${pressed}" aria-label="Save to favourites" title="Save">
+                  ${label}
+                </button>
+              </div>
               <div class="content">
                 <h3>${ev.title}</h3>
                 <p class="meta">${ev.venue || ''}${ev.time ? ' • '+ev.time : ''}</p>
                 <div class="row"><span class="chip">${ev.price || 'Free'}</span><span class="muted">Details →</span></div>
               </div>
             </a>
-            <div class="cta-row" style="padding:0 14px 14px">
-              <button class="btn" data-fav="${ev.id}" aria-label="Save to favourites">${favText}</button>
-            </div>
           </article>
         `;
       }).join('');
 
-      // Wire favourites buttons
+      // Wire favourites buttons (stop link navigation)
       grid.querySelectorAll('button[data-fav]').forEach(btn=>{
         btn.addEventListener('click', (e)=>{
           e.preventDefault();
+          e.stopPropagation();
           const id = btn.getAttribute('data-fav');
           const user = window.SpondleAuth?.currentUser?.();
           if (!user) { location.href = 'login.html?next=' + encodeURIComponent(location.pathname + location.search); return; }
           SpondleAuth.toggleFavourite(id);
-          btn.textContent = SpondleAuth.isFavourite(id) ? '♥ Saved' : '♡ Save';
+          const isNow = SpondleAuth.isFavourite(id);
+          btn.setAttribute('aria-pressed', isNow ? 'true' : 'false');
+          btn.textContent = isNow ? '♥' : '♡';
         });
       });
     }
