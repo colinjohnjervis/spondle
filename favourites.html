@@ -9,6 +9,11 @@
     .empty { text-align:center; padding:40px 0; color:#9fb0c8; }
     .card { position: relative; }
     .unfave { position:absolute; top:10px; right:10px; }
+    .badge{
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:22px; height:22px; padding:0 6px; border-radius:999px;
+      background:#23304a; color:#d9e6ff; font-size:12px; margin-left:6px;
+    }
   </style>
 </head>
 <body>
@@ -40,9 +45,8 @@
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <script src="favs.js"></script>
+  <script src="favs.js?v=3"></script>
   <script>
-    // TEMP: same sample data; later we’ll load real events from API
     const EVENTS = [
       { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",    time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
       { id:"sample-2", title:"Friday Night Laughs",       city:"Manchester",dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12",          category:"Comedy" },
