@@ -4,7 +4,8 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Spondle – Events</title>
-  <link rel="stylesheet" href="styles.css?v=14"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <link rel="stylesheet" href="app.v15.css">
 </head>
 <body>
   <header>
@@ -77,11 +78,11 @@
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v14</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v15</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <script src="favs.js?v=14"></script>
+  <script src="favs.v15.js"></script>
   <script>
     const EVENTS = [
       { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",    time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
@@ -155,11 +156,11 @@
     }
 
     function applyFilters(){
-      const q = $("q").value.trim().toLowerCase();
-      const cat = $("category").value;
-      const city = $("city").value;
-      const price = $("price").value;
-      const sortKey = $("sort").value;
+      const q = $("q")?.value.trim().toLowerCase() || "";
+      const cat = $("category")?.value || "";
+      const city = $("city")?.value || "";
+      const price = $("price")?.value || "";
+      const sortKey = $("sort")?.value || "";
 
       let list = EVENTS.slice();
       if (q) list = list.filter(e =>
@@ -179,16 +180,24 @@
       render(list);
     }
 
-    document.getElementById("apply").addEventListener("click", applyFilters);
-    document.getElementById("reset").addEventListener("click", () => {
-      ["q","category","city","price","postcode","radius","sort"].forEach(id=>{
-        const el = $(id); if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
-      });
-      applyFilters();
-    });
-    document.getElementById("sort").addEventListener("change", applyFilters);
-
+    // Initial load
     applyFilters();
+
+    // Hook controls if present
+    ["apply","reset","sort"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(id==="apply") el.addEventListener("click", applyFilters);
+      if(id==="reset") el.addEventListener("click", ()=>{
+        ["q","category","city","price","postcode","radius","sort"].forEach(k=>{
+          const n=document.getElementById(k);
+          if(!n) return;
+          if(n.tagName==="SELECT") n.selectedIndex=0; else n.value="";
+        });
+        applyFilters();
+      });
+      if(id==="sort") el.addEventListener("change", applyFilters);
+    });
   </script>
 </body>
 </html>
