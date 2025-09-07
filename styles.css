@@ -1,286 +1,195 @@
-/* ===== Base Variables ===== */
-:root {
-  --bg: #0e0f12;
-  --panel: #151820;
-  --muted: #a7b0c0;
-  --text: #e8eef7;
-  --brand: #6bf0a8;
-  --brand-2: #8bc6ff;
-  --card: #1c2130;
-}
-
-/* ===== Reset & Base ===== */
-* { box-sizing: border-box; }
-html, body {
+/* Reset & Base Styles */
+* {
   margin: 0;
   padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
 }
-a { color: inherit; text-decoration: none; }
 
-/* ===== Layout Containers ===== */
+html, body {
+  font-family: 'Inter', sans-serif;
+  background: #0d1117;
+  color: #d9e6ff;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Layout */
 .container {
-  max-width: 1100px;
+  width: 90%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
-}
-.section {
-  padding: 24px 0;
-}
-.hero {
-  padding: 36px 0;
-}
-.hero-inner {
-  display: grid;
-  gap: 24px;
-}
-@media (min-width: 800px) {
-  .hero-inner {
-    grid-template-columns: 3fr 2fr;
-    align-items: start;
-  }
+  padding: 20px 0;
 }
 
-/* ===== Header ===== */
+/* Header */
 header {
-  position: sticky;
-  top: 0;
-  background: rgba(14, 15, 18, 0.7);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid #212533;
-  z-index: 10;
-}
-.nav {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 14px 0;
-}
-.brand {
-  display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 800;
-  letter-spacing: .3px;
+  padding: 20px 0;
 }
+
 .logo {
-  width: 28px;
-  height: 28px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #9fd3ff;
+}
+
+/* Nav Buttons */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions .btn {
+  background: none;
+  border: none;
+  padding: 8px 14px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  display: inline-block;
-}
-
-/* ===== Buttons ===== */
-.btn {
-  padding: 10px 14px;
-  border: 1px solid #2a3042;
-  border-radius: 10px;
-  background: #12151d;
-  color: var(--text);
+  font-weight: 500;
+  color: #d9e6ff;
   cursor: pointer;
-  font: inherit;
-  transition: background .2s, border-color .2s, transform .1s;
-}
-.btn:hover {
-  border-color: #3a425a;
-}
-.btn.primary {
-  background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  color: #0b1020;
-  border: 0;
-  font-weight: 700;
-}
-.cta-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  transition: background 0.2s ease;
 }
 
-/* ===== Cards ===== */
-.card {
-  background: var(--card);
-  border: 1px solid #22283a;
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0,0,0,.25);
-  border-color: #2e3650;
-}
-.card .content {
-  padding: 14px;
-}
-.meta {
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-.chip {
-  display: inline-block;
-  background: #111726;
-  border: 1px solid #2a3042;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 0.85rem;
+.actions .btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-/* ===== Thumbnails & Badges ===== */
-.thumb {
-  aspect-ratio: 16/9;
-  background: linear-gradient(135deg,#2a3146,#1f2536);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #cbd6ff;
-  font-weight: 700;
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
+.actions .btn.primary {
+  background: linear-gradient(90deg, #4fd1c5, #63b3ed);
+  color: #0d1117;
+  font-weight: 600;
 }
-.thumb::after {
-  content:"";
-  position:absolute; inset:0;
-  background: radial-gradient(70% 60% at 70% 0%, rgba(139,198,255,.18), transparent 60%);
-  pointer-events:none;
+
+.actions .btn.primary:hover {
+  opacity: 0.9;
 }
+
+/* Badge for favourites count */
 .badge {
-  position: absolute;
-  margin: 10px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #111726;
-  border: 1px solid #2a3042;
-  font-size: 0.8rem;
-  backdrop-filter: blur(2px);
-}
-
-/* ===== Hero Cards ===== */
-.hero-card {
-  background: var(--panel);
-  border: 1px solid #22283a;
-  border-radius: 16px;
-  padding: 18px;
-}
-.eyebrow {
-  color: var(--brand);
-  font-weight: 700;
-  font-size: .9rem;
-  letter-spacing: .6px;
-  text-transform: uppercase;
-}
-.tagline {
-  color: var(--muted);
-  max-width: 52ch;
-}
-
-/* ===== Grid Layout ===== */
-.grid {
-  display: grid;
-  gap: 20px;
-}
-@media (min-width: 700px) {
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  }
-}
-
-/* ===== Footer ===== */
-footer {
-  margin-top: 36px;
-  border-top: 1px solid #1c2233;
-}
-.foot {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  justify-content: space-between;
-  padding: 18px 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-/* ===== Share Bar ===== */
-.sharebar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-.share-icons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.share-icons .icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid #2a3042;
-  border-radius: 10px;
-  background: #12151d;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #ff4d6d;
+  color: #fff;
+  border-radius: 999px;
+  vertical-align: middle;
+  line-height: 1;
+}
+
+/* Sections */
+h1, h2, h3 {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+section {
+  margin-bottom: 40px;
+}
+
+/* Event Cards */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #161b22;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.card p {
+  font-size: 0.9rem;
+  color: #a3b3cc;
+}
+
+/* Heart overlay button */
+.fav-overlay {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fav-overlay:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.05);
+}
+
+.fav-overlay[aria-pressed="true"] {
+  background: #ff4d6d;
+  color: #fff;
+}
+
+/* Buttons */
+button {
   cursor: pointer;
 }
-.share-icons .icon:hover {
-  border-color: #3a425a;
-}
-.sharebar .share-native {
-  padding: 8px 12px;
-}
-.share-toast {
-  color: var(--brand);
-  font-size: .95rem;
-}
 
-/* ===== Inputs ===== */
-.input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #2a3042;
-  border-radius: 10px;
-  background: #0f131c;
-  color: var(--text);
-  outline: none;
-}
-.input::placeholder {
-  color: #7f8aa3;
-}
-.input:focus {
-  border-color: #3a80ff;
-  box-shadow: 0 0 0 3px rgba(59,130,246,.25);
-}
-
-/* ===== Buttons: Focus & Press ===== */
-.btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(107,240,168,.25);
-}
-.btn:active {
-  transform: translateY(1px);
-}
-
-/* ===== Typography & Muted Links ===== */
-.gradient-text {
-  background: linear-gradient(135deg, var(--brand), var(--brand-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.muted { color: var(--muted); }
-.muted:hover { color: #c7d2e5; }
-
-/* ===== Motion Safety ===== */
-@media (prefers-reduced-motion: reduce) {
-  .card { transition: none; }
-  .btn:active { transform: none; }
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #8892b0;
+  font-size: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 40px;
 }
