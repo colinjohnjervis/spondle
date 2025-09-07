@@ -1,6 +1,6 @@
-<!-- Save as favs.js at the repo root -->
+<!-- favs.js -->
 <script>
-// Simple favourites via localStorage
+// Simple favourites via localStorage, shared across pages
 (function(){
   const KEY = "spondle:favs";
   function getSet(){ try{ return new Set(JSON.parse(localStorage.getItem(KEY)||"[]")); }catch(e){ return new Set(); } }
@@ -20,7 +20,6 @@
       el.style.display = n ? 'inline-flex' : 'none';
     }
   };
-  // render on load
   document.addEventListener('DOMContentLoaded', Favs.renderBadge);
 })();
 </script>
