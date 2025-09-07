@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <!-- Header -->
   <header>
     <div class="container nav" role="navigation" aria-label="Primary">
       <div class="brand">
@@ -34,23 +33,22 @@
             and gives organisers powerful tools to publish once and display everywhere.
           </p>
 
-          <!-- Quick Search (UI only for now) -->
+          <!-- Quick Search (now passes query params to events.html) -->
           <form onsubmit="return false" style="display:grid;gap:10px;margin-top:18px;max-width:560px">
             <input class="input" id="q" placeholder="Try: comedy in Manchester, BS1 live music, food market..." aria-label="Search events"/>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-              <input class="input" id="postcode" placeholder="Postcode e.g. BS1 4QA" aria-label="Postcode"/>
+              <input class="input" id="postcode" placeholder="Postcode (optional)" aria-label="Postcode"/>
               <select class="input" id="radius" aria-label="Radius">
                 <option>5 miles</option><option>10 miles</option><option selected>25 miles</option><option>50 miles</option><option>Nationwide</option>
               </select>
             </div>
             <div class="cta-row">
-              <a class="btn primary" href="events.html" id="searchBtn">Search events</a>
+              <button class="btn primary" id="searchBtn" type="button">Search events</button>
               <a class="btn" href="organisers.html">List an event</a>
             </div>
           </form>
         </div>
 
-        <!-- Why Spondle -->
         <aside class="hero-card" aria-label="Highlights">
           <strong>Why Spondle?</strong>
           <ul>
@@ -66,22 +64,21 @@
     <!-- Quick Categories -->
     <section class="section" aria-label="Categories">
       <div class="cta-row" style="flex-wrap:wrap">
-        <a class="btn" href="events.html">🎵 Live Music</a>
-        <a class="btn" href="events.html">🎭 Comedy</a>
-        <a class="btn" href="events.html">🍺 Food & Drink</a>
-        <a class="btn" href="events.html">🎬 Film</a>
-        <a class="btn" href="events.html">🏞 Community</a>
-        <a class="btn" href="events.html">💻 Networking</a>
-        <a class="btn" href="events.html">🏃‍♂️ Sports</a>
-        <a class="btn" href="events.html">📖 Arts & Culture</a>
+        <a class="btn" href="events.html?category=Live%20Music">🎵 Live Music</a>
+        <a class="btn" href="events.html?category=Comedy">🎭 Comedy</a>
+        <a class="btn" href="events.html?category=Food%20%26%20Drink">🍺 Food & Drink</a>
+        <a class="btn" href="events.html?category=Film">🎬 Film</a>
+        <a class="btn" href="events.html?category=Community">🏞 Community</a>
+        <a class="btn" href="events.html?category=Networking">💻 Networking</a>
+        <a class="btn" href="events.html?category=Sports">🏃‍♂️ Sports</a>
+        <a class="btn" href="events.html?category=Arts%20%26%20Culture">📖 Arts & Culture</a>
       </div>
     </section>
 
-    <!-- Trending -->
+    <!-- Trending (unchanged layout) -->
     <section id="events" class="section" aria-labelledby="events-title">
       <h2 id="events-title">Trending this week</h2>
       <div class="grid" role="list">
-        <!-- 1 -->
         <article class="card" role="listitem">
           <a href="event.html?id=sample-1" style="display:block;color:inherit">
             <div class="thumb"><span class="badge">Bristol • 12 Sep</span>🎵 Live Music</div>
@@ -92,7 +89,6 @@
             </div>
           </a>
         </article>
-        <!-- 2 -->
         <article class="card" role="listitem">
           <a href="event.html?id=sample-2" style="display:block;color:inherit">
             <div class="thumb"><span class="badge">Manchester • 14 Sep</span>🎭 Comedy</div>
@@ -103,7 +99,6 @@
             </div>
           </a>
         </article>
-        <!-- 3 -->
         <article class="card" role="listitem">
           <a href="event.html?id=sample-3" style="display:block;color:inherit">
             <div class="thumb"><span class="badge">Cardiff • 15 Sep</span>🏞 Community</div>
@@ -114,7 +109,6 @@
             </div>
           </a>
         </article>
-        <!-- 4 -->
         <article class="card" role="listitem">
           <a href="event.html?id=sample-5" style="display:block;color:inherit">
             <div class="thumb"><span class="badge">London • 20 Sep</span>💿 Market</div>
@@ -125,7 +119,6 @@
             </div>
           </a>
         </article>
-        <!-- 5 -->
         <article class="card" role="listitem">
           <a href="event.html?id=sample-6" style="display:block;color:inherit">
             <div class="thumb"><span class="badge">Brighton • 22 Sep</span>🎬 Film</div>
@@ -136,7 +129,6 @@
             </div>
           </a>
         </article>
-        <!-- 6 -->
         <article class="card" role="listitem">
           <a href="event.html?id=sample-4" style="display:block;color:inherit">
             <div class="thumb"><span class="badge">Leeds • 18 Sep</span>🍺 Food & Drink</div>
@@ -184,7 +176,6 @@
     </section>
   </main>
 
-  <!-- Footer -->
   <footer>
     <div class="container foot">
       <div>© <span id="y"></span> Spondle • Made in the UK</div>
@@ -193,10 +184,16 @@
 
   <script>
     document.getElementById('y').textContent = new Date().getFullYear();
-    // Prototype search handler (navigate to Events page for now)
-    document.getElementById('searchBtn').addEventListener('click', (e) => {
-      // Later: capture q/postcode/radius and pass as query params
-      // For now we just go to the Events page
+    // Send query params to Events page
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      const q = document.getElementById('q').value.trim();
+      const postcode = document.getElementById('postcode').value.trim();
+      const radius = document.getElementById('radius').value;
+      const params = new URLSearchParams();
+      if (q) params.set('q', q);
+      if (postcode) params.set('postcode', postcode);
+      if (radius) params.set('radius', radius);
+      location.href = 'events.html' + (params.toString() ? `?${params}` : '');
     });
   </script>
 </body>
