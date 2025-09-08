@@ -75,17 +75,22 @@
     <section class="section">
       <div class="grid" id="grid"></div>
       <p id="empty" class="tagline" style="display:none">No events match your filters. Try clearing them.</p>
+
+      <!-- Load More -->
+      <div id="loadMoreWrap" style="display:none; margin-top:14px; text-align:center">
+        <button class="btn" id="loadMoreBtn">Load more</button>
+      </div>
     </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v19</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v21</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="favs.js?v=16"></script>
   <script>
-    // --- 50 realistic sample events ---
+    // --- 50 realistic sample events (same set you already use) ---
     const EVENTS = [
       { id:"sample-1",  title:"The Harbourside Sessions",          city:"Bristol",    dateLabel:"12 Sep", venue:"The Louisiana",            time:"19:30–22:30", price:"Free Entry",     category:"Live Music" },
       { id:"sample-2",  title:"Southbank Jazz Quartet",            city:"London",     dateLabel:"13 Sep", venue:"Southbank Centre",         time:"20:00–22:00", price:"£16",            category:"Live Music" },
@@ -139,17 +144,26 @@
       { id:"sample-50", title:"Stand-Up Showcase",                 city:"Edinburgh",  dateLabel:"25 Oct", venue:"The Stand",                time:"20:00–22:00", price:"£10",            category:"Comedy" }
     ];
 
+    // DOM
     const grid = document.getElementById("grid");
     const count = document.getElementById("count");
     const empty = document.getElementById("empty");
+    const loadWrap = document.getElementById("loadMoreWrap");
+    const loadBtn = document.getElementById("loadMoreBtn");
     const $ = id => document.getElementById(id);
 
+    // Paging state
+    const PAGE_SIZE = 12;
+    let filtered = EVENTS.slice();
+    let visible = PAGE_SIZE;
+
+    // Helpers
     const parsePrice = (p="") => {
       const s = String(p).toLowerCase();
       if (s.includes("free")) return 0;
-      const m = s.match(/£\s*([\d]+(\.\d+)?)/);
       if (s.includes("pay what you can")) return 0.01;
       if (s.includes("donation")) return 1;
+      const m = s.match(/£\s*([\d]+(\.\d+)?)/);
       return m ? parseFloat(m[1]) : Number.POSITIVE_INFINITY;
     };
 
@@ -162,17 +176,18 @@
       "cityAsc":   { cmp: (a,b)=> (a.city||"").localeCompare(b.city||"") },
     };
 
-    function render(list){
-      if(!list.length){
+    function renderGrid(list, upto){
+      const slice = list.slice(0, upto);
+      if(!slice.length){
         grid.innerHTML = "";
         empty.style.display = "block";
         count.textContent = "0 results";
+        loadWrap.style.display = "none";
         return;
       }
       empty.style.display = "none";
-      count.textContent = `${list.length} result${list.length>1?"s":""}`;
-
-      grid.innerHTML = list.map(ev=>{
+      count.textContent = `${Math.min(upto, list.length)} of ${list.length} result${list.length>1?"s":""}`;
+      grid.innerHTML = slice.map(ev=>{
         const heart = Favs.has(ev.id) ? "♥" : "♡";
         return `
           <article class="card">
@@ -189,6 +204,7 @@
         `;
       }).join('');
 
+      // hook up hearts
       grid.querySelectorAll('button[data-fav]').forEach(btn=>{
         btn.addEventListener('click',(e)=>{
           e.preventDefault(); e.stopPropagation();
@@ -198,9 +214,12 @@
           btn.textContent = now ? "♥":"♡";
         });
       });
+
+      // load more visibility
+      loadWrap.style.display = (slice.length < list.length) ? "block" : "none";
     }
 
-    function applyFilters(){
+    function applyFilters(resetVisible=true){
       const q = $("q").value.trim().toLowerCase();
       const cat = $("category").value;
       const city = $("city").value;
@@ -208,6 +227,7 @@
       const sortKey = $("sort").value;
 
       let list = EVENTS.slice();
+
       if (q) list = list.filter(e =>
         (e.title||"").toLowerCase().includes(q) ||
         (e.venue||"").toLowerCase().includes(q) ||
@@ -222,19 +242,30 @@
       const entry = SORTS[sortKey] || SORTS[""];
       if (entry.cmp) list = list.slice().sort(entry.cmp);
 
-      render(list);
+      filtered = list;
+      if (resetVisible) visible = PAGE_SIZE;
+      renderGrid(filtered, visible);
     }
 
-    document.getElementById("apply").addEventListener("click", applyFilters);
+    // Wire controls
+    document.getElementById("apply").addEventListener("click", ()=>applyFilters(true));
     document.getElementById("reset").addEventListener("click", () => {
       ["q","category","city","price","postcode","radius","sort"].forEach(id=>{
         const el = $(id); if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
       });
-      applyFilters();
+      applyFilters(true);
     });
-    document.getElementById("sort").addEventListener("change", applyFilters);
+    document.getElementById("sort").addEventListener("change", ()=>applyFilters(true));
 
-    applyFilters();
+    loadBtn.addEventListener("click", ()=>{
+      visible += PAGE_SIZE;
+      renderGrid(filtered, visible);
+      // keep the "Load more" button roughly in view on mobile
+      loadBtn.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+
+    // Initial render
+    applyFilters(true);
   </script>
 </body>
 </html>
