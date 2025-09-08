@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Spondle – Events</title>
+  <title>Spondle – Events (v28 test)</title>
+  <!-- PROBE v28 -->
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <link rel="stylesheet" href="styles.css?v=17">
   <style>
@@ -33,7 +34,7 @@
 
   <main class="container">
     <section class="section">
-      <h1>Explore Events</h1>
+      <h1>Explore Events (v28 test)</h1>
       <p class="tagline">Use search and filters to find events you’ll love.</p>
     </section>
 
@@ -90,14 +91,14 @@
 
       <!-- Load More -->
       <div id="loadMoreWrap" style="display:none; margin-top:14px; text-align:center">
-        <button class="btn" id="loadMoreBtn">Load more (v27)</button>
-        <div id="endNote">End of results 🎉 (v27)</div>
+        <button class="btn" id="loadMoreBtn">Load more (v28)</button>
+        <div id="endNote">End of results 🎉 (v28)</div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v27</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v28</div></div>
   </footer>
 
   <!-- Back to top -->
@@ -106,9 +107,9 @@
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="favs.js?v=17"></script>
   <script>
-    console.debug("Spondle events build v27 loaded");
+    console.debug("Spondle events build v28 loaded");
 
-    // --- 50 realistic sample events ---
+    // --- 50 realistic sample events (same as previous build) ---
     const EVENTS = [
       { id:"sample-1",  title:"The Harbourside Sessions",          city:"Bristol",    dateLabel:"12 Sep", venue:"The Louisiana",            time:"19:30–22:30", price:"Free Entry",     category:"Live Music" },
       { id:"sample-2",  title:"Southbank Jazz Quartet",            city:"London",     dateLabel:"13 Sep", venue:"Southbank Centre",         time:"20:00–22:00", price:"£16",            category:"Live Music" },
