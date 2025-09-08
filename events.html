@@ -84,13 +84,13 @@
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v21</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v22</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="favs.js?v=16"></script>
   <script>
-    // --- 50 realistic sample events (same set you already use) ---
+    // --- 50 realistic sample events (same as before) ---
     const EVENTS = [
       { id:"sample-1",  title:"The Harbourside Sessions",          city:"Bristol",    dateLabel:"12 Sep", venue:"The Louisiana",            time:"19:30–22:30", price:"Free Entry",     category:"Live Music" },
       { id:"sample-2",  title:"Southbank Jazz Quartet",            city:"London",     dateLabel:"13 Sep", venue:"Southbank Centre",         time:"20:00–22:00", price:"£16",            category:"Live Music" },
@@ -163,7 +163,7 @@
       if (s.includes("free")) return 0;
       if (s.includes("pay what you can")) return 0.01;
       if (s.includes("donation")) return 1;
-      const m = s.match(/£\s*([\d]+(\.\d+)?)/);
+      const m = s.match(/£\\s*([\\d]+(\\.\\d+)?)/);
       return m ? parseFloat(m[1]) : Number.POSITIVE_INFINITY;
     };
 
@@ -189,19 +189,19 @@
       count.textContent = `${Math.min(upto, list.length)} of ${list.length} result${list.length>1?"s":""}`;
       grid.innerHTML = slice.map(ev=>{
         const heart = Favs.has(ev.id) ? "♥" : "♡";
-        return `
+        return \`
           <article class="card">
-            <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-              <div class="thumb"><span class="badge">${ev.city || ""} • ${ev.dateLabel || ""}</span> 🎫 ${ev.category || ""}</div>
+            <a href="event.html?id=\${ev.id}" style="display:block;color:inherit">
+              <div class="thumb"><span class="badge">\${ev.city || ""} • \${ev.dateLabel || ""}</span> 🎫 \${ev.category || ""}</div>
               <div class="content">
-                <h3>${ev.title}</h3>
-                <p class="meta">${ev.venue || ""}${ev.time ? " • " + ev.time : ""}</p>
-                <div class="row"><span class="chip">${ev.price || "Free"}</span></div>
+                <h3>\${ev.title}</h3>
+                <p class="meta">\${ev.venue || ""}\${ev.time ? " • " + ev.time : ""}</p>
+                <div class="row"><span class="chip">\${ev.price || "Free"}</span></div>
               </div>
             </a>
-            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id) ? "true":"false"}" title="Save">${heart}</button>
+            <button class="fav-overlay" data-fav="\${ev.id}" aria-pressed="\${Favs.has(ev.id) ? "true":"false"}" title="Save">\${heart}</button>
           </article>
-        `;
+        \`;
       }).join('');
 
       // hook up hearts
@@ -257,11 +257,22 @@
     });
     document.getElementById("sort").addEventListener("change", ()=>applyFilters(true));
 
+    // Improved Load More: jump the first new item to top (account for sticky header)
     loadBtn.addEventListener("click", ()=>{
+      const prev = visible;
       visible += PAGE_SIZE;
       renderGrid(filtered, visible);
-      // keep the "Load more" button roughly in view on mobile
-      loadBtn.scrollIntoView({ block: "center", behavior: "smooth" });
+
+      const firstNew = grid.children[prev]; // 0-indexed; prev is the first newly visible
+      if (firstNew){
+        const header = document.querySelector('header');
+        const offset = (header?.offsetHeight || 0) + 8; // small gap
+        const y = firstNew.getBoundingClientRect().top + window.scrollY - offset;
+        // move focus for a11y, then scroll
+        const focusable = firstNew.querySelector('a,button,[tabindex]');
+        if (focusable) focusable.focus({preventScroll:true});
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
     });
 
     // Initial render
