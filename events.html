@@ -100,13 +100,13 @@
       <!-- Load More -->
       <div id="loadMoreWrap" style="display:none; margin-top:14px; text-align:center">
         <button class="btn" id="loadMoreBtn">Load more</button>
-        <div id="endNote">You’ve reached the end 🎉</div>
+        <div id="endNote">End of results 🎉</div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v24</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v25</div></div>
   </footer>
 
   <!-- Back to top -->
@@ -115,7 +115,9 @@
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="favs.js?v=16"></script>
   <script>
-    // --- 50 realistic sample events (same dataset as before) ---
+    console.debug("Spondle events build v25 loaded");
+
+    // --- 50 realistic sample events ---
     const EVENTS = [
       { id:"sample-1",  title:"The Harbourside Sessions",          city:"Bristol",    dateLabel:"12 Sep", venue:"The Louisiana",            time:"19:30–22:30", price:"Free Entry",     category:"Live Music" },
       { id:"sample-2",  title:"Southbank Jazz Quartet",            city:"London",     dateLabel:"13 Sep", venue:"Southbank Centre",         time:"20:00–22:00", price:"£16",            category:"Live Music" },
@@ -242,9 +244,9 @@
         });
       });
 
-      // Show/hide load more + end note
+      // Show/hide load more + end note (fixed)
       const hasMore = slice.length < list.length;
-      loadWrap.style.display = hasMore ? "block" : "block";
+      loadWrap.style.display = (list.length ? "block" : "none");
       endNote.style.display = hasMore ? "none" : "block";
       loadBtn.style.display = hasMore ? "inline-block" : "none";
     }
@@ -284,7 +286,6 @@
         const el = $(id); if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
       });
       applyFilters(true);
-      // Jump back to top after reset for clarity
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.getElementById("sort").addEventListener("change", ()=>applyFilters(true));
@@ -295,7 +296,7 @@
       visible += PAGE_SIZE;
       renderGrid(filtered, visible);
 
-      const firstNew = grid.children[prev]; // index of first newly shown card
+      const firstNew = grid.children[prev];
       if (firstNew){
         const header = document.querySelector('header');
         const offset = (header?.offsetHeight || 0) + 8;
@@ -313,11 +314,7 @@
     }
     updateToTop();
     window.addEventListener('scroll', updateToTop, { passive: true });
-
-    toTop.addEventListener('click', ()=>{
-      // account for sticky header by going slightly above main
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    toTop.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
 
     // Initial render
     applyFilters(true);
