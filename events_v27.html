@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spondle – Events (v27)</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <link rel="stylesheet" href="styles.css?v=17">
+  <style>
+    /* Back to top */
+    #toTop {
+      position: fixed; right: 16px; bottom: 16px; z-index: 999;
+      display: none; border: none; border-radius: 999px; padding: 12px 14px;
+      background: #111; color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,.2);
+      cursor: pointer; font-weight: 600;
+    }
+    #toTop:focus { outline: 3px solid #9ad; outline-offset: 2px; }
+    #toTop.show { display: inline-flex; align-items: center; gap: 6px; }
+    #endNote { text-align:center; margin-top:10px; font-size:.95rem; color:#666; display:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
+      <div class="actions">
+        <a class="btn primary" href="events_v27.html">Explore Events</a>
+        <a class="btn" href="favourites.html">Favourites <span class="badge" data-fav-count style="display:none">0</span></a>
+        <a class="btn" href="organisers.html">For Organisers</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <h1>Explore Events</h1>
+      <p class="tagline">Use search and filters to find events you’ll love.</p>
+    </section>
+
+    <!-- Filters -->
+    <section class="section hero-card">
+      <div class="filters">
+        <input class="input" id="q" placeholder="Search title, venue, city…"/>
+        <div class="filter-grid">
+          <select class="input" id="category">
+            <option value="">All categories</option>
+            <option>Live Music</option><option>Comedy</option><option>Food & Drink</option><option>Film</option>
+            <option>Community</option><option>Networking</option><option>Sports</option><option>Arts & Culture</option><option>Market</option>
+          </select>
+          <select class="input" id="city">
+            <option value="">All cities</option>
+            <option>Bristol</option><option>Manchester</option><option>Cardiff</option><option>Leeds</option>
+            <option>London</option><option>Brighton</option><option>Birmingham</option><option>Glasgow</option><option>Liverpool</option>
+            <option>Edinburgh</option><option>Newcastle</option><option>Nottingham</option><option>Sheffield</option><option>Bath</option><option>Oxford</option>
+          </select>
+          <select class="input" id="price">
+            <option value="">Any price</option><option value="free">Free</option><option value="paid">Paid</option>
+          </select>
+          <input class="input" id="postcode" placeholder="Postcode (future)"/>
+          <select class="input" id="radius">
+            <option>5 miles</option><option>10 miles</option><option selected>25 miles</option><option>50 miles</option><option>Nationwide</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="cta-row" style="justify-content:space-between;margin-top:10px">
+        <div class="cta-row">
+          <button class="btn primary" id="apply">Apply filters</button>
+          <button class="btn" id="reset">Reset</button>
+          <span id="count" class="muted"></span>
+        </div>
+        <div class="cta-row">
+          <label for="sort" class="muted" style="align-self:center">Sort:</label>
+          <select class="input" id="sort" style="width:200px">
+            <option value="">Relevance</option>
+            <option value="dateAsc">Date — soonest first</option>
+            <option value="priceAsc">Price — low to high</option>
+            <option value="priceDesc">Price — high to low</option>
+            <option value="titleAsc">Title — A to Z</option>
+            <option value="cityAsc">City — A to Z</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Grid -->
+    <section class="section">
+      <div class="grid" id="grid"></div>
+      <p id="empty" class="tagline" style="display:none">No events match your filters. Try clearing them.</p>
+
+      <!-- Load More -->
+      <div id="loadMoreWrap" style="display:none; margin-top:14px; text-align:center">
+        <button class="btn" id="loadMoreBtn">Load more (v27)</button>
+        <div id="endNote">End of results 🎉 (v27)</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v27</div></div>
+  </footer>
+
+  <!-- Back to top -->
+  <button id="toTop" aria-label="Back to top" title="Back to top">↑ Top</button>
+
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+  <script src="favs.js?v=17"></script>
+  <script>
+    console.debug("Spondle events build v27 loaded");
+
+    // --- 50 realistic sample events ---
+    const EVENTS = [
+      { id:"sample-1",  title:"The Harbourside Sessions",          city:"Bristol",    dateLabel:"12 Sep", venue:"The Louisiana",            time:"19:30–22:30", price:"Free Entry",     category:"Live Music" },
+      { id:"sample-2",  title:"Southbank Jazz Quartet",            city:"London",     dateLabel:"13 Sep", venue:"Southbank Centre",         time:"20:00–22:00", price:"£16",            category:"Live Music" },
+      { id:"sample-3",  title:"Riverside Street Food",             city:"Cardiff",    dateLabel:"15 Sep", venue:"Market Square",            time:"11:00–17:00", price:"Family",         category:"Community" },
+      { id:"sample-4",  title:"Craft Beer Festival",               city:"Leeds",      dateLabel:"18 Sep", venue:"City Brewery Hall",        time:"12:00–23:00", price:"£20",            category:"Food & Drink" },
+      { id:"sample-5",  title:"Friday Night Laughs",               city:"Manchester", dateLabel:"14 Sep", venue:"The Comedy Store",         time:"20:00–22:00", price:"£14",            category:"Comedy" },
+      { id:"sample-6",  title:"Outdoor Cinema Night",              city:"Brighton",   dateLabel:"22 Sep", venue:"Madeira Drive",            time:"20:30–23:00", price:"£10",            category:"Film" },
+      { id:"sample-7",  title:"Tech Meetup & Networking",          city:"Birmingham", dateLabel:"25 Sep", venue:"TechHub Central",          time:"18:00–21:00", price:"Free",           category:"Networking" },
+      { id:"sample-8",  title:"Charity Fun Run 5K",                city:"Glasgow",    dateLabel:"27 Sep", venue:"Kelvingrove Park",         time:"09:00–12:00", price:"£15 Donation",   category:"Sports" },
+      { id:"sample-9",  title:"Open Mic Poetry Night",             city:"Liverpool",  dateLabel:"30 Sep", venue:"The Verse Bar",            time:"19:00–22:00", price:"Free Entry",     category:"Arts & Culture" },
+      { id:"sample-10", title:"Vintage Vinyl Market",              city:"London",     dateLabel:"20 Sep", venue:"Camden Market",            time:"10:00–18:00", price:"Free Entry",     category:"Market" },
+      { id:"sample-11", title:"Acoustic Sessions at The Fleece",   city:"Bristol",    dateLabel:"21 Sep", venue:"The Fleece",               time:"19:00–22:00", price:"£8",             category:"Live Music" },
+      { id:"sample-12", title:"Family Science Day",                city:"Manchester", dateLabel:"28 Sep", venue:"Science and Industry Mus.",time:"10:00–16:00", price:"£6",             category:"Community" },
+      { id:"sample-13", title:"Street Art Walking Tour",           city:"Birmingham", dateLabel:"29 Sep", venue:"Digbeth",                   time:"13:00–15:00", price:"£9",             category:"Arts & Culture" },
+      { id:"sample-14", title:"Sourdough Baking Workshop",         city:"Leeds",      dateLabel:"05 Oct", venue:"Northern Kitchen School",  time:"10:00–13:00", price:"£35",            category:"Food & Drink" },
+      { id:"sample-15", title:"Rooftop Cinema: Classic 80s",       city:"London",     dateLabel:"03 Oct", venue:"Peckham Levels",           time:"19:30–22:00", price:"£13",            category:"Film" },
+      { id:"sample-16", title:"Women in Tech Breakfast",           city:"Cardiff",    dateLabel:"02 Oct", venue:"Central Co-working",       time:"08:00–10:00", price:"Free",           category:"Networking" },
+      { id:"sample-17", title:"Saturday Morning Parkrun",          city:"Nottingham", dateLabel:"21 Sep", venue:"Forest Recreation Ground", time:"09:00–10:00", price:"Free",           category:"Sports" },
+      { id:"sample-18", title:"Sea Shanty Evening",                city:"Brighton",   dateLabel:"06 Oct", venue:"The Tempest Inn",          time:"19:00–21:30", price:"£7",             category:"Live Music" },
+      { id:"sample-19", title:"Comedy Night: New Acts",            city:"Leeds",      dateLabel:"07 Oct", venue:"HiFi Club",                time:"20:00–22:30", price:"£6",             category:"Comedy" },
+      { id:"sample-20", title:"Community Repair Café",             city:"Bristol",    dateLabel:"28 Sep", venue:"Easton Community Centre",  time:"12:00–16:00", price:"Free",           category:"Community" },
+      { id:"sample-21", title:"Craft & Makers Market",             city:"Bath",       dateLabel:"12 Oct", venue:"Guildhall",                time:"10:00–17:00", price:"Free Entry",     category:"Market" },
+      { id:"sample-22", title:"Indie Book Club",                   city:"Oxford",     dateLabel:"09 Oct", venue:"Covered Market",           time:"18:00–19:30", price:"Free",           category:"Arts & Culture" },
+      { id:"sample-23", title:"Film Quiz Night",                   city:"Liverpool",  dateLabel:"10 Oct", venue:"FACT",                     time:"19:30–22:00", price:"£5",             category:"Film" },
+      { id:"sample-24", title:"Local History Walk",                city:"Edinburgh",  dateLabel:"13 Oct", venue:"Old Town",                 time:"14:00–16:00", price:"£4",             category:"Arts & Culture" },
+      { id:"sample-25", title:"After-Work Social",                 city:"Manchester", dateLabel:"26 Sep", venue:"Northern Monk Refectory",  time:"18:00–20:30", price:"Free",           category:"Networking" },
+      { id:"sample-26", title:"Board Games Night",                 city:"Glasgow",    dateLabel:"04 Oct", venue:"Drygate Brewing Co.",      time:"18:30–22:30", price:"£3",             category:"Community" },
+      { id:"sample-27", title:"Street Food Fridays",               city:"Sheffield",  dateLabel:"27 Sep", venue:"Kelham Island",            time:"17:00–22:00", price:"Free Entry",     category:"Food & Drink" },
+      { id:"sample-28", title:"City Half Marathon",                city:"Birmingham", dateLabel:"13 Oct", venue:"City Centre",              time:"09:00–12:30", price:"£32",            category:"Sports" },
+      { id:"sample-29", title:"Improvised Comedy Jam",             city:"London",     dateLabel:"08 Oct", venue:"Angel Comedy",             time:"20:00–22:00", price:"Pay What You Can",category:"Comedy" },
+      { id:"sample-30", title:"Salsa Social Night",                city:"Cardiff",    dateLabel:"11 Oct", venue:"Revolution",               time:"20:00–23:30", price:"£9",             category:"Community" },
+      { id:"sample-31", title:"Indie Night: Northern Echo",        city:"Leeds",      dateLabel:"04 Oct", venue:"Brudenell Social Club",    time:"19:00–23:00", price:"£12",            category:"Live Music" },
+      { id:"sample-32", title:"Photography Walkshop",              city:"Edinburgh",  dateLabel:"05 Oct", venue:"Dean Village",             time:"10:00–12:30", price:"£15",            category:"Arts & Culture" },
+      { id:"sample-33", title:"Winter Ale Preview",                city:"Newcastle",  dateLabel:"19 Oct", venue:"Toon Taproom",             time:"16:00–21:00", price:"£8",             category:"Food & Drink" },
+      { id:"sample-34", title:"Rooftop Yoga",                      city:"London",     dateLabel:"22 Sep", venue:"Shoreditch Rooftop",       time:"09:30–10:30", price:"£11",            category:"Sports" },
+      { id:"sample-35", title:"Makers: Pottery Taster",            city:"Bristol",    dateLabel:"19 Oct", venue:"Stokes Croft Studio",      time:"13:00–15:00", price:"£28",            category:"Arts & Culture" },
+      { id:"sample-36", title:"Korean Street Food Pop-Up",         city:"Manchester", dateLabel:"03 Oct", venue:"Ancoats Market Hall",     time:"12:00–20:00", price:"Free Entry",     category:"Food & Drink" },
+      { id:"sample-37", title:"Late at the Museum",                city:"Oxford",     dateLabel:"18 Oct", venue:"Ashmolean",                time:"18:00–21:30", price:"£7",             category:"Arts & Culture" },
+      { id:"sample-38", title:"Lakeside Outdoor Cinema",           city:"Nottingham", dateLabel:"02 Oct", venue:"University Park",          time:"19:00–22:00", price:"£9",             category:"Film" },
+      { id:"sample-39", title:"Charity Quiz for Shelter",          city:"Sheffield",  dateLabel:"09 Oct", venue:"The Fat Cat",              time:"19:30–22:00", price:"£3",             category:"Community" },
+      { id:"sample-40", title:"Sunday Jazz Brunch",                city:"Glasgow",    dateLabel:"06 Oct", venue:"Brel",                     time:"11:00–14:00", price:"£18",            category:"Live Music" },
+      { id:"sample-41", title:"Beginner Coding Meetup",            city:"Birmingham", dateLabel:"01 Oct", venue:"Impact Hub",               time:"18:30–20:30", price:"Free",           category:"Networking" },
+      { id:"sample-42", title:"Classic Film Club",                 city:"Liverpool",  dateLabel:"16 Oct", venue:"Small Cinema",             time:"19:00–21:30", price:"£6",             category:"Film" },
+      { id:"sample-43", title:"Vintage & Retro Fair",              city:"Bath",       dateLabel:"20 Oct", venue:"Assembly Rooms",           time:"10:00–17:00", price:"£2",             category:"Market" },
+      { id:"sample-44", title:"5-a-side Social Football",          city:"Leeds",      dateLabel:"23 Sep", venue:"Kirkstall Leisure",        time:"19:00–20:00", price:"£5",             category:"Sports" },
+      { id:"sample-45", title:"Poetry & Pints",                    city:"Bristol",    dateLabel:"08 Oct", venue:"Left Handed Giant Brewpub",time:"19:00–21:00", price:"Free",           category:"Arts & Culture" },
+      { id:"sample-46", title:"After Hours Gallery Night",         city:"London",     dateLabel:"24 Oct", venue:"Tate Modern",              time:"18:00–22:00", price:"£12",            category:"Arts & Culture" },
+      { id:"sample-47", title:"Startups Breakfast Club",           city:"Manchester", dateLabel:"17 Oct", venue:"Enterprise House",         time:"08:00–09:30", price:"Free",           category:"Networking" },
+      { id:"sample-48", title:"Community Litter Pick",             city:"Oxford",     dateLabel:"28 Sep", venue:"Christ Church Meadow",     time:"10:00–12:00", price:"Free",           category:"Community" },
+      { id:"sample-49", title:"Craft Cider Tasting",               city:"Bristol",    dateLabel:"11 Oct", venue:"The Apple",                time:"18:00–20:00", price:"£10",            category:"Food & Drink" },
+      { id:"sample-50", title:"Stand-Up Showcase",                 city:"Edinburgh",  dateLabel:"25 Oct", venue:"The Stand",                time:"20:00–22:00", price:"£10",            category:"Comedy" }
+    ];
+
+    // DOM
+    const grid = document.getElementById("grid");
+    const count = document.getElementById("count");
+    const empty = document.getElementById("empty");
+    const loadWrap = document.getElementById("loadMoreWrap");
+    const loadBtn = document.getElementById("loadMoreBtn");
+    const endNote = document.getElementById("endNote");
+    const toTop = document.getElementById("toTop");
+    const $ = id => document.getElementById(id);
+
+    // Paging state
+    const PAGE_SIZE = 12;
+    let filtered = EVENTS.slice();
+    let visible = PAGE_SIZE;
+
+    // Helpers
+    const parsePrice = (p="") => {
+      const s = String(p).toLowerCase();
+      if (s.includes("free")) return 0;
+      if (s.includes("pay what you can")) return 0.01;
+      if (s.includes("donation")) return 1;
+      const m = s.match(/£\s*([\d]+(\.\d+)?)/);
+      return m ? parseFloat(m[1]) : Number.POSITIVE_INFINITY;
+    };
+
+    const SORTS = {
+      "":          { cmp: null },
+      "dateAsc":   { cmp: (a,b)=> new Date(`${a.dateLabel} ${new Date().getFullYear()}`) - new Date(`${b.dateLabel} ${new Date().getFullYear()}`) },
+      "priceAsc":  { cmp: (a,b)=> parsePrice(a.price) - parsePrice(b.price) },
+      "priceDesc": { cmp: (a,b)=> parsePrice(b.price) - parsePrice(a.price) },
+      "titleAsc":  { cmp: (a,b)=> (a.title||"").localeCompare(b.title||"") },
+      "cityAsc":   { cmp: (a,b)=> (a.city||"").localeCompare(b.city||"") },
+    };
+
+    function renderGrid(list, upto){
+      const slice = list.slice(0, upto);
+      if(!slice.length){
+        grid.innerHTML = "";
+        empty.style.display = "block";
+        count.textContent = "0 results";
+        loadWrap.style.display = "none";
+        return;
+      }
+      empty.style.display = "none";
+      count.textContent = `${Math.min(upto, list.length)} of ${list.length} result${list.length>1?"s":""}`;
+      grid.innerHTML = slice.map(ev=>{
+        const heart = Favs.has(ev.id) ? "♥" : "♡";
+        return `
+          <article class="card">
+            <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
+              <div class="thumb"><span class="badge">${ev.city || ""} • ${ev.dateLabel || ""}</span> 🎫 ${ev.category || ""}</div>
+              <div class="content">
+                <h3>${ev.title}</h3>
+                <p class="meta">${ev.venue || ""}${ev.time ? " • " + ev.time : ""}</p>
+                <div class="row"><span class="chip">${ev.price || "Free"}</span></div>
+              </div>
+            </a>
+            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id) ? "true":"false"}" title="Save">${heart}</button>
+          </article>
+        `;
+      }).join('');
+
+      // hearts
+      grid.querySelectorAll('button[data-fav]').forEach(btn=>{
+        btn.addEventListener('click',(e)=>{
+          e.preventDefault(); e.stopPropagation();
+          const id = btn.getAttribute('data-fav');
+          const now = Favs.toggle(id);
+          btn.setAttribute('aria-pressed', now ? "true":"false");
+          btn.textContent = now ? "♥":"♡";
+        });
+      });
+
+      // Show/hide load more + end note
+      const hasMore = slice.length < list.length;
+      loadWrap.style.display = list.length ? "block" : "none";
+      endNote.style.display = hasMore ? "none" : "block";
+      loadBtn.style.display = hasMore ? "inline-block" : "none";
+    }
+
+    function applyFilters(resetVisible=true){
+      const q = $("q").value.trim().toLowerCase();
+      const cat = $("category").value;
+      const city = $("city").value;
+      const price = $("price").value;
+      const sortKey = $("sort").value;
+
+      let list = EVENTS.slice();
+
+      if (q) list = list.filter(e =>
+        (e.title||"").toLowerCase().includes(q) ||
+        (e.venue||"").toLowerCase().includes(q) ||
+        (e.city||"").toLowerCase().includes(q) ||
+        (e.category||"").toLowerCase().includes(q)
+      );
+      if (cat)  list = list.filter(e => (e.category||"").toLowerCase() === cat.toLowerCase());
+      if (city) list = list.filter(e => (e.city||"").toLowerCase() === city.toLowerCase());
+      if (price === "free") list = list.filter(e => (e.price||"").toLowerCase().includes("free"));
+      else if (price === "paid") list = list.filter(e => !((e.price||"").toLowerCase().includes("free")));
+
+      const entry = SORTS[sortKey] || SORTS[""];
+      if (entry.cmp) list = list.slice().sort(entry.cmp);
+
+      filtered = list;
+      if (resetVisible) visible = PAGE_SIZE;
+      renderGrid(filtered, visible);
+    }
+
+    // Controls
+    document.getElementById("apply").addEventListener("click", ()=>applyFilters(true));
+    document.getElementById("reset").addEventListener("click", () => {
+      ["q","category","city","price","postcode","radius","sort"].forEach(id=>{
+        const el = $(id); if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
+      });
+      applyFilters(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    document.getElementById("sort").addEventListener("change", ()=>applyFilters(true));
+
+    // Load More: scroll first new card to top (account for sticky header)
+    document.getElementById("loadMoreBtn").addEventListener("click", ()=>{
+      const prev = visible;
+      visible += PAGE_SIZE;
+      renderGrid(filtered, visible);
+
+      const firstNew = grid.children[prev];
+      if (firstNew){
+        const header = document.querySelector('header');
+        const offset = (header?.offsetHeight || 0) + 8;
+        const y = firstNew.getBoundingClientRect().top + window.scrollY - offset;
+        const focusable = firstNew.querySelector('a,button,[tabindex]');
+        if (focusable) focusable.focus({ preventScroll: true });
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    });
+
+    // Back to top visibility + behavior
+    function updateToTop(){
+      const show = window.scrollY > 600;
+      toTop.classList.toggle('show', show);
+    }
+    updateToTop();
+    window.addEventListener('scroll', updateToTop, { passive: true });
+    toTop.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // Initial render
+    applyFilters(true);
+  </script>
+</body>
+</html>
