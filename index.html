@@ -1,143 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle (canary A1)</title>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <link rel="stylesheet" href="styles.css?v=17">
-  <style>
-    /* Small inline style for the yellow “Beta” pill */
-    .beta-pill {
-      display:inline-block;
-      margin-left:8px;
-      padding:2px 8px;
-      font-size:12px;
-      line-height:18px;
-      border-radius:999px;
-      background:#FFE066; /* soft yellow */
-      color:#2b2b2b;
-      border:1px solid rgba(0,0,0,.08);
-      vertical-align:middle;
-      font-weight:600;
-    }
-    /* Ensure hero spacing stays pleasant even with small screens */
-    .hero h1 { margin-bottom: 8px; }
-    .hero .tagline { margin-top: 0; }
-  </style>
+
+  <!-- Your existing base CSS -->
+  <link rel="stylesheet" href="app.v15.css" />
+
+  <!-- New tiny override layer to make header sticky -->
+  <link rel="stylesheet" href="app.v16.css" />
 </head>
 <body>
-  <!-- Header / Nav -->
-  <header>
-    <div class="container nav">
-      <div class="brand">
-        <span class="logo"></span>
-        <a href="index.html">Spondle</a>
-        <span class="beta-pill" aria-label="Beta badge">Beta</span>
-      </div>
-      <div class="actions">
-        <a class="btn primary" href="events.html">Explore Events</a>
-        <a class="btn" href="favourites.html">Favourites <span class="badge" data-fav-count style="display:none">0</span></a>
-        <a class="btn" href="organisers.html">For Organisers</a>
-      </div>
+  <!-- ===== Sticky Header ===== -->
+  <header class="site-header">
+    <div class="nav-wrap">
+      <a class="brand" href="index.html">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span class="brand-name">Spondle</span>
+        <span class="beta-pill">Beta</span>
+      </a>
+
+      <nav class="main-nav" aria-label="Primary">
+        <a class="nav-tab is-active" href="index.html">Explore<br/>Events</a>
+        <a class="nav-tab" href="favourites.html">Favourites <span id="favBadge" class="badge" hidden>0</span></a>
+        <a class="nav-tab" href="organisers.html">For<br/>Organisers</a>
+      </nav>
     </div>
   </header>
 
-  <!-- Hero -->
-  <main class="container">
-    <section class="section hero hero-card">
+  <!-- ===== Page Content ===== -->
+  <main class="page">
+    <section class="hero">
       <h1>Spondle (canary A1)</h1>
-      <p class="tagline">Discover gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
+      <p>Discover gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
 
-      <!-- Quick search (non-functional placeholder; wired up later) -->
-      <div class="filters" style="margin-top:16px">
-        <input class="input" id="home-q" placeholder="Try: Bristol gigs, comedy in Leeds, street food in Cardiff…"/>
-        <div class="cta-row" style="margin-top:8px">
-          <a class="btn primary" href="events.html">Search events</a>
-          <a class="btn" href="organisers.html">List your event</a>
-        </div>
+      <div class="hero-actions">
+        <a class="btn primary" href="events.html">Search events</a>
+        <a class="btn" href="organisers.html">List your event</a>
       </div>
     </section>
 
-    <!-- Featured / Latest (static; uses same card styling as events page) -->
     <section class="section">
-      <h2>Popular right now</h2>
-      <div class="grid" id="home-grid">
-        <!-- These are a small subset of the sample events for the homepage -->
-        <a class="card" href="event.html?id=sample-1" style="color:inherit">
-          <div class="thumb"><span class="badge">Bristol • 12 Sep</span> 🎫 Live Music</div>
-          <div class="content">
-            <h3>The Harbourside Sessions</h3>
-            <p class="meta">The Louisiana • 19:30–22:30</p>
-            <div class="row"><span class="chip">Free Entry</span></div>
-          </div>
-        </a>
+      <h2 class="section-title">Popular right now</h2>
 
-        <a class="card" href="event.html?id=sample-5" style="color:inherit">
-          <div class="thumb"><span class="badge">Manchester • 14 Sep</span> 🎭 Comedy</div>
-          <div class="content">
-            <h3>Friday Night Laughs</h3>
-            <p class="meta">The Comedy Store • 20:00–22:00</p>
-            <div class="row"><span class="chip">£14</span></div>
-          </div>
-        </a>
-
-        <a class="card" href="event.html?id=sample-10" style="color:inherit">
-          <div class="thumb"><span class="badge">London • 20 Sep</span> 🛍️ Market</div>
-          <div class="content">
-            <h3>Vintage Vinyl Market</h3>
-            <p class="meta">Camden Market • 10:00–18:00</p>
-            <div class="row"><span class="chip">Free Entry</span></div>
-          </div>
-        </a>
-
-        <a class="card" href="event.html?id=sample-20" style="color:inherit">
-          <div class="thumb"><span class="badge">Bristol • 28 Sep</span> 🤝 Community</div>
-          <div class="content">
-            <h3>Community Repair Café</h3>
-            <p class="meta">Easton Community Centre • 12:00–16:00</p>
-            <div class="row"><span class="chip">Free</span></div>
-          </div>
-        </a>
-
-        <a class="card" href="event.html?id=sample-31" style="color:inherit">
-          <div class="thumb"><span class="badge">Leeds • 04 Oct</span> 🎸 Live Music</div>
-          <div class="content">
-            <h3>Indie Night: Northern Echo</h3>
-            <p class="meta">Brudenell Social Club • 19:00–23:00</p>
-            <div class="row"><span class="chip">£12</span></div>
-          </div>
-        </a>
-
-        <a class="card" href="event.html?id=sample-46" style="color:inherit">
-          <div class="thumb"><span class="badge">London • 24 Oct</span> 🖼️ Arts & Culture</div>
-          <div class="content">
-            <h3>After Hours Gallery Night</h3>
-            <p class="meta">Tate Modern • 18:00–22:00</p>
-            <div class="row"><span class="chip">£12</span></div>
-          </div>
-        </a>
-      </div>
-    </section>
-
-    <!-- CTA strip -->
-    <section class="section hero-card" style="margin-top:8px">
-      <div class="cta-row" style="justify-content:space-between;flex-wrap:wrap;gap:12px">
-        <div><strong>Are you an organiser?</strong> List once on Spondle and share anywhere with our upcoming plug-in.</div>
-        <a class="btn primary" href="organisers.html">Start listing</a>
-      </div>
+      <!-- Featured tile (example, clickable) -->
+      <a class="card featured" href="event.html?id=harbourside-sessions">
+        <div class="card-top">
+          <span class="chip">Bristol • 12 Sep</span>
+          <button class="heart" aria-label="Save this event" type="button">♡</button>
+        </div>
+        <h3 class="card-title">The Harbourside Sessions</h3>
+        <p class="meta">The Louisiana • 19:30–22:30</p>
+        <span class="price-chip">Free Entry</span>
+      </a>
     </section>
   </main>
 
-  <footer>
-    <div class="container foot">
-      <div>© <span id="y"></span> Spondle • build canary A1</div>
-    </div>
+  <footer class="site-footer">
+    <small>© 2025 Spondle • build v31</small>
   </footer>
 
   <script>
-    // Year and any lightweight tweaks can live here
-    document.getElementById('y').textContent = new Date().getFullYear();
+    // (Optional) show favourites count if you already store it
+    try {
+      const raw = localStorage.getItem('spondle:favs') || '[]';
+      const n = JSON.parse(raw).length;
+      if (n > 0) {
+        const b = document.getElementById('favBadge');
+        b.textContent = n;
+        b.hidden = false;
+      }
+    } catch {}
   </script>
 </body>
 </html>
