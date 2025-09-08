@@ -11,22 +11,21 @@
   <style>
     :root { --header-offset: 72px; }
 
-    .wrap { max-width: 980px; margin: 0 auto; }
+    .wrap { max-width: 1100px; margin: 0 auto; }
     .panel {
-      background: #0f1420; border: 1px solid rgba(255,255,255,.08);
-      border-radius: 16px; padding: 16px;
+      background:#0f1420; border:1px solid rgba(255,255,255,.08);
+      border-radius:16px; padding:16px;
     }
-    .twocol { display: grid; gap: 16px; }
-    @media (min-width: 900px){ .twocol { grid-template-columns: 1.1fr .9fr; } }
+    .twocol { display:grid; gap:16px; }
+    @media (min-width: 1040px){ .twocol { grid-template-columns: 1.1fr .9fr; } }
 
-    .field { margin-bottom: 12px; }
+    .field { margin-bottom:12px; }
     .field label { display:block; font-size:14px; color:#9aa3b2; margin-bottom:6px; }
     .input, .select, textarea {
       width:100%; padding:10px 12px; border-radius:12px; color:#e9edf3;
       background:#0c1018; border:1px solid rgba(255,255,255,.08);
     }
     textarea { min-height: 96px; resize: vertical; }
-
     .row { display:flex; gap:10px; }
     .row > * { flex:1; }
 
@@ -37,7 +36,7 @@
     .btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,.14); }
     .btn.small { padding: 8px 12px; border-radius: 10px; }
 
-    /* preview tile (matches site style) */
+    /* preview/drafts tiles (match site) */
     .card { scroll-margin-top: var(--header-offset); }
     .thumb {
       position: relative; border-radius: 12px; overflow: hidden;
@@ -58,9 +57,11 @@
       border:1px solid rgba(255,255,255,.08); padding:6px 10px; border-radius:999px; font-size:12px;
       backdrop-filter: blur(4px);
     }
-    .thumb .heart {
-      position:absolute; right:10px; top:10px; width:34px; height:34px; border-radius:999px;
-      background:rgba(14,18,23,.6); border:1px solid rgba(255,255,255,.08); display:grid; place-items:center;
+    .thumb .pill {
+      position:absolute; right:10px; top:10px;
+      background:rgba(14,18,23,.7);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px; padding:6px 10px; font-size:12px;
     }
 
     .dates-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
@@ -74,6 +75,14 @@
     .note { font-size: 12px; color: #9aa3b2; margin-top: 6px; }
     .success { color: #7de1c3; font-weight: 600; }
     .error { color: #ff8a8a; font-weight: 600; }
+
+    /* Drafts grid */
+    .grid { display:grid; gap:14px; }
+    @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
+    @media (min-width:1040px){ .grid{ grid-template-columns:1fr 1fr 1fr; } }
+
+    .tile-actions { display:flex; gap:8px; margin-top:8px; }
+    .tile-actions .btn.small { font-size:13px; }
   </style>
 </head>
 <body>
@@ -105,6 +114,22 @@
         <div class="divider"></div>
 
         <form id="eventForm" novalidate>
+          <div class="row">
+            <div class="field">
+              <label for="saveAsDraft">Save mode</label>
+              <select id="saveAsDraft" class="select">
+                <option value="draft" selected>Save as draft (not visible to anyone)</option>
+                <option value="pending">Save & submit for review (pending)</option>
+              </select>
+              <div class="note">Maps to future statuses: <code>draft</code> or <code>pending_review</code>.</div>
+            </div>
+            <div class="field">
+              <label for="draftId">Draft ID</label>
+              <input class="input" id="draftId" placeholder="(auto)" disabled />
+              <div class="note">When editing an existing draft, this shows its ID.</div>
+            </div>
+          </div>
+
           <div class="field">
             <label for="title">Event title *</label>
             <input class="input" id="title" required placeholder="e.g., The Harbourside Sessions">
@@ -192,40 +217,45 @@
           <div class="divider"></div>
 
           <div class="row">
-            <button type="submit" class="btn primary">Save draft</button>
+            <button type="submit" class="btn primary" id="saveBtn">Save draft</button>
             <button type="button" id="exportBtn" class="btn ghost">Export JSON</button>
-            <a class="btn ghost" href="events.html">Preview on All Events</a>
+            <button type="button" id="resetBtn" class="btn ghost">New draft</button>
           </div>
           <div id="msg" class="note" role="status" style="margin-top:8px"></div>
         </form>
       </section>
 
-      <!-- RIGHT: Live preview -->
+      <!-- RIGHT: Live preview + My Drafts -->
       <aside class="panel" aria-labelledby="prevTitle">
         <h2 id="prevTitle" style="margin-top:0">Live preview</h2>
         <div id="previewMount">
-          <a class="card" href="event.html?id=draft-preview">
+          <a class="card" href="event.html?id=draft-preview" onclick="return false">
             <div class="thumb">
               <div id="pImg" class="thumb-gradient"></div>
               <span class="badge" id="pBadge">City • Date</span>
-              <button class="heart" type="button" aria-label="Save" disabled>♡</button>
+              <span class="pill" id="pStatus">draft</span>
             </div>
             <h3 class="card-title" id="pTitle">Event title</h3>
             <p class="meta" id="pMeta">Venue • 19:30–22:30</p>
             <span class="price-chip" id="pPrice">Price</span>
           </a>
         </div>
-        <p class="subtle" style="margin-top:10px">This is how your event will appear in results.</p>
+
+        <div class="divider" style="margin:16px 0"></div>
+
+        <h2 style="margin:0 0 8px">My drafts</h2>
+        <div id="draftsEmpty" class="subtle">No drafts yet.</div>
+        <div id="draftsGrid" class="grid" aria-live="polite"></div>
       </aside>
     </div>
   </main>
 
   <footer class="site-footer">
-    <small>© 2025 Spondle • build v32f</small>
+    <small>© 2025 Spondle • build v33a</small>
   </footer>
 
   <script>
-    // Header spacer
+    // ===== Header spacing
     const setSpacer=()=>{
       const h=document.getElementById('siteHeader').offsetHeight;
       document.getElementById('headerSpacer').style.height=h+'px';
@@ -234,14 +264,19 @@
     window.addEventListener('load',setSpacer,{once:true});
     window.addEventListener('resize',setSpacer);
 
-    // Visibility controls
+    // ===== Persist layer
+    const KEY='spondle:drafts';
+    const loadDrafts=()=>{ try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch{return[]} };
+    const saveDrafts=(list)=>localStorage.setItem(KEY, JSON.stringify(list));
+
+    // ===== Visibility controls
     const visRadios = document.querySelectorAll('input[name="vis"]');
     const restrictRow = document.getElementById('restrictRow');
     visRadios.forEach(r=>r.addEventListener('change',()=>{
       restrictRow.style.display = (document.querySelector('input[name="vis"]:checked').value === 'restricted') ? '' : 'none';
     }));
 
-    // Dates collection
+    // ===== Dates collection
     const dates = [];
     const datesList = document.getElementById('datesList');
     function renderDates(){
@@ -254,10 +289,7 @@
       dates.splice(+b.dataset.i,1); renderDates(); updatePreview();
     });
 
-    function addDate(d){
-      dates.push(d); renderDates(); updatePreview();
-    }
-
+    function addDate(d){ dates.push(d); renderDates(); updatePreview(); }
     function addWeeklyClones(){
       const baseDate = document.getElementById('date').value;
       const start = document.getElementById('start').value || '19:30';
@@ -270,94 +302,195 @@
         addDate({date: iso, start, end});
       }
     }
-
     document.getElementById('addDateBtn').addEventListener('click', ()=>{
-      const d=document.getElementById('date').value;
-      const s=document.getElementById('start').value;
-      const e=document.getElementById('end').value;
-      if(!d||!s||!e) return;
-      addDate({date:d,start:s,end:e});
+      const d=date.value, s=start.value, e=end.value;
+      if(!d||!s||!e) return; addDate({date:d,start:s,end:e});
     });
     document.getElementById('addWeeklyBtn').addEventListener('click', addWeeklyClones);
     document.getElementById('clearDatesBtn').addEventListener('click', ()=>{ dates.length=0; renderDates(); updatePreview(); });
 
-    // Live preview wiring
-    function fmtBadge(d){ if(!d.length) return 'City • Date'; const one=d[0]; return `${(document.getElementById('city').value||'City')} • ${one.date}`; }
-    function fmtMeta(){ const v=document.getElementById('venue').value||'Venue', s=(dates[0]?.start||'19:30'), e=(dates[0]?.end||'22:30'); return `${v} • ${s}–${e}`; }
+    // ===== Form utils
+    const el = id => document.getElementById(id);
+    const MSG = el('msg');
 
-    function updatePreview(){
-      document.getElementById('pTitle').textContent = document.getElementById('title').value || 'Event title';
-      document.getElementById('pMeta').textContent  = fmtMeta();
-      document.getElementById('pBadge').textContent = fmtBadge(dates);
-      document.getElementById('pPrice').textContent = (document.getElementById('price').value || 'Price');
+    function fieldsToDraft(existingId=null){
+      const vis = document.querySelector('input[name="vis"]:checked')?.value || 'public';
+      const status = el('saveAsDraft').value === 'pending' ? 'pending_review' : 'draft';
+      return {
+        id: existingId || ('draft-' + Date.now()),
+        status,
+        title: el('title').value.trim(),
+        category: el('category').value,
+        priceLabel: el('price').value.trim(),
+        venue: el('venue').value.trim(),
+        city: el('city').value.trim(),
+        postcode: el('postcode').value.trim(),
+        address: el('address').value.trim(),
+        description: el('desc').value.trim(),
+        dates: dates.slice(),
+        visibility: vis,
+        restrict: (vis==='restricted') ? {
+          postcode: el('restrictPostcode').value.trim(),
+          radiusMiles: Number(el('restrictRadius').value||0)
+        } : null,
+        image: "" // future upload URL
+      };
     }
 
-    ['title','venue','city','price','date','start','end'].forEach(id=>{
-      const el=document.getElementById(id); el.addEventListener('input', updatePreview);
-      el.addEventListener('change', updatePreview);
-    });
-
-    // Save draft (local only)
     function validate(){
-      const req = ['title','category','venue','city','postcode'];
-      for(const id of req){ const el=document.getElementById(id); if(!el.value){ el.focus(); return `${id} is required`; } }
+      const req=['title','category','venue','city','postcode'];
+      for(const id of req){ const x=el(id); if(!x.value){ x.focus(); return `${id} is required`; } }
       if(dates.length===0) return 'Add at least one date';
       return '';
     }
 
-    function buildDraft(){
-      const vis = document.querySelector('input[name="vis"]:checked')?.value || 'public';
-      const draft = {
-        id: 'draft-' + Date.now(),
-        title: document.getElementById('title').value.trim(),
-        category: document.getElementById('category').value,
-        priceLabel: document.getElementById('price').value.trim(),
-        venue: document.getElementById('venue').value.trim(),
-        city: document.getElementById('city').value.trim(),
-        postcode: document.getElementById('postcode').value.trim(),
-        address: document.getElementById('address').value.trim(),
-        description: document.getElementById('desc').value.trim(),
-        dates: dates.slice(),
-        visibility: vis,
-        restrict: (vis==='restricted') ? {
-          postcode: document.getElementById('restrictPostcode').value.trim(),
-          radiusMiles: Number(document.getElementById('restrictRadius').value||0)
-        } : null,
-        image: "" // placeholder (future: upload -> URL)
-      };
-      return draft;
+    function clearForm(){
+      ['title','price','venue','city','postcode','address','desc','restrictPostcode','restrictRadius'].forEach(id=>el(id).value='');
+      el('category').value='';
+      el('draftId').value='';
+      dates.length=0; renderDates();
+      document.querySelector('input[name="vis"][value="public"]').checked = true;
+      restrictRow.style.display='none';
+      updatePreview();
     }
 
-    const MSG = document.getElementById('msg');
-    document.getElementById('eventForm').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const err = validate();
-      if(err){ MSG.innerHTML = `<span class="error">✕ ${err}</span>`; return; }
-      const draft = buildDraft();
-      const key = 'spondle:drafts';
-      const list = JSON.parse(localStorage.getItem(key)||'[]');
-      list.unshift(draft);
-      localStorage.setItem(key, JSON.stringify(list));
-      MSG.innerHTML = `<span class="success">✓ Draft saved locally. (Not published)</span>`;
-      // Optionally clear? For now, keep values so organiser can tweak.
+    // ===== Preview wiring
+    function fmtBadge(d){ if(!d.length) return (el('city').value||'City')+' • Date'; const one=d[0]; return `${(el('city').value||'City')} • ${one.date}`; }
+    function fmtMeta(){ const v=el('venue').value||'Venue', s=(dates[0]?.start||'19:30'), e=(dates[0]?.end||'22:30'); return `${v} • ${s}–${e}`; }
+    function updatePreview(){
+      el('pTitle').textContent = el('title').value || 'Event title';
+      el('pMeta').textContent  = fmtMeta();
+      el('pBadge').textContent = fmtBadge(dates);
+      el('pPrice').textContent = (el('price').value || 'Price');
+      el('pStatus').textContent = (el('saveAsDraft').value === 'pending') ? 'pending' : 'draft';
+    }
+    ['title','venue','city','price','date','start','end','saveAsDraft'].forEach(id=>{
+      el(id).addEventListener('input', updatePreview);
+      el(id).addEventListener('change', updatePreview);
     });
 
-    // Export JSON (for review / future API)
-    document.getElementById('exportBtn').addEventListener('click', ()=>{
-      const err = validate();
-      if(err){ MSG.innerHTML = `<span class="error">✕ ${err}</span>`; return; }
-      const draft = buildDraft();
-      const blob = new Blob([JSON.stringify(draft, null, 2)], {type:'application/json'});
+    // ===== Save / Export / Reset
+    let editingId = null;
+
+    el('eventForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const err=validate(); if(err){ MSG.innerHTML=`<span class="error">✕ ${err}</span>`; return; }
+      const list = loadDrafts();
+      if (editingId){
+        const idx = list.findIndex(d=>d.id===editingId);
+        if (idx>=0) list[idx] = fieldsToDraft(editingId);
+        else list.unshift(fieldsToDraft(editingId));
+      } else {
+        const draft = fieldsToDraft(null);
+        editingId = draft.id;
+        list.unshift(draft);
+      }
+      saveDrafts(list);
+      el('draftId').value = editingId;
+      MSG.innerHTML = `<span class="success">✓ Draft saved locally (${editingId}).</span>`;
+      renderDrafts();
+    });
+
+    el('exportBtn').addEventListener('click', ()=>{
+      const err=validate(); if(err){ MSG.innerHTML=`<span class="error">✕ ${err}</span>`; return; }
+      const draft = fieldsToDraft(editingId || null);
+      const blob = new Blob([JSON.stringify(draft,null,2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = (draft.title||'event-draft') + '.json';
-      document.body.appendChild(a); a.click();
-      URL.revokeObjectURL(url); a.remove();
+      const a=document.createElement('a'); a.href=url; a.download=(draft.title||'event-draft')+'.json';
+      document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
       MSG.innerHTML = `<span class="success">✓ JSON exported.</span>`;
     });
 
-    // Init preview with defaults
-    updatePreview();
+    el('resetBtn').addEventListener('click', ()=>{
+      editingId=null; clearForm(); MSG.textContent='Ready for a new draft.';
+    });
+
+    // ===== My Drafts
+    const draftsGrid = document.getElementById('draftsGrid');
+    const draftsEmpty = document.getElementById('draftsEmpty');
+
+    function draftCardHTML(d){
+      const imgLayer = d.image
+        ? `<div class="thumb-img" style="background-image:url('${d.image.replace(/'/g,"\\'")}')"></div>`
+        : `<div class="thumb-gradient"></div>`;
+      const badge = `${d.city||'City'} • ${(d.dates?.[0]?.date)||'Date'}`;
+      return `
+      <div class="card" data-id="${d.id}">
+        <div class="thumb">
+          ${imgLayer}
+          <span class="badge">${badge}</span>
+          <span class="pill">${d.status||'draft'}</span>
+        </div>
+        <h3 class="card-title">${d.title||'Untitled event'}</h3>
+        <p class="meta">${d.venue||'Venue'} • ${(d.dates?.[0]?.start||'19:30')}–${(d.dates?.[0]?.end||'22:30')}</p>
+        <span class="price-chip">${d.priceLabel||'Price'}</span>
+        <div class="tile-actions">
+          <button class="btn small ghost" data-act="edit" data-id="${d.id}">Edit</button>
+          <button class="btn small ghost" data-act="delete" data-id="${d.id}">Delete</button>
+        </div>
+      </div>`;
+    }
+
+    function renderDrafts(){
+      const list = loadDrafts();
+      draftsEmpty.style.display = list.length ? 'none' : '';
+      draftsGrid.innerHTML = list.map(draftCardHTML).join('');
+    }
+
+    draftsGrid.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button[data-act]');
+      if(!btn) return;
+      const id = btn.dataset.id;
+      const list = loadDrafts();
+      const idx = list.findIndex(d=>d.id===id);
+      if (idx<0) return;
+
+      if (btn.dataset.act === 'delete'){
+        if (!confirm('Delete this draft?')) return;
+        list.splice(idx,1); saveDrafts(list);
+        renderDrafts();
+        if (editingId === id){ editingId = null; clearForm(); MSG.textContent='Draft deleted.'; }
+        return;
+      }
+
+      if (btn.dataset.act === 'edit'){
+        const d = list[idx];
+        editingId = d.id;
+        el('draftId').value = d.id;
+        el('title').value = d.title||'';
+        el('category').value = d.category||'';
+        el('price').value = d.priceLabel||'';
+        el('venue').value = d.venue||'';
+        el('city').value = d.city||'';
+        el('postcode').value = d.postcode||'';
+        el('address').value = d.address||'';
+        el('desc').value = d.description||'';
+        // visibility
+        (d.visibility==='restricted'
+          ? document.querySelector('input[name="vis"][value="restricted"]')
+          : document.querySelector('input[name="vis"][value="public"]')
+        ).checked = true;
+        restrictRow.style.display = (d.visibility==='restricted') ? '' : 'none';
+        el('restrictPostcode').value = d.restrict?.postcode || '';
+        el('restrictRadius').value = d.restrict?.radiusMiles || '';
+        // status
+        el('saveAsDraft').value = (d.status==='pending_review') ? 'pending' : 'draft';
+        // dates
+        dates.length = 0;
+        (d.dates||[]).forEach(x=>dates.push(x));
+        renderDates();
+        updatePreview();
+        MSG.textContent = 'Draft loaded for editing.';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+
+    // ===== Init
+    function updatePreviewOnly(){ updatePreview(); }
+    window.addEventListener('DOMContentLoaded', ()=>{
+      renderDrafts();
+      updatePreviewOnly();
+    });
   </script>
 </body>
 </html>
