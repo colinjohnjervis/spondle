@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle (canary A1)</title>
 
+  <!-- Base CSS -->
   <link rel="stylesheet" href="app.v15.css" />
+  <!-- Fixed-header override -->
   <link rel="stylesheet" href="app.v17.css" />
 
   <style>
-    :root{ --header-offset: 72px; } /* fallback; updated at runtime */
+    :root{ --header-offset: 72px; } /* updated at runtime */
 
     .grid { display:grid; gap:14px; }
     @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
@@ -23,9 +25,58 @@
     .heart{ font-size:18px; line-height:1; }
     .heart.is-saved{ color:var(--accent,#7de1c3); }
 
-    /* ★ The important bit: keep scrolled cards below sticky header */
+    /* Keep scrolled cards below sticky header */
     .card{ scroll-margin-top: var(--header-offset); }
-    .featured{ scroll-margin-top: var(--header-offset); }
+
+    /* ---------- Thumbnail block (16:9) ---------- */
+    .thumb {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a2230, #0d1220);
+      border: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 10px;
+    }
+    /* Maintain 16:9 using padding-top trick */
+    .thumb::before {
+      content: "";
+      display: block;
+      padding-top: 56.25%; /* 16:9 */
+    }
+    /* Actual image layer (uses inline style background-image when available) */
+    .thumb-img {
+      position: absolute; inset: 0;
+      background-position: center;
+      background-size: cover;
+      filter: saturate(1.05) contrast(1.02);
+    }
+    /* Nice gradient fallback if no image */
+    .thumb-gradient {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(60% 80% at 20% 20%, rgba(94,241,186,0.25) 0%, rgba(94,241,186,0) 60%),
+        radial-gradient(70% 80% at 80% 20%, rgba(119,194,255,0.25) 0%, rgba(119,194,255,0) 60%),
+        linear-gradient(180deg, rgba(0,0,0,0.00) 40%, rgba(0,0,0,0.25) 100%);
+    }
+
+    /* Overlay controls inside the thumbnail */
+    .thumb .badge {
+      position: absolute; left: 10px; bottom: 10px;
+      background: rgba(14,18,23,0.7);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      backdrop-filter: blur(4px);
+    }
+    .thumb .heart {
+      position: absolute; right: 10px; top: 10px;
+      background: rgba(14,18,23,0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      width: 34px; height: 34px; border-radius: 999px;
+      display: grid; place-items: center;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -63,8 +114,10 @@
     <section class="section">
       <h2 class="section-title">Popular right now</h2>
       <a class="card featured" href="event.html?id=harbourside-sessions">
-        <div class="card-top">
-          <span class="chip">Bristol • 12 Sep</span>
+        <div class="thumb">
+          <div class="thumb-gradient"></div>
+          <!-- If you later have a real image: <div class="thumb-img" style="background-image:url('...')"></div> -->
+          <span class="badge">Bristol • 12 Sep</span>
           <button class="heart" type="button" aria-label="Save this event" data-id="harbourside-sessions">♡</button>
         </div>
         <h3 class="card-title">The Harbourside Sessions</h3>
@@ -84,7 +137,7 @@
   </main>
 
   <footer class="site-footer">
-    <small>© 2025 Spondle • build v32b</small>
+    <small>© 2025 Spondle • build v32c</small>
   </footer>
 
   <script src="script.js" defer></script>
@@ -133,7 +186,6 @@
       if (!header || !spacer) return;
       const h = header.offsetHeight;
       spacer.style.height = h + 'px';
-      // expose to CSS so scroll-margin-top matches header height
       document.documentElement.style.setProperty('--header-offset', (h + 8) + 'px');
     }
     window.addEventListener('load', setHeaderSpacer, { once:true });
@@ -155,19 +207,28 @@
           title: `${cats[i%cats.length]} Night #${i+1}`,
           venue: venues[i%venues.length],
           time: "19:30–22:30",
-          priceLabel: (i%5===0) ? "Free Entry" : "£" + (6 + (i%12))
+          priceLabel: (i%5===0) ? "Free Entry" : "£" + (6 + (i%12)),
+          image: "" // put a URL here later to test real images
         });
       }
       return out;
     }
+
     function cardHTML(ev){
       const saved = isSaved(ev.id);
       const heart = saved ? '♥' : '♡';
       const savedClass = saved ? ' is-saved' : '';
+
+      // If ev.image is set, use it; else gradient fallback
+      const imgLayer = ev.image
+        ? `<div class="thumb-img" style="background-image:url('${ev.image.replace(/'/g,"\\'")}')"></div>`
+        : `<div class="thumb-gradient"></div>`;
+
       return `
       <a class="card" href="event.html?id=${encodeURIComponent(ev.id)}">
-        <div class="card-top">
-          <span class="chip">${ev.city} • ${ev.date}</span>
+        <div class="thumb">
+          ${imgLayer}
+          <span class="badge">${ev.city} • ${ev.date}</span>
           <button class="heart${savedClass}" type="button" aria-label="Save this event" data-id="${ev.id}">${heart}</button>
         </div>
         <h3 class="card-title">${ev.title}</h3>
@@ -194,14 +255,12 @@
       shown += next.length;
       if (shown >= ALL.length) document.getElementById('lmWrap').style.display = 'none';
 
-      // With scroll-margin-top in CSS, this aligns perfectly under the sticky header
       if (scrollToFirstNew && firstNew) {
         firstNew.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
     window.addEventListener('DOMContentLoaded', function(){
-      // set initial heart state for featured
       const featuredHeart = document.querySelector('.featured .heart');
       if (featuredHeart) setHeartVisual(featuredHeart, isSaved(featuredHeart.dataset.id));
 
