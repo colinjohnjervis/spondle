@@ -36,18 +36,20 @@
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v17</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v19</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="favs.js?v=16"></script>
   <script>
+    // A small curated subset for homepage (you have 50 on events.html)
     const EVENTS = [
-      { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol", dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"Live Music" },
-      { id:"sample-2", title:"Friday Night Laughs", city:"Manchester", dateLabel:"14 Sep", venue:"Northern Quarter", time:"20:00–22:00", price:"£12", category:"Comedy" },
-      { id:"sample-3", title:"Riverside Street Food", city:"Cardiff", dateLabel:"15 Sep", venue:"Market Square", time:"11:00–17:00", price:"Family", category:"Community" },
-      { id:"sample-6", title:"Outdoor Cinema Night", city:"Brighton", dateLabel:"22 Sep", venue:"Brighton Seafront", time:"20:30–23:00", price:"£10", category:"Film" },
-      { id:"sample-9", title:"Open Mic Poetry Night", city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar", time:"19:00–22:00", price:"Free Entry", category:"Arts & Culture" },
+      { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol",   dateLabel:"12 Sep", venue:"The Louisiana",      time:"19:30–22:30", price:"Free Entry",   category:"Live Music" },
+      { id:"sample-5", title:"Friday Night Laughs",      city:"Manchester",dateLabel:"14 Sep", venue:"The Comedy Store",  time:"20:00–22:00", price:"£14",          category:"Comedy" },
+      { id:"sample-12",title:"Riverside Street Food",    city:"Cardiff",   dateLabel:"15 Sep", venue:"Market Square",      time:"11:00–17:00", price:"Family",       category:"Community" },
+      { id:"sample-18",title:"Outdoor Cinema Night",     city:"Brighton",  dateLabel:"22 Sep", venue:"Madeira Drive",      time:"20:30–23:00", price:"£10",          category:"Film" },
+      { id:"sample-22",title:"Open Mic Poetry Night",    city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar",      time:"19:00–22:00", price:"Free Entry",   category:"Arts & Culture" },
+      { id:"sample-31",title:"Indie Night: Northern Echo",city:"Leeds",    dateLabel:"04 Oct", venue:"Brudenell Social Club",time:"19:00–23:00",price:"£12",          category:"Live Music" }
     ];
 
     const homeGrid = document.getElementById("homeGrid");
