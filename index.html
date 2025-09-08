@@ -9,11 +9,19 @@
   <link rel="stylesheet" href="app.v15.css" />
   <!-- Fixed-header override -->
   <link rel="stylesheet" href="app.v17.css" />
+
   <style>
-    /* simple grid styles (lightweight) */
+    /* lightweight grid */
     .grid { display: grid; gap: 14px; }
     @media (min-width: 680px){ .grid { grid-template-columns: 1fr 1fr; } }
     @media (min-width: 980px){ .grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+    /* load more button */
+    .loadmore-wrap { display:flex; justify-content:center; margin: 18px 0 8px; }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--card-border,#2a2f3a);
+      color: var(--text,#dfe7ff); padding: 10px 16px; border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -61,27 +69,32 @@
       </a>
     </section>
 
-    <!-- New: Latest events grid so there's enough to scroll -->
-    <section class="section">
+    <!-- Latest events grid with Load More -->
+    <section class="section" id="latestSection">
       <h2 class="section-title">Latest events</h2>
       <div id="homeGrid" class="grid" aria-live="polite"></div>
+      <div class="loadmore-wrap" id="lmWrap">
+        <button id="loadMoreBtn" class="btn-ghost" type="button">Load more</button>
+      </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <small>© 2025 Spondle • build v31h</small>
+    <small>© 2025 Spondle • build v31j</small>
   </footer>
 
-  <!-- Your data/functions (if present) -->
+  <!-- site scripts (if present) -->
   <script src="script.js" defer></script>
 
   <script>
-    // Favourites badge (safe)
-    try {
-      const raw = localStorage.getItem('spondle:favs') || '[]';
-      const n = JSON.parse(raw).length;
-      if (n > 0) { const b = document.getElementById('favBadge'); b.textContent = n; b.hidden = false; }
-    } catch {}
+    // Badge
+    (function(){
+      try {
+        const raw = localStorage.getItem('spondle:favs') || '[]';
+        const n = JSON.parse(raw).length;
+        if (n > 0) { const b = document.getElementById('favBadge'); b.textContent = n; b.hidden = false; }
+      } catch {}
+    })();
 
     // Fixed-header spacer
     function setHeaderSpacer() {
@@ -90,13 +103,12 @@
       if (!header || !spacer) return;
       spacer.style.height = header.offsetHeight + 'px';
     }
-    window.addEventListener('load', setHeaderSpacer, { once: true });
+    window.addEventListener('load', setHeaderSpacer, { once:true });
     window.addEventListener('resize', setHeaderSpacer);
 
-    // Minimal renderer for homepage tiles (uses SAMPLE_EVENTS if available, else makes some)
+    // ----- Data helpers -----
     function getEventsSample(){
       if (window.SAMPLE_EVENTS && Array.isArray(window.SAMPLE_EVENTS)) return window.SAMPLE_EVENTS;
-      // fallback: make dummy events
       const cities = ["Bristol","Manchester","Edinburgh","Cardiff","Leeds","London","Bath","Oxford"];
       const cats = ["Live Music","Comedy","Food & Drink","Theatre","Community","Film","Talks","Family"];
       const venues = ["The Fleece","The Louisiana","The Stand","The Apple","Academy","Arts Centre","Playhouse","Union"];
@@ -115,7 +127,6 @@
       }
       return out;
     }
-
     function cardHTML(ev){
       return `
       <a class="card" href="event.html?id=${encodeURIComponent(ev.id)}">
@@ -129,13 +140,40 @@
       </a>`;
     }
 
-    function renderHomeGrid(){
-      const list = getEventsSample().slice(0,24); // enough to scroll
+    // ----- Load more logic (12 per batch) -----
+    const ALL = getEventsSample();
+    const BATCH = 12;
+    let shown = 0;
+
+    function renderNextBatch(scrollToFirstNew=true){
       const grid = document.getElementById('homeGrid');
-      grid.innerHTML = list.map(cardHTML).join('');
+      const start = shown;
+      const next = ALL.slice(shown, shown + BATCH);
+      if (next.length === 0) return;
+
+      // Append
+      const html = next.map(cardHTML).join('');
+      const marker = document.createElement('div');
+      marker.innerHTML = html;
+      const firstNew = marker.firstElementChild; // for scroll alignment
+      while (marker.firstChild) grid.appendChild(marker.firstChild);
+
+      // Update counters / button visibility
+      shown += next.length;
+      if (shown >= ALL.length) document.getElementById('lmWrap').style.display = 'none';
+
+      // Smooth scroll so the first of the new items is at top of viewport
+      if (scrollToFirstNew && firstNew) {
+        firstNew.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
-    window.addEventListener('DOMContentLoaded', renderHomeGrid);
+    // Init
+    window.addEventListener('DOMContentLoaded', function(){
+      renderNextBatch(false); // first 12 without jumping
+      const btn = document.getElementById('loadMoreBtn');
+      btn.addEventListener('click', () => renderNextBatch(true));
+    });
   </script>
 </body>
 </html>
