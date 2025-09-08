@@ -6,6 +6,27 @@
   <title>Spondle – Events</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <link rel="stylesheet" href="styles.css?v=17">
+  <style>
+    /* Back to top */
+    #toTop {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 999;
+      display: none;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 14px;
+      background: #111;
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(0,0,0,.2);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    #toTop:focus { outline: 3px solid #9ad; outline-offset: 2px; }
+    #toTop.show { display: inline-flex; align-items: center; gap: 6px; }
+    #endNote { text-align:center; margin-top:10px; font-size:.95rem; color:#666; display:none; }
+  </style>
 </head>
 <body>
   <header>
@@ -79,18 +100,22 @@
       <!-- Load More -->
       <div id="loadMoreWrap" style="display:none; margin-top:14px; text-align:center">
         <button class="btn" id="loadMoreBtn">Load more</button>
+        <div id="endNote">You’ve reached the end 🎉</div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v23</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v24</div></div>
   </footer>
+
+  <!-- Back to top -->
+  <button id="toTop" aria-label="Back to top" title="Back to top">↑ Top</button>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="favs.js?v=16"></script>
   <script>
-    // --- 50 realistic sample events ---
+    // --- 50 realistic sample events (same dataset as before) ---
     const EVENTS = [
       { id:"sample-1",  title:"The Harbourside Sessions",          city:"Bristol",    dateLabel:"12 Sep", venue:"The Louisiana",            time:"19:30–22:30", price:"Free Entry",     category:"Live Music" },
       { id:"sample-2",  title:"Southbank Jazz Quartet",            city:"London",     dateLabel:"13 Sep", venue:"Southbank Centre",         time:"20:00–22:00", price:"£16",            category:"Live Music" },
@@ -150,6 +175,8 @@
     const empty = document.getElementById("empty");
     const loadWrap = document.getElementById("loadMoreWrap");
     const loadBtn = document.getElementById("loadMoreBtn");
+    const endNote = document.getElementById("endNote");
+    const toTop = document.getElementById("toTop");
     const $ = id => document.getElementById(id);
 
     // Paging state
@@ -215,8 +242,11 @@
         });
       });
 
-      // Show/hide load more
-      loadWrap.style.display = (slice.length < list.length) ? "block" : "none";
+      // Show/hide load more + end note
+      const hasMore = slice.length < list.length;
+      loadWrap.style.display = hasMore ? "block" : "block";
+      endNote.style.display = hasMore ? "none" : "block";
+      loadBtn.style.display = hasMore ? "inline-block" : "none";
     }
 
     function applyFilters(resetVisible=true){
@@ -254,10 +284,12 @@
         const el = $(id); if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
       });
       applyFilters(true);
+      // Jump back to top after reset for clarity
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.getElementById("sort").addEventListener("change", ()=>applyFilters(true));
 
-    // Load More: scroll the first new card to the top (account for sticky header)
+    // Load More: scroll first new card to top (account for sticky header)
     document.getElementById("loadMoreBtn").addEventListener("click", ()=>{
       const prev = visible;
       visible += PAGE_SIZE;
@@ -268,12 +300,23 @@
         const header = document.querySelector('header');
         const offset = (header?.offsetHeight || 0) + 8;
         const y = firstNew.getBoundingClientRect().top + window.scrollY - offset;
-
-        // focus for accessibility, then scroll
         const focusable = firstNew.querySelector('a,button,[tabindex]');
         if (focusable) focusable.focus({ preventScroll: true });
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
+    });
+
+    // Back to top visibility + behavior
+    function updateToTop(){
+      const show = window.scrollY > 600;
+      toTop.classList.toggle('show', show);
+    }
+    updateToTop();
+    window.addEventListener('scroll', updateToTop, { passive: true });
+
+    toTop.addEventListener('click', ()=>{
+      // account for sticky header by going slightly above main
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // Initial render
