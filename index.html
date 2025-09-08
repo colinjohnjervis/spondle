@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle (canary A1)</title>
 
-  <!-- Your existing base CSS -->
+  <!-- Base CSS (yours) -->
   <link rel="stylesheet" href="app.v15.css" />
 
-  <!-- New tiny override layer to make header sticky -->
-  <link rel="stylesheet" href="app.v16.css" />
+  <!-- Fixed-header override -->
+  <link rel="stylesheet" href="app.v17.css" />
 </head>
 <body>
-  <!-- ===== Sticky Header ===== -->
-  <header class="site-header">
+  <!-- ===== Fixed Header ===== -->
+  <header class="site-header" id="siteHeader">
     <div class="nav-wrap">
       <a class="brand" href="index.html">
         <span class="brand-dot" aria-hidden="true"></span>
@@ -28,6 +28,9 @@
       </nav>
     </div>
   </header>
+
+  <!-- Spacer to offset the fixed header (height set by JS) -->
+  <div class="header-spacer" id="headerSpacer"></div>
 
   <!-- ===== Page Content ===== -->
   <main class="page">
@@ -44,7 +47,6 @@
     <section class="section">
       <h2 class="section-title">Popular right now</h2>
 
-      <!-- Featured tile (example, clickable) -->
       <a class="card featured" href="event.html?id=harbourside-sessions">
         <div class="card-top">
           <span class="chip">Bristol • 12 Sep</span>
@@ -58,20 +60,26 @@
   </main>
 
   <footer class="site-footer">
-    <small>© 2025 Spondle • build v31</small>
+    <small>© 2025 Spondle • build v31f</small>
   </footer>
 
   <script>
-    // (Optional) show favourites count if you already store it
+    // Favourites badge (safe)
     try {
       const raw = localStorage.getItem('spondle:favs') || '[]';
       const n = JSON.parse(raw).length;
-      if (n > 0) {
-        const b = document.getElementById('favBadge');
-        b.textContent = n;
-        b.hidden = false;
-      }
+      if (n > 0) { const b = document.getElementById('favBadge'); b.textContent = n; b.hidden = false; }
     } catch {}
+
+    // Fixed-header spacer — measure header and set spacer height
+    function setHeaderSpacer() {
+      const header = document.getElementById('siteHeader');
+      const spacer = document.getElementById('headerSpacer');
+      if (!header || !spacer) return;
+      spacer.style.height = header.offsetHeight + 'px';
+    }
+    window.addEventListener('load', setHeaderSpacer, { once: true });
+    window.addEventListener('resize', setHeaderSpacer);
   </script>
 </body>
 </html>
