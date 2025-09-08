@@ -9,19 +9,10 @@
   <style>
     /* Back to top */
     #toTop {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      z-index: 999;
-      display: none;
-      border: none;
-      border-radius: 999px;
-      padding: 12px 14px;
-      background: #111;
-      color: #fff;
-      box-shadow: 0 6px 20px rgba(0,0,0,.2);
-      cursor: pointer;
-      font-weight: 600;
+      position: fixed; right: 16px; bottom: 16px; z-index: 999;
+      display: none; border: none; border-radius: 999px; padding: 12px 14px;
+      background: #111; color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,.2);
+      cursor: pointer; font-weight: 600;
     }
     #toTop:focus { outline: 3px solid #9ad; outline-offset: 2px; }
     #toTop.show { display: inline-flex; align-items: center; gap: 6px; }
@@ -99,14 +90,14 @@
 
       <!-- Load More -->
       <div id="loadMoreWrap" style="display:none; margin-top:14px; text-align:center">
-        <button class="btn" id="loadMoreBtn">Load more</button>
-        <div id="endNote">End of results 🎉</div>
+        <button class="btn" id="loadMoreBtn">Load more (v26)</button>
+        <div id="endNote">End of results 🎉 (v26)</div>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v25</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • build v26</div></div>
   </footer>
 
   <!-- Back to top -->
@@ -115,7 +106,7 @@
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
   <script src="favs.js?v=16"></script>
   <script>
-    console.debug("Spondle events build v25 loaded");
+    console.debug("Spondle events build v26 loaded");
 
     // --- 50 realistic sample events ---
     const EVENTS = [
@@ -244,9 +235,9 @@
         });
       });
 
-      // Show/hide load more + end note (fixed)
+      // Show/hide load more + end note
       const hasMore = slice.length < list.length;
-      loadWrap.style.display = (list.length ? "block" : "none");
+      loadWrap.style.display = list.length ? "block" : "none";
       endNote.style.display = hasMore ? "none" : "block";
       loadBtn.style.display = hasMore ? "inline-block" : "none";
     }
