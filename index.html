@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Spondle — Find events near you</title>
+  <title>Spondle – Find events near you</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <link rel="stylesheet" href="styles.css?v=17">
 </head>
@@ -12,7 +12,7 @@
     <div class="container nav">
       <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
       <div class="actions">
-        <a class="btn primary" href="events.html">Explore Events</a>
+        <a class="btn primary" href="events_v27.html">Explore Events</a>
         <a class="btn" href="favourites.html">Favourites <span class="badge" data-fav-count style="display:none">0</span></a>
         <a class="btn" href="organisers.html">For Organisers</a>
       </div>
@@ -20,114 +20,68 @@
   </header>
 
   <main class="container">
-    <section class="hero section">
-      <h1>Discover great events across the UK</h1>
-      <p class="tagline">Music, comedy, film, community and more — all in one place.</p>
+    <section class="section hero-card">
+      <h1>Find something to do</h1>
+      <p class="tagline">Gigs, comedy, markets, film nights, sports and more — all across the UK.</p>
       <div class="cta-row">
-        <a class="btn primary" href="events.html">Browse all events</a>
-        <a class="btn" href="organisers.html">List your event</a>
+        <a class="btn primary" href="events_v27.html">Browse all events</a>
+        <a class="btn" href="organisers.html">Add your event</a>
       </div>
     </section>
 
     <section class="section">
-      <h2>Featured this week</h2>
+      <h2>Popular this week</h2>
       <div class="grid" id="homeGrid"></div>
     </section>
   </main>
 
   <footer>
-    <div class="container foot"><div>© <span id="y"></span> Spondle • build v20</div></div>
+    <div class="container foot"><div>© <span id="y"></span> Spondle • home build v27</div></div>
   </footer>
 
   <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-  <script src="favs.js?v=16"></script>
+  <script src="favs.js?v=17"></script>
   <script>
+    // Show first 12 sample events (same dataset as events page)
     const EVENTS = [
-      { id:"sample-1",  title:"The Harbourside Sessions",          city:"Bristol",    dateLabel:"12 Sep", venue:"The Louisiana",            time:"19:30–22:30", price:"Free Entry",     category:"Live Music" },
-      { id:"sample-2",  title:"Southbank Jazz Quartet",            city:"London",     dateLabel:"13 Sep", venue:"Southbank Centre",         time:"20:00–22:00", price:"£16",            category:"Live Music" },
-      { id:"sample-3",  title:"Riverside Street Food",             city:"Cardiff",    dateLabel:"15 Sep", venue:"Market Square",            time:"11:00–17:00", price:"Family",         category:"Community" },
-      { id:"sample-4",  title:"Craft Beer Festival",               city:"Leeds",      dateLabel:"18 Sep", venue:"City Brewery Hall",        time:"12:00–23:00", price:"£20",            category:"Food & Drink" },
-      { id:"sample-5",  title:"Friday Night Laughs",               city:"Manchester", dateLabel:"14 Sep", venue:"The Comedy Store",         time:"20:00–22:00", price:"£14",            category:"Comedy" },
-      { id:"sample-6",  title:"Outdoor Cinema Night",              city:"Brighton",   dateLabel:"22 Sep", venue:"Madeira Drive",            time:"20:30–23:00", price:"£10",            category:"Film" },
-      { id:"sample-7",  title:"Tech Meetup & Networking",          city:"Birmingham", dateLabel:"25 Sep", venue:"TechHub Central",          time:"18:00–21:00", price:"Free",           category:"Networking" },
-      { id:"sample-8",  title:"Charity Fun Run 5K",                city:"Glasgow",    dateLabel:"27 Sep", venue:"Kelvingrove Park",         time:"09:00–12:00", price:"£15 Donation",   category:"Sports" },
-      { id:"sample-9",  title:"Open Mic Poetry Night",             city:"Liverpool",  dateLabel:"30 Sep", venue:"The Verse Bar",            time:"19:00–22:00", price:"Free Entry",     category:"Arts & Culture" },
-      { id:"sample-10", title:"Vintage Vinyl Market",              city:"London",     dateLabel:"20 Sep", venue:"Camden Market",            time:"10:00–18:00", price:"Free Entry",     category:"Market" },
-      { id:"sample-11", title:"Acoustic Sessions at The Fleece",   city:"Bristol",    dateLabel:"21 Sep", venue:"The Fleece",               time:"19:00–22:00", price:"£8",             category:"Live Music" },
-      { id:"sample-12", title:"Family Science Day",                city:"Manchester", dateLabel:"28 Sep", venue:"Science and Industry Mus.",time:"10:00–16:00", price:"£6",             category:"Community" },
-      { id:"sample-13", title:"Street Art Walking Tour",           city:"Birmingham", dateLabel:"29 Sep", venue:"Digbeth",                   time:"13:00–15:00", price:"£9",             category:"Arts & Culture" },
-      { id:"sample-14", title:"Sourdough Baking Workshop",         city:"Leeds",      dateLabel:"05 Oct", venue:"Northern Kitchen School",  time:"10:00–13:00", price:"£35",            category:"Food & Drink" },
-      { id:"sample-15", title:"Rooftop Cinema: Classic 80s",       city:"London",     dateLabel:"03 Oct", venue:"Peckham Levels",           time:"19:30–22:00", price:"£13",            category:"Film" },
-      { id:"sample-16", title:"Women in Tech Breakfast",           city:"Cardiff",    dateLabel:"02 Oct", venue:"Central Co-working",       time:"08:00–10:00", price:"Free",           category:"Networking" },
-      { id:"sample-17", title:"Saturday Morning Parkrun",          city:"Nottingham", dateLabel:"21 Sep", venue:"Forest Recreation Ground", time:"09:00–10:00", price:"Free",           category:"Sports" },
-      { id:"sample-18", title:"Sea Shanty Evening",                city:"Brighton",   dateLabel:"06 Oct", venue:"The Tempest Inn",          time:"19:00–21:30", price:"£7",             category:"Live Music" },
-      { id:"sample-19", title:"Comedy Night: New Acts",            city:"Leeds",      dateLabel:"07 Oct", venue:"HiFi Club",                time:"20:00–22:30", price:"£6",             category:"Comedy" },
-      { id:"sample-20", title:"Community Repair Café",             city:"Bristol",    dateLabel:"28 Sep", venue:"Easton Community Centre",  time:"12:00–16:00", price:"Free",           category:"Community" },
-      { id:"sample-21", title:"Craft & Makers Market",             city:"Bath",       dateLabel:"12 Oct", venue:"Guildhall",                time:"10:00–17:00", price:"Free Entry",     category:"Market" },
-      { id:"sample-22", title:"Indie Book Club",                   city:"Oxford",     dateLabel:"09 Oct", venue:"Covered Market",           time:"18:00–19:30", price:"Free",           category:"Arts & Culture" },
-      { id:"sample-23", title:"Film Quiz Night",                   city:"Liverpool",  dateLabel:"10 Oct", venue:"FACT",                     time:"19:30–22:00", price:"£5",             category:"Film" },
-      { id:"sample-24", title:"Local History Walk",                city:"Edinburgh",  dateLabel:"13 Oct", venue:"Old Town",                 time:"14:00–16:00", price:"£4",             category:"Arts & Culture" },
-      { id:"sample-25", title:"After-Work Social",                 city:"Manchester", dateLabel:"26 Sep", venue:"Northern Monk Refectory",  time:"18:00–20:30", price:"Free",           category:"Networking" },
-      { id:"sample-26", title:"Board Games Night",                 city:"Glasgow",    dateLabel:"04 Oct", venue:"Drygate Brewing Co.",      time:"18:30–22:30", price:"£3",             category:"Community" },
-      { id:"sample-27", title:"Street Food Fridays",               city:"Sheffield",  dateLabel:"27 Sep", venue:"Kelham Island",            time:"17:00–22:00", price:"Free Entry",     category:"Food & Drink" },
-      { id:"sample-28", title:"City Half Marathon",                city:"Birmingham", dateLabel:"13 Oct", venue:"City Centre",              time:"09:00–12:30", price:"£32",            category:"Sports" },
-      { id:"sample-29", title:"Improvised Comedy Jam",             city:"London",     dateLabel:"08 Oct", venue:"Angel Comedy",             time:"20:00–22:00", price:"Pay What You Can",category:"Comedy" },
-      { id:"sample-30", title:"Salsa Social Night",                city:"Cardiff",    dateLabel:"11 Oct", venue:"Revolution",               time:"20:00–23:30", price:"£9",             category:"Community" },
-      { id:"sample-31", title:"Indie Night: Northern Echo",        city:"Leeds",      dateLabel:"04 Oct", venue:"Brudenell Social Club",    time:"19:00–23:00", price:"£12",            category:"Live Music" },
-      { id:"sample-32", title:"Photography Walkshop",              city:"Edinburgh",  dateLabel:"05 Oct", venue:"Dean Village",             time:"10:00–12:30", price:"£15",            category:"Arts & Culture" },
-      { id:"sample-33", title:"Winter Ale Preview",                city:"Newcastle",  dateLabel:"19 Oct", venue:"Toon Taproom",             time:"16:00–21:00", price:"£8",             category:"Food & Drink" },
-      { id:"sample-34", title:"Rooftop Yoga",                      city:"London",     dateLabel:"22 Sep", venue:"Shoreditch Rooftop",       time:"09:30–10:30", price:"£11",            category:"Sports" },
-      { id:"sample-35", title:"Makers: Pottery Taster",            city:"Bristol",    dateLabel:"19 Oct", venue:"Stokes Croft Studio",      time:"13:00–15:00", price:"£28",            category:"Arts & Culture" },
-      { id:"sample-36", title:"Korean Street Food Pop-Up",         city:"Manchester", dateLabel:"03 Oct", venue:"Ancoats Market Hall",     time:"12:00–20:00", price:"Free Entry",     category:"Food & Drink" },
-      { id:"sample-37", title:"Late at the Museum",                city:"Oxford",     dateLabel:"18 Oct", venue:"Ashmolean",                time:"18:00–21:30", price:"£7",             category:"Arts & Culture" },
-      { id:"sample-38", title:"Lakeside Outdoor Cinema",           city:"Nottingham", dateLabel:"02 Oct", venue:"University Park",          time:"19:00–22:00", price:"£9",             category:"Film" },
-      { id:"sample-39", title:"Charity Quiz for Shelter",          city:"Sheffield",  dateLabel:"09 Oct", venue:"The Fat Cat",              time:"19:30–22:00", price:"£3",             category:"Community" },
-      { id:"sample-40", title:"Sunday Jazz Brunch",                city:"Glasgow",    dateLabel:"06 Oct", venue:"Brel",                     time:"11:00–14:00", price:"£18",            category:"Live Music" },
-      { id:"sample-41", title:"Beginner Coding Meetup",            city:"Birmingham", dateLabel:"01 Oct", venue:"Impact Hub",               time:"18:30–20:30", price:"Free",           category:"Networking" },
-      { id:"sample-42", title:"Classic Film Club",                 city:"Liverpool",  dateLabel:"16 Oct", venue:"Small Cinema",             time:"19:00–21:30", price:"£6",             category:"Film" },
-      { id:"sample-43", title:"Vintage & Retro Fair",              city:"Bath",       dateLabel:"20 Oct", venue:"Assembly Rooms",           time:"10:00–17:00", price:"£2",             category:"Market" },
-      { id:"sample-44", title:"5-a-side Social Football",          city:"Leeds",      dateLabel:"23 Sep", venue:"Kirkstall Leisure",        time:"19:00–20:00", price:"£5",             category:"Sports" },
-      { id:"sample-45", title:"Poetry & Pints",                    city:"Bristol",    dateLabel:"08 Oct", venue:"Left Handed Giant Brewpub",time:"19:00–21:00", price:"Free",           category:"Arts & Culture" },
-      { id:"sample-46", title:"After Hours Gallery Night",         city:"London",     dateLabel:"24 Oct", venue:"Tate Modern",              time:"18:00–22:00", price:"£12",            category:"Arts & Culture" },
-      { id:"sample-47", title:"Startups Breakfast Club",           city:"Manchester", dateLabel:"17 Oct", venue:"Enterprise House",         time:"08:00–09:30", price:"Free",           category:"Networking" },
-      { id:"sample-48", title:"Community Litter Pick",             city:"Oxford",     dateLabel:"28 Sep", venue:"Christ Church Meadow",     time:"10:00–12:00", price:"Free",           category:"Community" },
-      { id:"sample-49", title:"Craft Cider Tasting",               city:"Bristol",    dateLabel:"11 Oct", venue:"The Apple",                time:"18:00–20:00", price:"£10",            category:"Food & Drink" },
-      { id:"sample-50", title:"Stand-Up Showcase",                 city:"Edinburgh",  dateLabel:"25 Oct", venue:"The Stand",                time:"20:00–22:00", price:"£10",            category:"Comedy" }
+      { id:"sample-1", title:"The Harbourside Sessions", city:"Bristol", dateLabel:"12 Sep", venue:"The Louisiana", time:"19:30–22:30", price:"Free Entry", category:"Live Music" },
+      { id:"sample-2", title:"Southbank Jazz Quartet", city:"London", dateLabel:"13 Sep", venue:"Southbank Centre", time:"20:00–22:00", price:"£16", category:"Live Music" },
+      { id:"sample-3", title:"Riverside Street Food", city:"Cardiff", dateLabel:"15 Sep", venue:"Market Square", time:"11:00–17:00", price:"Family", category:"Community" },
+      { id:"sample-4", title:"Craft Beer Festival", city:"Leeds", dateLabel:"18 Sep", venue:"City Brewery Hall", time:"12:00–23:00", price:"£20", category:"Food & Drink" },
+      { id:"sample-5", title:"Friday Night Laughs", city:"Manchester", dateLabel:"14 Sep", venue:"The Comedy Store", time:"20:00–22:00", price:"£14", category:"Comedy" },
+      { id:"sample-6", title:"Outdoor Cinema Night", city:"Brighton", dateLabel:"22 Sep", venue:"Madeira Drive", time:"20:30–23:00", price:"£10", category:"Film" },
+      { id:"sample-7", title:"Tech Meetup & Networking", city:"Birmingham", dateLabel:"25 Sep", venue:"TechHub Central", time:"18:00–21:00", price:"Free", category:"Networking" },
+      { id:"sample-8", title:"Charity Fun Run 5K", city:"Glasgow", dateLabel:"27 Sep", venue:"Kelvingrove Park", time:"09:00–12:00", price:"£15 Donation", category:"Sports" },
+      { id:"sample-9", title:"Open Mic Poetry Night", city:"Liverpool", dateLabel:"30 Sep", venue:"The Verse Bar", time:"19:00–22:00", price:"Free Entry", category:"Arts & Culture" },
+      { id:"sample-10", title:"Vintage Vinyl Market", city:"London", dateLabel:"20 Sep", venue:"Camden Market", time:"10:00–18:00", price:"Free Entry", category:"Market" },
+      { id:"sample-11", title:"Acoustic Sessions at The Fleece", city:"Bristol", dateLabel:"21 Sep", venue:"The Fleece", time:"19:00–22:00", price:"£8", category:"Live Music" },
+      { id:"sample-12", title:"Family Science Day", city:"Manchester", dateLabel:"28 Sep", venue:"Science and Industry Mus.", time:"10:00–16:00", price:"£6", category:"Community" }
     ];
 
-    const homeGrid = document.getElementById("homeGrid");
+    const homeGrid = document.getElementById('homeGrid');
+    homeGrid.innerHTML = EVENTS.map(ev => `
+      <article class="card">
+        <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
+          <div class="thumb"><span class="badge">${ev.city} • ${ev.dateLabel}</span> 🎫 ${ev.category}</div>
+          <div class="content">
+            <h3>${ev.title}</h3>
+            <p class="meta">${ev.venue}${ev.time ? " • " + ev.time : ""}</p>
+            <div class="row"><span class="chip">${ev.price}</span></div>
+          </div>
+        </a>
+        <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id)?"true":"false"}" title="Save">${Favs.has(ev.id)?"♥":"♡"}</button>
+      </article>
+    `).join('');
 
-    function renderHome(list){
-      const toShow = list; // ← show ALL events on homepage (temporary)
-      homeGrid.innerHTML = toShow.map(ev=>{
-        const heart = Favs.has(ev.id) ? "♥" : "♡";
-        return `
-          <article class="card">
-            <a href="event.html?id=${ev.id}" style="display:block;color:inherit">
-              <div class="thumb"><span class="badge">${ev.city || ""} • ${ev.dateLabel || ""}</span> 🎫 ${ev.category || ""}</div>
-              <div class="content">
-                <h3>${ev.title}</h3>
-                <p class="meta">${ev.venue || ""}${ev.time ? " • " + ev.time : ""}</p>
-                <div class="row"><span class="chip">${ev.price || "Free"}</span></div>
-              </div>
-            </a>
-            <button class="fav-overlay" data-fav="${ev.id}" aria-pressed="${Favs.has(ev.id) ? "true":"false"}" title="Save">${heart}</button>
-          </article>
-        `;
-      }).join('');
-
-      homeGrid.querySelectorAll('button[data-fav]').forEach(btn=>{
-        btn.addEventListener('click',(e)=>{
-          e.preventDefault(); e.stopPropagation();
-          const id = btn.getAttribute('data-fav');
-          const now = Favs.toggle(id);
-          btn.setAttribute('aria-pressed', now ? "true":"false");
-          btn.textContent = now ? "♥":"♡";
-        });
+    homeGrid.querySelectorAll('button[data-fav]').forEach(btn=>{
+      btn.addEventListener('click',(e)=>{
+        e.preventDefault(); e.stopPropagation();
+        const id = btn.getAttribute('data-fav');
+        const now = Favs.toggle(id);
+        btn.setAttribute('aria-pressed', now ? "true":"false");
+        btn.textContent = now ? "♥":"♡";
       });
-    }
-
-    renderHome(EVENTS);
+    });
   </script>
 </body>
 </html>
