@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Cureheads – Official</title>
+
+  <!-- Reuse your site CSS -->
+  <link rel="stylesheet" href="app.v15.css" />
+  <link rel="stylesheet" href="app.v17.css" />
+
+  <style>
+    :root { --header-offset: 72px; }
+
+    /* Cureheads palette tweak */
+    body { background: #0b0e13; color: #e8ecf2; }
+    .c-wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+    /* Hero */
+    .hero-band {
+      position: relative; overflow: hidden; border-radius: 20px;
+      background:
+        radial-gradient(80% 80% at 20% 10%, rgba(120,0,180,.25), rgba(0,0,0,0) 60%),
+        radial-gradient(60% 70% at 80% 20%, rgba(0,150,255,.2), rgba(0,0,0,0) 65%),
+        linear-gradient(180deg, #0e1220 0%, #090c14 100%);
+      border: 1px solid rgba(255,255,255,.06);
+      padding: 32px 20px; margin-top: 12px;
+    }
+    .hero-band h1 { font-size: 40px; margin: 0 0 6px; letter-spacing: 1px; }
+    .tagline { color:#b8c1d1; margin: 0 0 16px; }
+    .hero-actions { display:flex; gap:10px; flex-wrap: wrap; }
+    .btn.outline { background: transparent; border: 1px solid rgba(255,255,255,.2); }
+
+    /* Sections */
+    .section { margin: 26px 0; }
+    .section h2 { margin: 0 0 10px; font-size: 22px; }
+    .panel {
+      background:#0f1420; border:1px solid rgba(255,255,255,.08);
+      border-radius:16px; padding:16px;
+    }
+
+    /* Shows list */
+    .shows { display: grid; gap: 10px; }
+    @media (min-width: 720px){ .shows { grid-template-columns: 1fr 1fr; } }
+    .show {
+      display:flex; align-items:center; gap:12px;
+      background:#0c1018; border:1px solid rgba(255,255,255,.06); border-radius:12px;
+      padding:12px;
+    }
+    .date {
+      width: 64px; min-width: 64px; text-align:center;
+      background:#121827; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:8px 6px;
+    }
+    .date .d { font-size: 18px; font-weight: 700; }
+    .date .m { font-size: 12px; color:#9aa3b2; text-transform: uppercase; letter-spacing:.6px }
+    .show .meta { color:#9aa3b2; margin: 2px 0 0; }
+    .show .btn { margin-left: auto; }
+
+    /* Gallery placeholders */
+    .gallery { display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr; }
+    @media (max-width: 720px){ .gallery { grid-template-columns: 1fr 1fr; } }
+    .ph {
+      aspect-ratio: 16/10; border-radius: 12px;
+      background:
+        linear-gradient(140deg, rgba(120,0,180,.28), rgba(0,150,255,.25)),
+        linear-gradient(180deg, #101628, #0b0f1b);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    /* Footer */
+    .site-footer { margin: 30px auto 40px; color:#9aa3b2; }
+  </style>
+</head>
+<body>
+  <!-- You can hide your site header here if you prefer a standalone page -->
+
+  <main class="c-wrap">
+    <section class="hero-band">
+      <h1>The Cureheads</h1>
+      <p class="tagline">The world’s longest-running tribute to The Cure — live since 1990.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#shows">Upcoming shows</a>
+        <a class="btn outline" href="#about">About</a>
+        <a class="btn outline" href="#media">Photos</a>
+      </div>
+    </section>
+
+    <section id="shows" class="section">
+      <h2>Upcoming shows</h2>
+      <div class="panel">
+        <div class="shows">
+          <div class="show">
+            <div class="date"><div class="d">12</div><div class="m">Oct</div></div>
+            <div>
+              <div><strong>O2 Academy</strong>, Bristol</div>
+              <div class="meta">Doors 19:00 • Onstage 20:30</div>
+            </div>
+            <a class="btn" href="event.html?id=cureheads-bristol">Details</a>
+          </div>
+          <div class="show">
+            <div class="date"><div class="d">19</div><div class="m">Oct</div></div>
+            <div>
+              <div><strong>Barrowland</strong>, Glasgow</div>
+              <div class="meta">Doors 19:00 • Onstage 20:30</div>
+            </div>
+            <a class="btn" href="event.html?id=cureheads-glasgow">Details</a>
+          </div>
+          <div class="show">
+            <div class="date"><div class="d">01</div><div class="m">Nov</div></div>
+            <div>
+              <div><strong>Rock City</strong>, Nottingham</div>
+              <div class="meta">Doors 19:00 • Onstage 20:30</div>
+            </div>
+            <a class="btn" href="event.html?id=cureheads-nottingham">Details</a>
+          </div>
+          <div class="show">
+            <div class="date"><div class="d">16</div><div class="m">Nov</div></div>
+            <div>
+              <div><strong>Electric Ballroom</strong>, London</div>
+              <div class="meta">Doors 19:00 • Onstage 20:30</div>
+            </div>
+            <a class="btn" href="event.html?id=cureheads-london">Details</a>
+          </div>
+        </div>
+        <p class="subtle" style="margin-top:12px">This is a demo list. When Spondle goes live, these will auto-pull.</p>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <h2>About</h2>
+      <div class="panel">
+        <p>
+          The Cureheads have performed to hundreds of thousands of fans worldwide, recreating the energy and sound
+          of The Cure’s classic eras. Expect a career-spanning set — from “Boys Don’t Cry” to “Just Like Heaven” and “Lullaby.”
+        </p>
+      </div>
+    </section>
+
+    <section id="media" class="section">
+      <h2>Photos</h2>
+      <div class="panel">
+        <div class="gallery">
+          <div class="ph"></div>
+          <div class="ph"></div>
+          <div class="ph"></div>
+          <div class="ph"></div>
+          <div class="ph"></div>
+          <div class="ph"></div>
+        </div>
+        <p class="subtle" style="margin-top:10px">Placeholders for now — swap in real images later.</p>
+      </div>
+    </section>
+
+    <section id="contact" class="section">
+      <h2>Contact & socials</h2>
+      <div class="panel">
+        <p>Email: <a href="mailto:booking@thecureheads.com">booking@thecureheads.com</a></p>
+        <p>Facebook • Instagram • X (links to add later)</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer c-wrap">
+    <small>© The Cureheads • Demo build</small>
+  </footer>
+</body>
+</html>
