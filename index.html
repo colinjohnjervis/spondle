@@ -5,11 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle (canary A1)</title>
 
-  <!-- Base CSS (yours) -->
+  <!-- Base CSS -->
   <link rel="stylesheet" href="app.v15.css" />
-
   <!-- Fixed-header override -->
   <link rel="stylesheet" href="app.v17.css" />
+  <style>
+    /* simple grid styles (lightweight) */
+    .grid { display: grid; gap: 14px; }
+    @media (min-width: 680px){ .grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 980px){ .grid { grid-template-columns: 1fr 1fr 1fr; } }
+  </style>
 </head>
 <body>
   <!-- ===== Fixed Header ===== -->
@@ -20,7 +25,6 @@
         <span class="brand-name">Spondle</span>
         <span class="beta-pill">Beta</span>
       </a>
-
       <nav class="main-nav" aria-label="Primary">
         <a class="nav-tab is-active" href="index.html">Explore<br/>Events</a>
         <a class="nav-tab" href="favourites.html">Favourites <span id="favBadge" class="badge" hidden>0</span></a>
@@ -29,7 +33,7 @@
     </div>
   </header>
 
-  <!-- Spacer to offset the fixed header (height set by JS) -->
+  <!-- Spacer for fixed header -->
   <div class="header-spacer" id="headerSpacer"></div>
 
   <!-- ===== Page Content ===== -->
@@ -37,16 +41,15 @@
     <section class="hero">
       <h1>Spondle (canary A1)</h1>
       <p>Discover gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
-
       <div class="hero-actions">
         <a class="btn primary" href="events.html">Search events</a>
         <a class="btn" href="organisers.html">List your event</a>
       </div>
     </section>
 
+    <!-- Featured card (kept) -->
     <section class="section">
       <h2 class="section-title">Popular right now</h2>
-
       <a class="card featured" href="event.html?id=harbourside-sessions">
         <div class="card-top">
           <span class="chip">Bristol • 12 Sep</span>
@@ -57,11 +60,20 @@
         <span class="price-chip">Free Entry</span>
       </a>
     </section>
+
+    <!-- New: Latest events grid so there's enough to scroll -->
+    <section class="section">
+      <h2 class="section-title">Latest events</h2>
+      <div id="homeGrid" class="grid" aria-live="polite"></div>
+    </section>
   </main>
 
   <footer class="site-footer">
-    <small>© 2025 Spondle • build v31f</small>
+    <small>© 2025 Spondle • build v31h</small>
   </footer>
+
+  <!-- Your data/functions (if present) -->
+  <script src="script.js" defer></script>
 
   <script>
     // Favourites badge (safe)
@@ -71,7 +83,7 @@
       if (n > 0) { const b = document.getElementById('favBadge'); b.textContent = n; b.hidden = false; }
     } catch {}
 
-    // Fixed-header spacer — measure header and set spacer height
+    // Fixed-header spacer
     function setHeaderSpacer() {
       const header = document.getElementById('siteHeader');
       const spacer = document.getElementById('headerSpacer');
@@ -80,6 +92,50 @@
     }
     window.addEventListener('load', setHeaderSpacer, { once: true });
     window.addEventListener('resize', setHeaderSpacer);
+
+    // Minimal renderer for homepage tiles (uses SAMPLE_EVENTS if available, else makes some)
+    function getEventsSample(){
+      if (window.SAMPLE_EVENTS && Array.isArray(window.SAMPLE_EVENTS)) return window.SAMPLE_EVENTS;
+      // fallback: make dummy events
+      const cities = ["Bristol","Manchester","Edinburgh","Cardiff","Leeds","London","Bath","Oxford"];
+      const cats = ["Live Music","Comedy","Food & Drink","Theatre","Community","Film","Talks","Family"];
+      const venues = ["The Fleece","The Louisiana","The Stand","The Apple","Academy","Arts Centre","Playhouse","Union"];
+      const out = [];
+      for (let i=0;i<60;i++){
+        out.push({
+          id: "e"+(1000+i),
+          city: cities[i%cities.length],
+          date: `${10+(i%20)} Oct`,
+          category: cats[i%cats.length],
+          title: `${cats[i%cats.length]} Night #${i+1}`,
+          venue: venues[i%venues.length],
+          time: "19:30–22:30",
+          priceLabel: (i%5===0) ? "Free Entry" : "£" + (6 + (i%12))
+        });
+      }
+      return out;
+    }
+
+    function cardHTML(ev){
+      return `
+      <a class="card" href="event.html?id=${encodeURIComponent(ev.id)}">
+        <div class="card-top">
+          <span class="chip">${ev.city} • ${ev.date}</span>
+          <button class="heart" aria-label="Save this event" type="button">♡</button>
+        </div>
+        <h3 class="card-title">${ev.title}</h3>
+        <p class="meta">${ev.venue} • ${ev.time}</p>
+        <span class="price-chip">${ev.priceLabel}</span>
+      </a>`;
+    }
+
+    function renderHomeGrid(){
+      const list = getEventsSample().slice(0,24); // enough to scroll
+      const grid = document.getElementById('homeGrid');
+      grid.innerHTML = list.map(cardHTML).join('');
+    }
+
+    window.addEventListener('DOMContentLoaded', renderHomeGrid);
   </script>
 </body>
 </html>
