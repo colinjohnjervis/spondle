@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="app.v17.css" />
 
   <style>
+    :root{ --header-offset: 72px; } /* fallback; updated at runtime */
+
     .grid { display:grid; gap:14px; }
     @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
     @media (min-width:980px){ .grid{ grid-template-columns:1fr 1fr 1fr; } }
@@ -17,9 +19,13 @@
     .btn-ghost{ background:transparent; border:1px solid var(--card-border,#2a2f3a);
       color:var(--text,#dfe7ff); padding:10px 16px; border-radius:10px; }
 
-    /* tiny cosmetic for saved hearts */
+    /* Favourite hearts */
     .heart{ font-size:18px; line-height:1; }
     .heart.is-saved{ color:var(--accent,#7de1c3); }
+
+    /* ★ The important bit: keep scrolled cards below sticky header */
+    .card{ scroll-margin-top: var(--header-offset); }
+    .featured{ scroll-margin-top: var(--header-offset); }
   </style>
 </head>
 <body>
@@ -78,7 +84,7 @@
   </main>
 
   <footer class="site-footer">
-    <small>© 2025 Spondle • build v32a</small>
+    <small>© 2025 Spondle • build v32b</small>
   </footer>
 
   <script src="script.js" defer></script>
@@ -107,7 +113,7 @@
       updateBadge();
     }
 
-    // Stop card navigation when heart is tapped (works for all cards)
+    // Stop card navigation when heart is tapped
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('button.heart');
       if (!btn) return;
@@ -118,15 +124,17 @@
       toggleFav(id, btn);
     });
 
-    // Initialize badge on load
     updateBadge();
 
-    // ---------- Sticky header spacer ----------
+    // ---------- Sticky header spacer + dynamic scroll offset ----------
     function setHeaderSpacer() {
       const header = document.getElementById('siteHeader');
       const spacer = document.getElementById('headerSpacer');
       if (!header || !spacer) return;
-      spacer.style.height = header.offsetHeight + 'px';
+      const h = header.offsetHeight;
+      spacer.style.height = h + 'px';
+      // expose to CSS so scroll-margin-top matches header height
+      document.documentElement.style.setProperty('--header-offset', (h + 8) + 'px');
     }
     window.addEventListener('load', setHeaderSpacer, { once:true });
     window.addEventListener('resize', setHeaderSpacer);
@@ -186,6 +194,7 @@
       shown += next.length;
       if (shown >= ALL.length) document.getElementById('lmWrap').style.display = 'none';
 
+      // With scroll-margin-top in CSS, this aligns perfectly under the sticky header
       if (scrollToFirstNew && firstNew) {
         firstNew.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
