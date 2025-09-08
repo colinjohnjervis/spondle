@@ -5,23 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle (canary A1)</title>
 
-  <!-- Base CSS -->
   <link rel="stylesheet" href="app.v15.css" />
-  <!-- Fixed-header override -->
   <link rel="stylesheet" href="app.v17.css" />
 
   <style>
-    /* lightweight grid */
-    .grid { display: grid; gap: 14px; }
-    @media (min-width: 680px){ .grid { grid-template-columns: 1fr 1fr; } }
-    @media (min-width: 980px){ .grid { grid-template-columns: 1fr 1fr 1fr; } }
+    .grid { display:grid; gap:14px; }
+    @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
+    @media (min-width:980px){ .grid{ grid-template-columns:1fr 1fr 1fr; } }
 
-    /* load more button */
-    .loadmore-wrap { display:flex; justify-content:center; margin: 18px 0 8px; }
-    .btn-ghost {
-      background: transparent; border: 1px solid var(--card-border,#2a2f3a);
-      color: var(--text,#dfe7ff); padding: 10px 16px; border-radius: 10px;
-    }
+    .loadmore-wrap{ display:flex; justify-content:center; margin:18px 0 8px; }
+    .btn-ghost{ background:transparent; border:1px solid var(--card-border,#2a2f3a);
+      color:var(--text,#dfe7ff); padding:10px 16px; border-radius:10px; }
+
+    /* tiny cosmetic for saved hearts */
+    .heart{ font-size:18px; line-height:1; }
+    .heart.is-saved{ color:var(--accent,#7de1c3); }
   </style>
 </head>
 <body>
@@ -55,13 +53,13 @@
       </div>
     </section>
 
-    <!-- Featured card (kept) -->
+    <!-- Featured card -->
     <section class="section">
       <h2 class="section-title">Popular right now</h2>
       <a class="card featured" href="event.html?id=harbourside-sessions">
         <div class="card-top">
           <span class="chip">Bristol • 12 Sep</span>
-          <button class="heart" aria-label="Save this event" type="button">♡</button>
+          <button class="heart" type="button" aria-label="Save this event" data-id="harbourside-sessions">♡</button>
         </div>
         <h3 class="card-title">The Harbourside Sessions</h3>
         <p class="meta">The Louisiana • 19:30–22:30</p>
@@ -80,23 +78,50 @@
   </main>
 
   <footer class="site-footer">
-    <small>© 2025 Spondle • build v31j</small>
+    <small>© 2025 Spondle • build v32a</small>
   </footer>
 
-  <!-- site scripts (if present) -->
   <script src="script.js" defer></script>
 
   <script>
-    // Badge
-    (function(){
-      try {
-        const raw = localStorage.getItem('spondle:favs') || '[]';
-        const n = JSON.parse(raw).length;
-        if (n > 0) { const b = document.getElementById('favBadge'); b.textContent = n; b.hidden = false; }
-      } catch {}
-    })();
+    // ---------- FAVOURITES ----------
+    const FKEY = 'spondle:favs';
+    function readFavs(){ try { return JSON.parse(localStorage.getItem(FKEY) || '[]'); } catch { return []; } }
+    function writeFavs(list){ localStorage.setItem(FKEY, JSON.stringify(list)); }
+    function isSaved(id){ return readFavs().includes(id); }
+    function setHeartVisual(btn, saved){
+      btn.textContent = saved ? '♥' : '♡';
+      btn.classList.toggle('is-saved', !!saved);
+    }
+    function updateBadge(){
+      const b = document.getElementById('favBadge');
+      const n = readFavs().length;
+      if (n > 0){ b.textContent = n; b.hidden = false; } else { b.hidden = true; }
+    }
+    function toggleFav(id, btn){
+      const favs = readFavs();
+      const i = favs.indexOf(id);
+      if (i >= 0) favs.splice(i,1); else favs.push(id);
+      writeFavs(favs);
+      setHeartVisual(btn, i < 0);
+      updateBadge();
+    }
 
-    // Fixed-header spacer
+    // Stop card navigation when heart is tapped (works for all cards)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('button.heart');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      if (!id) return;
+      toggleFav(id, btn);
+    });
+
+    // Initialize badge on load
+    updateBadge();
+
+    // ---------- Sticky header spacer ----------
     function setHeaderSpacer() {
       const header = document.getElementById('siteHeader');
       const spacer = document.getElementById('headerSpacer');
@@ -106,7 +131,7 @@
     window.addEventListener('load', setHeaderSpacer, { once:true });
     window.addEventListener('resize', setHeaderSpacer);
 
-    // ----- Data helpers -----
+    // ---------- SAMPLE DATA + LOAD MORE ----------
     function getEventsSample(){
       if (window.SAMPLE_EVENTS && Array.isArray(window.SAMPLE_EVENTS)) return window.SAMPLE_EVENTS;
       const cities = ["Bristol","Manchester","Edinburgh","Cardiff","Leeds","London","Bath","Oxford"];
@@ -128,11 +153,14 @@
       return out;
     }
     function cardHTML(ev){
+      const saved = isSaved(ev.id);
+      const heart = saved ? '♥' : '♡';
+      const savedClass = saved ? ' is-saved' : '';
       return `
       <a class="card" href="event.html?id=${encodeURIComponent(ev.id)}">
         <div class="card-top">
           <span class="chip">${ev.city} • ${ev.date}</span>
-          <button class="heart" aria-label="Save this event" type="button">♡</button>
+          <button class="heart${savedClass}" type="button" aria-label="Save this event" data-id="${ev.id}">${heart}</button>
         </div>
         <h3 class="card-title">${ev.title}</h3>
         <p class="meta">${ev.venue} • ${ev.time}</p>
@@ -140,39 +168,36 @@
       </a>`;
     }
 
-    // ----- Load more logic (12 per batch) -----
     const ALL = getEventsSample();
     const BATCH = 12;
     let shown = 0;
 
     function renderNextBatch(scrollToFirstNew=true){
       const grid = document.getElementById('homeGrid');
-      const start = shown;
       const next = ALL.slice(shown, shown + BATCH);
       if (next.length === 0) return;
 
-      // Append
       const html = next.map(cardHTML).join('');
-      const marker = document.createElement('div');
-      marker.innerHTML = html;
-      const firstNew = marker.firstElementChild; // for scroll alignment
-      while (marker.firstChild) grid.appendChild(marker.firstChild);
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = html;
+      const firstNew = wrapper.firstElementChild;
+      while (wrapper.firstChild) grid.appendChild(wrapper.firstChild);
 
-      // Update counters / button visibility
       shown += next.length;
       if (shown >= ALL.length) document.getElementById('lmWrap').style.display = 'none';
 
-      // Smooth scroll so the first of the new items is at top of viewport
       if (scrollToFirstNew && firstNew) {
         firstNew.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
-    // Init
     window.addEventListener('DOMContentLoaded', function(){
-      renderNextBatch(false); // first 12 without jumping
-      const btn = document.getElementById('loadMoreBtn');
-      btn.addEventListener('click', () => renderNextBatch(true));
+      // set initial heart state for featured
+      const featuredHeart = document.querySelector('.featured .heart');
+      if (featuredHeart) setHeartVisual(featuredHeart, isSaved(featuredHeart.dataset.id));
+
+      renderNextBatch(false); // initial 12
+      document.getElementById('loadMoreBtn').addEventListener('click', () => renderNextBatch(true));
     });
   </script>
 </body>
