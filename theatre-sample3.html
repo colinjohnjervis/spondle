@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Theatre Sample 3 — Brochure Style</title>
+<meta name="color-scheme" content="light dark"/>
+<style>
+  :root{
+    --paper:#f7f3ee;         /* warm paper */
+    --ink:#252525;           /* rich black */
+    --muted:#6a6a6a;         /* copy grey */
+    --gold:#c7a563;          /* accent gold */
+    --line:#e6dfd6;          /* subtle rule */
+    --panel:#ffffff;         /* card */
+    --r:16px;
+    --max:1100px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#141313; --ink:#f4f2ef; --muted:#b4b0a9; --gold:#ddc07a; --line:#2a2a2a; --panel:#1a1918; }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font:16px/1.75 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  h1,h2,h3,h4{
+    font-family: "Georgia", "Iowan Old Style", "Times New Roman", serif;
+    letter-spacing:.2px; margin:0 0 .3em;
+  }
+  a{color:inherit; text-decoration:none}
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 20px}
+
+  /* Header / nav */
+  .top{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(#f7f3ee, rgba(247,243,238,.92));
+    backdrop-filter:saturate(120%) blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    height:64px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .brand{display:flex; align-items:center; gap:12px}
+  .crest{
+    width:28px; height:28px; border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff 0 30%, var(--gold) 31%), conic-gradient(from 0deg, var(--gold), #b18e4e, var(--gold));
+    box-shadow:0 0 0 4px rgba(199,165,99,.18);
+  }
+  .brandname{font-weight:800; letter-spacing:.8px}
+  .tabs{display:flex; gap:18px; font-weight:600; color:#3b3b3b}
+  .tabs a{padding:8px 10px; border-radius:999px}
+  .tabs a:hover{background:rgba(0,0,0,.04)}
+  @media (prefers-color-scheme: dark){ .top{background:linear-gradient(#141313, rgba(20,19,19,.92));} .tabs a:hover{background:rgba(255,255,255,.06)} }
+
+  /* Hero */
+  .hero{
+    margin:20px 0 10px;
+    border:1px solid var(--line); border-radius:var(--r); overflow:hidden;
+    display:grid; grid-template-columns: 1.05fr .95fr;
+    background:var(--panel);
+  }
+  @media (max-width:900px){ .hero{grid-template-columns:1fr} }
+  .hero-copy{padding:28px}
+  .eyebrow{
+    text-transform:uppercase; letter-spacing:.16em; color:var(--muted); font-size:12px
+  }
+  .hero h1{font-size:44px; line-height:1.08}
+  .lede{color:#595959; max-width:50ch}
+  .rule{height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); margin:12px 0}
+  .cta-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:12px}
+  .btn{padding:10px 14px; border-radius:999px; border:1px solid var(--line); background:#fff; font-weight:700}
+  .btn.gold{background:var(--gold); color:#1c1b1a; border-color:transparent}
+  @media (prefers-color-scheme: dark){ .btn{background:#222} }
+
+  .hero-art{
+    min-height:280px; display:grid; place-items:center; padding:16px;
+    background:
+      linear-gradient(160deg, rgba(199,165,99,.25), rgba(199,165,99,0) 60%),
+      radial-gradient(1200px 300px at 50% 0%, rgba(0,0,0,.04), transparent 60%),
+      var(--panel);
+    border-left:1px solid var(--line);
+  }
+  .poster{
+    width:92%; max-width:520px; aspect-ratio:3/4; border-radius:14px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.02)),
+               url('https://images.unsplash.com/photo-1516383607781-913a19294fd1?q=80&w=1200&auto=format&fit=crop') center/cover;
+    box-shadow:0 30px 60px rgba(0,0,0,.15);
+  }
+
+  /* Section header */
+  section{margin:26px 0}
+  .sh{display:flex; align-items:end; justify-content:space-between; gap:12px; margin:0 0 10px}
+  .sh h2{font-size:26px}
+  .badge{border:1px solid var(--line); border-radius:999px; padding:6px 10px; color:var(--muted); font-size:12px}
+
+  /* Shows list (refined) */
+  .shows{display:grid; gap:12px}
+  @media (min-width:900px){ .shows{grid-template-columns:1fr 1fr} }
+  .show{
+    display:grid; grid-template-columns: 140px 1fr auto; gap:14px;
+    border:1px solid var(--line); border-radius:var(--r); background:var(--panel); padding:12px;
+  }
+  @media (max-width:700px){ .show{grid-template-columns:1fr} }
+  .datebox{
+    border:1px solid var(--line); border-radius:12px; display:grid; place-items:center; padding:12px; text-align:center;
+    background:linear-gradient(180deg,#fff, #f6f1e9);
+  }
+  @media (prefers-color-scheme: dark){ .datebox{background:linear-gradient(180deg,#1e1c1a,#141311)} }
+  .datebox .d{font-size:28px; font-weight:800}
+  .datebox .m{color:var(--muted); text-transform:uppercase; letter-spacing:.2em; font-size:12px}
+  .where{font-weight:800}
+  .sub{color:var(--muted); font-size:14px; margin-top:3px}
+  .buy{align-self:center}
+  .tix{padding:10px 14px; border-radius:10px; background:var(--gold); color:#1c1b1a; font-weight:800; border:0}
+
+  /* History timeline */
+  .timeline{border:1px solid var(--line); border-radius:var(--r); background:var(--panel); padding:16px}
+  .tl{display:grid; gap:10px; position:relative; padding-left:14px}
+  .tl::before{content:""; position:absolute; left:6px; top:2px; bottom:2px; width:2px; background:linear-gradient(var(--gold), transparent)}
+  .tl-item{position:relative; padding-left:10px}
+  .tl-item::before{content:""; position:absolute; left:-6px; top:.55em; width:10px; height:10px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 3px rgba(199,165,99,.2)}
+
+  /* Cast grid */
+  .cast{display:grid; gap:12px; grid-template-columns:repeat(12,1fr)}
+  .person{
+    grid-column:span 4; border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--panel);
+    display:grid; grid-template-columns:64px 1fr; gap:12px; align-items:center;
+  }
+  @media (max-width:900px){ .person{grid-column:span 6} }
+  @media (max-width:560px){ .person{grid-column:span 12} }
+  .avatar{
+    width:64px; height:64px; border-radius:50%; border:1px solid var(--line);
+    background:linear-gradient(180deg,#f0ebe3,#e7dfd5);
+  }
+  @media (prefers-color-scheme: dark){ .avatar{background:linear-gradient(180deg,#22201e,#1a1918)} }
+  .role{color:var(--muted); font-size:13px}
+
+  /* Reviews / pull quotes */
+  .quotes{display:grid; gap:12px; grid-template-columns:1fr 1fr}
+  @media (max-width:900px){ .quotes{grid-template-columns:1fr} }
+  .quote{
+    border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:16px; font-style:italic;
+  }
+  .by{color:var(--muted); font-style:normal; margin-top:6px}
+
+  /* Gallery */
+  .gallery{display:grid; gap:10px; grid-template-columns:repeat(12,1fr)}
+  .g{grid-column:span 4; aspect-ratio:16/11; border:1px solid var(--line); border-radius:12px;
+     background:linear-gradient(160deg, rgba(199,165,99,.18), rgba(0,0,0,.04)),
+                url('https://images.unsplash.com/photo-1515169273898-8a8d1f3d3f87?q=80&w=1200&auto=format&fit=crop') center/cover}
+  .g:nth-child(2){background-image:linear-gradient(160deg, rgba(199,165,99,.18), rgba(0,0,0,.04)), url('https://images.unsplash.com/photo-1542144582-1ba00456b5f3?q=80&w=1200&auto=format&fit=crop')}
+  .g:nth-child(3){background-image:linear-gradient(160deg, rgba(199,165,99,.18), rgba(0,0,0,.04)), url('https://images.unsplash.com/photo-1524234107056-1c1f6a5f2a16?q=80&w=1200&auto=format&fit=crop')}
+  @media (max-width:900px){ .g{grid-column:span 6} }
+  @media (max-width:560px){ .g{grid-column:span 12} }
+
+  /* Contact / footer */
+  .panel{border:1px solid var(--line); border-radius:var(--r); background:var(--panel); padding:16px}
+  .muted{color:var(--muted)}
+  footer{margin:36px 0 48px; text-align:center; color:var(--muted)}
+  .hr{height:1px; background:var(--line); margin:18px 0}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="wrap nav">
+      <div class="brand"><span class="crest" aria-hidden="true"></span><span class="brandname">Hanham Players</span></div>
+      <nav class="tabs">
+        <a href="#shows">Shows</a>
+        <a href="#about">About</a>
+        <a href="#cast">Cast</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-copy">
+        <div class="eyebrow">Community Theatre • Bristol</div>
+        <h1 id="title">Winter Season 2025</h1>
+        <p class="lede">A warm, witty programme of classics and contemporary gems — crafted by volunteers, for our community.</p>
+        <div class="rule"></div>
+        <div class="cta-row">
+          <a class="btn gold" href="#shows">View Shows</a>
+          <a class="btn" href="#about">Our Story</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <div class="poster" role="img" aria-label="Season poster placeholder"></div>
+      </div>
+    </section>
+
+    <!-- SHOWS -->
+    <section id="shows">
+      <div class="sh"><h2>Upcoming Performances</h2><span class="badge">Tickets via provider or box office</span></div>
+      <div class="shows">
+        <article class="show">
+          <div class="datebox"><div class="d">12</div><div class="m">Dec</div></div>
+          <div>
+            <div class="where"><em>A Midsummer Night’s Dream</em></div>
+            <div class="sub">Thu–Sat • Hanham Community Centre</div>
+          </div>
+          <div class="buy"><a class="tix" href="#">Tickets</a></div>
+        </article>
+        <article class="show">
+          <div class="datebox"><div class="d">05</div><div class="m">Jan</div></div>
+          <div>
+            <div class="where"><em>Our Town</em></div>
+            <div class="sub">Sun Matinee • Local Theatre Hall</div>
+          </div>
+          <div class="buy"><a class="tix" href="#">Tickets</a></div>
+        </article>
+        <article class="show">
+          <div class="datebox"><div class="d">24</div><div class="m">Jan</div></div>
+          <div>
+            <div class="where"><em>Charity Gala: Scenes & Songs</em></div>
+            <div class="sub">One Night Only • Fundraiser</div>
+          </div>
+          <div class="buy"><a class="tix" href="#">Tickets</a></div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ABOUT / HISTORY -->
+    <section id="about">
+      <div class="sh"><h2>About Hanham Players</h2><span class="badge">Established 1957</span></div>
+      <div class="timeline">
+        <div class="tl">
+          <div class="tl-item"><strong>1957</strong> — First production staged in a church hall to a full house.</div>
+          <div class="tl-item"><strong>1980s</strong> — Annual pantomime tradition begins, raising funds for local causes.</div>
+          <div class="tl-item"><strong>2009</strong> — New rehearsal space opens; membership grows.</div>
+          <div class="tl-item"><strong>Today</strong> — A season of classics, comedies and community showcases.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAST -->
+    <section id="cast">
+      <div class="sh"><h2>Cast & Crew Highlights</h2><span class="badge">Volunteers welcome!</span></div>
+      <div class="cast">
+        <div class="person">
+          <div class="avatar" aria-hidden="true"></div>
+          <div><strong>Alex Carter</strong><div class="role">Director</div></div>
+        </div>
+        <div class="person">
+          <div class="avatar"></div>
+          <div><strong>Priya Shah</strong><div class="role">Stage Manager</div></div>
+        </div>
+        <div class="person">
+          <div class="avatar"></div>
+          <div><strong>Jamie Williams</strong><div class="role">Lead (Dream)</div></div>
+        </div>
+        <div class="person">
+          <div class="avatar"></div>
+          <div><strong>Sam Nguyen</strong><div class="role">Lighting</div></div>
+        </div>
+        <div class="person">
+          <div class="avatar"></div>
+          <div><strong>Rosa Martín</strong><div class="role">Costumes</div></div>
+        </div>
+        <div class="person">
+          <div class="avatar"></div>
+          <div><strong>Ben Lewis</strong><div class="role">Sound</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REVIEWS -->
+    <section id="reviews">
+      <div class="sh"><h2>Reviews & Press</h2></div>
+      <div class="quotes">
+        <blockquote class="quote">“A joyous reminder of what community theatre can be — heartfelt, funny, beautifully staged.”<div class="by">— Local Arts Review</div></blockquote>
+        <blockquote class="quote">“Packed house, big laughs and a standing ovation. Don’t miss the next show.”<div class="by">— Bristol Gazette</div></blockquote>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="gallery">
+      <div class="sh"><h2>From the Archive</h2></div>
+      <div class="gallery">
+        <div class="g"></div><div class="g"></div><div class="g"></div>
+      </div>
+      <p class="muted" style="margin-top:8px">Replace these placeholders with production stills when ready.</p>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="sh"><h2>Contact</h2></div>
+      <div class="panel">
+        Email: <a href="mailto:hello@hanhamplayers.org">hello@hanhamplayers.org</a><br/>
+        Venue: Hanham Community Centre, High Street, Bristol<br/>
+        Socials: Facebook • Instagram • X
+      </div>
+    </section>
+
+    <div class="hr"></div>
+    <footer>
+      <small>© Hanham Players • Theatre microsite demo (brochure style)</small>
+    </footer>
+  </main>
+</body>
+</html>
