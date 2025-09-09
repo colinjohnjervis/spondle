@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Theatre Group Microsite</title>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root {
+      --bg: #111216;
+      --ink: #f2f4f8;
+      --muted: #a2a8b3;
+      --line: rgba(255,255,255,.1);
+      --accent: #ff4c61;
+      --max: 1200px;
+      --r: 18px;
+    }
+    body {
+      margin: 0;
+      font: 16px/1.6 Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 18px; }
+
+    /* Header */
+    header {
+      background: rgba(0, 0, 0, .5);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0; z-index: 100;
+      border-bottom: 1px solid var(--line);
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 64px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; letter-spacing: .5px;
+    }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(255,76,97,.25);
+    }
+    .tabs { display: flex; gap: 14px; }
+    .tabs a {
+      padding: 8px 12px; border-radius: 10px; color: var(--muted);
+    }
+    .tabs a:hover { background: rgba(255,255,255,.05); color: var(--ink); }
+
+    /* Hero */
+    .hero {
+      margin: 20px 0; border-radius: var(--r); overflow: hidden;
+      position: relative; aspect-ratio: 16/7;
+      display: grid; place-items: center; text-align: center;
+      background: linear-gradient(180deg, rgba(0,0,0,.3), rgba(0,0,0,.6)),
+        url('https://via.placeholder.com/1600x700/222/fff?text=Show+Poster') center/cover;
+    }
+    .hero h1 { font-size: 54px; margin: 0; }
+    .hero p { margin: 10px 0 0; font-size: 18px; color: var(--muted); }
+    .btn-primary {
+      display: inline-block; margin-top: 18px;
+      padding: 12px 20px; background: var(--accent); color: #fff;
+      border-radius: 12px; font-weight: 700;
+    }
+
+    /* Section headers */
+    section { margin: 30px 0; }
+    .sh {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 12px;
+    }
+    .sh h2 { margin: 0; font-size: 24px; }
+
+    /* Event list */
+    .shows { display: grid; gap: 14px; }
+    .show {
+      display: flex; align-items: center; justify-content: space-between;
+      border: 1px solid var(--line); border-radius: var(--r); padding: 14px;
+      background: rgba(255,255,255,.03);
+      flex-wrap: wrap;
+    }
+    .meta strong { font-size: 18px; }
+    .meta p { margin: 4px 0 0; color: var(--muted); }
+    .tix {
+      padding: 10px 14px; background: var(--accent); color: #fff;
+      border-radius: 10px; font-weight: 700;
+    }
+
+    /* About & Volunteer panels */
+    .panel {
+      border: 1px solid var(--line); border-radius: var(--r);
+      padding: 16px; background: rgba(255,255,255,.02);
+    }
+
+    /* Gallery */
+    .gallery {
+      display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+      gap: 10px;
+    }
+    .thumb {
+      aspect-ratio: 16/10;
+      background: linear-gradient(140deg, rgba(255,76,97,.2), rgba(255,255,255,.1));
+      border-radius: var(--r); border: 1px solid var(--line);
+    }
+
+    /* Footer */
+    footer {
+      margin: 40px 0 50px; color: var(--muted); text-align: center;
+    }
+    .hr { height: 1px; background: var(--line); margin: 18px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <div class="brand"><span class="dot"></span><span>Theatre Group</span></div>
+      <nav class="tabs">
+        <a href="#shows">Shows</a>
+        <a href="#about">About</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Hero -->
+    <section class="hero">
+      <div>
+        <h1>Our Latest Production</h1>
+        <p>Catch our upcoming show live at your local theatre</p>
+        <a href="#shows" class="btn-primary">View Dates & Tickets</a>
+      </div>
+    </section>
+
+    <!-- Shows -->
+    <section id="shows">
+      <div class="sh"><h2>Upcoming Performances</h2></div>
+      <div class="shows">
+        <div class="show">
+          <div class="meta">
+            <strong>The Christmas Panto</strong>
+            <p>15th - 20th December • Hanham Community Centre</p>
+          </div>
+          <a href="#" class="tix">Tickets</a>
+        </div>
+        <div class="show">
+          <div class="meta">
+            <strong>Murder Mystery Night</strong>
+            <p>5th February • Local Theatre Hall</p>
+          </div>
+          <a href="#" class="tix">Tickets</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about">
+      <div class="sh"><h2>About Us</h2></div>
+      <div class="panel">
+        <p>We’re a small, community-focused theatre group bringing drama, comedy, and creativity to our local audience. Our productions range from annual pantomimes to thought-provoking plays, run entirely by passionate volunteers.</p>
+      </div>
+    </section>
+
+    <!-- Volunteer -->
+    <section>
+      <div class="sh"><h2>Get Involved</h2></div>
+      <div class="panel">
+        <p>We’re always looking for new members! Whether you act, direct, build sets, or just love theatre, there’s a place for you here.</p>
+        <p>Contact us below to join our friendly group.</p>
+      </div>
+    </section>
+
+    <!-- Gallery -->
+    <section id="gallery">
+      <div class="sh"><h2>Past Productions</h2></div>
+      <div class="gallery">
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+        <div class="thumb"></div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+      <div class="sh"><h2>Contact</h2></div>
+      <div class="panel">
+        <p>Email: <a href="mailto:contact@theatre.org">contact@theatre.org</a></p>
+        <p>Follow us on Facebook • Instagram • Twitter</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="hr"></div>
+    <small>© Community Theatre Group • Theatre Microsite Demo</small>
+  </footer>
+</body>
+</html>
