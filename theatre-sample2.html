@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Theatre Sample 2</title>
+  <style>
+    :root {
+      --bg: #111;
+      --text: #f5f5f5;
+      --accent: #d6336c;
+      --muted: #aaa;
+      --card: #1a1a1a;
+      --radius: 14px;
+    }
+    body {
+      margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text);
+    }
+    header {
+      background: var(--accent); padding: 20px; text-align: center;
+    }
+    header h1 {
+      margin: 0; font-size: 2.5rem; font-weight: bold;
+    }
+    nav {
+      display: flex; justify-content: center; gap: 20px; padding: 10px; background: #222;
+    }
+    nav a {
+      color: var(--text); text-decoration: none; font-weight: bold;
+    }
+    .hero {
+      position: relative; height: 60vh; background: url('https://images.unsplash.com/photo-1600378890684-6fae9a5d8a9b') center/cover no-repeat;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hero h2 {
+      background: rgba(0,0,0,0.6); padding: 20px 30px; border-radius: var(--radius); font-size: 2rem;
+    }
+    section {
+      padding: 40px 20px; max-width: 1100px; margin: auto;
+    }
+    h3 {
+      font-size: 1.8rem; margin-bottom: 20px; text-align: center;
+    }
+    .events {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;
+    }
+    .card {
+      background: var(--card); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column;
+    }
+    .card img {
+      width: 100%; height: 200px; object-fit: cover;
+    }
+    .card .content {
+      padding: 15px;
+    }
+    .card h4 { margin: 0; font-size: 1.2rem; }
+    .card p { margin: 10px 0; color: var(--muted); font-size: 0.9rem; }
+    .card a {
+      display: inline-block; padding: 8px 12px; background: var(--accent); color: #fff; text-decoration: none; border-radius: 8px; margin-top: auto;
+    }
+    footer {
+      background: #222; text-align: center; padding: 20px; margin-top: 40px;
+    }
+    @media (max-width: 600px) {
+      header h1 { font-size: 2rem; }
+      .hero { height: 40vh; }
+      .hero h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>The Little Playhouse</h1>
+</header>
+<nav>
+  <a href="#about">About</a>
+  <a href="#shows">Shows</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<section class="hero">
+  <h2>Upcoming: A Midsummer Night's Dream</h2>
+</section>
+
+<section id="about">
+  <h3>About Us</h3>
+  <p style="text-align:center; max-width:700px; margin:auto;">
+    The Little Playhouse is a beloved community theatre, bringing classic and contemporary plays to life with a vibrant cast of local talent.
+  </p>
+</section>
+
+<section id="shows">
+  <h3>Upcoming Shows</h3>
+  <div class="events">
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1581091870622-7c73d15d3e77" alt="Show 1">
+      <div class="content">
+        <h4>A Midsummer Night's Dream</h4>
+        <p>November 15–20, 2025</p>
+        <a href="#">Tickets</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d" alt="Show 2">
+      <div class="content">
+        <h4>Our Town</h4>
+        <p>December 5–10, 2025</p>
+        <a href="#">Tickets</a>
+      </div>
+    </div>
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1540573133985-87b6da6d54a9" alt="Show 3">
+      <div class="content">
+        <h4>Christmas Carol</h4>
+        <p>December 20–24, 2025</p>
+        <a href="#">Tickets</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <h3>Contact</h3>
+  <p style="text-align:center;">123 High Street, Bristol, UK • info@littleplayhouse.com</p>
+</section>
+
+<footer>
+  <p>© 2025 The Little Playhouse</p>
+</footer>
+
+</body>
+</html>
