@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Spondle — Event Ticketing Tab (Mock)</title>
+<meta name="color-scheme" content="light dark"/>
+<style>
+  :root{
+    --bg:#0b0d12; --ink:#f1f4f9; --muted:#9aa3b2; --line:rgba(255,255,255,.1);
+    --card:#10141c; --accent:#58b3ff; --accent2:#ff4c61; --ok:#3ecf8e; --warn:#ffb020; --err:#ff5470;
+    --r:14px; --max:1100px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{--bg:#ffffff; --ink:#121318; --muted:#606977; --line:#e7e9f0; --card:#ffffff; --accent:#2266ff; --accent2:#e84b6a; --ok:#14a36f; --warn:#b77700; --err:#c71e3a;}
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font:15.5px/1.6 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  a{color:inherit; text-decoration:none}
+  .wrap{max-width:var(--max); margin:0 auto; padding:20px 16px}
+
+  h1{margin:0 0 10px; font-size:22px}
+  .sub{color:var(--muted); margin-bottom:16px}
+
+  .layout{display:grid; gap:16px; grid-template-columns:1.15fr .85fr}
+  @media (max-width:980px){ .layout{grid-template-columns:1fr} }
+
+  .card{border:1px solid var(--line); border-radius:var(--r); background:var(--card)}
+  .card .hd{padding:12px 14px; border-bottom:1px solid var(--line); font-weight:700}
+  .card .bd{padding:14px}
+
+  .row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+  .field{display:flex; flex-direction:column; gap:6px}
+  label{font-weight:600; font-size:14px}
+  .hint{color:var(--muted); font-size:13px}
+  input[type="text"], input[type="url"], select{
+    width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:transparent; color:inherit
+  }
+  textarea{width:100%; min-height:90px; padding:11px 12px; border-radius:10px; border:1px solid var(--line); background:transparent; color:inherit}
+  .radio-line{display:flex; gap:14px; flex-wrap:wrap}
+  .radio{display:flex; gap:8px; align-items:center; padding:8px 10px; border:1px solid var(--line); border-radius:10px}
+  .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); font-size:12px}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:transparent; cursor:pointer}
+  .btn.primary{background:var(--accent); color:#fff; border-color:transparent; font-weight:700}
+  .btn.ghost{background:transparent}
+  .btn.danger{border-color:rgba(255,84,112,.25); color:var(--err)}
+  .stack{display:flex; flex-direction:column; gap:12px}
+
+  .provider{border:1px dashed var(--line); border-radius:12px; padding:12px}
+  .provider .top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px}
+  .chips{display:flex; gap:8px; flex-wrap:wrap}
+  .chip{border:1px solid var(--line); border-radius:999px; padding:4px 8px; font-size:12px; color:var(--muted)}
+
+  .status{display:flex; align-items:center; gap:8px}
+  .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+
+  /* Preview */
+  .preview .bd{display:flex; flex-direction:column; gap:12px}
+  .preview .event{border:1px solid var(--line); border-radius:12px; padding:12px}
+  .ev-title{font-weight:800}
+  .ev-meta{color:var(--muted); font-size:13px}
+  .cta-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+  .cta{padding:10px 12px; border-radius:10px; border:1px solid var(--line)}
+  .cta.buy{background:var(--accent); color:#fff; border-color:transparent; font-weight:800}
+  .cta.ext{background:transparent}
+  .mini{font-size:12px; color:var(--muted)}
+
+  .foot{display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-top:1px solid var(--line)}
+  .save{display:flex; gap:10px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Event › Ticketing</h1>
+    <div class="sub">Choose how attendees get tickets. You can sell via Spondle, add one or more external providers, or mark as info-only.</div>
+
+    <div class="layout">
+      <!-- LEFT: FORM -->
+      <div class="card">
+        <div class="hd">Ticketing Options</div>
+        <div class="bd stack">
+          <div class="radio-line" role="radiogroup" aria-label="Ticketing mode">
+            <label class="radio"><input type="radio" name="mode" value="spondle" checked/> <span>Sell via Spondle</span></label>
+            <label class="radio"><input type="radio" name="mode" value="external"/> <span>Add external ticket link(s)</span></label>
+            <label class="radio"><input type="radio" name="mode" value="none"/> <span>No tickets (info only)</span></label>
+          </div>
+
+          <!-- Spondle settings -->
+          <div id="spondleFields" class="stack">
+            <div class="row3">
+              <div class="field">
+                <label>Base price</label>
+                <input id="sp-price" type="text" placeholder="e.g., 12.50"/>
+                <div class="hint">Lowest advertised price</div>
+              </div>
+              <div class="field">
+                <label>Currency</label>
+                <select id="sp-currency">
+                  <option>GBP</option><option>EUR</option><option>USD</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Availability</label>
+                <select id="sp-availability">
+                  <option value="available">Available</option>
+                  <option value="limited">Limited</option>
+                  <option value="sold_out">Sold out</option>
+                  <option value="unreleased">TBA</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Notes (optional)</label>
+              <input id="sp-notes" type="text" placeholder="e.g., Early-bird until 1 Oct"/>
+            </div>
+            <div class="status"><span class="ok">●</span><span>Ready to sell via Spondle</span></div>
+          </div>
+
+          <!-- External providers -->
+          <div id="externalFields" class="stack" style="display:none">
+            <div class="hint">Add one or more providers (Eventbrite, Fatsoma, Skiddle, TicketTailor, etc.).</div>
+            <div id="providers" class="stack"></div>
+            <div><button class="btn" id="addProvider">+ Add provider</button></div>
+          </div>
+
+          <!-- Info-only -->
+          <div id="noneFields" class="stack" style="display:none">
+            <div class="badge">No checkout</div>
+            <div class="hint">Your event will show “Details” instead of a ticket button.</div>
+          </div>
+
+          <div class="foot">
+            <div class="hint">You can mix modes later (e.g., Spondle + VIP on Eventbrite).</div>
+            <div class="save">
+              <button class="btn">Save draft</button>
+              <button class="btn primary">Save & continue</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: PREVIEW -->
+      <div class="card preview">
+        <div class="hd">Live Preview</div>
+        <div class="bd">
+          <div class="event">
+            <div class="ev-title">Sample Event Title</div>
+            <div class="ev-meta">Sat 16 Nov • Electric Ballroom, London</div>
+            <div class="cta-row" id="ctaRow">
+              <!-- buttons render here -->
+            </div>
+            <div class="mini" id="notes"></div>
+          </div>
+
+          <div class="event">
+            <div class="ev-title">Plugin Preview</div>
+            <div class="ev-meta">How it’ll look on organiser sites</div>
+            <div class="cta-row" id="pluginRow"></div>
+            <div class="mini" id="pluginNote"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+(function(){
+  const modeRadios = document.querySelectorAll('input[name="mode"]');
+  const sp = {
+    box: document.getElementById('spondleFields'),
+    price: document.getElementById('sp-price'),
+    currency: document.getElementById('sp-currency'),
+    availability: document.getElementById('sp-availability'),
+    notes: document.getElementById('sp-notes')
+  };
+  const ext = {
+    box: document.getElementById('externalFields'),
+    list: document.getElementById('providers'),
+    addBtn: document.getElementById('addProvider')
+  };
+  const noneBox = document.getElementById('noneFields');
+
+  const ctaRow = document.getElementById('ctaRow');
+  const pluginRow = document.getElementById('pluginRow');
+  const notesEl = document.getElementById('notes');
+  const pluginNoteEl = document.getElementById('pluginNote');
+
+  let providers = []; // {id, provider, label, url, min, max, currency, availability, notes, valid}
+
+  function renderProviders(){
+    ext.list.innerHTML = '';
+    providers.forEach(p=>{
+      const el = document.createElement('div');
+      el.className = 'provider';
+      el.innerHTML = `
+        <div class="top">
+          <div class="chips">
+            <span class="chip">Provider: ${sanitize(p.provider||'Other')}</span>
+            ${p.valid ? '<span class="chip">URL ✓</span>' : '<span class="chip">URL ?</span>'}
+          </div>
+          <button class="btn danger" data-remove="${p.id}">Remove</button>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Ticket provider</label>
+            <select data-k="provider">
+              <option ${sel(p.provider,'Eventbrite')}>Eventbrite</option>
+              <option ${sel(p.provider,'Fatsoma')}>Fatsoma</option>
+              <option ${sel(p.provider,'Skiddle')}>Skiddle</option>
+              <option ${sel(p.provider,'TicketTailor')}>TicketTailor</option>
+              <option ${sel(p.provider,'Other')}>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Button label (optional)</label>
+            <input type="text" data-k="label" placeholder="e.g., VIP via Eventbrite" value="${escapeAttr(p.label||'')}"/>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Ticket link (URL)</label>
+            <input type="url" data-k="url" placeholder="https://…" value="${escapeAttr(p.url||'')}" />
+            <div class="hint">Must start with http:// or https://</div>
+          </div>
+          <div class="field">
+            <label>Availability</label>
+            <select data-k="availability">
+              <option ${sel(p.availability,'available')} value="available">Available</option>
+              <option ${sel(p.availability,'limited')} value="limited">Limited</option>
+              <option ${sel(p.availability,'sold_out')} value="sold_out">Sold out</option>
+              <option ${sel(p.availability,'unreleased')} value="unreleased">TBA</option>
+            </select>
+          </div>
+        </div>
+        <div class="row3">
+          <div class="field">
+            <label>Min price</label>
+            <input type="text" data-k="min" placeholder="e.g., 10.00" value="${escapeAttr(p.min||'')}"/>
+          </div>
+          <div class="field">
+            <label>Max price (optional)</label>
+            <input type="text" data-k="max" placeholder="e.g., 20.00" value="${escapeAttr(p.max||'')}"/>
+          </div>
+          <div class="field">
+            <label>Currency</label>
+            <select data-k="currency">
+              <option ${sel(p.currency,'GBP')}>GBP</option>
+              <option ${sel(p.currency,'EUR')}>EUR</option>
+              <option ${sel(p.currency,'USD')}>USD</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Notes (optional)</label>
+          <input type="text" data-k="notes" placeholder="e.g., Early-bird until 1 Oct" value="${escapeAttr(p.notes||'')}"/>
+        </div>
+      `;
+      ext.list.appendChild(el);
+
+      // attach listeners
+      el.querySelectorAll('select, input').forEach(inp=>{
+        inp.addEventListener('input', ()=>{
+          const k = inp.getAttribute('data-k');
+          const v = inp.value;
+          Object.assign(p, {[k]: v});
+          if(k==='url'){ p.valid = validateUrl(v); }
+          render(); // live update
+        });
+      });
+      el.querySelector(`[data-remove="${p.id}"]`).addEventListener('click', ()=>{
+        providers = providers.filter(x=>x.id!==p.id);
+        render();
+      });
+    });
+  }
+
+  function addProvider(){
+    const id = 'p'+Math.random().toString(36).slice(2,8);
+    providers.push({
+      id, provider:'Eventbrite', label:'', url:'', availability:'available',
+      min:'', max:'', currency:'GBP', notes:'', valid:false
+    });
+    render();
+  }
+
+  // Mode switching
+  modeRadios.forEach(r=>{
+    r.addEventListener('change', render);
+  });
+
+  ext.addBtn.addEventListener('click', (e)=>{ e.preventDefault(); addProvider(); });
+
+  // Preview
+  function renderPreview(){
+    ctaRow.innerHTML = '';
+    pluginRow.innerHTML = '';
+    notesEl.textContent = '';
+    pluginNoteEl.textContent = '';
+
+    const mode = getMode();
+
+    if(mode==='spondle'){
+      const price = sp.price.value.trim();
+      const currency = sp.currency.value;
+      const avail = sp.availability.value;
+
+      const sBtn = btn('Buy via Spondle', 'buy');
+      ctaRow.appendChild(sBtn);
+      pluginRow.appendChild(sBtn.cloneNode(true));
+
+      if(price){ notesEl.textContent = `From ${currency} ${price} • ${labelAvail(avail)}`; }
+      if(sp.notes.value){ notesEl.textContent += (notesEl.textContent?' — ':'') + sp.notes.value; }
+      pluginNoteEl.textContent = 'Plugin will render a single primary button that opens Spondle checkout.';
+    }
+    else if(mode==='external'){
+      // Render each valid provider as a button
+      const validProviders = providers.filter(p=>p.url && validateUrl(p.url));
+      if(validProviders.length===0){
+        const warn = document.createElement('div');
+        warn.className = 'mini';
+        warn.textContent = 'Add at least one valid external ticket URL to display buttons.';
+        ctaRow.appendChild(warn);
+        pluginRow.appendChild(warn.cloneNode(true));
+        return;
+      }
+      validProviders.forEach(p=>{
+        const label = (p.label && p.label.trim()) ? p.label.trim() : `Tickets via ${p.provider}`;
+        const b = btn(label, 'ext');
+        ctaRow.appendChild(b);
+        pluginRow.appendChild(b.cloneNode(true));
+      });
+      pluginNoteEl.textContent = 'Plugin will render one button per external provider.';
+    }
+    else { // none
+      const details = btn('Details', 'ext');
+      ctaRow.appendChild(details);
+      pluginRow.appendChild(details.cloneNode(true));
+      pluginNoteEl.textContent = 'Plugin will show a neutral “Details” button (no checkout).';
+    }
+  }
+
+  function btn(text, kind){
+    const b = document.createElement('a');
+    b.className = 'cta '+(kind==='buy'?'buy':'ext');
+    b.href='#';
+    b.textContent = text;
+    return b;
+  }
+
+  // Utilities
+  function sel(a,b){ return a===b ? 'selected' : '' }
+  function sanitize(s){ return (s||'').replace(/[<>]/g,'') }
+  function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;') }
+  function getMode(){ return [...modeRadios].find(r=>r.checked)?.value || 'spondle' }
+  function validateUrl(u){
+    try{
+      const url = new URL(u);
+      return ['http:','https:'].includes(url.protocol);
+    }catch{ return false; }
+  }
+  function render(){
+    const mode = getMode();
+    sp.box.style.display = (mode==='spondle')?'block':'none';
+    ext.box.style.display = (mode==='external')?'block':'none';
+    noneBox.style.display = (mode==='none')?'block':'none';
+    renderProviders();
+    renderPreview();
+  }
+
+  // Init with one external provider (so you can see the UI)
+  addProvider(); // creates one
+  render();      // then render everything
+})();
+</script>
+</body>
+</html>
