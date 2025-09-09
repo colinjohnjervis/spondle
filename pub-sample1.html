@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The King’s Oak — Pub Microsite (Rustic)</title>
+<meta name="color-scheme" content="light dark"/>
+<style>
+  :root{
+    --bg:#0f0d0a; --ink:#f7f3ec; --muted:#c6bfb2; --line:rgba(255,255,255,.12);
+    --card:#17130e; --accent:#d8a25e; --accent2:#9bd27b; --max:1200px; --r:16px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{--bg:#faf6ee; --ink:#211b14; --muted:#6f655a; --line:#e8e0d6; --card:#fff; --accent:#b97a2f; --accent2:#3a8f3f;}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+
+  /* Top bar */
+  .top{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(0,0,0,.55),transparent);backdrop-filter:blur(8px)}
+  .nav{height:64px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.6px}
+  .crest{width:28px;height:28px;border-radius:50%;background:conic-gradient(from 0deg,#d8a25e,#8e5a20,#d8a25e)}
+  .tabs{display:flex;gap:14px}
+  .tabs a{padding:8px 10px;border-radius:999px;border:1px solid transparent}
+  .tabs a:hover{border-color:var(--line)}
+
+  /* Hero */
+  .hero{
+    margin:14px 0;border-radius:22px;overflow:hidden;border:1px solid var(--line);
+    background:
+      linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,.6)),
+      url('https://images.unsplash.com/photo-1541542684-4a7b38a14619?q=80&w=1600&auto=format&fit=crop') center/cover;
+    min-height:56vh;display:grid;place-items:center;text-align:center;padding:26px;
+  }
+  .hero h1{font-size:52px;line-height:1.08;margin:0}
+  .hero p{margin:10px auto 0;max-width:60ch;color:var(--muted)}
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+  .btn{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06)}
+  .btn.primary{background:var(--accent);color:#241e16;border-color:transparent;font-weight:800}
+
+  /* Sections */
+  section{margin:26px 0}
+  .sh{display:flex;align-items:end;justify-content:space-between;margin:0 0 10px}
+  .sh h2{margin:0;font-size:24px}
+  .badge{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}
+
+  /* Weekly schedule */
+  .schedule{
+    display:grid;gap:12px;grid-template-columns:repeat(7,1fr)
+  }
+  @media (max-width:960px){.schedule{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:600px){.schedule{grid-template-columns:1fr}}
+  .day{
+    border:1px solid var(--line);border-radius:14px;background:var(--card);padding:12px;display:flex;flex-direction:column;gap:8px
+  }
+  .dname{font-weight:800}
+  .slot{display:flex;gap:8px;align-items:center}
+  .tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:12px;color:var(--muted)}
+  .time{font-size:13px;color:var(--muted)}
+
+  /* Featured events */
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
+  .card{
+    grid-column:span 4;border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden;display:flex;flex-direction:column
+  }
+  @media (max-width:980px){.card{grid-column:span 6}}
+  @media (max-width:640px){.card{grid-column:span 12}}
+  .thumb{aspect-ratio:16/10;background:linear-gradient(160deg,rgba(216,162,94,.25),rgba(0,0,0,.08)),url('https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=1200&auto=format&fit=crop') center/cover;border-bottom:1px solid var(--line)}
+  .thumb.karaoke{background-image:linear-gradient(160deg,rgba(216,162,94,.25),rgba(0,0,0,.08)),url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200&auto=format&fit=crop')}
+  .thumb.quiz{background-image:linear-gradient(160deg,rgba(216,162,94,.25),rgba(0,0,0,.08)),url('https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=1200&auto=format&fit=crop')}
+  .body{padding:12px;display:flex;flex-direction:column;gap:6px}
+  .title{font-weight:800}
+  .meta{color:var(--muted);font-size:14px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn.small{padding:8px 10px;border-radius:10px}
+  .btn.green{background:var(--accent2);color:#0f140e;border-color:transparent;font-weight:800}
+
+  /* Info panels */
+  .panel{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:14px}
+  .two{display:grid;gap:12px;grid-template-columns:1.1fr .9fr}
+  @media (max-width:900px){.two{grid-template-columns:1fr}}
+
+  /* Footer */
+  footer{margin:34px 0 46px;color:var(--muted);text-align:center}
+  .hr{height:1px;background:var(--line);margin:16px 0}
+
+  /* Utility */
+  .wrap.tight{max-width:940px}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="wrap nav">
+      <div class="brand"><span class="crest" aria-hidden="true"></span><span>The King’s Oak</span></div>
+      <nav class="tabs">
+        <a href="#events">Events</a>
+        <a href="#weekly">Weekly</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="h1">
+      <div>
+        <h1 id="h1">Good Beer. Live Nights. Your Local.</h1>
+        <p>From quiz nights to karaoke and weekend gigs — gather your mates and make a night of it.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#events">See Featured Events</a>
+          <a class="btn" href="#weekly">This Week at a Glance</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- WEEKLY SCHEDULE -->
+    <section id="weekly">
+      <div class="sh"><h2>This Week</h2><span class="badge">Recurring nights</span></div>
+      <div class="schedule">
+        <div class="day">
+          <div class="dname">Mon</div>
+          <div class="slot"><span class="tag">Open Mic</span><span class="time">8pm</span></div>
+        </div>
+        <div class="day">
+          <div class="dname">Tue</div>
+          <div class="slot"><span class="tag">Pub Quiz</span><span class="time">8pm</span></div>
+        </div>
+        <div class="day">
+          <div class="dname">Wed</div>
+          <div class="slot"><span class="tag">Karaoke</span><span class="time">9pm</span></div>
+        </div>
+        <div class="day">
+          <div class="dname">Thu</div>
+          <div class="slot"><span class="tag">Acoustic Duo</span><span class="time">8:30pm</span></div>
+        </div>
+        <div class="day">
+          <div class="dname">Fri</div>
+          <div class="slot"><span class="tag">Live Band</span><span class="time">9pm</span></div>
+        </div>
+        <div class="day">
+          <div class="dname">Sat</div>
+          <div class="slot"><span class="tag">DJ Night</span><span class="time">9pm</span></div>
+        </div>
+        <div class="day">
+          <div class="dname">Sun</div>
+          <div class="slot"><span class="tag">Roast & Jazz</span><span class="time">3pm</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED EVENTS -->
+    <section id="events">
+      <div class="sh"><h2>Featured Events</h2><span class="badge">Special dates & ticket links</span></div>
+      <div class="grid">
+        <article class="card">
+          <div class="thumb quiz" role="img" aria-label="Pub quiz night"></div>
+          <div class="body">
+            <div class="title">Big Thursday Quiz</div>
+            <div class="meta">Teams up to 6 • £2 pp • Prizes & bar tabs</div>
+            <div class="row">
+              <span class="tag">Thu 8pm</span><span class="tag">Hosted</span>
+            </div>
+            <div class="row">
+              <a class="btn small" href="#">Details</a>
+              <a class="btn small green" href="#">Book Table</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="thumb karaoke" role="img" aria-label="Karaoke night"></div>
+          <div class="body">
+            <div class="title">Friday Karaoke Party</div>
+            <div class="meta">Free entry • Song list on the night • Happy hour 8–9</div>
+            <div class="row">
+              <span class="tag">Fri 9pm</span><span class="tag">Dancefloor</span>
+            </div>
+            <div class="row">
+              <a class="btn small" href="#">Details</a>
+              <a class="btn small" href="#">Share</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="thumb" role="img" aria-label="Live gig poster"></div>
+          <div class="body">
+            <div class="title">Saturday Live: The Riverstones</div>
+            <div class="meta">Indie rock • Limited tickets • Doors 8pm</div>
+            <div class="row">
+              <span class="tag">Sat 9pm</span><span class="tag">Tickets</span>
+            </div>
+            <div class="row">
+              <a class="btn small" href="#">Details</a>
+              <a class="btn small green" href="#">Buy Tickets</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- INFO -->
+    <section id="contact" class="wrap tight">
+      <div class="two">
+        <div class="panel">
+          <h3 style="margin:0 0 6px">Find Us</h3>
+          The King’s Oak, 12 Market Lane, Bristol BS1<br/>
+          Mon–Thu 12–23 • Fri–Sat 12–01 • Sun 12–22
+        </div>
+        <div class="panel">
+          <h3 style="margin:0 0 6px">Contact</h3>
+          <a href="mailto:hello@kings-oak.pub">hello@kings-oak.pub</a> • 0117 123 4567<br/>
+          Instagram • Facebook • X
+        </div>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+    <footer><small>© The King’s Oak • Pub microsite demo (rustic)</small></footer>
+  </main>
+</body>
+</html>
