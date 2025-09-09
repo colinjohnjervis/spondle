@@ -3,24 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Cureheads — Collage Microsite</title>
+  <title>The Cureheads — Collage Microsite (Mobile Fix)</title>
   <meta name="color-scheme" content="dark light" />
-
   <style>
     :root{
       --bg:#0a0b0e; --ink:#f3f5f9; --muted:#9aa3b2; --line:rgba(255,255,255,.08);
       --accent:#e84b6a; --accent2:#6cc6ff; --panel:#0f121a; --max:1280px; --r:18px;
+      --pad:18px; /* unified side padding for mobile alignment */
     }
     @media (prefers-color-scheme: light){
       :root{ --bg:#ffffff; --ink:#121318; --muted:#5f6672; --line:#e9ebf0; --panel:#ffffff; --accent:#e84b6a; --accent2:#2266ff; }
     }
     *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    html,body{height:100%}
+    body{
+      margin:0;background:var(--bg);color:var(--ink);
+      font:16px/1.6 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+      overflow-x:hidden; /* prevent any horizontal scroll on mobile */
+    }
     a{color:inherit;text-decoration:none}
-    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 var(--pad)}
 
-    /* Header - minimal */
-    .hdr{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));backdrop-filter:blur(8px)}
+    /* Header */
+    .hdr{
+      position:sticky;top:0;z-index:50;
+      background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));
+      backdrop-filter:blur(8px);
+    }
     .nav{height:64px;display:flex;align-items:center;justify-content:space-between}
     .brand{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.6px}
     .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px rgba(232,75,106,.18)}
@@ -29,15 +39,16 @@
     .tabs a:hover{border-color:var(--line);color:var(--ink)}
     .cta{padding:10px 14px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;border:0}
 
-    /* Hero – oversized typography + poster wall */
+    /* HERO */
     .hero{margin:14px 0 0;display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
-    @media (max-width:980px){.hero{grid-template-columns:1fr}}
+    @media (max-width:980px){.hero{grid-template-columns:1fr;gap:12px}}
     .hero-copy{
       border:1px solid var(--line);border-radius:24px;padding:28px;background:linear-gradient(180deg,rgba(232,75,106,.08),transparent),var(--panel);
       position:relative;overflow:hidden
     }
     .eyebrow{color:var(--muted);text-transform:uppercase;letter-spacing:.16em;font-size:12px}
     h1{margin:.25rem 0 .35rem;font-size:56px;line-height:1.03;letter-spacing:.3px}
+    @media (max-width:560px){ h1{font-size:38px} }
     .lede{margin:0;color:var(--muted);max-width:52ch}
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
     .chip{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted)}
@@ -45,39 +56,49 @@
     .btn{padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:transparent}
     .btn.primary{background:var(--accent);color:#fff;border-color:transparent;font-weight:800}
 
+    /* Poster wall: ensure clean gutters and full-width feel without overflow */
     .posterwall{
       border:1px solid var(--line);border-radius:24px;padding:16px;background:var(--panel);
       display:grid;grid-template-columns:repeat(6,1fr);gap:10px;min-height:280px
     }
     .ph{
-      border-radius:14px;border:1px solid var(--line);aspect-ratio:3/4;
+      border-radius:14px;border:1px solid var(--line);
       background:
         linear-gradient(140deg, rgba(232,75,106,.24), rgba(108,198,255,.22)),
         linear-gradient(180deg,#141926,#0a0c12);
+      width:100%; /* ensures no weird intrinsic sizing */
     }
+    .ph{aspect-ratio:3/4}
     .ph.tall{grid-column:span 2;aspect-ratio:2/3}
     .ph.wide{grid-column:span 3;aspect-ratio:16/10}
-    @media (max-width:980px){ .posterwall{grid-template-columns:repeat(4,1fr)} .ph.wide{grid-column:span 4} }
-    @media (max-width:560px){ .posterwall{grid-template-columns:repeat(2,1fr)} .ph.tall,.ph.wide{grid-column:span 2} }
+
+    /* Breakpoints to keep tiles aligned neatly */
+    @media (max-width:980px){
+      .posterwall{grid-template-columns:repeat(4,1fr);padding:14px;gap:10px}
+      .ph.wide{grid-column:span 4}
+    }
+    @media (max-width:560px){
+      .posterwall{grid-template-columns:repeat(2,1fr);padding:12px;gap:10px}
+      .ph,.ph.tall,.ph.wide{grid-column:span 2;aspect-ratio:16/11} /* unify ratios on very small screens */
+    }
 
     /* Section header */
     .sh{display:flex;align-items:end;justify-content:space-between;margin:22px 0 10px}
     .sh h2{margin:0;font-size:22px}
     .badge{border:1px dashed var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:13px}
 
-    /* Dates (cards large, photo-led) */
+    /* Dates */
     .dates{display:grid;gap:14px}
     @media (min-width:920px){ .dates{grid-template-columns:1fr 1fr} }
     .card{
       display:grid;grid-template-columns:160px 1fr auto;gap:14px;
-      border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:12px 12px 12px 12px
+      border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:12px
     }
     @media (max-width:680px){ .card{grid-template-columns:1fr} }
     .shot{
       border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:140px;
-      background:
-        linear-gradient(120deg, rgba(108,198,255,.22), rgba(232,75,106,.22)),
-        linear-gradient(180deg,#121726,#0b0f18);
+      background:linear-gradient(120deg, rgba(108,198,255,.22), rgba(232,75,106,.22)),linear-gradient(180deg,#121726,#0b0f18);
+      width:100%;
     }
     .meta .where{font-weight:700}
     .meta .sub{color:var(--muted);font-size:14px;margin-top:2px}
@@ -86,7 +107,7 @@
     .buy{align-self:center}
     .tix{padding:11px 14px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;border:0}
 
-    /* Gallery – collage strip */
+    /* Collage strip */
     .collage{
       display:grid;grid-template-columns:repeat(12,1fr);gap:10px
     }
@@ -94,12 +115,13 @@
       background:
         radial-gradient(60% 80% at 20% 10%, rgba(108,198,255,.18), rgba(0,0,0,0) 60%),
         linear-gradient(180deg,#101421,#0a0d15);
+      width:100%;
     }
     .w6{grid-column:span 6}.w4{grid-column:span 4}.w3{grid-column:span 3}
     @media (max-width:980px){ .w6{grid-column:span 12}.w4{grid-column:span 6}.w3{grid-column:span 6} }
     @media (max-width:560px){ .w4,.w3{grid-column:span 12} }
 
-    /* About + Contact */
+    /* Panels */
     .panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:16px}
     .contact a{text-decoration:underline;text-underline-offset:2px}
 
@@ -153,7 +175,6 @@
     <section id="tour" style="margin-top:26px">
       <div class="sh"><h2>Upcoming Shows</h2><span class="badge">Auto-pull ready (Spondle)</span></div>
       <div class="dates">
-
         <article class="card">
           <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
           <div class="meta">
@@ -163,7 +184,6 @@
           </div>
           <div class="buy"><a class="tix" href="event.html?id=ch-bristol">Tickets</a></div>
         </article>
-
         <article class="card">
           <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
           <div class="meta">
@@ -173,7 +193,6 @@
           </div>
           <div class="buy"><a class="tix" href="event.html?id=ch-glasgow">Tickets</a></div>
         </article>
-
         <article class="card">
           <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
           <div class="meta">
@@ -183,7 +202,6 @@
           </div>
           <div class="buy"><a class="tix" href="event.html?id=ch-nottingham">Tickets</a></div>
         </article>
-
         <article class="card">
           <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
           <div class="meta">
@@ -193,7 +211,6 @@
           </div>
           <div class="buy"><a class="tix" href="event.html?id=ch-london">Tickets</a></div>
         </article>
-
       </div>
     </section>
 
@@ -231,8 +248,8 @@
   </main>
 
   <footer class="wrap">
-    <div class="hr"></div>
-    <small style="color:var(--muted)">© The Cureheads • Collage microsite demo</small>
+    <div class="hr" style="height:1px;background:var(--line);margin:16px 0"></div>
+    <small style="color:var(--muted)">© The Cureheads • Collage microsite demo (mobile-aligned)</small>
   </footer>
 </body>
 </html>
