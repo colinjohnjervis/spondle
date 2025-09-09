@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Cureheads – Alt Microsite</title>
+
+  <style>
+    :root{
+      --bg:#0a0a0b;
+      --panel:#111217;
+      --ink:#f4f6fb;
+      --muted:#a6adbb;
+      --edge:rgba(255,255,255,.08);
+      --accent:#ff2a41;
+      --accent-2:#e7e7ec;
+      --max:1200px;
+      --radius:18px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --header-h:70px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+    a{color:inherit; text-decoration:none}
+    .wrap{max-width:var(--max); margin:0 auto; padding:0 16px}
+
+    /* Header (sticky) */
+    .site-header{
+      position:sticky; top:0; z-index:50; height:var(--header-h);
+      background:rgba(10,10,11,.8); backdrop-filter:saturate(1.2) blur(8px);
+      border-bottom:1px solid var(--edge);
+    }
+    .nav{
+      height:var(--header-h); display:flex; align-items:center; justify-content:space-between;
+      gap:16px;
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.4px}
+    .brand .dot{width:12px; height:12px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(255,42,65,.18)}
+    .nav-links{display:flex; gap:14px; flex-wrap:wrap}
+    .nav-links a{
+      padding:8px 12px; border-radius:999px; border:1px solid transparent; color:var(--muted);
+    }
+    .nav-links a:hover{border-color:var(--edge); color:var(--ink)}
+    .cta{
+      padding:10px 14px; border-radius:999px; background:var(--accent); color:#0a0a0b; font-weight:700;
+      box-shadow:0 6px 18px rgba(255,42,65,.28);
+    }
+
+    /* Hero */
+    .hero{
+      position:relative; margin:18px auto 0; border-radius:24px; overflow:hidden;
+      background:
+        radial-gradient(60% 80% at 20% 10%, rgba(255,42,65,.28), rgba(0,0,0,0) 60%),
+        radial-gradient(60% 80% at 90% 20%, rgba(220,220,230,.18), rgba(0,0,0,0) 60%),
+        linear-gradient(180deg,#11131b,#0a0a0b 85%);
+      border:1px solid var(--edge);
+      box-shadow:var(--shadow);
+    }
+    .hero-inner{display:grid; grid-template-columns: 1.1fr .9fr; gap:20px; padding:28px}
+    @media (max-width: 900px){ .hero-inner{grid-template-columns:1fr} }
+    .hero-copy h1{margin:0 0 8px; font-size:42px; letter-spacing:.5px}
+    .tag{display:inline-flex; align-items:center; gap:8px; color:var(--muted); font-size:14px}
+    .tag::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--accent)}
+    .hero-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px}
+    .btn{display:inline-flex; align-items:center; gap:10px; padding:12px 16px; border-radius:12px; border:1px solid var(--edge); background:transparent}
+    .btn.primary{background:var(--accent); color:#0a0a0b; border-color:transparent; font-weight:700}
+    .hero-art{
+      position:relative; min-height:260px; border-radius:18px; overflow:hidden;
+      background:
+        linear-gradient(140deg, rgba(255,42,65,.2), rgba(255,255,255,.08)),
+        url('') center/cover no-repeat,
+        linear-gradient(180deg,#0c0e15,#07090d);
+      border:1px solid var(--edge);
+    }
+    .hero-art::before{
+      content:""; position:absolute; inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.35) 100%);
+    }
+    .hero-caption{position:absolute; left:14px; bottom:12px; font-size:13px; color:var(--muted)}
+
+    /* Sections */
+    section{margin:30px 0}
+    .section-title{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:10px}
+    .section-title h2{margin:0; font-size:22px; letter-spacing:.3px}
+    .panel{
+      background:var(--panel); border:1px solid var(--edge); border-radius:var(--radius); padding:16px;
+      box-shadow:var(--shadow);
+    }
+
+    /* Shows grid */
+    .shows{display:grid; gap:12px}
+    @media (min-width: 760px){ .shows{grid-template-columns: 1fr 1fr} }
+    .show{
+      display:flex; align-items:center; gap:14px; padding:14px; border-radius:14px; border:1px solid var(--edge);
+      background:linear-gradient(180deg,#0f1118,#0c0e14);
+    }
+    .date{
+      width:70px; min-width:70px; text-align:center; border-radius:12px; border:1px solid var(--edge);
+      background:#0e1016; padding:8px 6px;
+    }
+    .date .d{font-size:22px; font-weight:800}
+    .date .m{font-size:12px; color:var(--muted); letter-spacing:.6px; text-transform:uppercase}
+    .meta{color:var(--muted); font-size:14px; margin-top:2px}
+    .spacer{flex:1}
+    .tix{padding:10px 12px; border-radius:10px; background:var(--accent); color:#0a0a0b; font-weight:700}
+
+    /* Gallery */
+    .gallery{display:grid; gap:10px; grid-template-columns: repeat(12, 1fr)}
+    .ph{border-radius:14px; border:1px solid var(--edge); aspect-ratio:16/10;
+      background:
+        radial-gradient(60% 80% at 20% 10%, rgba(255,42,65,.16), rgba(0,0,0,0) 60%),
+        linear-gradient(180deg,#10121a,#0b0d12);
+    }
+    .w6{grid-column: span 6} .w4{grid-column: span 4} .w3{grid-column: span 3}
+    @media (max-width: 900px){ .w6{grid-column: span 12} .w4{grid-column: span 6} .w3{grid-column: span 6} }
+    @media (max-width: 520px){ .w4,.w3{grid-column: span 12} }
+
+    /* Footer */
+    .footer{margin:34px 0 46px; color:var(--muted); font-size:14px}
+    .hr{height:1px; background:var(--edge); margin:16px 0}
+    .contact a{color:var(--accent-2); text-decoration:underline dotted rgba(255,255,255,.25)}
+
+    /* Anchor offsets */
+    .anchor{position:relative; top:calc(var(--header-h) * -1 - 8px)}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px;
+      border:1px solid var(--edge); color:var(--muted); font-size:13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="wrap nav">
+      <a class="brand" href="#">
+        <span class="dot"></span>
+        <span>The Cureheads</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#tour">Tour</a>
+        <a href="#about">About</a>
+        <a href="#media">Media</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="cta" href="#tour">Tickets</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="wrap">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <span class="tag">Official Tribute Since 1990</span>
+          <h1 id="heroTitle">The Cureheads</h1>
+          <p class="muted" style="color:var(--muted); margin:0 0 6px">
+            A career-spanning live tribute to The Cure — from <em>Boys Don’t Cry</em> to <em>Lullaby</em> and beyond.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#tour">See Tour Dates</a>
+            <a class="btn" href="#media">View Photos</a>
+          </div>
+        </div>
+        <div class="hero-art" role="img" aria-label="Band hero image placeholder">
+          <div class="hero-caption">Promo still • Drop your own image later</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Tour -->
+  <div id="tour" class="anchor"></div>
+  <div class="wrap">
+    <div class="section-title">
+      <h2>Upcoming Shows</h2>
+      <span class="badge">Auto-pull ready (Spondle)</span>
+    </div>
+    <section class="panel">
+      <div class="shows">
+        <div class="show">
+          <div class="date"><div class="d">12</div><div class="m">Oct</div></div>
+          <div>
+            <div><strong>O2 Academy</strong>, Bristol</div>
+            <div class="meta">Doors 19:00 • Onstage 20:30</div>
+          </div>
+          <div class="spacer"></div>
+          <a class="tix" href="event.html?id=ch-bristol">Tickets</a>
+        </div>
+
+        <div class="show">
+          <div class="date"><div class="d">19</div><div class="m">Oct</div></div>
+          <div>
+            <div><strong>Barrowland</strong>, Glasgow</div>
+            <div class="meta">Doors 19:00 • Onstage 20:30</div>
+          </div>
+          <div class="spacer"></div>
+          <a class="tix" href="event.html?id=ch-glasgow">Tickets</a>
+        </div>
+
+        <div class="show">
+          <div class="date"><div class="d">01</div><div class="m">Nov</div></div>
+          <div>
+            <div><strong>Rock City</strong>, Nottingham</div>
+            <div class="meta">Doors 19:00 • Onstage 20:30</div>
+          </div>
+          <div class="spacer"></div>
+          <a class="tix" href="event.html?id=ch-nottingham">Tickets</a>
+        </div>
+
+        <div class="show">
+          <div class="date"><div class="d">16</div><div class="m">Nov</div></div>
+          <div>
+            <div><strong>Electric Ballroom</strong>, London</div>
+            <div class="meta">Doors 19:00 • Onstage 20:30</div>
+          </div>
+          <div class="spacer"></div>
+          <a class="tix" href="event.html?id=ch-london">Tickets</a>
+        </div>
+      </div>
+      <p class="meta" style="margin-top:10px">Demo content. When Spondle is live, this section will populate automatically from the organiser’s events.</p>
+    </section>
+  </div>
+
+  <!-- About -->
+  <div id="about" class="anchor"></div>
+  <div class="wrap">
+    <div class="section-title"><h2>About</h2></div>
+    <section class="panel">
+      <p style="margin:0">
+        The Cureheads are the world’s longest-running tribute to The Cure, bringing faithful sound and atmosphere to
+        venues across the UK and beyond. Expect deep cuts and greatest hits delivered with love and volume.
+      </p>
+    </section>
+  </div>
+
+  <!-- Media -->
+  <div id="media" class="anchor"></div>
+  <div class="wrap">
+    <div class="section-title"><h2>Media</h2></div>
+    <section class="panel">
+      <div class="gallery">
+        <div class="ph w6"></div>
+        <div class="ph w3"></div>
+        <div class="ph w3"></div>
+        <div class="ph w4"></div>
+        <div class="ph w4"></div>
+        <div class="ph w4"></div>
+      </div>
+      <p class="meta" style="margin-top:10px">Drop real images later — placeholders shown for layout.</p>
+    </section>
+  </div>
+
+  <!-- Contact -->
+  <div id="contact" class="anchor"></div>
+  <div class="wrap">
+    <div class="section-title"><h2>Contact</h2></div>
+    <section class="panel contact">
+      <p style="margin:.2rem 0">Email: <a href="mailto:booking@thecureheads.com">booking@thecureheads.com</a></p>
+      <p style="margin:.2rem 0">Facebook • Instagram • X — add links later</p>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <div class="wrap footer">
+    <div class="hr"></div>
+    <small>© The Cureheads • Alt microsite demo</small>
+  </div>
+
+  <!-- Smooth anchor scroll (minor nicety) -->
+  <script>
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', e=>{
+        const id=a.getAttribute('href'); if(id==="#"||!id) return;
+        const el=document.querySelector(id); if(!el) return;
+        e.preventDefault(); window.scrollTo({top: el.getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
+      });
+    });
+  </script>
+</body>
+</html>
