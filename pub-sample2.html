@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Neon Yard — Pub Microsite (Modern)</title>
+<meta name="color-scheme" content="dark light"/>
+<style>
+  :root{
+    --bg:#0b0b12; --ink:#f4f7ff; --muted:#a9b0c5; --line:rgba(255,255,255,.1);
+    --panel:#121424; --accent:#7a5cff; --accent2:#00e5ff; --hot:#ff4d8a;
+    --r:16px; --max:1200px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{--bg:#f7f8fe; --ink:#0f1020; --muted:#59607a; --line:#e6e9f4; --panel:#ffffff; --accent:#4a3be6; --accent2:#04b5c8; --hot:#d61f6b;}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 800px at 80% -20%,rgba(122,92,255,.18),transparent),var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+  .glow{box-shadow:0 0 0 1px var(--line), 0 10px 40px rgba(122,92,255,.18)}
+
+  /* Top bar */
+  .top{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,rgba(11,11,18,.85),rgba(11,11,18,.3));backdrop-filter:blur(10px)}
+  .nav{height:68px;display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.8px}
+  .logo{width:28px;height:28px;border-radius:8px;background:
+    conic-gradient(from 0deg,var(--accent),var(--accent2),var(--hot),var(--accent));
+    box-shadow:0 0 24px rgba(122,92,255,.45)}
+  .tabs{display:flex;gap:14px}
+  .tabs a{padding:8px 12px;border-radius:999px;border:1px solid transparent;color:var(--muted)}
+  .tabs a:hover{border-color:var(--line);color:var(--ink)}
+  .cta{padding:10px 14px;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--hot));color:#fff;border:0;font-weight:800}
+
+  /* Hero */
+  .hero{
+    margin:14px 0;border-radius:22px;overflow:hidden;border:1px solid var(--line);
+    background:
+      radial-gradient(800px 320px at 20% 0%, rgba(0,229,255,.20), transparent 60%),
+      radial-gradient(800px 320px at 80% 0%, rgba(122,92,255,.22), transparent 60%),
+      url('https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1600&auto=format&fit=crop') center/cover;
+    min-height:56vh;display:grid;place-items:center;text-align:center;padding:26px;
+  }
+  .hero h1{font-size:52px;line-height:1.08;margin:0;text-shadow:0 6px 26px rgba(0,0,0,.35)}
+  .hero p{margin:10px auto 0;max-width:64ch;color:var(--muted)}
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+  .btn{padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04)}
+  .btn.primary{background:linear-gradient(90deg,var(--accent),var(--hot));color:#fff;border-color:transparent;font-weight:800}
+
+  /* Section header */
+  section{margin:26px 0}
+  .sh{display:flex;align-items:end;justify-content:space-between;margin:0 0 10px}
+  .sh h2{margin:0;font-size:24px}
+  .badge{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}
+
+  /* Tonight / schedule strip */
+  .strip{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
+  .pill{
+    grid-column:span 4;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px;
+    display:flex;align-items:center;gap:12px
+  }
+  @media (max-width:980px){.pill{grid-column:span 6}}
+  @media (max-width:640px){.pill{grid-column:span 12}}
+  .tag{border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:12px;color:var(--muted)}
+  .when{font-size:13px;color:var(--muted)}
+
+  /* Featured events (cards) */
+  .grid{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
+  .card{
+    grid-column:span 4;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column;position:relative
+  }
+  @media (max-width:980px){.card{grid-column:span 6}}
+  @media (max-width:640px){.card{grid-column:span 12}}
+  .thumb{aspect-ratio:16/10;border-bottom:1px solid var(--line);background-size:cover;background-position:center}
+  .thumb.quiz{background-image:url('https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=1200&auto=format&fit=crop')}
+  .thumb.karaoke{background-image:url('https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1200&auto=format&fit=crop')}
+  .thumb.gig{background-image:url('https://images.unsplash.com/photo-1543007630-9710e4a00a20?q=80&w=1200&auto=format&fit=crop')}
+  .body{padding:14px;display:flex;flex-direction:column;gap:6px}
+  .title{font-weight:900;letter-spacing:.2px}
+  .meta{color:var(--muted);font-size:14px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn.small{padding:8px 10px;border-radius:10px}
+  .btn.buy{background:linear-gradient(90deg,var(--accent2),var(--accent));color:#001622;border-color:transparent;font-weight:900}
+
+  /* Promo banner */
+  .promo{
+    border:1px solid var(--line);border-radius:18px;background:
+      radial-gradient(800px 220px at 10% 0%, rgba(0,229,255,.14), transparent 60%),
+      radial-gradient(800px 220px at 90% 0%, rgba(122,92,255,.16), transparent 60%),
+      var(--panel);
+    padding:18px; display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap
+  }
+  .promo .lead{font-weight:800}
+  .promo .code{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:6px 10px; border-radius:8px; border:1px dashed var(--line)}
+
+  /* Info panels */
+  .two{display:grid;gap:12px;grid-template-columns:1.1fr .9fr}
+  @media (max-width:900px){.two{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px}
+
+  /* Footer */
+  footer{margin:34px 0 46px;color:var(--muted);text-align:center}
+  .hr{height:1px;background:var(--line);margin:16px 0}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="wrap nav">
+      <div class="brand"><span class="logo" aria-hidden="true"></span><span>Neon Yard</span></div>
+      <nav class="tabs">
+        <a href="#events">Events</a>
+        <a href="#tonight">Tonight</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="cta glow" href="#events">Book</a>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="h1">
+      <div>
+        <h1 id="h1">Lights Up. Sound On.</h1>
+        <p>Karaoke anthems, stacked quiz nights, and weekend gigs with local talent — your late-night lineup awaits.</p>
+        <div class="cta-row">
+          <a class="btn primary glow" href="#events">See Events</a>
+          <a class="btn" href="#tonight">Tonight</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- TONIGHT STRIP -->
+    <section id="tonight">
+      <div class="sh"><h2>Tonight</h2><span class="badge">Doors 7pm • Happy Hour 7–8</span></div>
+      <div class="strip">
+        <div class="pill glow"><span class="tag">Karaoke</span><strong>Sing It Loud</strong><span class="when">From 9pm</span></div>
+        <div class="pill glow"><span class="tag">DJ</span><strong>House/EDM</strong><span class="when">From 10pm</span></div>
+        <div class="pill glow"><span class="tag">Promo</span><strong>2-for-1 Cocktails</strong><span class="when">7–8pm</span></div>
+      </div>
+    </section>
+
+    <!-- FEATURED EVENTS -->
+    <section id="events">
+      <div class="sh"><h2>Featured Events</h2><span class="badge">Tap “Buy” for ticket links</span></div>
+      <div class="grid">
+        <article class="card glow">
+          <div class="thumb quiz" role="img" aria-label="Pub quiz"></div>
+          <div class="body">
+            <div class="title">Mega Quiz: Pop Culture Edition</div>
+            <div class="meta">Teams up to 6 • Power rounds • Prizes</div>
+            <div class="row">
+              <span class="tag">Thu 8pm</span><span class="tag">Hosted</span>
+            </div>
+            <div class="row">
+              <a class="btn small" href="#">Details</a>
+              <a class="btn small buy" href="#">Buy</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card glow">
+          <div class="thumb karaoke" role="img" aria-label="Karaoke night"></div>
+          <div class="body">
+            <div class="title">Neon Karaoke Party</div>
+            <div class="meta">Free entry • Screens & lights • Song queue app</div>
+            <div class="row">
+              <span class="tag">Fri 9pm</span><span class="tag">Dancefloor</span>
+            </div>
+            <div class="row">
+              <a class="btn small" href="#">Details</a>
+              <a class="btn small" href="#">Share</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="card glow">
+          <div class="thumb gig" role="img" aria-label="Live gig"></div>
+          <div class="body">
+            <div class="title">Live: Midnight Arcade</div>
+            <div class="meta">Synthwave • Limited tickets • Doors 8</div>
+            <div class="row">
+              <span class="tag">Sat 9pm</span><span class="tag">Tickets</span>
+            </div>
+            <div class="row">
+              <a class="btn small" href="#">Details</a>
+              <a class="btn small buy" href="#">Buy</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- PROMO -->
+    <section>
+      <div class="promo glow">
+        <div class="lead">Get 10% off first gig tickets this month</div>
+        <div class="code">NEON10</div>
+        <a class="btn primary" href="#">Use Code</a>
+      </div>
+    </section>
+
+    <!-- INFO -->
+    <section id="contact">
+      <div class="two">
+        <div class="panel">
+          <h3 style="margin:0 0 6px">Find Us</h3>
+          Neon Yard, 44 Warehouse Row, Bristol BS2<br/>
+          Wed–Thu 17–23 • Fri–Sat 17–02 • Sun 16–22
+        </div>
+        <div class="panel">
+          <h3 style="margin:0 0 6px">Contact</h3>
+          <a href="mailto:hey@neonyard.pub">hey@neonyard.pub</a> • 0117 987 6543<br/>
+          Instagram • TikTok • X
+        </div>
+      </div>
+    </section>
+
+    <div class="hr"></div>
+    <footer><small>© Neon Yard • Pub microsite demo (modern)</small></footer>
+  </main>
+</body>
+</html>
