@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Cureheads — Collage Microsite</title>
+  <meta name="color-scheme" content="dark light" />
+
+  <style>
+    :root{
+      --bg:#0a0b0e; --ink:#f3f5f9; --muted:#9aa3b2; --line:rgba(255,255,255,.08);
+      --accent:#e84b6a; --accent2:#6cc6ff; --panel:#0f121a; --max:1280px; --r:18px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#ffffff; --ink:#121318; --muted:#5f6672; --line:#e9ebf0; --panel:#ffffff; --accent:#e84b6a; --accent2:#2266ff; }
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 18px}
+
+    /* Header - minimal */
+    .hdr{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));backdrop-filter:blur(8px)}
+    .nav{height:64px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.6px}
+    .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px rgba(232,75,106,.18)}
+    .tabs{display:flex;gap:14px}
+    .tabs a{padding:8px 12px;border:1px solid transparent;border-radius:999px;color:var(--muted)}
+    .tabs a:hover{border-color:var(--line);color:var(--ink)}
+    .cta{padding:10px 14px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;border:0}
+
+    /* Hero – oversized typography + poster wall */
+    .hero{margin:14px 0 0;display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    @media (max-width:980px){.hero{grid-template-columns:1fr}}
+    .hero-copy{
+      border:1px solid var(--line);border-radius:24px;padding:28px;background:linear-gradient(180deg,rgba(232,75,106,.08),transparent),var(--panel);
+      position:relative;overflow:hidden
+    }
+    .eyebrow{color:var(--muted);text-transform:uppercase;letter-spacing:.16em;font-size:12px}
+    h1{margin:.25rem 0 .35rem;font-size:56px;line-height:1.03;letter-spacing:.3px}
+    .lede{margin:0;color:var(--muted);max-width:52ch}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .chip{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted)}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .btn{padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:transparent}
+    .btn.primary{background:var(--accent);color:#fff;border-color:transparent;font-weight:800}
+
+    .posterwall{
+      border:1px solid var(--line);border-radius:24px;padding:16px;background:var(--panel);
+      display:grid;grid-template-columns:repeat(6,1fr);gap:10px;min-height:280px
+    }
+    .ph{
+      border-radius:14px;border:1px solid var(--line);aspect-ratio:3/4;
+      background:
+        linear-gradient(140deg, rgba(232,75,106,.24), rgba(108,198,255,.22)),
+        linear-gradient(180deg,#141926,#0a0c12);
+    }
+    .ph.tall{grid-column:span 2;aspect-ratio:2/3}
+    .ph.wide{grid-column:span 3;aspect-ratio:16/10}
+    @media (max-width:980px){ .posterwall{grid-template-columns:repeat(4,1fr)} .ph.wide{grid-column:span 4} }
+    @media (max-width:560px){ .posterwall{grid-template-columns:repeat(2,1fr)} .ph.tall,.ph.wide{grid-column:span 2} }
+
+    /* Section header */
+    .sh{display:flex;align-items:end;justify-content:space-between;margin:22px 0 10px}
+    .sh h2{margin:0;font-size:22px}
+    .badge{border:1px dashed var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:13px}
+
+    /* Dates (cards large, photo-led) */
+    .dates{display:grid;gap:14px}
+    @media (min-width:920px){ .dates{grid-template-columns:1fr 1fr} }
+    .card{
+      display:grid;grid-template-columns:160px 1fr auto;gap:14px;
+      border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:12px 12px 12px 12px
+    }
+    @media (max-width:680px){ .card{grid-template-columns:1fr} }
+    .shot{
+      border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:140px;
+      background:
+        linear-gradient(120deg, rgba(108,198,255,.22), rgba(232,75,106,.22)),
+        linear-gradient(180deg,#121726,#0b0f18);
+    }
+    .meta .where{font-weight:700}
+    .meta .sub{color:var(--muted);font-size:14px;margin-top:2px}
+    .when{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:14px;margin-top:6px}
+    .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+    .buy{align-self:center}
+    .tix{padding:11px 14px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;border:0}
+
+    /* Gallery – collage strip */
+    .collage{
+      display:grid;grid-template-columns:repeat(12,1fr);gap:10px
+    }
+    .c{border:1px solid var(--line);border-radius:14px;aspect-ratio:16/10;
+      background:
+        radial-gradient(60% 80% at 20% 10%, rgba(108,198,255,.18), rgba(0,0,0,0) 60%),
+        linear-gradient(180deg,#101421,#0a0d15);
+    }
+    .w6{grid-column:span 6}.w4{grid-column:span 4}.w3{grid-column:span 3}
+    @media (max-width:980px){ .w6{grid-column:span 12}.w4{grid-column:span 6}.w3{grid-column:span 6} }
+    @media (max-width:560px){ .w4,.w3{grid-column:span 12} }
+
+    /* About + Contact */
+    .panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:16px}
+    .contact a{text-decoration:underline;text-underline-offset:2px}
+
+    /* Footer */
+    footer{margin:34px 0 46px;color:var(--muted)}
+    .hr{height:1px;background:var(--line);margin:16px 0}
+  </style>
+</head>
+<body>
+  <header class="hdr">
+    <div class="wrap nav">
+      <div class="brand"><span class="dot"></span><span>The Cureheads</span></div>
+      <nav class="tabs">
+        <a href="#tour">Tour</a><a href="#media">Media</a><a href="#about">About</a><a href="#contact">Contact</a>
+      </nav>
+      <a class="cta" href="#tour">Tickets</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-copy">
+        <div class="eyebrow">Live tribute • Since 1990</div>
+        <h1 id="title">A Night of The Cure</h1>
+        <p class="lede">Faithful sound. Big atmosphere. From <em>Boys Don’t Cry</em> to <em>Just Like Heaven</em> — the definitive Cureheads live show.</p>
+        <div class="chips">
+          <span class="chip">UK & EU</span><span class="chip">Festivals</span><span class="chip">Club Shows</span>
+        </div>
+        <div class="hero-actions">
+          <a class="btn primary" href="#tour">See Tour Dates</a>
+          <a class="btn" href="#media">Photo Collage</a>
+        </div>
+      </div>
+
+      <!-- Poster wall / collage placeholders -->
+      <div class="posterwall" aria-label="Photo collage">
+        <div class="ph tall"></div>
+        <div class="ph"></div>
+        <div class="ph"></div>
+        <div class="ph wide"></div>
+        <div class="ph"></div>
+        <div class="ph tall"></div>
+        <div class="ph"></div>
+        <div class="ph"></div>
+        <div class="ph wide"></div>
+      </div>
+    </section>
+
+    <!-- TOUR -->
+    <section id="tour" style="margin-top:26px">
+      <div class="sh"><h2>Upcoming Shows</h2><span class="badge">Auto-pull ready (Spondle)</span></div>
+      <div class="dates">
+
+        <article class="card">
+          <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
+          <div class="meta">
+            <div class="where">O2 Academy, Bristol</div>
+            <div class="sub">Doors 19:00 • Onstage 20:30</div>
+            <div class="when"><span class="pill">12 Oct</span> Saturday Night</div>
+          </div>
+          <div class="buy"><a class="tix" href="event.html?id=ch-bristol">Tickets</a></div>
+        </article>
+
+        <article class="card">
+          <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
+          <div class="meta">
+            <div class="where">Barrowland, Glasgow</div>
+            <div class="sub">Doors 19:00 • Onstage 20:30</div>
+            <div class="when"><span class="pill">19 Oct</span> Saturday Night</div>
+          </div>
+          <div class="buy"><a class="tix" href="event.html?id=ch-glasgow">Tickets</a></div>
+        </article>
+
+        <article class="card">
+          <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
+          <div class="meta">
+            <div class="where">Rock City, Nottingham</div>
+            <div class="sub">Doors 19:00 • Onstage 20:30</div>
+            <div class="when"><span class="pill">01 Nov</span> Friday Night</div>
+          </div>
+          <div class="buy"><a class="tix" href="event.html?id=ch-nottingham">Tickets</a></div>
+        </article>
+
+        <article class="card">
+          <div class="shot" role="img" aria-label="Venue poster placeholder"></div>
+          <div class="meta">
+            <div class="where">Electric Ballroom, London</div>
+            <div class="sub">Doors 19:00 • Onstage 20:30</div>
+            <div class="when"><span class="pill">16 Nov</span> Saturday Night</div>
+          </div>
+          <div class="buy"><a class="tix" href="event.html?id=ch-london">Tickets</a></div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- MEDIA COLLAGE -->
+    <section id="media" style="margin-top:26px">
+      <div class="sh"><h2>Media Collage</h2></div>
+      <div class="collage">
+        <div class="c w6"></div>
+        <div class="c w3"></div>
+        <div class="c w3"></div>
+        <div class="c w4"></div>
+        <div class="c w4"></div>
+        <div class="c w4"></div>
+      </div>
+      <p class="muted" style="color:var(--muted);margin:8px 0 0">Placeholders shown — swap with real images when ready.</p>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" style="margin-top:26px">
+      <div class="sh"><h2>About</h2></div>
+      <div class="panel">
+        The Cureheads channel the sound and spirit of The Cure across a career-spanning set. Expect the iconic hits,
+        moody deep cuts, and the unmistakable atmosphere of a classic Cure night.
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" style="margin-top:26px">
+      <div class="sh"><h2>Contact</h2></div>
+      <div class="panel contact">
+        Email: <a href="mailto:booking@thecureheads.com">booking@thecureheads.com</a> •
+        Socials: Facebook • Instagram • X (links to add)
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <div class="hr"></div>
+    <small style="color:var(--muted)">© The Cureheads • Collage microsite demo</small>
+  </footer>
+</body>
+</html>
