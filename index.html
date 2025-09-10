@@ -205,12 +205,13 @@
     const getFavs=()=>new Set(JSON.parse(localStorage.getItem(FAV_KEY)||'[]'));
     const saveFavs=(set)=>localStorage.setItem(FAV_KEY,JSON.stringify([...set]));
 
-    function renderNext(){
+    function renderNext({autoScroll=false} = {}){
       const grid=document.getElementById('eventsGrid');
       const tpl=document.getElementById('eventCardTpl');
-      const favs=getFavs();
 
+      const startChildCount = grid.children.length; // remember current count (to find the first new card)
       const slice=eventsData.slice(offset, offset+PAGE_SIZE);
+
       slice.forEach(ev=>{
         const node=tpl.content.cloneNode(true);
         const img=node.querySelector('img');
@@ -222,7 +223,8 @@
         img.src=ev.image; img.alt=ev.title;
 
         const heart=node.querySelector('.heart');
-        if (getFavs().has(ev.id)) heart.style.background="rgba(236,72,153,.9)";
+        const favs=getFavs();
+        if (favs.has(ev.id)) heart.style.background="rgba(236,72,153,.9)";
         heart.addEventListener('click',(e)=>{
           e.stopPropagation();
           const set=getFavs();
@@ -234,14 +236,30 @@
         grid.appendChild(node);
       });
 
+      // Update offset & button state
       offset+=slice.length;
       const btn=document.getElementById('loadMoreBtn');
       if(offset>=eventsData.length){
         btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed');
       }
+
+      // === NEW: Smooth scroll to the first newly-added card (with sticky header offset) ===
+      if (autoScroll && slice.length) {
+        const firstNew = grid.children[startChildCount]; // first newly inserted element
+        if (firstNew) {
+          // compute sticky header height
+          const header = document.querySelector('.topbar');
+          const headerH = header ? header.getBoundingClientRect().height : 0;
+
+          // Position so the new card top sits just below the header
+          const top = firstNew.getBoundingClientRect().top + window.pageYOffset - headerH - 8; // small gap
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }
     }
 
-    document.getElementById('loadMoreBtn').addEventListener('click', renderNext);
+    document.getElementById('loadMoreBtn').addEventListener('click', ()=>renderNext({autoScroll:true}));
+    // initial page (no auto scroll)
     renderNext();
   </script>
 </body>
