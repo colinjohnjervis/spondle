@@ -2,207 +2,185 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle — Discover what’s on near you</title>
+
+  <!-- Tailwind build (your existing CSS) -->
   <link rel="stylesheet" href="app.v15.css" />
+
+  <!-- PWA friendly color -->
+  <meta name="theme-color" content="#0b0f14" />
+
   <style>
-    /* Minimal safety styles so functionality works even if app CSS changes */
-    :root { --bg: #0e1116; --card:#121723; --muted:#8aa0b3; --text:#e7eef7; --accent:#6ee7ff; }
-    body{background:#0b0f14;color:var(--text);margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1000px;margin:0 auto;padding:0 16px}
-    /* Header */
-    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,rgba(11,15,20,.95),rgba(11,15,20,.8) 70%,rgba(11,15,20,0));backdrop-filter:saturate(1.1) blur(6px);border-bottom:1px solid rgba(255,255,255,.05)}
-    .brand{display:flex;align-items:center;gap:.6rem;padding:14px 0;font-weight:700}
-    .led{width:10px;height:10px;border-radius:50%;background:#41ff9c;box-shadow:0 0 0 4px rgba(65,255,156,.12)}
-    .menu-btn{margin-left:auto;width:44px;height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;background:#141924}
-    .menu-btn svg{opacity:.9}
-    /* Sidebar */
-    .sidebar{position:fixed;inset:0 0 0 auto;width:82%;max-width:340px;background:#0f141d;border-left:1px solid rgba(255,255,255,.08);transform:translateX(100%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
-    .sidebar.open{transform:none}
-    .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
-    .scrim.show{opacity:1;pointer-events:auto}
-    .side-head{display:flex;align-items:center;gap:.6rem;padding:18px 18px 10px}
-    .side-nav{padding:4px 12px 24px;display:grid;gap:8px}
-    .side-link{padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:#111725;font-weight:600}
-    /* Hero */
-    .hero{margin:18px 0 10px}
-    .panel{background:radial-gradient(1200px 300px at 10% -20%, rgba(110,231,255,.22), transparent 55%), #0e1320; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:20px}
-    .h1{font-size:clamp(24px,4.8vw,38px);line-height:1.15;margin:0 0 10px}
-    .muted{color:var(--muted)}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:12px 18px;border-radius:14px;font-weight:700;border:1px solid rgba(255,255,255,.1)}
-    .btn.primary{background:linear-gradient(90deg,#68dfff,#86b6ff);color:#0a0f17;border:none}
-    .btn.ghost{background:#0f1522;border-color:rgba(255,255,255,.12)}
-    /* Events */
-    .section-title{font-size:28px;margin:26px 0 12px}
-    .list{display:grid;gap:14px}
-    .card{background:linear-gradient(180deg,#0e1320,#0b0f18);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
-    .thumb{height:152px;background:#0a0f17 url('https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=1200&auto=format&fit=crop') center/cover;}
-    .card-body{padding:14px 16px}
-    .row{display:flex;align-items:center;gap:10px;justify-content:space-between}
-    .title{font-size:18px;font-weight:800;margin:4px 0 8px}
-    .meta{color:var(--muted);font-size:14px}
-    .pill{display:inline-block;background:#0f1725;border:1px solid rgba(255,255,255,.08);padding:4px 8px;border-radius:999px;font-size:12px;margin-right:6px}
-    .price{display:inline-block;margin-top:10px;background:#0f1b2c;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.08)}
-    /* Heart */
-    .heart{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12);background:#101623;cursor:pointer;transform:translateY(-8px)}
-    .heart svg{fill:none;stroke:#9db3c8;stroke-width:1.6}
-    .heart.active{background:#1a2436;border-color:#2aa6ff}
-    .heart.active svg{fill:#2aa6ff;stroke:#2aa6ff}
-    /* Load more */
-    .load-wrap{display:flex;justify-content:center;margin:16px 0 36px}
-    .load-more{padding:12px 18px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:#0f1522;font-weight:700}
-    footer{color:#7690a7;font-size:13px;margin:28px 0 42px;text-align:center}
+    /* Drawer & backdrop transitions—kept tiny & independent of Tailwind */
+    .drawer {
+      transition: transform 240ms cubic-bezier(.2,.8,.2,1);
+      will-change: transform;
+    }
+    .backdrop {
+      transition: opacity 180ms ease;
+    }
+    /* Prevent body scroll when drawer is open */
+    .no-scroll { overflow: hidden; }
   </style>
 </head>
-<body>
+
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-500/30">
   <!-- Header -->
-  <header>
-    <div class="container" style="display:flex;align-items:center;gap:12px;">
-      <div class="brand">
-        <span class="led"></span>
-        <a href="./index.html" aria-label="Spondle home">Spondle</a>
-      </div>
-      <button id="menuBtn" class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
-        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 border-b border-slate-800">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="index.html" class="inline-flex items-center gap-2">
+        <span class="size-3 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d39980]"></span>
+        <span class="font-semibold text-xl tracking-tight">Spondle</span>
+      </a>
+
+      <!-- Burger -->
+      <button id="burgerBtn"
+        class="inline-flex items-center justify-center rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-700/70
+               px-3.5 py-2.5 text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+        aria-controls="mobileDrawer" aria-expanded="false" aria-label="Open menu">
+        <!-- 3-line icon -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </button>
     </div>
   </header>
 
-  <!-- Sidebar + scrim -->
-  <aside id="sidebar" class="sidebar" aria-hidden="true">
-    <div class="side-head">
-      <div class="led"></div><strong>Spondle</strong>
-      <button id="closeSide" class="menu-btn" style="margin-left:auto" aria-label="Close menu">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#9db3c8" stroke-width="2" fill="none"/></svg>
-      </button>
+  <!-- Backdrop -->
+  <div id="drawerBackdrop"
+       class="backdrop fixed inset-0 z-40 bg-black/60 opacity-0 pointer-events-none"></div>
+
+  <!-- Left Drawer -->
+  <aside id="mobileDrawer"
+         class="drawer fixed inset-y-0 left-0 z-50 w-[86%] max-w-xs translate-x-[-100%]
+                bg-slate-900 border-r border-slate-800 shadow-2xl">
+    <div class="h-full flex flex-col">
+      <!-- Drawer header -->
+      <div class="px-4 pt-4 pb-3 flex items-center justify-between border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="size-3 rounded-full bg-emerald-400"></span>
+          <span class="font-semibold">Spondle</span>
+        </div>
+        <button id="closeDrawer"
+          class="rounded-lg p-2 text-slate-300 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+          aria-label="Close menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Drawer nav -->
+      <nav class="p-2 space-y-1 overflow-y-auto">
+        <a href="events.html"
+           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Explore events</a>
+        <a href="favourites.html"
+           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Favourites</a>
+        <a href="organiser-dashboard.html"
+           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">For organisers</a>
+
+        <div class="h-px my-2 bg-slate-800"></div>
+
+        <a href="login.html"
+           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Sign in / Account</a>
+
+        <div class="h-px my-2 bg-slate-800"></div>
+
+        <!-- Quick links -->
+        <a href="#latest" class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Latest events</a>
+        <a href="#popular" class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Popular right now</a>
+      </nav>
+
+      <div class="mt-auto p-4 text-xs text-slate-400 border-t border-slate-800">
+        © 2025 Spondle
+      </div>
     </div>
-    <nav class="side-nav">
-      <a class="side-link" href="./index.html">Explore events</a>
-      <a class="side-link" href="./favourites.html">Favourites</a>
-      <a class="side-link" href="./for_organisers.html">For organisers</a>
-      <a class="side-link" href="./login.html">Sign in / up</a>
-    </nav>
   </aside>
-  <div id="scrim" class="scrim" role="presentation"></div>
 
   <!-- Main -->
-  <main class="container">
-    <section class="hero">
-      <div class="panel">
-        <h1 class="h1">Discover what’s on near you</h1>
-        <p class="muted">Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
-        <div style="display:flex;gap:10px;margin-top:12px">
-          <a class="btn primary" href="./events.html">Search events</a>
-          <a class="btn ghost" href="./for_organisers.html">List your event</a>
-        </div>
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
+    <!-- Hero -->
+    <section class="rounded-3xl bg-gradient-to-br from-slate-800/70 to-slate-900/70 border border-slate-800 shadow-[0_10px_30px_-12px_rgba(0,0,0,.6)] p-6 sm:p-8">
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
+        Discover what’s on near you
+      </h1>
+      <p class="mt-3 text-slate-300 max-w-2xl">
+        Gigs, comedy, food markets, film nights, community events and more — across the UK.
+      </p>
+      <div class="mt-6 flex gap-3">
+        <a href="events.html"
+           class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500
+                  px-5 py-3 font-semibold text-slate-900 hover:opacity-90">
+          Search events
+        </a>
+        <a href="organiser-dashboard.html"
+           class="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-800
+                  px-5 py-3 font-semibold text-slate-100 hover:bg-slate-700">
+          List your event
+        </a>
       </div>
     </section>
 
-    <section>
-      <h2 class="section-title">Latest events</h2>
-      <div id="eventsList" class="list"></div>
-      <div class="load-wrap"><button id="loadMore" class="load-more">Load more</button></div>
-    </section>
+    <!-- Latest -->
+    <section id="latest" class="mt-10">
+      <h2 class="text-2xl sm:text-3xl font-bold">Latest events</h2>
 
-    <footer>© 2025 Spondle · build vA1-side</footer>
+      <!-- Events list container (JS fills this) -->
+      <div id="events-list" class="mt-6 grid gap-5 sm:gap-6">
+        <!-- Cards are injected here by your existing script -->
+      </div>
+
+      <!-- Load more -->
+      <div class="mt-6 flex justify-center">
+        <button id="load-more"
+          class="rounded-2xl border border-slate-700 bg-slate-800 px-5 py-3 font-semibold text-slate-100
+                 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed">
+          Load more
+        </button>
+      </div>
+    </section>
   </main>
 
+  <!-- Your existing app logic (renders cards, hearts, load more, etc.) -->
+  <script src="auth.js" defer></script>
+  <script src="app.v15.js" defer></script>
+
+  <!-- Drawer script (tiny, independent) -->
   <script>
-    // ---- Sidebar
-    const sidebar = document.getElementById('sidebar');
-    const scrim   = document.getElementById('scrim');
-    const menuBtn = document.getElementById('menuBtn');
-    const closeSide = document.getElementById('closeSide');
-    function openSide(){ sidebar.classList.add('open'); scrim.classList.add('show'); menuBtn.setAttribute('aria-expanded','true'); }
-    function closeSideFn(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); menuBtn.setAttribute('aria-expanded','false'); }
-    menuBtn.addEventListener('click', openSide);
-    closeSide.addEventListener('click', closeSideFn);
-    scrim.addEventListener('click', closeSideFn);
-    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSideFn(); });
+    (function () {
+      const body = document.body;
+      const burger = document.getElementById('burgerBtn');
+      const drawer = document.getElementById('mobileDrawer');
+      const backdrop = document.getElementById('drawerBackdrop');
+      const closeBtn = document.getElementById('closeDrawer');
 
-    // ---- Sample data (fallback) — replace with your real data fetch when ready
-    const SAMPLE_EVENTS = [
-      { id:'e1', title:'The Harbourside Sessions', city:'Bristol', date:'12 Sep', category:'Live Music', venue:'The Louisiana', time:'19:30–22:30', price:'Free Entry', img:'https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=1600&auto=format&fit=crop' },
-      { id:'e2', title:'Acoustic Sessions at The Fleece', city:'Bristol', date:'21 Sep', category:'Live Music', venue:'The Fleece', time:'19:00–22:00', price:'£8', img:'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?q=80&w=1600&auto=format&fit=crop' },
-      { id:'e3', title:'Family Science Day', city:'Manchester', date:'28 Sep', category:'Community', venue:'Science and Industry Mus.', time:'10:00–16:00', price:'£6', img:'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1600&auto=format&fit=crop' },
-    ];
-    // pad out to show pagination
-    for(let i=4;i<=30;i++){
-      SAMPLE_EVENTS.push({
-        id:'e'+i,
-        title: (i%3===0?'Stand-Up Showcase':'Craft Cider Tasting') + ' #' + i,
-        city: i%2===0?'Edinburgh':'Bristol',
-        date: (10+i)+' Oct',
-        category: i%3===0?'Comedy':'Food & Drink',
-        venue: i%3===0?'The Stand':'The Apple',
-        time: i%3===0?'20:00–22:00':'18:00–20:00',
-        price: i%3===0?'£10':'£12',
-        img: i%3===0
-          ? 'https://images.unsplash.com/photo-1488998427799-e3362cec87c3?q=80&w=1600&auto=format&fit=crop'
-          : 'https://images.unsplash.com/photo-1527169402691-feff5539e52c?q=80&w=1600&auto=format&fit=crop'
+      function openDrawer() {
+        drawer.style.transform = 'translateX(0)';
+        backdrop.classList.remove('pointer-events-none');
+        backdrop.style.opacity = '1';
+        body.classList.add('no-scroll');
+        burger.setAttribute('aria-expanded', 'true');
+      }
+
+      function closeDrawer() {
+        drawer.style.transform = 'translateX(-100%)';
+        backdrop.style.opacity = '0';
+        // wait for opacity transition to finish before disabling pointer events
+        setTimeout(() => backdrop.classList.add('pointer-events-none'), 180);
+        body.classList.remove('no-scroll');
+        burger.setAttribute('aria-expanded', 'false');
+      }
+
+      burger.addEventListener('click', openDrawer);
+      closeBtn.addEventListener('click', closeDrawer);
+      backdrop.addEventListener('click', closeDrawer);
+
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDrawer();
       });
-    }
-
-    // ---- Favourites helper
-    const favKey = 'spondle:favourites';
-    const getFavs = () => new Set(JSON.parse(localStorage.getItem(favKey) || '[]'));
-    const setFavs = (set) => localStorage.setItem(favKey, JSON.stringify([...set]));
-
-    // ---- Render
-    const listEl = document.getElementById('eventsList');
-    const loadBtn = document.getElementById('loadMore');
-    let cursor = 0, PAGE = 12;
-    let favourites = getFavs();
-
-    function eventCard(ev){
-      const heartActive = favourites.has(ev.id);
-      return `
-        <article class="card" data-id="${ev.id}">
-          <div class="thumb" style="background-image:url('${ev.img || ''}');"></div>
-          <div class="card-body">
-            <div class="row">
-              <div>
-                <div>
-                  <span class="pill">${ev.city} • ${ev.date}</span>
-                  <span class="pill">${ev.category}</span>
-                </div>
-                <h3 class="title">${ev.title}</h3>
-                <div class="meta">${ev.venue} • ${ev.time}</div>
-                <div class="price">${ev.price}</div>
-              </div>
-              <button class="heart ${heartActive?'active':''}" aria-label="Add to favourites" data-heart="${ev.id}">
-                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 21s-6.7-4.35-9.33-7.35C.4 11.21 1.06 7.6 4.2 6.46c2.02-.75 3.92.12 4.8 1.71.88-1.59 2.78-2.46 4.8-1.71 3.14 1.14 3.8 4.75 1.53 7.19C18.7 16.65 12 21 12 21z"/></svg>
-              </button>
-            </div>
-          </div>
-        </article>
-      `;
-    }
-
-    function renderNext(){
-      const slice = SAMPLE_EVENTS.slice(cursor, cursor+PAGE);
-      listEl.insertAdjacentHTML('beforeend', slice.map(eventCard).join(''));
-      cursor += slice.length;
-      if(cursor >= SAMPLE_EVENTS.length){ loadBtn.style.display='none'; }
-    }
-
-    // Initial render
-    renderNext();
-
-    // Load more
-    loadBtn.addEventListener('click', renderNext);
-
-    // Delegate heart clicks
-    listEl.addEventListener('click', (e)=>{
-      const btn = e.target.closest('[data-heart]');
-      if(!btn) return;
-      const id = btn.getAttribute('data-heart');
-      if(favourites.has(id)){ favourites.delete(id); btn.classList.remove('active'); }
-      else { favourites.add(id); btn.classList.add('active'); }
-      setFavs(favourites);
-      e.stopPropagation();
-    });
+    })();
   </script>
 </body>
 </html>
