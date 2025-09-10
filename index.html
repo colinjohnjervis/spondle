@@ -2,280 +2,207 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Spondle — Discover what’s on near you</title>
-
-  <!-- Uses your existing site styles; keep this link as-is -->
   <link rel="stylesheet" href="app.v15.css" />
-
   <style>
-    /* --- Lightweight additions to sit on top of your existing styles --- */
-    :root {
-      --bg: #0c0f14;
-      --panel: #121722;
-      --muted: #9aa4b2;
-      --brand1: #5be4ff;
-      --brand2: #7aa8ff;
-      --card: #121722;
-      --cardBorder: rgba(255,255,255,0.06);
-      --heart: #ff5b87;
-    }
-
-    body { background: var(--bg); color: #eef2f6; }
-
+    /* Minimal safety styles so functionality works even if app CSS changes */
+    :root { --bg: #0e1116; --card:#121723; --muted:#8aa0b3; --text:#e7eef7; --accent:#6ee7ff; }
+    body{background:#0b0f14;color:var(--text);margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1000px;margin:0 auto;padding:0 16px}
     /* Header */
-    .site-header{
-      position: sticky; top: 0; z-index: 50;
-      backdrop-filter: blur(8px); background: rgba(12,15,20,0.75);
-      border-bottom: 1px solid var(--cardBorder);
-    }
-    .header-inner{
-      max-width: 960px; margin: 0 auto; padding: 14px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .brand{display:flex; align-items:center; gap:10px; font-weight:700; font-size:20px}
-    .brand-dot{width:10px; height:10px; border-radius:50%; background: #53e0a8; box-shadow:0 0 10px #53e0a8}
-    .hamburger{
-      width:40px; height:40px; display:grid; place-items:center;
-      border-radius:10px; border:1px solid var(--cardBorder); background: rgba(255,255,255,0.04);
-    }
-    .hamburger span, .hamburger span::before, .hamburger span::after{
-      display:block; width:18px; height:2px; background:#e8eef6; content:""; position:relative; border-radius:2px;
-    }
-    .hamburger span::before{ position:absolute; top:-6px; }
-    .hamburger span::after{ position:absolute; top:6px; }
-
-    /* Drawer */
-    .drawer-backdrop{
-      position: fixed; inset:0; background: rgba(0,0,0,0.5); opacity:0; pointer-events:none; transition:opacity .25s;
-    }
-    .drawer{
-      position: fixed; top:0; right:-320px; width:300px; height:100dvh;
-      background: var(--panel); border-left:1px solid var(--cardBorder);
-      transition: right .25s; padding:18px;
-      display:flex; flex-direction:column; gap:12px;
-    }
-    .drawer.open{ right:0; }
-    .drawer-backdrop.open{ opacity:1; pointer-events:auto; }
-    .drawer h3{ margin:6px 0 8px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em }
-    .nav-link{
-      display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px;
-      border:1px solid var(--cardBorder); background:rgba(255,255,255,0.03);
-    }
-    .nav-link:hover{ background:rgba(255,255,255,0.06) }
-
+    header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,rgba(11,15,20,.95),rgba(11,15,20,.8) 70%,rgba(11,15,20,0));backdrop-filter:saturate(1.1) blur(6px);border-bottom:1px solid rgba(255,255,255,.05)}
+    .brand{display:flex;align-items:center;gap:.6rem;padding:14px 0;font-weight:700}
+    .led{width:10px;height:10px;border-radius:50%;background:#41ff9c;box-shadow:0 0 0 4px rgba(65,255,156,.12)}
+    .menu-btn{margin-left:auto;width:44px;height:44px;border-radius:10px;border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;background:#141924}
+    .menu-btn svg{opacity:.9}
+    /* Sidebar */
+    .sidebar{position:fixed;inset:0 0 0 auto;width:82%;max-width:340px;background:#0f141d;border-left:1px solid rgba(255,255,255,.08);transform:translateX(100%);transition:transform .25s ease;z-index:60;display:flex;flex-direction:column}
+    .sidebar.open{transform:none}
+    .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:55}
+    .scrim.show{opacity:1;pointer-events:auto}
+    .side-head{display:flex;align-items:center;gap:.6rem;padding:18px 18px 10px}
+    .side-nav{padding:4px 12px 24px;display:grid;gap:8px}
+    .side-link{padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:#111725;font-weight:600}
     /* Hero */
-    .hero{
-      max-width:960px; margin: 18px auto 8px; padding: 16px;
-    }
-    .hero-card{
-      background: radial-gradient(120% 120% at 0% 0%, rgba(123,168,255,.14), rgba(91,228,255,.06)) , var(--panel);
-      border:1px solid var(--cardBorder); border-radius:18px; padding:22px;
-    }
-    .btn-row{ display:flex; gap:12px; flex-wrap:wrap; margin-top:16px }
-    .btn{
-      padding:12px 16px; border-radius:12px; border:1px solid var(--cardBorder);
-      background: linear-gradient(90deg, var(--brand1), var(--brand2));
-      color:#0b1020; font-weight:700;
-    }
-    .btn.secondary{ background: rgba(255,255,255,0.04); color:#e7edf7 }
-
-    /* List */
-    .section{ max-width:960px; margin: 10px auto 80px; padding: 0 16px }
-    .section h2{ font-size:28px; margin: 18px 0 }
-
-    .grid{ display:grid; gap:14px }
-    @media (min-width: 720px){ .grid{ grid-template-columns: 1fr 1fr } }
-
-    .card{
-      position: relative;
-      border:1px solid var(--cardBorder); border-radius:16px; overflow:hidden; background: var(--card);
-    }
-    .thumb{
-      position: relative; height:160px; background:#151a25; overflow:hidden;
-    }
-    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; filter:brightness(0.92) }
-    .heart{
-      position:absolute; top:10px; right:10px; width:36px; height:36px; border-radius:999px;
-      display:grid; place-items:center; background: rgba(0,0,0,0.35); border:1px solid var(--cardBorder);
-    }
-    .heart svg{ width:18px; height:18px; fill:none; stroke:#fff; stroke-width:2 }
-    .heart.active{ background: rgba(255,91,135,0.18); border-color: rgba(255,91,135,0.5) }
-    .heart.active svg{ fill: var(--heart); stroke: var(--heart) }
-
-    .card-body{ padding:14px 14px 16px }
-    .eyebrow{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; color:#b8c2cf; font-size:12px }
-    .pill{ padding:4px 8px; border-radius:999px; background: rgba(255,255,255,0.06); border:1px solid var(--cardBorder) }
-    .title{ font-size:18px; font-weight:800; margin: 8px 0 }
-    .meta{ color:#b8c2cf }
-
-    .loadmore-wrap{ display:flex; justify-content:center; padding: 18px 0 }
-    .loadmore{ padding:12px 16px; border-radius:12px; border:1px solid var(--cardBorder); background:rgba(255,255,255,0.06) }
+    .hero{margin:18px 0 10px}
+    .panel{background:radial-gradient(1200px 300px at 10% -20%, rgba(110,231,255,.22), transparent 55%), #0e1320; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:20px}
+    .h1{font-size:clamp(24px,4.8vw,38px);line-height:1.15;margin:0 0 10px}
+    .muted{color:var(--muted)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;padding:12px 18px;border-radius:14px;font-weight:700;border:1px solid rgba(255,255,255,.1)}
+    .btn.primary{background:linear-gradient(90deg,#68dfff,#86b6ff);color:#0a0f17;border:none}
+    .btn.ghost{background:#0f1522;border-color:rgba(255,255,255,.12)}
+    /* Events */
+    .section-title{font-size:28px;margin:26px 0 12px}
+    .list{display:grid;gap:14px}
+    .card{background:linear-gradient(180deg,#0e1320,#0b0f18);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
+    .thumb{height:152px;background:#0a0f17 url('https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=1200&auto=format&fit=crop') center/cover;}
+    .card-body{padding:14px 16px}
+    .row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+    .title{font-size:18px;font-weight:800;margin:4px 0 8px}
+    .meta{color:var(--muted);font-size:14px}
+    .pill{display:inline-block;background:#0f1725;border:1px solid rgba(255,255,255,.08);padding:4px 8px;border-radius:999px;font-size:12px;margin-right:6px}
+    .price{display:inline-block;margin-top:10px;background:#0f1b2c;padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.08)}
+    /* Heart */
+    .heart{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12);background:#101623;cursor:pointer;transform:translateY(-8px)}
+    .heart svg{fill:none;stroke:#9db3c8;stroke-width:1.6}
+    .heart.active{background:#1a2436;border-color:#2aa6ff}
+    .heart.active svg{fill:#2aa6ff;stroke:#2aa6ff}
+    /* Load more */
+    .load-wrap{display:flex;justify-content:center;margin:16px 0 36px}
+    .load-more{padding:12px 18px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:#0f1522;font-weight:700}
+    footer{color:#7690a7;font-size:13px;margin:28px 0 42px;text-align:center}
   </style>
 </head>
 <body>
-
   <!-- Header -->
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="/" class="brand">
-        <span class="brand-dot"></span>
-        <span>Spondle</span>
-      </a>
-      <button id="btnMenu" class="hamburger" aria-label="Open menu"><span></span></button>
+  <header>
+    <div class="container" style="display:flex;align-items:center;gap:12px;">
+      <div class="brand">
+        <span class="led"></span>
+        <a href="./index.html" aria-label="Spondle home">Spondle</a>
+      </div>
+      <button id="menuBtn" class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </header>
 
-  <!-- Drawer -->
-  <div id="backdrop" class="drawer-backdrop" aria-hidden="true"></div>
-  <aside id="drawer" class="drawer" aria-hidden="true" aria-label="Sidebar">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px">
-      <div class="brand" style="font-size:18px"><span class="brand-dot"></span> Spondle</div>
-      <button id="btnClose" class="hamburger" aria-label="Close menu"><span></span></button>
+  <!-- Sidebar + scrim -->
+  <aside id="sidebar" class="sidebar" aria-hidden="true">
+    <div class="side-head">
+      <div class="led"></div><strong>Spondle</strong>
+      <button id="closeSide" class="menu-btn" style="margin-left:auto" aria-label="Close menu">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="#9db3c8" stroke-width="2" fill="none"/></svg>
+      </button>
     </div>
-
-    <h3>Browse</h3>
-    <a class="nav-link" href="events.html">Explore events</a>
-    <a class="nav-link" href="favourites.html">Favourites</a>
-
-    <h3>For organisers</h3>
-    <a class="nav-link" href="organiser-dashboard.html">Organiser dashboard</a>
-    <a class="nav-link" href="my-drafts.html">My drafts</a>
-    <a class="nav-link" href="microsite-chooser.html">Microsite templates</a>
-
-    <h3>Account</h3>
-    <a class="nav-link" href="login.html">Sign in / Create account</a>
+    <nav class="side-nav">
+      <a class="side-link" href="./index.html">Explore events</a>
+      <a class="side-link" href="./favourites.html">Favourites</a>
+      <a class="side-link" href="./for_organisers.html">For organisers</a>
+      <a class="side-link" href="./login.html">Sign in / up</a>
+    </nav>
   </aside>
+  <div id="scrim" class="scrim" role="presentation"></div>
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-card">
-      <h1 style="font-size:clamp(26px,4.5vw,40px); line-height:1.15; margin:0 0 10px">
-        Discover what’s on near you
-      </h1>
-      <p style="color:#b8c2cf; margin:0">
-        Gigs, comedy, food markets, film nights, community events and more — across the UK.
-      </p>
-      <div class="btn-row">
-        <a class="btn" href="events.html">Search events</a>
-        <a class="btn secondary" href="organiser-dashboard.html">List your event</a>
+  <!-- Main -->
+  <main class="container">
+    <section class="hero">
+      <div class="panel">
+        <h1 class="h1">Discover what’s on near you</h1>
+        <p class="muted">Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <a class="btn primary" href="./events.html">Search events</a>
+          <a class="btn ghost" href="./for_organisers.html">List your event</a>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Latest events -->
-  <section class="section">
-    <h2>Latest events</h2>
-    <div id="list" class="grid"></div>
-    <div class="loadmore-wrap">
-      <button id="btnMore" class="loadmore">Load more</button>
-    </div>
-  </section>
+    <section>
+      <h2 class="section-title">Latest events</h2>
+      <div id="eventsList" class="list"></div>
+      <div class="load-wrap"><button id="loadMore" class="load-more">Load more</button></div>
+    </section>
+
+    <footer>© 2025 Spondle · build vA1-side</footer>
+  </main>
 
   <script>
-    // ---------- Drawer ----------
-    const drawer = document.getElementById('drawer');
-    const backdrop = document.getElementById('backdrop');
-    const openDrawer = () => { drawer.classList.add('open'); backdrop.classList.add('open'); };
-    const closeDrawer = () => { drawer.classList.remove('open'); backdrop.classList.remove('open'); };
-    document.getElementById('btnMenu').addEventListener('click', openDrawer);
-    document.getElementById('btnClose').addEventListener('click', closeDrawer);
-    backdrop.addEventListener('click', closeDrawer);
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
+    // ---- Sidebar
+    const sidebar = document.getElementById('sidebar');
+    const scrim   = document.getElementById('scrim');
+    const menuBtn = document.getElementById('menuBtn');
+    const closeSide = document.getElementById('closeSide');
+    function openSide(){ sidebar.classList.add('open'); scrim.classList.add('show'); menuBtn.setAttribute('aria-expanded','true'); }
+    function closeSideFn(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); menuBtn.setAttribute('aria-expanded','false'); }
+    menuBtn.addEventListener('click', openSide);
+    closeSide.addEventListener('click', closeSideFn);
+    scrim.addEventListener('click', closeSideFn);
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeSideFn(); });
 
-    // ---------- Event Data (sample set; replace with your real feed when ready) ----------
-    const eventsData = [
-      { id:'e1', title:'The Harbourside Sessions', city:'Bristol', date:'12 Sep', cat:'Live Music', venue:'The Louisiana', time:'19:30–22:30', price:'Free Entry', img:'https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=1200&auto=format&fit=crop' },
-      { id:'e2', title:'Acoustic Sessions at The Fleece', city:'Bristol', date:'21 Sep', cat:'Live Music', venue:'The Fleece', time:'19:00–22:00', price:'£8', img:'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?q=80&w=1200&auto=format&fit=crop' },
-      { id:'e3', title:'Family Science Day', city:'Manchester', date:'28 Sep', cat:'Community', venue:'Science and Industry Mus.', time:'10:00–16:00', price:'£6', img:'https://images.unsplash.com/photo-1532635223-3b6b2f9d34f4?q=80&w=1200&auto=format&fit=crop' },
-      { id:'e4', title:'Craft Cider Tasting', city:'Bristol', date:'11 Oct', cat:'Food & Drink', venue:'The Apple', time:'18:00–20:00', price:'£10', img:'https://images.unsplash.com/photo-1514362545857-3bc16c4c76b0?q=80&w=1200&auto=format&fit=crop' },
-      { id:'e5', title:'Stand-Up Showcase', city:'Edinburgh', date:'25 Oct', cat:'Comedy', venue:'The Stand', time:'20:00–22:00', price:'£10', img:'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1200&auto=format&fit=crop' },
-      // …add more as needed:
-      ...Array.from({length:22}).map((_,i)=>({
-        id:'eX'+(i+6),
-        title:'Community Night #'+(i+1),
-        city: ['Leeds','Cardiff','Brighton','Bath'][i%4],
+    // ---- Sample data (fallback) — replace with your real data fetch when ready
+    const SAMPLE_EVENTS = [
+      { id:'e1', title:'The Harbourside Sessions', city:'Bristol', date:'12 Sep', category:'Live Music', venue:'The Louisiana', time:'19:30–22:30', price:'Free Entry', img:'https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=1600&auto=format&fit=crop' },
+      { id:'e2', title:'Acoustic Sessions at The Fleece', city:'Bristol', date:'21 Sep', category:'Live Music', venue:'The Fleece', time:'19:00–22:00', price:'£8', img:'https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?q=80&w=1600&auto=format&fit=crop' },
+      { id:'e3', title:'Family Science Day', city:'Manchester', date:'28 Sep', category:'Community', venue:'Science and Industry Mus.', time:'10:00–16:00', price:'£6', img:'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1600&auto=format&fit=crop' },
+    ];
+    // pad out to show pagination
+    for(let i=4;i<=30;i++){
+      SAMPLE_EVENTS.push({
+        id:'e'+i,
+        title: (i%3===0?'Stand-Up Showcase':'Craft Cider Tasting') + ' #' + i,
+        city: i%2===0?'Edinburgh':'Bristol',
         date: (10+i)+' Oct',
-        cat: ['Community','Film','Food & Drink','Live Music'][i%4],
-        venue: ['Town Hall','Luna Cinema','Market Square','The Exchange'][i%4],
-        time:'19:00–22:00',
-        price: ['Free Entry','£5','£7','£12'][i%4],
-        img: [
-          'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1200&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=1200&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1498654200943-1088dd4438ae?q=80&w=1200&auto=format&fit=crop',
-          'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop'
-        ][i%4]
-      }))
-    ]);
+        category: i%3===0?'Comedy':'Food & Drink',
+        venue: i%3===0?'The Stand':'The Apple',
+        time: i%3===0?'20:00–22:00':'18:00–20:00',
+        price: i%3===0?'£10':'£12',
+        img: i%3===0
+          ? 'https://images.unsplash.com/photo-1488998427799-e3362cec87c3?q=80&w=1600&auto=format&fit=crop'
+          : 'https://images.unsplash.com/photo-1527169402691-feff5539e52c?q=80&w=1600&auto=format&fit=crop'
+      });
+    }
 
-    // ---------- Favourites (localStorage) ----------
-    const FAV_KEY = 'spondle_favourites_v1';
-    const getFavs = () => {
-      try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
-      catch { return []; }
-    };
-    const setFavs = (arr) => localStorage.setItem(FAV_KEY, JSON.stringify(arr));
-    const isFav = (id) => getFavs().includes(id);
-    const toggleFav = (id) => {
-      const favs = new Set(getFavs());
-      favs.has(id) ? favs.delete(id) : favs.add(id);
-      setFavs([...favs]);
-      // Update heart state
-      const btn = document.querySelector(`button.heart[data-id="${id}"]`);
-      if (btn) btn.classList.toggle('active', isFav(id));
-    };
+    // ---- Favourites helper
+    const favKey = 'spondle:favourites';
+    const getFavs = () => new Set(JSON.parse(localStorage.getItem(favKey) || '[]'));
+    const setFavs = (set) => localStorage.setItem(favKey, JSON.stringify([...set]));
 
-    // ---------- Render ----------
-    const listEl = document.getElementById('list');
-    const btnMore = document.getElementById('btnMore');
-    const PAGE = 12;
-    let shown = 0;
+    // ---- Render
+    const listEl = document.getElementById('eventsList');
+    const loadBtn = document.getElementById('loadMore');
+    let cursor = 0, PAGE = 12;
+    let favourites = getFavs();
 
-    function cardHTML(ev){
+    function eventCard(ev){
+      const heartActive = favourites.has(ev.id);
       return `
-      <article class="card" data-id="${ev.id}">
-        <div class="thumb">
-          <img src="${ev.img}" alt="" loading="lazy" />
-          <button class="heart ${isFav(ev.id)?'active':''}" data-id="${ev.id}" aria-label="Toggle favourite">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.716-4.263-9.333-7.333C.92 11.667 2 8 5.333 8 7.54 8 9 9.667 12 12c3-2.333 4.46-4 6.667-4C22 8 23.08 11.667 21.333 13.667 18.716 16.737 12 21 12 21z"/></svg>
-          </button>
-        </div>
-        <div class="card-body">
-          <div class="eyebrow">
-            <span class="pill">${ev.city} • ${ev.date}</span>
-            <span class="pill">${ev.cat}</span>
+        <article class="card" data-id="${ev.id}">
+          <div class="thumb" style="background-image:url('${ev.img || ''}');"></div>
+          <div class="card-body">
+            <div class="row">
+              <div>
+                <div>
+                  <span class="pill">${ev.city} • ${ev.date}</span>
+                  <span class="pill">${ev.category}</span>
+                </div>
+                <h3 class="title">${ev.title}</h3>
+                <div class="meta">${ev.venue} • ${ev.time}</div>
+                <div class="price">${ev.price}</div>
+              </div>
+              <button class="heart ${heartActive?'active':''}" aria-label="Add to favourites" data-heart="${ev.id}">
+                <svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 21s-6.7-4.35-9.33-7.35C.4 11.21 1.06 7.6 4.2 6.46c2.02-.75 3.92.12 4.8 1.71.88-1.59 2.78-2.46 4.8-1.71 3.14 1.14 3.8 4.75 1.53 7.19C18.7 16.65 12 21 12 21z"/></svg>
+              </button>
+            </div>
           </div>
-          <h3 class="title">${ev.title}</h3>
-          <div class="meta">${ev.venue} • ${ev.time}</div>
-          <div class="meta" style="margin-top:8px"><span class="pill">${ev.price}</span></div>
-        </div>
-      </article>`;
+        </article>
+      `;
     }
 
     function renderNext(){
-      const next = eventsData.slice(shown, shown + PAGE);
-      if (!next.length){ btnMore.disabled = true; btnMore.textContent = 'All caught up'; return; }
-      const html = next.map(cardHTML).join('');
-      const tmp = document.createElement('div'); tmp.innerHTML = html;
-      // attach handlers for hearts
-      tmp.querySelectorAll('button.heart').forEach(btn=>{
-        btn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleFav(btn.dataset.id); });
-      });
-      // clicking a card goes to the event page (replace with your real URL pattern)
-      tmp.querySelectorAll('.card').forEach(card=>{
-        card.addEventListener('click', (e)=>{
-          if (e.target.closest('button')) return;
-          window.location.href = 'event.html?id=' + card.dataset.id;
-        });
-      });
-      listEl.append(...tmp.childNodes);
-      shown += next.length;
-      if (shown >= eventsData.length){ btnMore.disabled = true; btnMore.textContent = 'All caught up'; }
+      const slice = SAMPLE_EVENTS.slice(cursor, cursor+PAGE);
+      listEl.insertAdjacentHTML('beforeend', slice.map(eventCard).join(''));
+      cursor += slice.length;
+      if(cursor >= SAMPLE_EVENTS.length){ loadBtn.style.display='none'; }
     }
 
-    btnMore.addEventListener('click', renderNext);
-    renderNext(); // initial 12
+    // Initial render
+    renderNext();
+
+    // Load more
+    loadBtn.addEventListener('click', renderNext);
+
+    // Delegate heart clicks
+    listEl.addEventListener('click', (e)=>{
+      const btn = e.target.closest('[data-heart]');
+      if(!btn) return;
+      const id = btn.getAttribute('data-heart');
+      if(favourites.has(id)){ favourites.delete(id); btn.classList.remove('active'); }
+      else { favourites.add(id); btn.classList.add('active'); }
+      setFavs(favourites);
+      e.stopPropagation();
+    });
   </script>
 </body>
 </html>
