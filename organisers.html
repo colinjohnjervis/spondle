@@ -16,7 +16,7 @@
     .glass{background:linear-gradient(180deg, rgba(10,12,16,.9), rgba(10,12,16,.55) 70%, rgba(10,12,16,0));
            border-bottom:1px solid var(--border);backdrop-filter: blur(6px);}
 
-    /* LOCKED SIDEBAR + TOPBAR (identical to index/events/event) */
+    /* LOCKED SIDEBAR + TOPBAR (unchanged) */
     .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px}
     .brand{display:flex;align-items:center;gap:10px}
     .brand-dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
@@ -41,9 +41,19 @@
     .sb-section{margin:8px 10px 0 10px;padding:10px 12px;font-size:.9rem;color:var(--muted);border-top:1px solid var(--border)}
     .sb-foot{margin-top:auto;padding:16px 20px;color:var(--muted);border-top:1px solid var(--border);font-size:.95rem}
 
-    /* Panels & cards (same tokens) */
+    /* Panels & cards */
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
     .card{background:var(--card);border:1px solid var(--border);border-radius:16px}
+
+    /* Accordion */
+    .acc-item{border:1px solid var(--border);border-radius:14px;background:var(--panel)}
+    .acc-btn{width:100%;text-align:left;padding:16px 18px;border-radius:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .acc-btn:hover{background:rgba(255,255,255,.04)}
+    .acc-icon{transition:transform var(--speed) ease}
+    .acc-content{max-height:0;overflow:hidden;transition:max-height var(--speed) ease}
+    .acc-item.open .acc-content{max-height:800px}
+    .acc-item.open .acc-icon{transform:rotate(180deg)}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:.85rem}
   </style>
 </head>
 <body>
@@ -80,12 +90,12 @@
     <div class="sb-foot">© 2025 Spondle</div>
   </aside>
 
-  <!-- Hero / intro -->
+  <!-- Intro -->
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">For organisers</h1>
       <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
-        List events in minutes, sync them to your own website via our plugin, and reach people who’ll love what you do.
+        List events in minutes, sync them to your site via our plugin, and reach people who’ll love what you do.
       </p>
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="/login.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500/30 to-blue-500/30 border border-[color:var(--border)]">
@@ -100,41 +110,157 @@
       </div>
     </section>
 
-    <!-- Why Spondle -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="card p-5">
-        <h2 class="text-xl font-bold mb-2">Plugin for your site</h2>
-        <p class="text-[color:var(--muted)]">
-          Keep everything central on Spondle and display your events on your own website—no double-entry.
-        </p>
+    <!-- Accordion -->
+    <section class="space-y-4">
+      <!-- Plugin -->
+      <div class="acc-item" data-acc-id="plugin">
+        <button class="acc-btn">
+          <span class="flex items-center gap-3">
+            <span class="badge">Plugin</span>
+            <span class="font-semibold">Display your events on your own website</span>
+          </span>
+          <svg class="acc-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <div class="acc-content">
+          <div class="p-5 border-t border-[color:var(--border)]">
+            <p class="text-[color:var(--muted)] mb-4">
+              Keep creation central on Spondle. Embed a small snippet on your site to show a live list of your events.
+            </p>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="card p-4">
+                <h3 class="font-semibold mb-2">Embed code (coming soon)</h3>
+                <p class="text-[color:var(--muted)] text-sm">We’ll generate a script tag you can paste into any page builder (WordPress, Squarespace, Wix, custom, etc.).</p>
+              </div>
+              <div class="card p-4">
+                <h3 class="font-semibold mb-2">Theme & filters</h3>
+                <ul class="text-[color:var(--muted)] text-sm list-disc pl-5 space-y-1">
+                  <li>Light/Dark inherit</li>
+                  <li>Show upcoming only</li>
+                  <li>Category include/exclude</li>
+                  <li>Link target: Spondle page or your site</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card p-5">
-        <h2 class="text-xl font-bold mb-2">Audience tools</h2>
-        <p class="text-[color:var(--muted)]">
-          Followers & favourites, share links, and (soon) ticketing links & add-to-calendar.
-        </p>
-      </div>
-      <div class="card p-5">
-        <h2 class="text-xl font-bold mb-2">Analytics</h2>
-        <p class="text-[color:var(--muted)]">
-          See views, favourites, follows, and referrers. Understand who’s interested—by location & intent signals.
-        </p>
-      </div>
-    </section>
 
-    <!-- Getting started -->
-    <section class="panel p-6 md:p-8">
-      <h2 class="text-2xl font-bold">Getting started</h2>
-      <ol class="list-decimal pl-6 mt-3 space-y-2 text-[color:var(--muted)]">
-        <li>Create an account and complete your organiser profile.</li>
-        <li>Create an event (single date, recurring, or multi-venue).</li>
-        <li>Optionally embed the plugin on your website.</li>
-        <li>Share your event page. We handle favourites & follows.</li>
-      </ol>
-      <div class="mt-6">
-        <a href="/organiser-create.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500/30 to-lime-500/30 border border-[color:var(--border)]">
-          Start listing an event
-        </a>
+      <!-- Audience tools -->
+      <div class="acc-item" data-acc-id="audience">
+        <button class="acc-btn">
+          <span class="flex items-center gap-3">
+            <span class="badge">Audience</span>
+            <span class="font-semibold">Followers, favourites & notifications</span>
+          </span>
+          <svg class="acc-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <div class="acc-content">
+          <div class="p-5 border-t border-[color:var(--border)]">
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="card p-4">
+                <div class="text-sm text-[color:var(--muted)]">Followers</div>
+                <div class="text-3xl font-bold mt-1" id="mFollowers">142</div>
+                <p class="text-[color:var(--muted)] text-sm mt-2">Users who follow your organiser profile.</p>
+              </div>
+              <div class="card p-4">
+                <div class="text-sm text-[color:var(--muted)]">Event favourites</div>
+                <div class="text-3xl font-bold mt-1" id="mFavs">327</div>
+                <p class="text-[color:var(--muted)] text-sm mt-2">Total hearts across your live events.</p>
+              </div>
+              <div class="card p-4">
+                <div class="text-sm text-[color:var(--muted)]">Weekly digest</div>
+                <div class="text-3xl font-bold mt-1" id="mDigest">Enabled</div>
+                <p class="text-[color:var(--muted)] text-sm mt-2">Subscribers who get your weekly updates.</p>
+              </div>
+            </div>
+            <div class="card p-4 mt-4">
+              <h3 class="font-semibold mb-2">Notifications model (preview)</h3>
+              <ul class="text-[color:var(--muted)] text-sm list-disc pl-5 space-y-1">
+                <li>Digest only (no spam; grouped updates)</li>
+                <li>Users can follow organisers or favourite events</li>
+                <li>Organisers won’t see personal data—just aggregates</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics -->
+      <div class="acc-item" data-acc-id="analytics">
+        <button class="acc-btn">
+          <span class="flex items-center gap-3">
+            <span class="badge">Analytics</span>
+            <span class="font-semibold">Overview of interest & reach</span>
+          </span>
+          <svg class="acc-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <div class="acc-content">
+          <div class="p-5 border-t border-[color:var(--border)]">
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="card p-4">
+                <div class="text-sm text-[color:var(--muted)]">Event views (7d)</div>
+                <div class="text-3xl font-bold mt-1" id="mViews">4,812</div>
+                <p class="text-[color:var(--muted)] text-sm mt-2">Across all your live events.</p>
+              </div>
+              <div class="card p-4">
+                <div class="text-sm text-[color:var(--muted)]">Share clicks</div>
+                <div class="text-3xl font-bold mt-1" id="mShares">611</div>
+                <p class="text-[color:var(--muted)] text-sm mt-2">WhatsApp, Facebook, X, direct link.</p>
+              </div>
+              <div class="card p-4">
+                <div class="text-sm text-[color:var(--muted)]">Top referrers</div>
+                <ul class="text-[color:var(--muted)] text-sm mt-2 space-y-1">
+                  <li>Facebook • 38%</li>
+                  <li>Direct/QR • 22%</li>
+                  <li>Google • 17%</li>
+                  <li>Your site (plugin) • 14%</li>
+                </ul>
+              </div>
+            </div>
+            <div class="card p-4 mt-4">
+              <h3 class="font-semibold mb-2">Next up</h3>
+              <ul class="text-[color:var(--muted)] text-sm list-disc pl-5 space-y-1">
+                <li>Per-event breakdown (views, favourites, tickets CTR)</li>
+                <li>Audience geography & intent signals</li>
+                <li>Referrer drill-down</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Getting started / Checklist -->
+      <div class="acc-item" data-acc-id="getting-started">
+        <button class="acc-btn">
+          <span class="flex items-center gap-3">
+            <span class="badge">Checklist</span>
+            <span class="font-semibold">Getting started</span>
+          </span>
+          <svg class="acc-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </button>
+        <div class="acc-content">
+          <div class="p-5 border-t border-[color:var(--border)]">
+            <ol class="list-decimal pl-6 space-y-2 text-[color:var(--muted)]">
+              <li>Complete organiser profile</li>
+              <li>Create your first event (single / recurring / multi-venue)</li>
+              <li>Embed the plugin on your site (optional)</li>
+              <li>Share your event page</li>
+            </ol>
+            <div class="mt-4">
+              <a href="/organiser-create.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500/30 to-lime-500/30 border border-[color:var(--border)]">
+                Start listing an event
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -148,14 +274,29 @@
       const openBtn = document.getElementById('sbOpen');
       const closeBtn = document.getElementById('sbClose');
       const overlay = document.getElementById('sbOverlay');
-
       function openMenu(){ body.classList.add('sb-open'); openBtn.setAttribute('aria-expanded','true'); }
       function closeMenu(){ body.classList.remove('sb-open'); openBtn.setAttribute('aria-expanded','false'); }
-
       openBtn.addEventListener('click', openMenu);
       closeBtn.addEventListener('click', closeMenu);
       overlay.addEventListener('click', closeMenu);
       window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+    })();
+
+    // Accordion (state persisted)
+    (function(){
+      const KEY = 'org_acc_open_v1';
+      const openIds = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+      const items = document.querySelectorAll('.acc-item');
+      items.forEach(item=>{
+        const id = item.dataset.accId;
+        if(openIds.has(id)){ item.classList.add('open'); }
+        const btn = item.querySelector('.acc-btn');
+        btn.addEventListener('click', ()=>{
+          item.classList.toggle('open');
+          if(item.classList.contains('open')) openIds.add(id); else openIds.delete(id);
+          localStorage.setItem(KEY, JSON.stringify([...openIds]));
+        });
+      });
     })();
   </script>
 </body>
