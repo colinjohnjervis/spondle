@@ -1,45 +1,101 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Spondle — Sign in</title>
-<link rel="stylesheet" href="styles.css"/>
-</head><body>
-<header>
-  <div class="container nav">
-    <div class="brand"><span class="logo"></span><a href="index.html">Spondle</a></div>
-    <div class="actions">
-      <a class="btn" href="events.html">Explore Events</a>
-      <a class="btn primary" href="signup.html">Create account</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Spondle — Sign in</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;max-width:720px;margin:0 auto;padding:24px;background:#0b0f14;color:#e8eef6}
+    .card{background:#121821;border:1px solid #1e2633;border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    input[type=email]{flex:1;min-width:240px;padding:12px;border-radius:10px;border:1px solid #293246;background:#0e141b;color:#e8eef6}
+    button{padding:12px 16px;border:0;border-radius:10px;background:linear-gradient(135deg,#34d399,#60a5fa);color:#0b1220;font-weight:700;cursor:pointer}
+    .muted{color:#9ca3af} .ok{color:#34d399} .warn{color:#fbbf24} .err{color:#f87171}
+  </style>
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <h1>Spondle — Sign in</h1>
+  <p class="muted">Enter your email and we’ll send you a secure one-time sign-in link.</p>
+
+  <div class="card">
+    <form id="emailForm">
+      <div class="row">
+        <input id="email" type="email" placeholder="you@email.com" required />
+        <button id="sendLinkBtn" type="submit">Send magic link</button>
+      </div>
+    </form>
+
+    <p id="status" class="muted" style="margin-top:14px;"></p>
+
+    <hr style="border-color:#1f2937;margin:18px 0">
+
+    <div class="row">
+      <button id="signOutBtn" type="button">Sign out</button>
+      <a class="muted" href="index.html">← Back to home</a>
     </div>
   </div>
-</header>
 
-<main class="container">
-  <section class="section hero-card" style="max-width:520px;margin:32px auto">
-    <h1>Sign in</h1>
-    <p class="tagline">Save favourites and get updates (coming soon).</p>
-    <div style="display:grid;gap:10px;margin-top:12px">
-      <input class="input" id="email" placeholder="Email"/>
-      <input class="input" id="password" placeholder="Password" type="password"/>
-      <button class="btn primary" id="go">Sign in</button>
-      <p class="muted">No account? <a href="signup.html">Create one</a>.</p>
-      <p class="muted" id="msg" aria-live="polite"></p>
-    </div>
-  </section>
-</main>
+  <script>
+    // ✅ Your Supabase project config
+    const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-<footer><div class="container foot"><div>© <span id="y"></span> Spondle</div></div></footer>
-<script>document.getElementById('y').textContent=new Date().getFullYear();</script>
-<script src="auth.js"></script>
-<script>
-  const msg = document.getElementById('msg');
-  document.getElementById('go').addEventListener('click', ()=>{
-    msg.textContent='';
-    try {
-      SpondleAuth.login({ email: val('email'), password: val('password') });
-      const redirect = new URLSearchParams(location.search).get('next') || 'events.html';
-      location.href = redirect;
-    } catch(e){ msg.textContent = e.message; }
-  });
-  function val(id){ return document.getElementById(id).value.trim(); }
-</script>
-</body></html>
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const emailForm = document.getElementById('emailForm');
+    const emailInput = document.getElementById('email');
+    const sendBtn = document.getElementById('sendLinkBtn');
+    const statusEl = document.getElementById('status');
+    const signOutBtn = document.getElementById('signOutBtn');
+
+    function say(msg, cls='muted'){ statusEl.className = cls; statusEl.textContent = msg; }
+
+    async function ensureProfile(userId){
+      const { error } = await sb.from('profiles').upsert({ id: userId }, { onConflict:'id' });
+      if (error) console.warn('profile upsert:', error.message);
+    }
+
+    async function refresh(){
+      const { data:{ user } } = await sb.auth.getUser();
+      if (user){
+        say(`Signed in as ${user.email}`, 'ok');
+        await ensureProfile(user.id);
+      }
+    }
+
+    // Send magic link
+    emailForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      if (!email) return;
+      sendBtn.disabled = true;
+      say('Sending magic link…');
+
+      const redirect = `${window.location.origin}/auth-callback.html`;
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirect }
+      });
+
+      if (error){ say('Error: ' + error.message, 'err'); }
+      else { say('Magic link sent. Check your inbox (and spam).', 'warn'); }
+      sendBtn.disabled = false;
+    });
+
+    signOutBtn.addEventListener('click', async ()=>{
+      await sb.auth.signOut();
+      say('Signed out.', 'muted');
+    });
+
+    // Keep UI in sync
+    sb.auth.onAuthStateChange((_evt, session)=>{
+      if (session?.user){
+        say(`Signed in as ${session.user.email}`, 'ok');
+      }
+    });
+
+    refresh();
+  </script>
+</body>
+</html>
