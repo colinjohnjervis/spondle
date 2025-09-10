@@ -1,272 +1,304 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spondle (canary A1)</title>
+  <title>Spondle — Discover events across the UK</title>
 
-  <!-- Base CSS -->
-  <link rel="stylesheet" href="app.v15.css" />
-  <!-- Fixed-header override -->
-  <link rel="stylesheet" href="app.v17.css" />
+  <!-- App font & baseline styles (kept local for a single-file drop-in) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{ --header-offset: 72px; } /* updated at runtime */
-
-    .grid { display:grid; gap:14px; }
-    @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
-    @media (min-width:980px){ .grid{ grid-template-columns:1fr 1fr 1fr; } }
-
-    .loadmore-wrap{ display:flex; justify-content:center; margin:18px 0 8px; }
-    .btn-ghost{ background:transparent; border:1px solid var(--card-border,#2a2f3a);
-      color:var(--text,#dfe7ff); padding:10px 16px; border-radius:10px; }
-
-    /* Favourite hearts */
-    .heart{ font-size:18px; line-height:1; }
-    .heart.is-saved{ color:var(--accent,#7de1c3); }
-
-    /* Keep scrolled cards below sticky header */
-    .card{ scroll-margin-top: var(--header-offset); }
-
-    /* ---------- Thumbnail block (16:9) ---------- */
-    .thumb {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1a2230, #0d1220);
-      border: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 10px;
+    :root{
+      --bg:#0c0f14;
+      --panel:#121722;
+      --panel-2:#0f1420;
+      --text:#e8eefc;
+      --muted:#a9b3c7;
+      --brand-1:#67e8f9;
+      --brand-2:#60a5fa;
+      --accent:#7c3aed;
+      --overlay:rgba(0,0,0,.55);
+      --ring: rgba(103,232,249,.35);
+      --card:#121722;
+      --card-2:#141a26;
+      --pill:#1a2335;
+      --ok:#22c55e;
     }
-    /* Maintain 16:9 using padding-top trick */
-    .thumb::before {
-      content: "";
-      display: block;
-      padding-top: 56.25%; /* 16:9 */
-    }
-    /* Actual image layer (uses inline style background-image when available) */
-    .thumb-img {
-      position: absolute; inset: 0;
-      background-position: center;
-      background-size: cover;
-      filter: saturate(1.05) contrast(1.02);
-    }
-    /* Nice gradient fallback if no image */
-    .thumb-gradient {
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(60% 80% at 20% 20%, rgba(94,241,186,0.25) 0%, rgba(94,241,186,0) 60%),
-        radial-gradient(70% 80% at 80% 20%, rgba(119,194,255,0.25) 0%, rgba(119,194,255,0) 60%),
-        linear-gradient(180deg, rgba(0,0,0,0.00) 40%, rgba(0,0,0,0.25) 100%);
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,var(--bg),#0d121c 40%, #0b1019);
+      color:var(--text);
+      font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Overlay controls inside the thumbnail */
-    .thumb .badge {
-      position: absolute; left: 10px; bottom: 10px;
-      background: rgba(14,18,23,0.7);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      backdrop-filter: blur(4px);
+    /* —— Sticky Top Bar (logo + hamburger only) —— */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter:saturate(1.2) blur(8px);
+      background:linear-gradient(180deg, rgba(9,12,18,.78), rgba(9,12,18,.55));
+      border-bottom:1px solid rgba(255,255,255,.05);
     }
-    .thumb .heart {
-      position: absolute; right: 10px; top: 10px;
-      background: rgba(14,18,23,0.6);
-      border: 1px solid rgba(255,255,255,0.08);
-      width: 34px; height: 34px; border-radius: 999px;
-      display: grid; place-items: center;
-      cursor: pointer;
+    .topbar-inner{
+      max-width:1080px; margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text);
+    }
+    .brand-dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg, var(--brand-1), var(--brand-2)); box-shadow:0 0 0 4px rgba(103,232,249,.12)}
+    .brand-title{font-weight:700; letter-spacing:.2px}
+
+    .hamburger{
+      appearance:none; border:0; background:transparent; color:var(--text);
+      padding:10px; border-radius:10px; cursor:pointer;
+    }
+    .hamburger:focus-visible{outline:2px solid var(--ring); outline-offset:2px}
+    .hamburger svg{display:block}
+
+    /* —— Drawer —— */
+    .drawer-overlay{
+      position:fixed; inset:0; background:var(--overlay);
+      opacity:0; pointer-events:none; transition:opacity .18s ease;
+      z-index:60;
+    }
+    .drawer{
+      position:fixed; inset:0 auto 0 0; width:min(88vw,340px);
+      background:linear-gradient(180deg, var(--panel), var(--panel-2));
+      border-right:1px solid rgba(255,255,255,.06);
+      transform:translateX(-102%);
+      transition:transform .22s ease;
+      z-index:61; display:flex; flex-direction:column;
+    }
+    .drawer.open{transform:none}
+    .drawer-overlay.open{opacity:1; pointer-events:auto}
+
+    .drawer-head{
+      padding:18px 16px; display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .drawer-title{display:flex; align-items:center; gap:10px; font-weight:700}
+    .drawer-close{appearance:none; border:0; background:transparent; color:var(--text); padding:8px; border-radius:10px; cursor:pointer}
+    .drawer-close:focus-visible{outline:2px solid var(--ring); outline-offset:2px}
+
+    .nav{
+      padding:10px 10px 18px;
+      overflow:auto;
+    }
+    .nav-section{margin:12px 0 8px; padding:0 6px; color:var(--muted); font-size:12px; letter-spacing:.25px; text-transform:uppercase}
+    .nav a,.nav button.nav-btn{
+      display:flex; align-items:center; gap:12px;
+      width:100%; padding:12px 12px; margin:6px 0;
+      color:var(--text); text-decoration:none; background:transparent; border:0; border-radius:12px; cursor:pointer;
+    }
+    .nav a:hover,.nav button.nav-btn:hover{background:rgba(255,255,255,.05)}
+    .nav a:focus-visible,.nav button.nav-btn:focus-visible{outline:2px solid var(--ring); outline-offset:2px}
+    .badge{
+      margin-left:auto; font-size:11px; padding:.25rem .5rem; border-radius:999px; color:#0b1220; background:linear-gradient(135deg,var(--brand-1),var(--brand-2));
+    }
+
+    /* —— Page hero & content —— */
+    .container{max-width:1080px; margin:0 auto; padding:20px 16px 60px}
+    .hero{
+      background:radial-gradient(1200px 600px at 0% -10%, rgba(103,232,249,.08), transparent 50%),
+                 radial-gradient(1200px 600px at 100% -10%, rgba(96,165,250,.07), transparent 50%),
+                 linear-gradient(180deg, var(--panel), var(--panel-2));
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:18px; padding:24px; margin-top:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25) inset, 0 6px 20px rgba(0,0,0,.25);
+    }
+    .hero h1{margin:0 0 12px; font-size:28px}
+    .hero p{margin:0 0 16px; color:var(--muted)}
+    .cta-row{display:flex; gap:12px; flex-wrap:wrap}
+    .btn{
+      appearance:none; border:0; cursor:pointer; font-weight:600; border-radius:12px; padding:12px 16px;
+      background:linear-gradient(135deg, var(--brand-1), var(--brand-2)); color:#0b1220;
+      box-shadow:0 6px 16px rgba(32,107,196,.35);
+    }
+    .btn.secondary{background:#1d2636; color:var(--text); box-shadow:none; border:1px solid rgba(255,255,255,.08)}
+    .btn:focus-visible{outline:2px solid var(--ring); outline-offset:2px}
+
+    /* Cards sample */
+    .section-title{margin:26px 0 10px; font-weight:700}
+    .cards{display:grid; grid-template-columns:repeat(12,1fr); gap:12px}
+    .card{grid-column:span 12; background:linear-gradient(180deg, var(--card), var(--card-2)); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:16px}
+    .card h3{margin:0 0 8px}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:var(--pill); color:var(--muted); font-size:12px}
+    @media (min-width:720px){
+      .hero h1{font-size:34px}
+      .card{grid-column:span 6}
     }
   </style>
 </head>
 <body>
-  <!-- ===== Fixed Header ===== -->
-  <header class="site-header" id="siteHeader">
-    <div class="nav-wrap">
-      <a class="brand" href="index.html">
+
+  <!-- Sticky Top Bar — ONLY logo + hamburger -->
+  <header class="topbar" role="banner">
+    <div class="topbar-inner">
+      <a class="brand" href="/index.html" aria-label="Spondle home">
         <span class="brand-dot" aria-hidden="true"></span>
-        <span class="brand-name">Spondle</span>
-        <span class="beta-pill">Beta</span>
+        <span class="brand-title">Spondle</span>
       </a>
-      <nav class="main-nav" aria-label="Primary">
-        <a class="nav-tab is-active" href="index.html">Explore<br/>Events</a>
-        <a class="nav-tab" href="favourites.html">Favourites <span id="favBadge" class="badge" hidden>0</span></a>
-        <a class="nav-tab" href="organisers.html">For<br/>Organisers</a>
-      </nav>
+
+      <!-- Hamburger opens the drawer -->
+      <button class="hamburger" id="openDrawerBtn" aria-label="Open menu" aria-controls="app-drawer" aria-expanded="false">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   </header>
 
-  <!-- Spacer for fixed header -->
-  <div class="header-spacer" id="headerSpacer"></div>
+  <!-- Drawer + overlay -->
+  <div class="drawer-overlay" id="drawerOverlay" tabindex="-1" aria-hidden="true"></div>
+  <aside class="drawer" id="app-drawer" aria-hidden="true" aria-label="Main navigation" role="dialog" aria-modal="true">
+    <div class="drawer-head">
+      <div class="drawer-title">
+        <span class="brand-dot" aria-hidden="true"></span>
+        Spondle Menu
+      </div>
+      <button class="drawer-close" id="closeDrawerBtn" aria-label="Close menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
 
-  <!-- ===== Page Content ===== -->
-  <main class="page">
+    <nav class="nav">
+      <div class="nav-section">Explore</div>
+      <a href="/events.html">Explore Events</a>
+      <a href="/favourites.html">Favourites</a>
+
+      <div class="nav-section">Organisers</div>
+      <a href="/organisers.html">For Organisers</a>
+      <a href="/microsites/chooser.html">Microsite Templates <span class="badge">New</span></a>
+
+      <div class="nav-section">Account</div>
+      <a href="/login.html" id="drawerSignIn">Sign in / Create account</a>
+      <button class="nav-btn" id="drawerSignOut" style="display:none">Sign out</button>
+      <a href="/account.html" id="drawerAccount" style="display:none">My account</a>
+    </nav>
+  </aside>
+
+  <!-- Page content -->
+  <main class="container">
     <section class="hero">
-      <h1>Spondle (canary A1)</h1>
-      <p>Discover gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
-      <div class="hero-actions">
-        <a class="btn primary" href="events.html">Search events</a>
-        <a class="btn" href="organisers.html">List your event</a>
+      <h1>Discover what’s on near you</h1>
+      <p>Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
+      <div class="cta-row">
+        <a class="btn" href="/events.html">Search events</a>
+        <a class="btn secondary" href="/organisers.html">List your event</a>
       </div>
     </section>
 
-    <!-- Featured card -->
-    <section class="section">
-      <h2 class="section-title">Popular right now</h2>
-      <a class="card featured" href="event.html?id=harbourside-sessions">
-        <div class="thumb">
-          <div class="thumb-gradient"></div>
-          <!-- If you later have a real image: <div class="thumb-img" style="background-image:url('...')"></div> -->
-          <span class="badge">Bristol • 12 Sep</span>
-          <button class="heart" type="button" aria-label="Save this event" data-id="harbourside-sessions">♡</button>
-        </div>
-        <h3 class="card-title">The Harbourside Sessions</h3>
-        <p class="meta">The Louisiana • 19:30–22:30</p>
-        <span class="price-chip">Free Entry</span>
-      </a>
-    </section>
-
-    <!-- Latest events grid with Load More -->
-    <section class="section" id="latestSection">
-      <h2 class="section-title">Latest events</h2>
-      <div id="homeGrid" class="grid" aria-live="polite"></div>
-      <div class="loadmore-wrap" id="lmWrap">
-        <button id="loadMoreBtn" class="btn-ghost" type="button">Load more</button>
-      </div>
-    </section>
+    <h2 class="section-title">Popular right now</h2>
+    <div class="cards">
+      <article class="card">
+        <div class="pill">Bristol • 12 Sep</div>
+        <h3>The Harbourside Sessions</h3>
+        <p class="muted">The Louisiana • 19:30–22:30 • <strong>Free Entry</strong></p>
+      </article>
+      <article class="card">
+        <div class="pill">Manchester • 28 Sep</div>
+        <h3>Family Science Day</h3>
+        <p class="muted">Science & Industry Museum • 10:00–16:00 • £6</p>
+      </article>
+    </div>
   </main>
 
-  <footer class="site-footer">
-    <small>© 2025 Spondle • build v32c</small>
-  </footer>
-
-  <script src="script.js" defer></script>
+  <!-- Optional: include your existing auth.js (if present) so we can detect auth state) -->
+  <script src="/auth.js"></script>
 
   <script>
-    // ---------- FAVOURITES ----------
-    const FKEY = 'spondle:favs';
-    function readFavs(){ try { return JSON.parse(localStorage.getItem(FKEY) || '[]'); } catch { return []; } }
-    function writeFavs(list){ localStorage.setItem(FKEY, JSON.stringify(list)); }
-    function isSaved(id){ return readFavs().includes(id); }
-    function setHeartVisual(btn, saved){
-      btn.textContent = saved ? '♥' : '♡';
-      btn.classList.toggle('is-saved', !!saved);
-    }
-    function updateBadge(){
-      const b = document.getElementById('favBadge');
-      const n = readFavs().length;
-      if (n > 0){ b.textContent = n; b.hidden = false; } else { b.hidden = true; }
-    }
-    function toggleFav(id, btn){
-      const favs = readFavs();
-      const i = favs.indexOf(id);
-      if (i >= 0) favs.splice(i,1); else favs.push(id);
-      writeFavs(favs);
-      setHeartVisual(btn, i < 0);
-      updateBadge();
-    }
+    (function(){
+      const drawer = document.getElementById('app-drawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const openBtn = document.getElementById('openDrawerBtn');
+      const closeBtn = document.getElementById('closeDrawerBtn');
+      const focusableSelectors = 'a[href], button:not([disabled]), [tabindex="0"]';
+      let lastFocus = null;
 
-    // Stop card navigation when heart is tapped
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('button.heart');
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const id = btn.dataset.id;
-      if (!id) return;
-      toggleFav(id, btn);
-    });
+      function openDrawer(){
+        lastFocus = document.activeElement;
+        drawer.classList.add('open');
+        overlay.classList.add('open');
+        drawer.setAttribute('aria-hidden','false');
+        overlay.setAttribute('aria-hidden','false');
+        openBtn.setAttribute('aria-expanded','true');
 
-    updateBadge();
-
-    // ---------- Sticky header spacer + dynamic scroll offset ----------
-    function setHeaderSpacer() {
-      const header = document.getElementById('siteHeader');
-      const spacer = document.getElementById('headerSpacer');
-      if (!header || !spacer) return;
-      const h = header.offsetHeight;
-      spacer.style.height = h + 'px';
-      document.documentElement.style.setProperty('--header-offset', (h + 8) + 'px');
-    }
-    window.addEventListener('load', setHeaderSpacer, { once:true });
-    window.addEventListener('resize', setHeaderSpacer);
-
-    // ---------- SAMPLE DATA + LOAD MORE ----------
-    function getEventsSample(){
-      if (window.SAMPLE_EVENTS && Array.isArray(window.SAMPLE_EVENTS)) return window.SAMPLE_EVENTS;
-      const cities = ["Bristol","Manchester","Edinburgh","Cardiff","Leeds","London","Bath","Oxford"];
-      const cats = ["Live Music","Comedy","Food & Drink","Theatre","Community","Film","Talks","Family"];
-      const venues = ["The Fleece","The Louisiana","The Stand","The Apple","Academy","Arts Centre","Playhouse","Union"];
-      const out = [];
-      for (let i=0;i<60;i++){
-        out.push({
-          id: "e"+(1000+i),
-          city: cities[i%cities.length],
-          date: `${10+(i%20)} Oct`,
-          category: cats[i%cats.length],
-          title: `${cats[i%cats.length]} Night #${i+1}`,
-          venue: venues[i%venues.length],
-          time: "19:30–22:30",
-          priceLabel: (i%5===0) ? "Free Entry" : "£" + (6 + (i%12)),
-          image: "" // put a URL here later to test real images
-        });
+        const first = drawer.querySelector(focusableSelectors);
+        first && first.focus();
+        document.addEventListener('keydown', onKey);
       }
-      return out;
-    }
+      function closeDrawer(){
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        drawer.setAttribute('aria-hidden','true');
+        overlay.setAttribute('aria-hidden','true');
+        openBtn.setAttribute('aria-expanded','false');
 
-    function cardHTML(ev){
-      const saved = isSaved(ev.id);
-      const heart = saved ? '♥' : '♡';
-      const savedClass = saved ? ' is-saved' : '';
-
-      // If ev.image is set, use it; else gradient fallback
-      const imgLayer = ev.image
-        ? `<div class="thumb-img" style="background-image:url('${ev.image.replace(/'/g,"\\'")}')"></div>`
-        : `<div class="thumb-gradient"></div>`;
-
-      return `
-      <a class="card" href="event.html?id=${encodeURIComponent(ev.id)}">
-        <div class="thumb">
-          ${imgLayer}
-          <span class="badge">${ev.city} • ${ev.date}</span>
-          <button class="heart${savedClass}" type="button" aria-label="Save this event" data-id="${ev.id}">${heart}</button>
-        </div>
-        <h3 class="card-title">${ev.title}</h3>
-        <p class="meta">${ev.venue} • ${ev.time}</p>
-        <span class="price-chip">${ev.priceLabel}</span>
-      </a>`;
-    }
-
-    const ALL = getEventsSample();
-    const BATCH = 12;
-    let shown = 0;
-
-    function renderNextBatch(scrollToFirstNew=true){
-      const grid = document.getElementById('homeGrid');
-      const next = ALL.slice(shown, shown + BATCH);
-      if (next.length === 0) return;
-
-      const html = next.map(cardHTML).join('');
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = html;
-      const firstNew = wrapper.firstElementChild;
-      while (wrapper.firstChild) grid.appendChild(wrapper.firstChild);
-
-      shown += next.length;
-      if (shown >= ALL.length) document.getElementById('lmWrap').style.display = 'none';
-
-      if (scrollToFirstNew && firstNew) {
-        firstNew.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.removeEventListener('keydown', onKey);
+        lastFocus && lastFocus.focus();
       }
-    }
+      function onKey(e){
+        if(e.key === 'Escape'){ closeDrawer(); }
+        // Basic focus trap
+        if(e.key === 'Tab'){
+          const nodes = drawer.querySelectorAll(focusableSelectors);
+          if(!nodes.length) return;
+          const first = nodes[0], last = nodes[nodes.length-1];
+          if(e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
+          else if(!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
+        }
+      }
 
-    window.addEventListener('DOMContentLoaded', function(){
-      const featuredHeart = document.querySelector('.featured .heart');
-      if (featuredHeart) setHeartVisual(featuredHeart, isSaved(featuredHeart.dataset.id));
+      openBtn.addEventListener('click', openDrawer);
+      closeBtn.addEventListener('click', closeDrawer);
+      overlay.addEventListener('click', closeDrawer);
 
-      renderNextBatch(false); // initial 12
-      document.getElementById('loadMoreBtn').addEventListener('click', () => renderNextBatch(true));
-    });
+      // —— Auth-aware menu (works even if supabase is not present) ——
+      const signInLink = document.getElementById('drawerSignIn');
+      const signOutBtn = document.getElementById('drawerSignOut');
+      const accountLink = document.getElementById('drawerAccount');
+
+      async function refreshAuthUI(){
+        try{
+          if (window.supabase?.auth) {
+            const { data: { session } } = await supabase.auth.getSession();
+            const authed = !!session;
+
+            signInLink.style.display = authed ? 'none' : '';
+            signOutBtn.style.display = authed ? '' : 'none';
+            accountLink.style.display = authed ? '' : 'none';
+          } else {
+            // No supabase loaded: default to signed-out
+            signInLink.style.display = '';
+            signOutBtn.style.display = 'none';
+            accountLink.style.display = 'none';
+          }
+        }catch(_e){}
+      }
+
+      signOutBtn?.addEventListener('click', async () => {
+        try{
+          if (window.supabase?.auth) {
+            await supabase.auth.signOut();
+          }
+        }catch(_e){}
+        closeDrawer();
+        // Hard refresh to reset any UI state
+        window.location.href = '/index.html';
+      });
+
+      refreshAuthUI();
+    })();
   </script>
 </body>
 </html>
