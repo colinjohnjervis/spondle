@@ -3,221 +3,161 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spondle — Discover events across the UK</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
-
+  <title>Spondle — What’s on near you</title>
+  <link rel="stylesheet" href="app.v15.css">
   <style>
-    :root{
-      --bg:#0c0f14; --panel:#121722; --panel-2:#0f1420; --text:#e8eefc; --muted:#a9b3c7;
-      --brand-1:#67e8f9; --brand-2:#60a5fa; --overlay:rgba(0,0,0,.55); --ring:rgba(103,232,249,.35);
-      --card:#121722; --card-2:#141a26; --pill:#1a2335;
-    }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:linear-gradient(180deg,var(--bg),#0d121c 40%,#0b1019);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
-
-    /* Top bar (logo + hamburger) */
-    .topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(1.2) blur(8px);
-      background:linear-gradient(180deg,rgba(9,12,18,.78),rgba(9,12,18,.55));border-bottom:1px solid rgba(255,255,255,.05)}
-    .topbar-inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
-    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text)}
-    .brand-dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--brand-1),var(--brand-2));box-shadow:0 0 0 4px rgba(103,232,249,.12)}
-    .brand-title{font-weight:700;letter-spacing:.2px}
-    .hamburger{appearance:none;border:0;background:transparent;color:var(--text);padding:10px;border-radius:10px;cursor:pointer}
-    .hamburger:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
-
-    /* Drawer */
-    .drawer-overlay{position:fixed;inset:0;background:var(--overlay);opacity:0;pointer-events:none;transition:opacity .18s ease;z-index:60}
-    .drawer{position:fixed;inset:0 auto 0 0;width:min(88vw,340px);
-      background:linear-gradient(180deg,var(--panel),var(--panel-2));
-      border-right:1px solid rgba(255,255,255,.06);transform:translateX(-102%);
-      transition:transform .22s ease;z-index:61;display:flex;flex-direction:column}
-    .drawer.open{transform:none} .drawer-overlay.open{opacity:1;pointer-events:auto}
-    .drawer-head{padding:18px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06)}
-    .drawer-title{display:flex;align-items:center;gap:10px;font-weight:700}
-    .drawer-close{appearance:none;border:0;background:transparent;color:var(--text);padding:8px;border-radius:10px;cursor:pointer}
-    .drawer-close:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
-    .nav{padding:10px 10px 18px;overflow:auto}
-    .nav-section{margin:12px 0 8px;padding:0 6px;color:var(--muted);font-size:12px;letter-spacing:.25px;text-transform:uppercase}
-    .nav a,.nav button.nav-btn{display:flex;align-items:center;gap:12px;width:100%;padding:12px 12px;margin:6px 0;color:var(--text);
-      text-decoration:none;background:transparent;border:0;border-radius:12px;cursor:pointer}
-    .nav a:hover,.nav button.nav-btn:hover{background:rgba(255,255,255,.05)}
-    .nav a:focus-visible,.nav button.nav-btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
-    .badge{margin-left:auto;font-size:11px;padding:.25rem .5rem;border-radius:999px;color:#0b1220;background:linear-gradient(135deg,var(--brand-1),var(--brand-2))}
-
-    /* Page */
-    .container{max-width:1080px;margin:0 auto;padding:20px 16px 60px}
-    .hero{background:radial-gradient(1200px 600px at 0% -10%,rgba(103,232,249,.08),transparent 50%),
-      radial-gradient(1200px 600px at 100% -10%,rgba(96,165,250,.07),transparent 50%),
-      linear-gradient(180deg,var(--panel),var(--panel-2));
-      border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:24px;margin-top:14px;
-      box-shadow:0 10px 30px rgba(0,0,0,.25) inset,0 6px 20px rgba(0,0,0,.25)}
-    .hero h1{margin:0 0 12px;font-size:28px}
-    .hero p{margin:0 0 16px;color:var(--muted)}
-    .cta-row{display:flex;gap:12px;flex-wrap:wrap}
-    .btn{appearance:none;border:0;cursor:pointer;font-weight:600;border-radius:12px;padding:12px 16px;
-      background:linear-gradient(135deg,var(--brand-1),var(--brand-2));color:#0b1220;box-shadow:0 6px 16px rgba(32,107,196,.35)}
-    .btn.secondary{background:#1d2636;color:var(--text);box-shadow:none;border:1px solid rgba(255,255,255,.08)}
-    .btn:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
-
-    .section-title{margin:26px 0 10px;font-weight:700}
-    /* Results grid the renderer hooks into */
-    .results-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-    .tile{grid-column:span 12;background:linear-gradient(180deg,var(--card),var(--card-2));
-      border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px}
-    .tile h3{margin:6px 0 8px}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:var(--pill);color:var(--muted);font-size:12px}
-    @media (min-width:720px){.hero h1{font-size:34px}.tile{grid-column:span 6}}
-    @media (min-width:1024px){.tile{grid-column:span 4}}
-    .center{display:flex;justify-content:center;margin-top:18px}
-    .loadmore{padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:#1d2636;color:var(--text);font-weight:600}
-    .loadmore:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+    /* layout fixes */
+    .page-wrap {max-width:1100px;margin:0 auto;padding:16px;}
+    .hero {background:linear-gradient(135deg,#10131a 0%,#0d1117 100%);border-radius:18px;padding:24px;margin-top:12px}
+    .grid {display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:16px}
+    @media (min-width:520px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (min-width:900px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .hidden{display:none}
+    .sticky-header{position:sticky;top:0;z-index:40;background:#0b0f14;border-bottom:1px solid rgba(255,255,255,.06)}
+    .brand{display:flex;align-items:center;gap:10px;padding:12px 16px}
+    .brand-bullet{width:10px;height:10px;border-radius:50%;background:#47e6b1;box-shadow:0 0 8px #47e6b1}
+    .brand-name{font-weight:700;color:#e6f0ff}
+    /* sidebar */
+    .sidebar-toggle{position:absolute;right:14px;top:10px;border-radius:10px;padding:10px;background:rgba(255,255,255,.06)}
+    .drawer{position:fixed;inset:0;display:none}
+    .drawer.open{display:block}
+    .drawer .scrim{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+    .drawer .panel{position:absolute;right:0;top:0;height:100%;width:min(88vw,380px);background:#0c1118;border-left:1px solid rgba(255,255,255,.08);padding:18px;overflow:auto}
+    .drawer a{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;color:#e7edf8;text-decoration:none}
+    .drawer a:hover{background:rgba(255,255,255,.06)}
+    .pill{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,#4cd2ff,#63f0c6);color:#0b1020;font-weight:700;border-radius:14px;padding:10px 14px;text-decoration:none}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;color:#e7edf8;text-decoration:none;background:rgba(255,255,255,.04)}
+    .loadmore-wrap{display:flex;justify-content:center;margin:24px 0 48px}
   </style>
 </head>
 <body>
-
-  <!-- Sticky Top Bar — ONLY logo + hamburger -->
-  <header class="topbar" role="banner">
-    <div class="topbar-inner">
-      <a class="brand" href="/index.html" aria-label="Spondle home">
-        <span class="brand-dot" aria-hidden="true"></span>
-        <span class="brand-title">Spondle</span>
-      </a>
-      <button class="hamburger" id="openDrawerBtn" aria-label="Open menu" aria-controls="app-drawer" aria-expanded="false">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- Sticky header with logo + sidebar button -->
+  <header class="sticky-header">
+    <div class="brand page-wrap">
+      <span class="brand-bullet" aria-hidden="true"></span>
+      <span class="brand-name">Spondle</span>
+      <button id="sidebarBtn" class="sidebar-toggle" aria-label="Open menu">
+        <!-- hamburger -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="#cfe3ff" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
   </header>
 
-  <!-- Drawer + overlay -->
-  <div class="drawer-overlay" id="drawerOverlay" tabindex="-1" aria-hidden="true"></div>
-  <aside class="drawer" id="app-drawer" aria-hidden="true" aria-label="Main navigation" role="dialog" aria-modal="true">
-    <div class="drawer-head">
-      <div class="drawer-title">
-        <span class="brand-dot" aria-hidden="true"></span>
-        Spondle Menu
+  <!-- Sidebar drawer -->
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="scrim" id="scrim"></div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong style="color:#e6f0ff">Menu</strong>
+        <button id="closeDrawer" class="btn">Close</button>
       </div>
-      <button class="drawer-close" id="closeDrawerBtn" aria-label="Close menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
+      <nav style="display:grid;gap:6px;margin-top:8px">
+        <a href="index.html">Explore events</a>
+        <a href="favourites.html">Favourites</a>
+        <a href="organiser-dashboard.html">For organisers</a>
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:6px 0">
+        <a href="login.html" id="authLink">Sign in</a>
+      </nav>
     </div>
-
-    <nav class="nav">
-      <div class="nav-section">Explore</div>
-      <a href="/events.html">Explore Events</a>
-      <a href="/favourites.html">Favourites</a>
-
-      <div class="nav-section">Organisers</div>
-      <a href="/organisers.html">For Organisers</a>
-      <a href="/microsites/chooser.html">Microsite Templates <span class="badge">New</span></a>
-
-      <div class="nav-section">Account</div>
-      <a href="/login.html" id="drawerSignIn">Sign in / Create account</a>
-      <button class="nav-btn" id="drawerSignOut" style="display:none">Sign out</button>
-      <a href="/account.html" id="drawerAccount" style="display:none">My account</a>
-    </nav>
   </aside>
 
-  <!-- Page content -->
-  <main class="container">
+  <main class="page-wrap">
+    <!-- Hero -->
     <section class="hero">
-      <h1>Discover what’s on near you</h1>
-      <p>Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
-      <div class="cta-row">
-        <a class="btn" href="/events.html">Search events</a>
-        <a class="btn secondary" href="/organisers.html">List your event</a>
+      <h1 style="color:#e9f2ff;font-size:clamp(24px,3.6vw,36px);line-height:1.15;margin:0 0 10px">
+        Discover what’s on near you
+      </h1>
+      <p style="color:#a8b6c9;margin:0 0 18px">
+        Gigs, comedy, food markets, film nights, community events and more — across the UK.
+      </p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="pill" href="events.html">Search events</a>
+        <a class="btn" href="organiser-dashboard.html">List your event</a>
       </div>
     </section>
 
-    <!-- ✅ Results section: IDs your renderer expects -->
-    <h2 class="section-title">Latest events</h2>
-    <div id="events-grid" class="results-grid"></div>
+    <!-- Events grid (important IDs for JS) -->
+    <h2 style="margin:22px 0 10px;color:#e6f0ff">Latest events</h2>
+    <div id="eventsGrid" class="grid" aria-live="polite"></div>
 
-    <div class="center">
-      <button id="loadMoreBtn" class="loadmore">Load more</button>
+    <div class="loadmore-wrap">
+      <button id="loadMoreBtn" class="btn">Load more</button>
     </div>
   </main>
 
-  <!-- Optional: your existing auth.js (if present) so drawer can toggle sign-in state) -->
-  <script src="/auth.js"></script>
-
   <script>
-    (function(){
-      const drawer = document.getElementById('app-drawer');
-      const overlay = document.getElementById('drawerOverlay');
-      const openBtn = document.getElementById('openDrawerBtn');
-      const closeBtn = document.getElementById('closeDrawerBtn');
-      const focusableSelectors = 'a[href], button:not([disabled]), [tabindex="0"]';
-      let lastFocus = null;
+    /* Sidebar controls */
+    const drawer = document.getElementById('drawer');
+    document.getElementById('sidebarBtn').addEventListener('click', () => {
+      drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
+    });
+    document.getElementById('closeDrawer').addEventListener('click', () => {
+      drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
+    });
+    document.getElementById('scrim').addEventListener('click', () => {
+      drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
+    });
 
-      function openDrawer(){
-        lastFocus = document.activeElement;
-        drawer.classList.add('open'); overlay.classList.add('open');
-        drawer.setAttribute('aria-hidden','false'); overlay.setAttribute('aria-hidden','false');
-        openBtn.setAttribute('aria-expanded','true');
-        const first = drawer.querySelector(focusableSelectors); first && first.focus();
-        document.addEventListener('keydown', onKey);
-      }
-      function closeDrawer(){
-        drawer.classList.remove('open'); overlay.classList.remove('open');
-        drawer.setAttribute('aria-hidden','true'); overlay.setAttribute('aria-hidden','true');
-        openBtn.setAttribute('aria-expanded','false');
-        document.removeEventListener('keydown', onKey);
-        lastFocus && lastFocus.focus();
-      }
-      function onKey(e){
-        if(e.key === 'Escape'){ closeDrawer(); }
-        if(e.key === 'Tab'){
-          const nodes = drawer.querySelectorAll(focusableSelectors);
-          if(!nodes.length) return;
-          const first = nodes[0], last = nodes[nodes.length-1];
-          if(e.shiftKey && document.activeElement === first){ last.focus(); e.preventDefault(); }
-          else if(!e.shiftKey && document.activeElement === last){ first.focus(); e.preventDefault(); }
+    /* Signed-in indicator for menu */
+    (async () => {
+      try {
+        if (window.supabase) {
+          const { data: { user } } = await window.supabase.auth.getUser();
+          const link = document.getElementById('authLink');
+          if (user && link) link.textContent = 'Signed in';
         }
-      }
-      openBtn.addEventListener('click', openDrawer);
-      closeBtn.addEventListener('click', closeDrawer);
-      overlay.addEventListener('click', closeDrawer);
-
-      // Auth-aware toggles in drawer
-      const signInLink = document.getElementById('drawerSignIn');
-      const signOutBtn = document.getElementById('drawerSignOut');
-      const accountLink = document.getElementById('drawerAccount');
-
-      async function refreshAuthUI(){
-        try{
-          if (window.supabase?.auth) {
-            const { data: { session } } = await supabase.auth.getSession();
-            const authed = !!session;
-            signInLink.style.display = authed ? 'none' : '';
-            signOutBtn.style.display = authed ? '' : 'none';
-            accountLink.style.display = authed ? '' : 'none';
-          } else {
-            signInLink.style.display = '';
-            signOutBtn.style.display = 'none';
-            accountLink.style.display = 'none';
-          }
-        }catch(_e){}
-      }
-      signOutBtn?.addEventListener('click', async () => {
-        try{ if (window.supabase?.auth) await supabase.auth.signOut(); }catch(_e){}
-        closeDrawer(); window.location.href = '/index.html';
-      });
-      refreshAuthUI();
+      } catch(_) {}
     })();
+
+    /* Events rendering (defensive: works with SPD_EVENTS or EVENTS) */
+    const ALL_EVENTS = (window.SPD_EVENTS || window.EVENTS || []);
+    const grid = document.getElementById('eventsGrid');
+    const btn  = document.getElementById('loadMoreBtn');
+
+    let batch = 12;
+    let shown = 0;
+
+    function cardHTML(e){
+      const date  = e.dateText || e.date || '';
+      const city  = e.city || e.location || '';
+      const price = e.priceText || e.price || '';
+      return `
+        <article class="event-card">
+          <div class="card">
+            <div class="card-body">
+              <div style="font-size:12px;color:#9fb2c8;margin-bottom:6px">
+                ${city ? `<span>${city}</span>` : ''} ${date ? `• <span>${date}</span>` : ''}
+              </div>
+              <h3 style="color:#eaf2ff;margin:0 0 6px">${e.title || 'Untitled event'}</h3>
+              <div style="color:#a9b7c9">${e.venue || ''}${e.time ? ' • '+e.time : ''}</div>
+              ${price ? `<div class="price-pill" style="margin-top:8px">${price}</div>` : ''}
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function renderMore(){
+      const next = ALL_EVENTS.slice(shown, shown + batch);
+      if (next.length === 0){ btn.classList.add('hidden'); return; }
+      grid.insertAdjacentHTML('beforeend', next.map(cardHTML).join(''));
+      shown += next.length;
+      if (shown >= ALL_EVENTS.length) btn.classList.add('hidden');
+    }
+
+    // If no global data (dev safety), don’t crash—hide controls
+    if (!Array.isArray(ALL_EVENTS) || ALL_EVENTS.length === 0){
+      grid.innerHTML = '';
+      btn.classList.add('hidden');
+    } else {
+      renderMore();
+      btn.addEventListener('click', renderMore);
+    }
   </script>
 
-  <!-- IMPORTANT: keep your existing events-rendering scripts AFTER the grid exists.
-       If you had <script src="/events.v26.js"> or similar, keep it here. -->
-  <!-- Example placeholders (remove if you already include your own): -->
-  <!-- <script src="/js/events.js?v=home"></script> -->
-  <!-- <script src="/js/home.js?v=home"></script> -->
-
+  <!-- Your existing app JS keeps working; leave last so our guards run even if it defines SPD_EVENTS -->
+  <script src="auth.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
