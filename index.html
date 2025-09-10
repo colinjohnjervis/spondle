@@ -3,161 +3,269 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spondle — What’s on near you</title>
+  <title>Spondle — Discover what’s on near you</title>
   <link rel="stylesheet" href="app.v15.css">
   <style>
-    /* layout fixes */
-    .page-wrap {max-width:1100px;margin:0 auto;padding:16px;}
-    .hero {background:linear-gradient(135deg,#10131a 0%,#0d1117 100%);border-radius:18px;padding:24px;margin-top:12px}
-    .grid {display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:16px}
-    @media (min-width:520px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (min-width:900px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-    .hidden{display:none}
-    .sticky-header{position:sticky;top:0;z-index:40;background:#0b0f14;border-bottom:1px solid rgba(255,255,255,.06)}
-    .brand{display:flex;align-items:center;gap:10px;padding:12px 16px}
-    .brand-bullet{width:10px;height:10px;border-radius:50%;background:#47e6b1;box-shadow:0 0 8px #47e6b1}
-    .brand-name{font-weight:700;color:#e6f0ff}
-    /* sidebar */
-    .sidebar-toggle{position:absolute;right:14px;top:10px;border-radius:10px;padding:10px;background:rgba(255,255,255,.06)}
-    .drawer{position:fixed;inset:0;display:none}
-    .drawer.open{display:block}
-    .drawer .scrim{position:absolute;inset:0;background:rgba(0,0,0,.55)}
-    .drawer .panel{position:absolute;right:0;top:0;height:100%;width:min(88vw,380px);background:#0c1118;border-left:1px solid rgba(255,255,255,.08);padding:18px;overflow:auto}
-    .drawer a{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;color:#e7edf8;text-decoration:none}
-    .drawer a:hover{background:rgba(255,255,255,.06)}
-    .pill{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,#4cd2ff,#63f0c6);color:#0b1020;font-weight:700;border-radius:14px;padding:10px 14px;text-decoration:none}
-    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 14px;color:#e7edf8;text-decoration:none;background:rgba(255,255,255,.04)}
-    .loadmore-wrap{display:flex;justify-content:center;margin:24px 0 48px}
+    /* --- Sidebar (restores the “nice” feel) --- */
+    .site-header { position: sticky; top: 0; z-index: 50; backdrop-filter: blur(8px); }
+    .hamburger { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; }
+    .hamburger svg { transition: transform .2s ease; }
+    .hamburger:active svg { transform: scale(0.95); }
+
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 60;
+    }
+    .drawer {
+      position: fixed; inset: 0 auto 0 0; width: 86vw; max-width: 360px; background: #101318;
+      transform: translateX(-100%); transition: transform .25s ease; z-index: 61;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      display: flex; flex-direction: column;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+    .drawer-header { padding: 18px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .drawer-list { padding: 10px; display: grid; gap: 6px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 12px; text-decoration: none;
+      color: #e7eefc; background: transparent; transition: background .15s ease, transform .05s ease;
+    }
+    .nav-item:active { transform: translateY(1px); }
+    .nav-item:hover { background: rgba(255,255,255,.06); }
+    .drawer-footer { margin-top: auto; padding: 12px; border-top: 1px solid rgba(255,255,255,.06); display: grid; gap: 8px; }
+    .badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #2a3342; color: #99c0ff; }
+
+    /* --- Events grid --- */
+    .events-section { margin-top: 24px; }
+    .events-grid {
+      display: grid; gap: 12px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 540px){ .events-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 900px){ .events-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+    .event-card {
+      background: linear-gradient(180deg,#121720,#0e1117);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 18px; padding: 14px; display: grid; gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .event-topline { display:flex; align-items:center; gap:10px; font-size: 12px; color: #9fb3d9; }
+    .event-title { font-weight: 700; font-size: 16px; color:#eaf2ff; }
+    .event-meta { font-size: 14px; color:#c9d6ee; }
+    .pill { font-size: 12px; padding: 3px 8px; border-radius: 999px; background:#1f2937; color:#9ec5ff; }
+
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:.6rem;
+      padding:12px 16px; border-radius: 14px; font-weight:700; text-decoration:none;
+      border: 1px solid rgba(255,255,255,.08); color:#0a1628; background: linear-gradient(90deg,#79d2ff,#9af0ff);
+    }
+    .btn.secondary { color:#dfeaff; background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
+    .btn:active { transform: translateY(1px); }
+    .center { display:grid; place-items:center; }
   </style>
 </head>
-<body>
-  <!-- Sticky header with logo + sidebar button -->
-  <header class="sticky-header">
-    <div class="brand page-wrap">
-      <span class="brand-bullet" aria-hidden="true"></span>
-      <span class="brand-name">Spondle</span>
-      <button id="sidebarBtn" class="sidebar-toggle" aria-label="Open menu">
-        <!-- hamburger -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M4 6h16M4 12h16M4 18h16" stroke="#cfe3ff" stroke-width="2" stroke-linecap="round"/>
+<body class="bg-dark text-light">
+  <!-- Header -->
+  <header class="site-header px-4 py-3 bg-dark/70 border-b border-white/5">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <!-- Left: Spondle logo only -->
+      <a href="index.html" class="flex items-center gap-2 no-underline">
+        <span class="inline-block w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-xl font-bold text-white">Spondle</span>
+      </a>
+
+      <!-- Right: Hamburger -->
+      <button id="openDrawer" class="hamburger bg-white/5 border border-white/10">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="#e8f1ff" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </button>
     </div>
   </header>
 
-  <!-- Sidebar drawer -->
+  <!-- Drawer -->
+  <div id="drawerOverlay" class="drawer-overlay"></div>
   <aside id="drawer" class="drawer" aria-hidden="true">
-    <div class="scrim" id="scrim"></div>
-    <div class="panel">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <strong style="color:#e6f0ff">Menu</strong>
-        <button id="closeDrawer" class="btn">Close</button>
+    <div class="drawer-header">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-3 h-3 rounded-full bg-emerald-400"></span>
+        <strong class="text-white">Spondle</strong>
+        <span class="badge">menu</span>
       </div>
-      <nav style="display:grid;gap:6px;margin-top:8px">
-        <a href="index.html">Explore events</a>
-        <a href="favourites.html">Favourites</a>
-        <a href="organiser-dashboard.html">For organisers</a>
-        <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:6px 0">
-        <a href="login.html" id="authLink">Sign in</a>
-      </nav>
+      <button id="closeDrawer" class="ml-auto hamburger bg-white/5 border border-white/10" aria-label="Close menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#e8f1ff" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <nav class="drawer-list">
+      <a class="nav-item" href="index.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 12l9-8 9 8" stroke="#9ec5ff" stroke-width="2" stroke-linecap="round"/></svg>
+        Home
+      </a>
+      <a class="nav-item" href="events.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#9ec5ff" stroke-width="2" stroke-linecap="round"/></svg>
+        Explore events
+      </a>
+      <a class="nav-item" href="favourites.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 11c0 5.65-7 10-7 10z" stroke="#9ec5ff" stroke-width="2" stroke-linecap="round"/></svg>
+        Favourites
+      </a>
+      <a class="nav-item" href="organiser-dashboard.html">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="#9ec5ff" stroke-width="2" stroke-linecap="round"/></svg>
+        For Organisers
+      </a>
+      <hr class="border-white/10 my-2">
+      <a class="nav-item" href="login.html" id="authLink">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="#9ec5ff" stroke-width="2" stroke-linecap="round"/></svg>
+        Sign in
+      </a>
+    </nav>
+
+    <div class="drawer-footer text-sm text-white/70">
+      <div id="signedInAs" class="hidden"></div>
+      <button id="signOutBtn" class="btn secondary" style="display:none;">Sign out</button>
+      <div class="text-white/40">© 2025 Spondle</div>
     </div>
   </aside>
 
-  <main class="page-wrap">
-    <!-- Hero -->
-    <section class="hero">
-      <h1 style="color:#e9f2ff;font-size:clamp(24px,3.6vw,36px);line-height:1.15;margin:0 0 10px">
-        Discover what’s on near you
-      </h1>
-      <p style="color:#a8b6c9;margin:0 0 18px">
-        Gigs, comedy, food markets, film nights, community events and more — across the UK.
-      </p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <a class="pill" href="events.html">Search events</a>
-        <a class="btn" href="organiser-dashboard.html">List your event</a>
+  <!-- Hero -->
+  <main class="max-w-6xl mx-auto px-4">
+    <section class="mt-6 mb-4">
+      <div class="rounded-2xl p-6 border border-white/5 bg-gradient-to-b from-[#0e1624] to-[#0a0f16] shadow-lg">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Discover what’s on near you</h1>
+        <p class="mt-2 text-white/70">Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
+        <div class="mt-4 flex gap-3">
+          <a href="events.html" class="btn">Search events</a>
+          <a href="organiser-dashboard.html" class="btn secondary">List your event</a>
+        </div>
       </div>
     </section>
 
-    <!-- Events grid (important IDs for JS) -->
-    <h2 style="margin:22px 0 10px;color:#e6f0ff">Latest events</h2>
-    <div id="eventsGrid" class="grid" aria-live="polite"></div>
+    <!-- Latest events -->
+    <section class="events-section">
+      <h2 class="text-2xl font-bold text-white mb-3">Latest events</h2>
+      <div id="events-grid" class="events-grid"></div>
 
-    <div class="loadmore-wrap">
-      <button id="loadMoreBtn" class="btn">Load more</button>
-    </div>
+      <div class="center mt-4">
+        <button id="load-more" class="btn secondary">Load more</button>
+      </div>
+    </section>
   </main>
 
+  <!-- Optional: Supabase (only if auth.js exists) -->
   <script>
-    /* Sidebar controls */
-    const drawer = document.getElementById('drawer');
-    document.getElementById('sidebarBtn').addEventListener('click', () => {
-      drawer.classList.add('open'); drawer.setAttribute('aria-hidden','false');
-    });
-    document.getElementById('closeDrawer').addEventListener('click', () => {
-      drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
-    });
-    document.getElementById('scrim').addEventListener('click', () => {
-      drawer.classList.remove('open'); drawer.setAttribute('aria-hidden','true');
-    });
-
-    /* Signed-in indicator for menu */
-    (async () => {
-      try {
-        if (window.supabase) {
-          const { data: { user } } = await window.supabase.auth.getUser();
-          const link = document.getElementById('authLink');
-          if (user && link) link.textContent = 'Signed in';
-        }
-      } catch(_) {}
-    })();
-
-    /* Events rendering (defensive: works with SPD_EVENTS or EVENTS) */
-    const ALL_EVENTS = (window.SPD_EVENTS || window.EVENTS || []);
-    const grid = document.getElementById('eventsGrid');
-    const btn  = document.getElementById('loadMoreBtn');
-
-    let batch = 12;
-    let shown = 0;
-
-    function cardHTML(e){
-      const date  = e.dateText || e.date || '';
-      const city  = e.city || e.location || '';
-      const price = e.priceText || e.price || '';
-      return `
-        <article class="event-card">
-          <div class="card">
-            <div class="card-body">
-              <div style="font-size:12px;color:#9fb2c8;margin-bottom:6px">
-                ${city ? `<span>${city}</span>` : ''} ${date ? `• <span>${date}</span>` : ''}
-              </div>
-              <h3 style="color:#eaf2ff;margin:0 0 6px">${e.title || 'Untitled event'}</h3>
-              <div style="color:#a9b7c9">${e.venue || ''}${e.time ? ' • '+e.time : ''}</div>
-              ${price ? `<div class="price-pill" style="margin-top:8px">${price}</div>` : ''}
-            </div>
-          </div>
-        </article>`;
-    }
-
-    function renderMore(){
-      const next = ALL_EVENTS.slice(shown, shown + batch);
-      if (next.length === 0){ btn.classList.add('hidden'); return; }
-      grid.insertAdjacentHTML('beforeend', next.map(cardHTML).join(''));
-      shown += next.length;
-      if (shown >= ALL_EVENTS.length) btn.classList.add('hidden');
-    }
-
-    // If no global data (dev safety), don’t crash—hide controls
-    if (!Array.isArray(ALL_EVENTS) || ALL_EVENTS.length === 0){
-      grid.innerHTML = '';
-      btn.classList.add('hidden');
-    } else {
-      renderMore();
-      btn.addEventListener('click', renderMore);
-    }
+    // Quietly detect if auth.js attached supabase client + session helper
+    const authAvailable = !!window.supabase;
   </script>
+  <script src="auth.js" defer></script>
 
-  <!-- Your existing app JS keeps working; leave last so our guards run even if it defines SPD_EVENTS -->
-  <script src="auth.js"></script>
-  <script src="app.js"></script>
+  <script>
+    /* ========= Drawer logic (restores original feel) ========= */
+    const drawer = document.getElementById('drawer');
+    const overlay = document.getElementById('drawerOverlay');
+    const openBtn = document.getElementById('openDrawer');
+    const closeBtn = document.getElementById('closeDrawer');
+
+    function openDrawer() {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', openDrawer);
+    closeBtn.addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+
+    /* ========= Auth header hint ========= */
+    async function wireAuthHints(){
+      if (!window.supabase) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      const signedInEl = document.getElementById('signedInAs');
+      const signOutBtn = document.getElementById('signOutBtn');
+      const authLink = document.getElementById('authLink');
+
+      if (session?.user?.email){
+        signedInEl.textContent = `Signed in as ${session.user.email}`;
+        signedInEl.classList.remove('hidden');
+        signOutBtn.style.display = 'inline-flex';
+        authLink.textContent = 'Account';
+        authLink.href = 'login.html'; // placeholder for a future account page
+
+        signOutBtn.onclick = async () => {
+          await supabase.auth.signOut();
+          location.reload();
+        };
+      }
+    }
+    wireAuthHints();
+
+    /* ========= Events loader (fixed IDs + graceful data) ========= */
+    // 1) If a global dataset is present, use it; else fall back to small inline sample.
+    const FALLBACK_EVENTS = [
+      { id:'E-1001', city:'Bristol', date:'12 Sep', category:'Live Music', title:'The Harbourside Sessions', venue:'The Louisiana', time:'19:30–22:30', price:'Free Entry' },
+      { id:'E-1002', city:'Bristol', date:'21 Sep', category:'Live Music', title:'Acoustic Sessions at The Fleece', venue:'The Fleece', time:'19:00–22:00', price:'£8' },
+      { id:'E-1003', city:'Manchester', date:'28 Sep', category:'Community', title:'Family Science Day', venue:'Science and Industry Mus.', time:'10:00–16:00', price:'£6' },
+      { id:'E-1004', city:'Edinburgh', date:'25 Oct', category:'Comedy', title:'Stand-Up Showcase', venue:'The Stand', time:'20:00–22:00', price:'£10' },
+      { id:'E-1005', city:'Bristol', date:'11 Oct', category:'Food & Drink', title:'Craft Cider Tasting', venue:'The Apple', time:'18:00–20:00', price:'£10' },
+      { id:'E-1006', city:'Leeds', date:'02 Nov', category:'Quiz', title:'Big Autumn Quiz Night', venue:'The Crown', time:'19:30–22:00', price:'£2pp' },
+      { id:'E-1007', city:'Cardiff', date:'15 Nov', category:'Film', title:'Indie Shorts Night', venue:'Chapter', time:'19:00–21:30', price:'£6' },
+      { id:'E-1008', city:'Birmingham', date:'21 Nov', category:'Theatre', title:'Fringe Taster', venue:'Old Rep', time:'19:30–21:00', price:'£12' },
+      { id:'E-1009', city:'Newcastle', date:'29 Nov', category:'Karaoke', title:'Karaoke Royale', venue:'The Quays', time:'20:00–23:00', price:'Free' },
+      { id:'E-1010', city:'Bath', date:'05 Dec', category:'Market', title:'Winter Night Market', venue:'Green Park', time:'17:00–21:30', price:'Free' },
+      { id:'E-1011', city:'Liverpool', date:'12 Dec', category:'Comedy', title:'New Material Night', venue:'Hot Water', time:'19:30–21:30', price:'£4' },
+      { id:'E-1012', city:'London', date:'18 Dec', category:'Live Music', title:'Late-Night Jazz', venue:'Ronnie Scott’s', time:'22:00–00:00', price:'£18' },
+      { id:'E-1013', city:'Oxford', date:'06 Jan', category:'Board Games', title:'Board-Game Social', venue:'The Library', time:'18:30–22:00', price:'£3' },
+      { id:'E-1014', city:'York', date:'18 Jan', category:'Food & Drink', title:'Street Food Friday', venue:'Shambles Market', time:'17:00–21:00', price:'Free' },
+    ];
+    const ALL_EVENTS = Array.isArray(window.SPONDLE_EVENTS) && window.SPONDLE_EVENTS.length
+      ? window.SPONDLE_EVENTS
+      : FALLBACK_EVENTS;
+
+    const grid = document.getElementById('events-grid');
+    const loadMoreBtn = document.getElementById('load-more');
+
+    let page = 0;
+    const PAGE_SIZE = 12;
+
+    function renderCard(ev){
+      const card = document.createElement('article');
+      card.className = 'event-card';
+      card.innerHTML = `
+        <div class="event-topline">
+          <span class="pill">${ev.city} • ${ev.date}</span>
+          <span class="pill">${ev.category}</span>
+        </div>
+        <div class="event-title">${ev.title}</div>
+        <div class="event-meta">${ev.venue} • ${ev.time}</div>
+        <div class="event-meta"><span class="pill">${ev.price}</span></div>
+      `;
+      return card;
+    }
+
+    function renderNextPage(){
+      const start = page * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      const slice = ALL_EVENTS.slice(start, end);
+      slice.forEach(ev => grid.appendChild(renderCard(ev)));
+      page++;
+
+      if (page * PAGE_SIZE >= ALL_EVENTS.length){
+        loadMoreBtn.style.display = 'none';
+      } else {
+        loadMoreBtn.style.display = 'inline-flex';
+      }
+    }
+
+    loadMoreBtn.addEventListener('click', renderNextPage);
+    renderNextPage(); // initial render
+  </script>
 </body>
 </html>
