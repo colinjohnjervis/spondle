@@ -1,153 +1,301 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle — Discover what’s on near you</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 
-  <!-- Your main stylesheet (cache-busted) -->
-  <link rel="stylesheet" href="app.v15.css?v=29" />
-
-  <!-- Minimal, isolated styles to guarantee the sidebar looks/animates even if app CSS is cached -->
   <style>
-    :root { --sb-bg: #0b0f14; --sb-panel: #0f141a; --sb-text:#e8f0f7; --sb-dim:#9fb2c5; }
-    .header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(10,14,18,.92),rgba(10,14,18,.86));backdrop-filter:saturate(120%) blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
-    .brand{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem}
-    .brand .dot{width:.7rem;height:.7rem;border-radius:50%;background:#47ffa8;box-shadow:0 0 14px rgba(71,255,168,.6)}
-    .brand .name{font-weight:700;color:var(--sb-text);font-size:1.1rem;letter-spacing:.2px}
-    .burger{margin-left:auto;margin-right:1rem;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
-    .burger:active{transform:scale(.98)}
-    .burger svg{stroke:#e6eef6}
-    /* Sidebar */
-    #sb-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:60}
-    #sb-panel{position:fixed;inset:0 auto 0 0;width:min(86vw,320px);background:var(--sb-panel);transform:translateX(-100%);transition:transform .25s ease;box-shadow:3px 0 22px rgba(0,0,0,.35);z-index:61;display:flex;flex-direction:column}
-    #sb-panel header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
-    #sb-panel h3{margin:0;font-size:1rem;color:var(--sb-text);font-weight:700}
-    #sb-panel nav{padding:10px 10px 18px}
-    #sb-panel a{display:flex;align-items:center;gap:.55rem;padding:12px 10px;border-radius:10px;color:var(--sb-text);text-decoration:none}
-    #sb-panel a:hover{background:rgba(255,255,255,.06)}
-    #sb-panel .muted{color:var(--sb-dim);font-size:.92rem}
-    .sb-open #sb-backdrop{opacity:1;pointer-events:auto}
-    .sb-open #sb-panel{transform:translateX(0)}
-    body.sb-open{overflow:hidden}
-    /* Hero + section titles remain styled by your app.v15.css; these fallbacks keep spacing if CSS is stale */
-    .container{max-width:1100px;margin:0 auto;padding:0 16px}
-    .hero{margin:16px auto 10px;border-radius:20px;padding:22px;background:linear-gradient(145deg,#12202c,#0f1620 55%,#141f2b)}
-    .hero h1{color:#e8f0f7;font-size:1.9rem;margin:.25rem 0 .6rem}
-    .hero p{color:#b3c3d4;margin:0 0 1rem}
-    .cta-row{display:flex;gap:12px;flex-wrap:wrap}
-    .btn{padding:12px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.06);color:#e8f0f7;text-decoration:none;font-weight:600}
-    .btn.primary{background:linear-gradient(90deg,#65d0ff,#60ffa3);color:#052029;border:none}
-    .section-title{color:#e8f0f7;font-size:1.6rem;margin:18px 0 6px}
-    .spacer{height:6px}
+    :root{
+      --bg:#0c0f13; --card:#12171d; --muted:#9fb3c8; --text:#e7edf4;
+      --accent1:#6ee7f2; --accent2:#7aa2ff; --ring:rgba(255,255,255,.08);
+      --brand-dot:#23e381;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:980px;margin:0 auto;padding:16px}
+
+    /* Header */
+    .header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(12,15,19,.9), rgba(12,15,19,.75) 60%, rgba(12,15,19,0));backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid var(--ring)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--brand-dot);box-shadow:0 0 0 6px rgba(35,227,129,.12)}
+    .burger{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--ring);background:rgba(255,255,255,.03);cursor:pointer}
+    .burger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;position:relative}
+    .burger span::before,.burger span::after{content:"";position:absolute;left:0;width:20px;height:2px;background:var(--text);border-radius:2px}
+    .burger span::before{top:-6px}.burger span::after{top:6px}
+
+    /* Side drawer */
+    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:60}
+    .drawer{position:fixed;inset:0 25% 0 auto;max-width:min(420px,92vw);transform:translateX(-100%);transition:transform .28s cubic-bezier(.2,.7,.2,1);background:linear-gradient(180deg,#0e1318,#0b0f13);border-right:1px solid var(--ring);z-index:61;display:flex;flex-direction:column}
+    .drawer.open{transform:translateX(0)}
+    .drawer-backdrop.show{opacity:1;pointer-events:auto}
+    .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--ring)}
+    .close{width:40px;height:40px;border-radius:10px;border:1px solid var(--ring);display:grid;place-items:center;background:rgba(255,255,255,.04);cursor:pointer}
+    .close i{width:18px;height:2px;background:var(--text);transform:rotate(45deg);position:relative}
+    .close i::after{content:"";position:absolute;width:18px;height:2px;background:var(--text);transform:rotate(90deg)}
+    .drawer-body{padding:8px 16px 18px;overflow:auto}
+    .menu-group{margin:14px 0}
+    .menu-title{font-size:.86rem;color:var(--muted);margin:12px 0 6px}
+    .menu a{display:block;padding:12px 10px;border-radius:10px;border:1px solid transparent}
+    .menu a:hover{background:rgba(255,255,255,.04);border-color:var(--ring)}
+
+    /* Hero */
+    .hero{margin:16px 0 10px}
+    .panel{background:radial-gradient(1200px 400px at -10% -40%, rgba(110,231,242,.12), transparent 40%), radial-gradient(1200px 400px at 110% -40%, rgba(122,162,255,.12), transparent 40%), var(--card);
+      border:1px solid var(--ring);border-radius:18px;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+    .hero h1{margin:0 0 8px;font-size:1.9rem;line-height:1.2}
+    .hero p{margin:0 0 18px;color:var(--muted)}
+    .btn{display:inline-block;padding:12px 16px;border-radius:12px;border:1px solid var(--ring);background:rgba(255,255,255,.04);font-weight:600}
+    .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#0b1117;border:none}
+
+    /* Events */
+    h2.section{font-size:1.8rem;margin:22px 0 10px}
+    #events-list{display:grid;gap:14px;grid-template-columns:1fr}
+    @media(min-width:560px){#events-list{grid-template-columns:1fr 1fr}}
+    @media(min-width:900px){#events-list{grid-template-columns:1fr 1fr 1fr}}
+    .card{background:var(--card);border:1px solid var(--ring);border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+    .media{aspect-ratio:16/9;background:#0b1115;position:relative;overflow:hidden}
+    .media img{width:100%;height:100%;object-fit:cover;display:block}
+    .fav{position:absolute;right:10px;top:10px;width:38px;height:38px;border-radius:10px;border:1px solid var(--ring);background:rgba(0,0,0,.35);backdrop-filter:blur(3px);display:grid;place-items:center;cursor:pointer}
+    .fav svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
+    .fav.active svg{fill:#ff6b81;stroke:#ff6b81}
+    .body{padding:14px}
+    .meta{font-size:.82rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+    .title{font-weight:700;margin:0 0 6px}
+    .price{display:inline-block;margin-top:6px;font-size:.86rem;border:1px solid var(--ring);padding:6px 10px;border-radius:999px;color:#cfe6ff}
+    .loadmore-wrap{display:grid;place-items:center;margin:18px 0 28px}
+    #load-more{padding:12px 18px;border-radius:12px;border:1px solid var(--ring);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
+    #load-more:disabled{opacity:.5;cursor:not-allowed}
+
+    /* Footer */
+    .footer{border-top:1px solid var(--ring);padding:18px;margin-top:22px;color:var(--muted);text-align:center}
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- Header -->
   <header class="header">
-    <div class="container" style="display:flex;align-items:center;">
+    <div class="header-inner container">
       <div class="brand">
-        <span class="dot" aria-hidden="true"></span>
-        <span class="name">Spondle</span>
+        <span class="brand-dot"></span>
+        <span>Spondle</span>
       </div>
-      <button id="burger" class="burger" aria-label="Open menu">
-        <!-- 3-line burger -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
+      <button class="burger" id="open-drawer" aria-label="Open menu"><span></span></button>
     </div>
   </header>
 
-  <!-- SIDEBAR -->
-  <div id="sb-backdrop" aria-hidden="true"></div>
-  <aside id="sb-panel" aria-hidden="true">
-    <header>
-      <h3>Menu</h3>
-      <button id="sb-close" class="burger" aria-label="Close menu" style="margin:0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e6eef6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </header>
-    <nav>
-      <a href="events.html"><span>Explore events</span></a>
-      <a href="favourites.html"><span>Favourites</span></a>
-      <a href="organisers.html"><span>For organisers</span></a>
-      <a href="login.html"><span>Sign in / Account</span></a>
-
-      <div class="spacer"></div>
-      <div class="muted" style="padding:8px 10px 0">Quick links</div>
-      <a href="#popular"><span>Popular right now</span></a>
-      <a href="#latest"><span>Latest events</span></a>
-    </nav>
-    <div style="margin-top:auto;padding:12px 14px;color:#93a8ba;border-top:1px solid rgba(255,255,255,.06)">© 2025 Spondle</div>
+  <!-- Drawer -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <div class="brand" style="gap:8px"><span class="brand-dot"></span><strong>Spondle</strong></div>
+      <button class="close" id="close-drawer" aria-label="Close menu"><i></i></button>
+    </div>
+    <div class="drawer-body">
+      <div class="menu-group">
+        <div class="menu">
+          <a href="events.html">Explore events</a>
+          <a href="favourites.html">Favourites</a>
+          <a href="organiser_dashboard.html">For organisers</a>
+          <a href="login.html" id="account-link">Sign in / Account</a>
+        </div>
+      </div>
+      <div class="menu-group">
+        <div class="menu-title">Quick links</div>
+        <div class="menu">
+          <a href="#popular">Popular right now</a>
+          <a href="#latest">Latest events</a>
+        </div>
+      </div>
+      <div class="footer">© 2025 Spondle</div>
+    </div>
   </aside>
 
-  <!-- HERO -->
   <main class="container">
+    <!-- Hero -->
     <section class="hero">
-      <h1>Discover what’s on near you</h1>
-      <p>Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
-      <div class="cta-row">
-        <a class="btn primary" href="events.html">Search events</a>
-        <a class="btn" href="organisers.html">List your event</a>
+      <div class="panel">
+        <h1>Discover what’s on near you</h1>
+        <p>Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn primary" href="events.html">Search events</a>
+          <a class="btn" href="organiser_dashboard.html">List your event</a>
+        </div>
       </div>
     </section>
 
-    <!-- LATEST EVENTS -->
-    <h2 id="latest" class="section-title">Latest events</h2>
-    <div id="events-list" class="events-list"></div>
-
-    <div style="display:flex;justify-content:center;margin:18px 0 30px">
-      <button id="load-more" class="btn" data-page="1">Load more</button>
+    <!-- Events -->
+    <h2 class="section" id="latest">Latest events</h2>
+    <div id="events-list" aria-live="polite"></div>
+    <div class="loadmore-wrap">
+      <button id="load-more">Load more</button>
     </div>
   </main>
 
-  <!-- Your existing scripts (cache-busted) -->
-  <script defer src="auth.js?v=29"></script>
-  <script defer src="app.js?v=29"></script>
+  <footer class="footer">© 2025 Spondle</footer>
 
-  <!-- Tiny, isolated JS to handle the sidebar reliably -->
+  <!-- (Optional) Supabase auth label if auth.js is present -->
   <script>
-    (function () {
-      const body = document.body;
-      const burger = document.getElementById('burger');
-      const closeBtn = document.getElementById('sb-close');
-      const panel = document.getElementById('sb-panel');
-      const backdrop = document.getElementById('sb-backdrop');
-
-      function openMenu() {
-        body.classList.add('sb-open');
-        panel.setAttribute('aria-hidden', 'false');
-        backdrop.setAttribute('aria-hidden', 'false');
-      }
-      function closeMenu() {
-        body.classList.remove('sb-open');
-        panel.setAttribute('aria-hidden', 'true');
-        backdrop.setAttribute('aria-hidden', 'true');
-      }
-
-      burger?.addEventListener('click', openMenu);
-      closeBtn?.addEventListener('click', closeMenu);
-      backdrop?.addEventListener('click', closeMenu);
-      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
-
-      // Optional: scroll-to anchors inside the sidebar then close
-      panel.addEventListener('click', (e) => {
-        const a = e.target.closest('a[href^="#"]');
-        if (!a) return;
-        e.preventDefault();
-        const id = a.getAttribute('href').slice(1);
-        const el = document.getElementById(id);
-        if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
-        closeMenu();
-      });
+    // Show "Signed in as ..." if auth.js has set window.currentUserEmail
+    (function(){
+      const link = document.getElementById('account-link');
+      if (!link) return;
+      try {
+        if (window.currentUserEmail) {
+          link.textContent = `Account (${window.currentUserEmail})`;
+        }
+      } catch(e){}
     })();
+  </script>
+
+  <!-- Events loader -->
+  <script>
+    // ---- Data source ----
+    const EVENTS_JSON_URL = 'events.json'; // if present; otherwise we fallback
+    // A safe fallback so the page never looks empty in case the JSON isn’t there.
+    const FALLBACK_EVENTS = [
+      {
+        id:'e1', title:'The Harbourside Sessions', city:'Bristol', date:'2025-09-12',
+        category:'Live Music', venue:'The Louisiana', price:'Free Entry',
+        image:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1400&auto=format&fit=crop'
+      },
+      {
+        id:'e2', title:'Acoustic Sessions at The Fleece', city:'Bristol', date:'2025-09-21',
+        category:'Live Music', venue:'The Fleece', price:'£8',
+        image:'https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=1400&auto=format&fit=crop'
+      },
+      {
+        id:'e3', title:'Family Science Day', city:'Manchester', date:'2025-09-28',
+        category:'Community', venue:'Science & Industry Museum', price:'£6',
+        image:'https://images.unsplash.com/photo-1551836022-4c4c79ecde51?q=80&w=1400&auto=format&fit=crop'
+      }
+    ];
+
+    const PAGE_SIZE = 12;
+    let allEvents = [];
+    let page = 0;
+
+    const listEl = document.getElementById('events-list');
+    const loadBtn = document.getElementById('load-more');
+
+    // Favourites (localStorage)
+    const FAV_KEY = 'spondle_favourites';
+    const getFaves = () => new Set(JSON.parse(localStorage.getItem(FAV_KEY) || '[]'));
+    const setFaves = s => localStorage.setItem(FAV_KEY, JSON.stringify([...s]));
+
+    function favButton(id){
+      const btn = document.createElement('button');
+      btn.className = 'fav';
+      btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.7-4.35-9.33-7.6C.46 10.96 2 7.5 5.1 7.5c1.86 0 3.13 1.02 3.9 2.15.77-1.13 2.04-2.15 3.9-2.15 3.1 0 4.64 3.46 2.43 5.9C18.7 16.65 12 21 12 21Z"/></svg>`;
+      const faves = getFaves();
+      if (faves.has(id)) btn.classList.add('active');
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        e.preventDefault();
+        const s = getFaves();
+        if (s.has(id)) s.delete(id); else s.add(id);
+        setFaves(s);
+        btn.classList.toggle('active');
+      });
+      return btn;
+    }
+
+    function card(ev){
+      const el = document.createElement('article');
+      el.className = 'card';
+      el.innerHTML = `
+        <div class="media">
+          <img alt="" loading="lazy" src="${ev.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1400&auto=format&fit=crop'}" />
+        </div>
+        <div class="body">
+          <div class="meta"><span>${ev.city}</span>•<span>${ev.category}</span>•<span>${formatDate(ev.date)}</span></div>
+          <h3 class="title">${ev.title}</h3>
+          <div class="meta">${ev.venue || ''}</div>
+          <span class="price">${ev.price || 'Free'}</span>
+        </div>
+      `;
+      el.querySelector('.media').appendChild(favButton(ev.id));
+      el.addEventListener('click', ()=> {
+        // Navigate to event page if you have one:
+        window.location.href = `event.html?id=${encodeURIComponent(ev.id)}`;
+      });
+      return el;
+    }
+
+    function formatDate(iso){
+      try{
+        const d = new Date(iso);
+        return d.toLocaleDateString(undefined,{day:'2-digit',month:'short'});
+      }catch{return ''}
+    }
+
+    function renderNext(){
+      const start = page * PAGE_SIZE;
+      const slice = allEvents.slice(start, start + PAGE_SIZE);
+      slice.forEach(ev => listEl.appendChild(card(ev)));
+      page++;
+      if (page * PAGE_SIZE >= allEvents.length){
+        loadBtn.disabled = true;
+        loadBtn.textContent = 'No more events';
+      } else {
+        loadBtn.disabled = false;
+        loadBtn.textContent = 'Load more';
+      }
+    }
+
+    async function loadData(){
+      try{
+        const res = await fetch(EVENTS_JSON_URL, {cache:'no-store'});
+        if (!res.ok) throw new Error('no json');
+        const data = await res.json();
+        // Expect either {events:[...]} or [...]
+        const arr = Array.isArray(data) ? data : (data.events || []);
+        if (!arr.length) throw new Error('empty');
+        allEvents = normalize(arr);
+      }catch{
+        // Fallback so page isn’t empty
+        allEvents = normalize(FALLBACK_EVENTS);
+      }
+    }
+
+    function normalize(arr){
+      // Coerce into the fields we use
+      return arr.map((e,i)=>({
+        id: e.id || `ev-${i}`,
+        title: e.title || e.name || 'Untitled event',
+        city: e.city || e.location || e.region || 'UK',
+        date: e.date || e.start_date || new Date().toISOString().slice(0,10),
+        category: e.category || e.type || 'General',
+        venue: e.venue || e.place || '',
+        price: e.price || e.cost || 'Free',
+        image: e.image || e.img || e.photo
+      }));
+    }
+
+    loadBtn.addEventListener('click', renderNext);
+
+    (async function init(){
+      await loadData();
+      renderNext(); // first 12 (or fewer if fallback)
+    })();
+
+    // Drawer wiring
+    const drawer = document.getElementById('drawer');
+    const backdrop = document.getElementById('drawer-backdrop');
+    document.getElementById('open-drawer').addEventListener('click', ()=>{
+      drawer.classList.add('open'); backdrop.classList.add('show');
+    });
+    document.getElementById('close-drawer').addEventListener('click', ()=>{
+      drawer.classList.remove('open'); backdrop.classList.remove('show');
+    });
+    backdrop.addEventListener('click', ()=>{
+      drawer.classList.remove('open'); backdrop.classList.remove('show');
+    });
   </script>
 </body>
 </html>
