@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your account</title>
+  <link rel="stylesheet" href="app.v15.css">
+</head>
+<body class="bg-slate-900 text-slate-100">
+  <main class="container mx-auto max-w-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">Account</h1>
+    <div id="info" class="rounded-lg bg-slate-800 p-4 mb-6"></div>
+    <div class="flex gap-3">
+      <a href="/index.html" class="btn">← Back to home</a>
+      <button id="signout" class="btn btn-secondary">Sign out</button>
+    </div>
+  </main>
+
+  <script type="module">
+    import { supabase, signOut } from './auth.js';
+
+    const info = document.getElementById('info');
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      const u = session.user;
+      info.innerHTML = `
+        <p><strong>Status:</strong> Signed in</p>
+        <p><strong>Email:</strong> ${u.email}</p>
+        <p><strong>User ID:</strong> ${u.id}</p>
+      `;
+    } else {
+      info.innerHTML = `
+        <p><strong>Status:</strong> Not signed in</p>
+        <p><a class="underline" href="/login.html">Go to Sign in</a></p>
+      `;
+    }
+
+    document.getElementById('signout').addEventListener('click', async () => {
+      await signOut();
+      window.location.href = '/login.html';
+    });
+  </script>
+  <style>
+    .btn { padding:.6rem 1rem; background:linear-gradient(90deg,#6EE7F9,#A78BFA); color:#0b1220; border-radius:.6rem; font-weight:600 }
+    .btn-secondary { background:#1f2937; color:#e5e7eb }
+  </style>
+</body>
+</html>
