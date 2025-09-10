@@ -1,101 +1,145 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle — Sign in</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;max-width:720px;margin:0 auto;padding:24px;background:#0b0f14;color:#e8eef6}
-    .card{background:#121821;border:1px solid #1e2633;border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    input[type=email]{flex:1;min-width:240px;padding:12px;border-radius:10px;border:1px solid #293246;background:#0e141b;color:#e8eef6}
-    button{padding:12px 16px;border:0;border-radius:10px;background:linear-gradient(135deg,#34d399,#60a5fa);color:#0b1220;font-weight:700;cursor:pointer}
-    .muted{color:#9ca3af} .ok{color:#34d399} .warn{color:#fbbf24} .err{color:#f87171}
+    :root{color-scheme:dark}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:#0b0f14;color:#e7eef6}
+    .wrap{max-width:640px;margin:48px auto;padding:0 16px}
+    h1{font-size:34px;margin:0 0 8px}
+    p{opacity:.85}
+    .card{background:#0f1720;border:1px solid #1c2835;border-radius:14px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+    input{flex:1;min-width:240px;background:#0b1118;border:1px solid #263344;border-radius:12px;padding:14px 16px;color:#e7eef6;font-size:16px;outline:none}
+    button{background:linear-gradient(135deg,#64fbd2,#6aa8ff);color:#08202a;border:0;border-radius:12px;padding:12px 18px;font-weight:700}
+    .muted{opacity:.7;font-size:14px}
+    .link{color:#91c8ff;text-decoration:none}
+    .hr{height:1px;background:#1b2734;margin:16px 0}
+    .ok{color:#67f6c5}
+    .err{color:#ff9a9a}
+    .debug{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; background:#091017; padding:10px; border-radius:10px; border:1px solid #1a2633; white-space:pre-wrap}
   </style>
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
-  <h1>Spondle — Sign in</h1>
-  <p class="muted">Enter your email and we’ll send you a secure one-time sign-in link.</p>
+  <div class="wrap">
+    <h1>Spondle — Sign in</h1>
+    <p>Enter your email and we’ll send you a secure one-time sign-in link.</p>
 
-  <div class="card">
-    <form id="emailForm">
+    <div class="card">
       <div class="row">
-        <input id="email" type="email" placeholder="you@email.com" required />
-        <button id="sendLinkBtn" type="submit">Send magic link</button>
+        <input id="email" type="email" placeholder="you@email.com" autocomplete="email" />
+        <button id="send">Send magic link</button>
       </div>
-    </form>
 
-    <p id="status" class="muted" style="margin-top:14px;"></p>
+      <div class="hr"></div>
 
-    <hr style="border-color:#1f2937;margin:18px 0">
+      <div class="row">
+        <button id="signout" style="background:#182534;color:#cfe6ff">Sign out</button>
+        <a class="link" href="index.html">← Back to home</a>
+      </div>
 
-    <div class="row">
-      <button id="signOutBtn" type="button">Sign out</button>
-      <a class="muted" href="index.html">← Back to home</a>
+      <div class="hr"></div>
+
+      <div id="status" class="muted">Ready.</div>
+      <div id="debug" class="debug" style="display:none"></div>
     </div>
   </div>
 
   <script>
-    // ✅ Your Supabase project config
+    // --- Supabase client (uses your existing auth.js values inlined here for safety) ---
+    // If you prefer centralising, you can remove this and keep auth.js; just keep the same env values.
     const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const emailForm = document.getElementById('emailForm');
-    const emailInput = document.getElementById('email');
-    const sendBtn = document.getElementById('sendLinkBtn');
-    const statusEl = document.getElementById('status');
-    const signOutBtn = document.getElementById('signOutBtn');
+    const d = (id) => document.getElementById(id);
+    const status = d('status');
+    const debugBox = d('debug');
 
-    function say(msg, cls='muted'){ statusEl.className = cls; statusEl.textContent = msg; }
-
-    async function ensureProfile(userId){
-      const { error } = await sb.from('profiles').upsert({ id: userId }, { onConflict:'id' });
-      if (error) console.warn('profile upsert:', error.message);
+    function setStatus(msg, cls) {
+      status.className = 'muted ' + (cls || '');
+      status.textContent = msg;
+    }
+    function showDebug(obj) {
+      debugBox.style.display = 'block';
+      try { debugBox.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj,null,2); }
+      catch { debugBox.textContent = String(obj); }
     }
 
-    async function refresh(){
-      const { data:{ user } } = await sb.auth.getUser();
-      if (user){
-        say(`Signed in as ${user.email}`, 'ok');
-        await ensureProfile(user.id);
+    async function redirectToAccount() {
+      // Small delay to ensure session is stored
+      await new Promise(r => setTimeout(r, 150));
+      window.location.href = 'account.html';
+    }
+
+    // --- Complete any inbound auth flow on page load ---
+    (async function completeInboundAuth() {
+      try {
+        const url = new URL(window.location.href);
+
+        // 1) Newer PKCE style: ?code=...
+        const code = url.searchParams.get('code');
+        if (code) {
+          setStatus('Completing sign-in (code)…');
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) { setStatus('Sign-in error', 'err'); return showDebug(error); }
+          setStatus('Signed in via code ✓', 'ok');
+          return redirectToAccount();
+        }
+
+        // 2) Legacy hash tokens: #access_token=…&refresh_token=…
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          setStatus('Completing sign-in (tokens)…');
+          const hash = new URLSearchParams(window.location.hash.substring(1));
+          const access_token = hash.get('access_token');
+          const refresh_token = hash.get('refresh_token');
+          if (access_token && refresh_token) {
+            const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+            if (error) { setStatus('Sign-in error', 'err'); return showDebug(error); }
+            setStatus('Signed in via tokens ✓', 'ok');
+            return redirectToAccount();
+          }
+        }
+
+        // 3) Already have a session?
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          setStatus(`Already signed in as ${session.user.email}`, 'ok');
+        } else {
+          setStatus('Ready. Enter your email to receive a magic link.');
+        }
+      } catch (e) {
+        setStatus('Init error', 'err');
+        showDebug(e);
       }
-    }
+    })();
 
-    // Send magic link
-    emailForm.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const email = emailInput.value.trim();
-      if (!email) return;
-      sendBtn.disabled = true;
-      say('Sending magic link…');
+    // --- Send magic link ---
+    d('send').addEventListener('click', async () => {
+      const email = d('email').value.trim();
+      if (!email) return setStatus('Please enter an email.', 'err');
 
-      const redirect = `${window.location.origin}/auth-callback.html`;
-      const { error } = await sb.auth.signInWithOtp({
+      setStatus('Sending magic link…');
+      const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: redirect }
+        options: { emailRedirectTo: 'https://spondle.vercel.app/login.html' } // land back here; this page completes the session
       });
-
-      if (error){ say('Error: ' + error.message, 'err'); }
-      else { say('Magic link sent. Check your inbox (and spam).', 'warn'); }
-      sendBtn.disabled = false;
+      if (error) { setStatus('Failed to send link', 'err'); return showDebug(error); }
+      setStatus('Magic link sent. Check your email (open in your browser, not in the mail app view).', 'ok');
     });
 
-    signOutBtn.addEventListener('click', async ()=>{
-      await sb.auth.signOut();
-      say('Signed out.', 'muted');
+    // --- Sign out ---
+    d('signout').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) { setStatus('Sign-out error', 'err'); return showDebug(error); }
+      setStatus('Signed out.', 'ok');
+      // clear hash / query in case you refresh
+      history.replaceState({}, document.title, 'login.html');
     });
-
-    // Keep UI in sync
-    sb.auth.onAuthStateChange((_evt, session)=>{
-      if (session?.user){
-        say(`Signed in as ${session.user.email}`, 'ok');
-      }
-    });
-
-    refresh();
   </script>
 </body>
 </html>
