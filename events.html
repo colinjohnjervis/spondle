@@ -1,172 +1,250 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>All Events – Spondle</title>
-
-  <link rel="stylesheet" href="app.v15.css" />
-  <link rel="stylesheet" href="app.v17.css" />
-
+  <title>Spondle — All Events</title>
+  <meta name="color-scheme" content="dark" />
+  <!-- Tailwind (for layout); sidebar + cards use custom CSS identical to index.html -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root { --header-offset: 72px; }
-
-    .grid { display:grid; gap:14px; }
-    @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
-    @media (min-width:980px){ .grid{ grid-template-columns:1fr 1fr 1fr; } }
-
-    .loadmore-wrap { display:flex; justify-content:center; margin:18px 0 8px; }
-    .btn-ghost { background:transparent; border:1px solid var(--card-border,#2a2f3a);
-      color:var(--text,#dfe7ff); padding:10px 16px; border-radius:10px; }
-
-    .heart { font-size:18px; line-height:1; }
-    .heart.is-saved { color:var(--accent,#7de1c3); }
-
-    .card { scroll-margin-top: var(--header-offset); }
-
-    /* Thumbnail styling */
-    .thumb {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1a2230, #0d1220);
-      border: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 10px;
+    :root{
+      --bg:#0b0f14;--panel:#111620;--card:#121a24;--ink:#e7edf3;--muted:#a7b2bf;
+      --border:rgba(255,255,255,.08);--overlay:rgba(0,0,0,.45);--brand:#39d353;
+      --shadow:0 18px 50px rgba(0,0,0,.45);--speed:.28s;
     }
-    .thumb::before { content:""; display:block; padding-top:56.25%; }
-    .thumb-img {
-      position: absolute; inset:0;
-      background-position:center;
-      background-size:cover;
-      filter: saturate(1.05) contrast(1.02);
-    }
-    .thumb-gradient {
-      position: absolute; inset:0;
-      background:
-        radial-gradient(60% 80% at 20% 20%, rgba(94,241,186,0.25) 0%, rgba(94,241,186,0) 60%),
-        radial-gradient(70% 80% at 80% 20%, rgba(119,194,255,0.25) 0%, rgba(119,194,255,0) 60%),
-        linear-gradient(180deg, rgba(0,0,0,0.00) 40%, rgba(0,0,0,0.25) 100%);
-    }
-    .thumb .badge {
-      position:absolute; left:10px; bottom:10px;
-      background:rgba(14,18,23,0.7);
-      border:1px solid rgba(255,255,255,0.08);
-      padding:6px 10px; border-radius:999px; font-size:12px;
-      backdrop-filter:blur(4px);
-    }
-    .thumb .heart {
-      position:absolute; right:10px; top:10px;
-      background:rgba(14,18,23,0.6);
-      border:1px solid rgba(255,255,255,0.08);
-      width:34px; height:34px; border-radius:999px;
-      display:grid; place-items:center; cursor:pointer;
-    }
+    html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .glass{background:linear-gradient(180deg, rgba(10,12,16,.9), rgba(10,12,16,.55) 70%, rgba(10,12,16,0));
+           border-bottom:1px solid var(--border);backdrop-filter: blur(6px);}
+
+    /* ===== LOCKED SIDEBAR (smooth left slide + fading overlay) — identical to index.html ===== */
+    .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
+    .burger{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+    .burger-lines,.burger-lines::before,.burger-lines::after{content:"";display:block;width:20px;height:2px;border-radius:2px;background:var(--ink);position:relative}
+    .burger-lines::before{position:absolute;transform:translateY(-6px)}
+    .burger-lines::after{position:absolute;transform:translateY(6px)}
+
+    #sbOverlay{position:fixed;inset:0;background:var(--overlay);opacity:0;pointer-events:none;transition:opacity var(--speed) ease;z-index:65}
+    #sbPanel{position:fixed;top:0;left:0;height:100dvh;width:min(86vw,420px);background:#151a21;color:var(--ink);
+             box-shadow:var(--shadow);transform:translateX(-100%);transition:transform var(--speed) cubic-bezier(.2,.7,.2,1);z-index:70;display:flex;flex-direction:column;border-right:1px solid var(--border)}
+    body.sb-open #sbOverlay{opacity:1;pointer-events:auto}
+    body.sb-open #sbPanel{transform:translateX(0)}
+    body.sb-open{overflow:hidden}
+
+    .sb-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+    .sb-title{font-weight:700;letter-spacing:.3px}
+    .sb-close{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--ink)}
+    .sb-list{padding:10px 10px 6px 10px}
+    .sb-item{display:block;padding:14px 12px;margin:4px 0;border-radius:12px;color:var(--ink);text-decoration:none}
+    .sb-item:hover{background:rgba(255,255,255,.05)}
+    .sb-section{margin:8px 10px 0 10px;padding:10px 12px;font-size:.9rem;color:var(--muted);border-top:1px solid var(--border)}
+    .sb-foot{margin-top:auto;padding:16px 20px;color:var(--muted);border-top:1px solid var(--border);font-size:.95rem}
+
+    /* Cards — identical to index.html */
+    .event-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+    .event-img{aspect-ratio:16/9;object-fit:cover;width:100%}
+    .chip{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted)}
+    .heart{transition:transform .1s ease;}
+    .heart:active{transform:scale(.9)}
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="site-header" id="siteHeader">
-    <div class="nav-wrap">
-      <a class="brand" href="index.html">
-        <span class="brand-dot" aria-hidden="true"></span>
-        <span class="brand-name">Spondle</span>
-        <span class="beta-pill">Beta</span>
-      </a>
-      <nav class="main-nav" aria-label="Primary">
-        <a class="nav-tab" href="index.html">Explore<br/>Events</a>
-        <a class="nav-tab" href="favourites.html">Favourites <span id="favBadge" class="badge" hidden>0</span></a>
-        <a class="nav-tab is-active" href="events.html">All<br/>Events</a>
-        <a class="nav-tab" href="organisers.html">For<br/>Organisers</a>
-      </nav>
+
+  <!-- Top bar -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="font-semibold tracking-wide">Spondle</span>
     </div>
+    <button id="sbOpen" class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sbPanel">
+      <span class="burger-lines" aria-hidden="true"></span>
+    </button>
   </header>
-  <div class="header-spacer" id="headerSpacer"></div>
 
-  <!-- Page -->
-  <main class="page">
-    <section class="section">
-      <h1 class="section-title">All Events</h1>
-      <div id="eventsGrid" class="grid" aria-live="polite"></div>
-      <div class="loadmore-wrap" id="lmWrap">
-        <button id="loadMoreBtn" class="btn-ghost" type="button">Load more</button>
+  <!-- Overlay + Panel -->
+  <div id="sbOverlay" aria-hidden="true"></div>
+  <aside id="sbPanel" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="sb-head">
+      <div class="sb-title">Menu</div>
+      <button id="sbClose" class="sb-close" aria-label="Close menu">✕</button>
+    </div>
+    <nav class="sb-list">
+      <a class="sb-item" href="/events.html">Explore events</a>
+      <a class="sb-item" href="/favourites.html">Favourites</a>
+      <a class="sb-item" href="/organisers.html">For organisers</a>
+      <a class="sb-item" href="/login.html">Sign in / Account</a>
+      <div class="sb-section">Quick links</div>
+      <a class="sb-item" href="#filters">Filters</a>
+      <a class="sb-item" href="#all-events">All events</a>
+    </nav>
+    <div class="sb-foot">© 2025 Spondle</div>
+  </aside>
+
+  <!-- Page header -->
+  <section class="px-4 sm:px-6 lg:px-8 mt-4">
+    <div class="rounded-2xl border border-[color:var(--border)] bg-[color:var(--panel)] p-6 md:p-8 shadow-xl">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">All events</h1>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
+        Browse everything happening — gigs, comedy, food markets, film nights, community events and more.
+      </p>
+    </div>
+  </section>
+
+  <!-- (Optional) filters placeholder, visually light and non-functional for now -->
+  <section id="filters" class="px-4 sm:px-6 lg:px-8 mt-6">
+    <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--panel)] p-4 text-sm text-[color:var(--muted)]">
+      Filters coming soon (date, price, distance, category).
+    </div>
+  </section>
+
+  <!-- Events grid -->
+  <section id="all-events" class="px-4 sm:px-6 lg:px-8 pt-6 pb-20">
+    <div id="eventsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <div class="flex justify-center mt-6">
+      <button id="loadMoreBtn" class="px-5 py-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--panel)]">
+        Load more
+      </button>
+    </div>
+  </section>
+
+  <footer class="px-4 sm:px-6 lg:px-8 pb-10 text-[color:var(--muted)]">© 2025 Spondle</footer>
+
+  <!-- Card template -->
+  <template id="eventCardTpl">
+    <article class="event-card">
+      <div class="relative h-40">
+        <img class="event-img" />
+        <button class="absolute top-3 right-3 rounded-full bg-black/40 backdrop-blur p-2 heart" aria-label="Add to favourites">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+          </svg>
+        </button>
       </div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <small>© 2025 Spondle • build v32d</small>
-  </footer>
+      <div class="p-4">
+        <div class="flex flex-wrap gap-2 text-xs text-white/70 mb-2">
+          <span class="chip px-2.5 py-1 rounded-full"></span>
+          <span>•</span>
+          <span class="date"></span>
+        </div>
+        <h3 class="text-lg font-bold title mb-1"></h3>
+        <p class="text-white/70 venue"></p>
+      </div>
+      <div class="px-4 pb-4">
+        <a class="inline-block px-3 py-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--panel)] text-sm detailsLink">View details</a>
+      </div>
+    </article>
+  </template>
 
   <script>
-    // ===== Favourites
-    const FKEY = 'spondle:favs';
-    const readFavs = () => { try { return JSON.parse(localStorage.getItem(FKEY)||'[]'); } catch { return []; } };
-    const writeFavs = l => localStorage.setItem(FKEY, JSON.stringify(l));
-    const isSaved = id => readFavs().includes(id);
-    const setHeart = (btn, saved) => { btn.textContent = saved ? '♥':'♡'; btn.classList.toggle('is-saved',saved); };
-    const updateBadge = () => {
-      const n = readFavs().length, b=document.getElementById('favBadge');
-      if(n>0){ b.textContent=n; b.hidden=false; } else b.hidden=true;
-    };
-    const toggleFav = (id, btn) => {
-      const favs=readFavs(); const i=favs.indexOf(id);
-      if(i>=0)favs.splice(i,1); else favs.push(id);
-      writeFavs(favs); setHeart(btn,i<0); updateBadge();
-    };
-    document.addEventListener('click',e=>{
-      const b=e.target.closest('button.heart'); if(!b)return;
-      e.preventDefault(); e.stopPropagation();
-      toggleFav(b.dataset.id,b);
-    });
-    updateBadge();
+    /* ===== Sidebar JS (identical to index.html) ===== */
+    (function(){
+      const body = document.body;
+      const openBtn = document.getElementById('sbOpen');
+      const closeBtn = document.getElementById('sbClose');
+      const overlay = document.getElementById('sbOverlay');
 
-    // ===== Sticky header spacing
-    const setSpacer=()=>{
-      const h=document.getElementById('siteHeader').offsetHeight;
-      document.getElementById('headerSpacer').style.height=h+'px';
-      document.documentElement.style.setProperty('--header-offset',(h+8)+'px');
-    };
-    window.addEventListener('load',setSpacer,{once:true});
-    window.addEventListener('resize',setSpacer);
+      function openMenu(){ body.classList.add('sb-open'); openBtn.setAttribute('aria-expanded','true'); }
+      function closeMenu(){ body.classList.remove('sb-open'); openBtn.setAttribute('aria-expanded','false'); }
 
-    // ===== Sample data
-    function sampleEvents(){
-      const c=["Bristol","Manchester","Edinburgh","Cardiff","Leeds","London","Bath","Oxford"];
-      const cat=["Live Music","Comedy","Food & Drink","Theatre","Community","Film","Talks","Family"];
-      const v=["The Fleece","The Louisiana","The Stand","The Apple","Academy","Arts Centre","Playhouse","Union"];
-      const out=[]; for(let i=0;i<60;i++){
-        out.push({
-          id:"e"+(1000+i), city:c[i%c.length], date:`${10+(i%20)} Oct`,
-          category:cat[i%cat.length], title:`${cat[i%cat.length]} Night #${i+1}`,
-          venue:v[i%v.length], time:"19:30–22:30",
-          priceLabel:(i%5===0)?"Free Entry":"£"+(6+(i%12)), image:""
+      openBtn.addEventListener('click', openMenu);
+      closeBtn.addEventListener('click', closeMenu);
+      overlay.addEventListener('click', closeMenu);
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+    })();
+
+    /* ===== Events + pagination (identical behaviour to index.html, incl. smooth scroll) ===== */
+    const PAGE_SIZE = 12;
+    let offset = 0;
+
+    // Base sample (same seed as index for visual consistency)
+    const eventsData = [
+      {id:"ev-001",title:"The Harbourside Sessions",date:"Sep 12",city:"Bristol",category:"Live Music",venue:"The Louisiana",priceLabel:"Free Entry",image:"https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=1600&auto=format&fit=crop"},
+      {id:"ev-002",title:"Acoustic Sessions at The Fleece",date:"Sep 21",city:"Bristol",category:"Live Music",venue:"The Fleece",priceLabel:"£8",image:"https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=1600&auto=format&fit=crop"},
+      {id:"ev-003",title:"Family Science Day",date:"Sep 28",city:"Manchester",category:"Community",venue:"Science and Industry Mus.",priceLabel:"£6",image:"https://images.unsplash.com/photo-1551836022-4c4c79ecde51?q=80&w=1600&auto=format&fit=crop"}
+    ];
+
+    // Booster to reach 36 items
+    (()=>{
+      const pics=[
+        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1520975922203-bc1e37a1c9c5?q=80&w=1600&auto=format&fit=crop"
+      ];
+      const cats=["Comedy","Food & Drink","Film","Community","Theatre","Live Music"];
+      const cities=["Bristol","Leeds","Cardiff","Manchester","Edinburgh","Liverpool","Glasgow","London"];
+      const start=eventsData.length+1, target=36;
+      for(let i=start;i<=target;i++){
+        const img=pics[i%pics.length], cat=cats[i%cats.length], city=cities[i%cities.length];
+        const day=((i%28)+1).toString().padStart(2,'0');
+        eventsData.push({
+          id:`ev-${i.toString().padStart(3,'0')}`,
+          title:`${cat} Night #${i}`,
+          date:`Oct ${day}`, city, category:cat, venue:`${city} Arts Hub`,
+          priceLabel:(i%3===0)?"Free Entry":`£${(i%5+5)}`, image:img
         });
-      } return out;
-    }
-    function cardHTML(ev){
-      const saved=isSaved(ev.id), heart=saved?'♥':'♡', sc=saved?' is-saved':'';
-      const imgLayer=ev.image?`<div class="thumb-img" style="background-image:url('${ev.image}')"></div>`:`<div class="thumb-gradient"></div>`;
-      return `<a class="card" href="event.html?id=${encodeURIComponent(ev.id)}">
-        <div class="thumb">${imgLayer}<span class="badge">${ev.city} • ${ev.date}</span>
-        <button class="heart${sc}" type="button" data-id="${ev.id}">${heart}</button></div>
-        <h3 class="card-title">${ev.title}</h3><p class="meta">${ev.venue} • ${ev.time}</p>
-        <span class="price-chip">${ev.priceLabel}</span></a>`;
+      }
+    })();
+
+    const FAV_KEY='sp_favs_v1';
+    const getFavs=()=>new Set(JSON.parse(localStorage.getItem(FAV_KEY)||'[]'));
+    const saveFavs=(set)=>localStorage.setItem(FAV_KEY,JSON.stringify([...set]));
+
+    function renderNext({autoScroll=false} = {}){
+      const grid=document.getElementById('eventsGrid');
+      const tpl=document.getElementById('eventCardTpl');
+      const startChildCount = grid.children.length;
+
+      const slice=eventsData.slice(offset, offset+PAGE_SIZE);
+      slice.forEach(ev=>{
+        const node=tpl.content.cloneNode(true);
+        const img=node.querySelector('img');
+        const chip=node.querySelector('.chip'); chip.textContent=ev.category;
+        const date=node.querySelector('.date'); date.textContent=`${ev.city} • ${ev.date}`;
+        node.querySelector('.title').textContent=ev.title;
+        node.querySelector('.venue').textContent=ev.venue;
+        node.querySelector('.detailsLink').href=`event.html?id=${encodeURIComponent(ev.id)}`;
+        img.src=ev.image; img.alt=ev.title;
+
+        const heart=node.querySelector('.heart');
+        const favs=getFavs();
+        if (favs.has(ev.id)) heart.style.background="rgba(236,72,153,.9)";
+        heart.addEventListener('click',(e)=>{
+          e.stopPropagation();
+          const set=getFavs();
+          if(set.has(ev.id)){ set.delete(ev.id); heart.style.background="rgba(0,0,0,.4)"; }
+          else{ set.add(ev.id); heart.style.background="rgba(236,72,153,.9)"; }
+          saveFavs(set);
+        });
+
+        grid.appendChild(node);
+      });
+
+      offset+=slice.length;
+      const btn=document.getElementById('loadMoreBtn');
+      if(offset>=eventsData.length){
+        btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed');
+      }
+
+      // Smooth scroll to first newly-added card (account for sticky header)
+      if (autoScroll && slice.length) {
+        const firstNew = grid.children[startChildCount];
+        if (firstNew) {
+          const header = document.querySelector('.topbar');
+          const headerH = header ? header.getBoundingClientRect().height : 0;
+          const top = firstNew.getBoundingClientRect().top + window.pageYOffset - headerH - 8;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }
     }
 
-    // ===== Load more
-    const ALL=sampleEvents(); const BATCH=12; let shown=0;
-    const grid=document.getElementById('eventsGrid');
-    function nextBatch(scrollToFirst=true){
-      const next=ALL.slice(shown,shown+BATCH); if(!next.length)return;
-      const wrap=document.createElement('div'); wrap.innerHTML=next.map(cardHTML).join('');
-      const first=wrap.firstElementChild; while(wrap.firstChild)grid.appendChild(wrap.firstChild);
-      shown+=next.length; if(shown>=ALL.length)document.getElementById('lmWrap').style.display='none';
-      if(scrollToFirst&&first)first.scrollIntoView({behavior:'smooth',block:'start'});
-    }
-    window.addEventListener('DOMContentLoaded',()=>{
-      nextBatch(false);
-      document.getElementById('loadMoreBtn').addEventListener('click',()=>nextBatch(true));
-    });
+    document.getElementById('loadMoreBtn').addEventListener('click', ()=>renderNext({autoScroll:true}));
+    // initial page render
+    renderNext();
   </script>
 </body>
 </html>
