@@ -1,496 +1,162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Event Organiser Dashboard – Spondle</title>
-
-  <link rel="stylesheet" href="app.v15.css" />
-  <link rel="stylesheet" href="app.v17.css" />
-
+  <title>Spondle — For organisers</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root { --header-offset: 72px; }
-
-    .wrap { max-width: 1100px; margin: 0 auto; }
-    .panel {
-      background:#0f1420; border:1px solid rgba(255,255,255,.08);
-      border-radius:16px; padding:16px;
+    :root{
+      --bg:#0b0f14;--panel:#111620;--card:#121a24;--ink:#e7edf3;--muted:#a7b2bf;
+      --border:rgba(255,255,255,.08);--overlay:rgba(0,0,0,.45);--brand:#39d353;
+      --shadow:0 18px 50px rgba(0,0,0,.45);--speed:.28s;
     }
-    .twocol { display:grid; gap:16px; }
-    @media (min-width: 1040px){ .twocol { grid-template-columns: 1.1fr .9fr; } }
+    html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    .glass{background:linear-gradient(180deg, rgba(10,12,16,.9), rgba(10,12,16,.55) 70%, rgba(10,12,16,0));
+           border-bottom:1px solid var(--border);backdrop-filter: blur(6px);}
 
-    .field { margin-bottom:12px; }
-    .field label { display:block; font-size:14px; color:#9aa3b2; margin-bottom:6px; }
-    .input, .select, textarea {
-      width:100%; padding:10px 12px; border-radius:12px; color:#e9edf3;
-      background:#0c1018; border:1px solid rgba(255,255,255,.08);
-    }
-    textarea { min-height: 96px; resize: vertical; }
-    .row { display:flex; gap:10px; }
-    .row > * { flex:1; }
+    /* LOCKED SIDEBAR + TOPBAR (identical to index/events/event) */
+    .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
+    .burger{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+    .burger-lines,.burger-lines::before,.burger-lines::after{content:"";display:block;width:20px;height:2px;border-radius:2px;background:var(--ink);position:relative}
+    .burger-lines::before{position:absolute;transform:translateY(-6px)}
+    .burger-lines::after{position:absolute;transform:translateY(6px)}
 
-    .subtle { color:#9aa3b2; font-size:13px; }
-    .divider { height:1px; background:rgba(255,255,255,.08); margin:12px 0; }
+    #sbOverlay{position:fixed;inset:0;background:var(--overlay);opacity:0;pointer-events:none;transition:opacity var(--speed) ease;z-index:65}
+    #sbPanel{position:fixed;top:0;left:0;height:100dvh;width:min(86vw,420px);background:#151a21;color:var(--ink);
+             box-shadow:var(--shadow);transform:translateX(-100%);transition:transform var(--speed) cubic-bezier(.2,.7,.2,1);z-index:70;display:flex;flex-direction:column;border-right:1px solid var(--border)}
+    body.sb-open #sbOverlay{opacity:1;pointer-events:auto}
+    body.sb-open #sbPanel{transform:translateX(0)}
+    body.sb-open{overflow:hidden}
 
-    .btn.primary { background: linear-gradient(90deg,#5ef1ba,#77c2ff); color:#0c1018; border-color: transparent; }
-    .btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,.14); }
-    .btn.small { padding: 8px 12px; border-radius: 10px; }
+    .sb-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+    .sb-title{font-weight:700;letter-spacing:.3px}
+    .sb-close{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--ink)}
+    .sb-list{padding:10px 10px 6px 10px}
+    .sb-item{display:block;padding:14px 12px;margin:4px 0;border-radius:12px;color:var(--ink);text-decoration:none}
+    .sb-item:hover{background:rgba(255,255,255,.05)}
+    .sb-section{margin:8px 10px 0 10px;padding:10px 12px;font-size:.9rem;color:var(--muted);border-top:1px solid var(--border)}
+    .sb-foot{margin-top:auto;padding:16px 20px;color:var(--muted);border-top:1px solid var(--border);font-size:.95rem}
 
-    /* preview/drafts tiles (match site) */
-    .card { scroll-margin-top: var(--header-offset); }
-    .thumb {
-      position: relative; border-radius: 12px; overflow: hidden;
-      background: linear-gradient(135deg, #1a2230, #0d1220);
-      border: 1px solid rgba(255,255,255,0.06); margin-bottom: 10px;
-    }
-    .thumb::before { content:""; display:block; padding-top:56.25%; }
-    .thumb-img { position:absolute; inset:0; background-position:center; background-size:cover; }
-    .thumb-gradient {
-      position:absolute; inset:0;
-      background:
-        radial-gradient(60% 80% at 20% 20%, rgba(94,241,186,0.25) 0%, rgba(94,241,186,0) 60%),
-        radial-gradient(70% 80% at 80% 20%, rgba(119,194,255,0.25) 0%, rgba(119,194,255,0) 60%),
-        linear-gradient(180deg, rgba(0,0,0,0.00) 40%, rgba(0,0,0,0.25) 100%);
-    }
-    .thumb .badge {
-      position:absolute; left:10px; bottom:10px; background:rgba(14,18,23,.7);
-      border:1px solid rgba(255,255,255,.08); padding:6px 10px; border-radius:999px; font-size:12px;
-      backdrop-filter: blur(4px);
-    }
-    .thumb .pill {
-      position:absolute; right:10px; top:10px;
-      background:rgba(14,18,23,.7);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:999px; padding:6px 10px; font-size:12px;
-    }
-
-    .dates-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
-    .chip {
-      background:#142235; border:1px solid rgba(255,255,255,.08); color:#e9edf3;
-      border-radius:999px; padding:6px 10px; font-size:12px; display:inline-flex; gap:6px; align-items:center;
-    }
-    .chip button { all:unset; cursor:pointer; opacity:.8 }
-    .chip button:hover { opacity: 1; }
-
-    .note { font-size: 12px; color: #9aa3b2; margin-top: 6px; }
-    .success { color: #7de1c3; font-weight: 600; }
-    .error { color: #ff8a8a; font-weight: 600; }
-
-    /* Drafts grid */
-    .grid { display:grid; gap:14px; }
-    @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
-    @media (min-width:1040px){ .grid{ grid-template-columns:1fr 1fr 1fr; } }
-
-    .tile-actions { display:flex; gap:8px; margin-top:8px; }
-    .tile-actions .btn.small { font-size:13px; }
+    /* Panels & cards (same tokens) */
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px}
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="site-header" id="siteHeader">
-    <div class="nav-wrap">
-      <a class="brand" href="index.html">
-        <span class="brand-dot" aria-hidden="true"></span>
-        <span class="brand-name">Spondle</span>
-        <span class="beta-pill">Beta</span>
-      </a>
-      <nav class="main-nav" aria-label="Primary">
-        <a class="nav-tab" href="index.html">Explore<br/>Events</a>
-        <a class="nav-tab" href="favourites.html">Favourites</a>
-        <a class="nav-tab" href="events.html">All<br/>Events</a>
-        <a class="nav-tab is-active" href="organisers.html">Event Organiser<br/>Dashboard</a>
-      </nav>
+
+  <!-- Top bar -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="font-semibold tracking-wide">Spondle</span>
     </div>
+    <button id="sbOpen" class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sbPanel">
+      <span class="burger-lines" aria-hidden="true"></span>
+    </button>
   </header>
-  <div class="header-spacer" id="headerSpacer"></div>
 
-  <!-- Page -->
-  <main class="page">
-    <div class="wrap twocol">
-      <!-- LEFT: Form -->
-      <section class="panel" aria-labelledby="formTitle">
-        <h1 id="formTitle" style="margin-top:0">Event Organiser Dashboard</h1>
-        <p class="subtle" style="margin-top:4px">Draft an event. This MVP saves to your device only (no live publication yet).</p>
-        <div class="divider"></div>
-
-        <form id="eventForm" novalidate>
-          <div class="row">
-            <div class="field">
-              <label for="saveAsDraft">Save mode</label>
-              <select id="saveAsDraft" class="select">
-                <option value="draft" selected>Save as draft (not visible to anyone)</option>
-                <option value="pending">Save & submit for review (pending)</option>
-              </select>
-              <div class="note">Maps to future statuses: <code>draft</code> or <code>pending_review</code>.</div>
-            </div>
-            <div class="field">
-              <label for="draftId">Draft ID</label>
-              <input class="input" id="draftId" placeholder="(auto)" disabled />
-              <div class="note">When editing an existing draft, this shows its ID.</div>
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="title">Event title *</label>
-            <input class="input" id="title" required placeholder="e.g., The Harbourside Sessions">
-          </div>
-
-          <div class="row">
-            <div class="field">
-              <label for="category">Category *</label>
-              <select id="category" class="select" required>
-                <option value="">Choose…</option>
-                <option>Live Music</option><option>Comedy</option><option>Food & Drink</option>
-                <option>Theatre</option><option>Community</option><option>Film</option>
-                <option>Talks</option><option>Family</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="price">Price label</label>
-              <input class="input" id="price" placeholder="e.g., Free Entry or £12">
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="field">
-              <label for="venue">Venue *</label>
-              <input class="input" id="venue" required placeholder="e.g., The Louisiana">
-            </div>
-            <div class="field">
-              <label for="city">City *</label>
-              <input class="input" id="city" required placeholder="e.g., Bristol">
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="field">
-              <label for="postcode">Postcode *</label>
-              <input class="input" id="postcode" required placeholder="e.g., BS1 4QA">
-              <div class="note">Later we’ll auto-geocode this for maps & distance search.</div>
-            </div>
-            <div class="field">
-              <label for="address">Address (optional)</label>
-              <input class="input" id="address" placeholder="Street & number">
-            </div>
-          </div>
-
-          <div class="field">
-            <label for="desc">Description (short)</label>
-            <textarea id="desc" placeholder="A couple of lines to sell the event…"></textarea>
-          </div>
-
-          <div class="divider"></div>
-
-          <!-- Dates -->
-          <div class="field">
-            <label>Dates & times *</label>
-            <div class="row">
-              <input class="input" id="date" type="date" required>
-              <input class="input" id="start" type="time" required>
-              <input class="input" id="end" type="time" required>
-            </div>
-            <div class="row" style="margin-top:8px">
-              <button type="button" class="btn small ghost" id="addDateBtn">Add date</button>
-              <button type="button" class="btn small ghost" id="addWeeklyBtn">+ 4 weekly dates</button>
-              <button type="button" class="btn small ghost" id="clearDatesBtn">Clear dates</button>
-            </div>
-            <div id="datesList" class="dates-list" aria-live="polite"></div>
-            <div class="note">Add one or more dates. You can clone weekly to speed things up.</div>
-          </div>
-
-          <div class="divider"></div>
-
-          <!-- Visibility -->
-          <div class="field">
-            <label>Visibility *</label>
-            <div class="row">
-              <label><input type="radio" name="vis" value="public" checked> Public (listed to everyone)</label>
-              <label><input type="radio" name="vis" value="restricted"> Restricted by postcode radius</label>
-            </div>
-            <div id="restrictRow" class="row" style="display:none; margin-top:8px">
-              <input class="input" id="restrictPostcode" placeholder="Anchor postcode (e.g., BS1 4QA)">
-              <input class="input" id="restrictRadius" type="number" min="1" max="50" placeholder="Radius (miles)">
-            </div>
-            <div class="note">When restricted, only signed-in users within the radius will see it.</div>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="row">
-            <button type="submit" class="btn primary" id="saveBtn">Save draft</button>
-            <button type="button" id="exportBtn" class="btn ghost">Export JSON</button>
-            <button type="button" id="resetBtn" class="btn ghost">New draft</button>
-          </div>
-          <div id="msg" class="note" role="status" style="margin-top:8px"></div>
-        </form>
-      </section>
-
-      <!-- RIGHT: Live preview + My Drafts -->
-      <aside class="panel" aria-labelledby="prevTitle">
-        <h2 id="prevTitle" style="margin-top:0">Live preview</h2>
-        <div id="previewMount">
-          <a class="card" href="event.html?id=draft-preview" onclick="return false">
-            <div class="thumb">
-              <div id="pImg" class="thumb-gradient"></div>
-              <span class="badge" id="pBadge">City • Date</span>
-              <span class="pill" id="pStatus">draft</span>
-            </div>
-            <h3 class="card-title" id="pTitle">Event title</h3>
-            <p class="meta" id="pMeta">Venue • 19:30–22:30</p>
-            <span class="price-chip" id="pPrice">Price</span>
-          </a>
-        </div>
-
-        <div class="divider" style="margin:16px 0"></div>
-
-        <h2 style="margin:0 0 8px">My drafts</h2>
-        <div id="draftsEmpty" class="subtle">No drafts yet.</div>
-        <div id="draftsGrid" class="grid" aria-live="polite"></div>
-      </aside>
+  <!-- Overlay + Panel -->
+  <div id="sbOverlay" aria-hidden="true"></div>
+  <aside id="sbPanel" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="sb-head">
+      <div class="sb-title">Menu</div>
+      <button id="sbClose" class="sb-close" aria-label="Close menu">✕</button>
     </div>
+    <nav class="sb-list">
+      <a class="sb-item" href="/index.html">Home</a>
+      <a class="sb-item" href="/events.html">Explore events</a>
+      <a class="sb-item" href="/favourites.html">Favourites</a>
+      <a class="sb-item" href="/organisers.html">For organisers</a>
+      <a class="sb-item" href="/login.html">Sign in / Account</a>
+      <div class="sb-section">Organiser tools</div>
+      <a class="sb-item" href="/organiser-dashboard.html">Dashboard</a>
+      <a class="sb-item" href="/organiser-create.html">Create event</a>
+      <a class="sb-item" href="/organiser-drafts.html">My drafts</a>
+    </nav>
+    <div class="sb-foot">© 2025 Spondle</div>
+  </aside>
+
+  <!-- Hero / intro -->
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">For organisers</h1>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
+        List events in minutes, sync them to your own website via our plugin, and reach people who’ll love what you do.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href="/login.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500/30 to-blue-500/30 border border-[color:var(--border)]">
+          Sign in / Create account
+        </a>
+        <a href="/organiser-create.html" class="px-4 py-2 rounded-xl border border-[color:var(--border)]">
+          Create an event
+        </a>
+        <a href="/organiser-dashboard.html" class="px-4 py-2 rounded-xl border border-[color:var(--border)]">
+          Go to dashboard
+        </a>
+      </div>
+    </section>
+
+    <!-- Why Spondle -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="card p-5">
+        <h2 class="text-xl font-bold mb-2">Plugin for your site</h2>
+        <p class="text-[color:var(--muted)]">
+          Keep everything central on Spondle and display your events on your own website—no double-entry.
+        </p>
+      </div>
+      <div class="card p-5">
+        <h2 class="text-xl font-bold mb-2">Audience tools</h2>
+        <p class="text-[color:var(--muted)]">
+          Followers & favourites, share links, and (soon) ticketing links & add-to-calendar.
+        </p>
+      </div>
+      <div class="card p-5">
+        <h2 class="text-xl font-bold mb-2">Analytics</h2>
+        <p class="text-[color:var(--muted)]">
+          See views, favourites, follows, and referrers. Understand who’s interested—by location & intent signals.
+        </p>
+      </div>
+    </section>
+
+    <!-- Getting started -->
+    <section class="panel p-6 md:p-8">
+      <h2 class="text-2xl font-bold">Getting started</h2>
+      <ol class="list-decimal pl-6 mt-3 space-y-2 text-[color:var(--muted)]">
+        <li>Create an account and complete your organiser profile.</li>
+        <li>Create an event (single date, recurring, or multi-venue).</li>
+        <li>Optionally embed the plugin on your website.</li>
+        <li>Share your event page. We handle favourites & follows.</li>
+      </ol>
+      <div class="mt-6">
+        <a href="/organiser-create.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500/30 to-lime-500/30 border border-[color:var(--border)]">
+          Start listing an event
+        </a>
+      </div>
+    </section>
   </main>
 
-  <footer class="site-footer">
-    <small>© 2025 Spondle • build v33a</small>
-  </footer>
+  <footer class="px-4 sm:px-6 lg:px-8 py-10 text-[color:var(--muted)]">© 2025 Spondle</footer>
 
   <script>
-    // ===== Header spacing
-    const setSpacer=()=>{
-      const h=document.getElementById('siteHeader').offsetHeight;
-      document.getElementById('headerSpacer').style.height=h+'px';
-      document.documentElement.style.setProperty('--header-offset',(h+8)+'px');
-    };
-    window.addEventListener('load',setSpacer,{once:true});
-    window.addEventListener('resize',setSpacer);
+    // Sidebar JS (LOCKED)
+    (function(){
+      const body = document.body;
+      const openBtn = document.getElementById('sbOpen');
+      const closeBtn = document.getElementById('sbClose');
+      const overlay = document.getElementById('sbOverlay');
 
-    // ===== Persist layer
-    const KEY='spondle:drafts';
-    const loadDrafts=()=>{ try{return JSON.parse(localStorage.getItem(KEY)||'[]');}catch{return[]} };
-    const saveDrafts=(list)=>localStorage.setItem(KEY, JSON.stringify(list));
+      function openMenu(){ body.classList.add('sb-open'); openBtn.setAttribute('aria-expanded','true'); }
+      function closeMenu(){ body.classList.remove('sb-open'); openBtn.setAttribute('aria-expanded','false'); }
 
-    // ===== Visibility controls
-    const visRadios = document.querySelectorAll('input[name="vis"]');
-    const restrictRow = document.getElementById('restrictRow');
-    visRadios.forEach(r=>r.addEventListener('change',()=>{
-      restrictRow.style.display = (document.querySelector('input[name="vis"]:checked').value === 'restricted') ? '' : 'none';
-    }));
-
-    // ===== Dates collection
-    const dates = [];
-    const datesList = document.getElementById('datesList');
-    function renderDates(){
-      datesList.innerHTML = dates.map((d,i)=>(
-        `<span class="chip">${d.date} ${d.start}-${d.end} <button type="button" data-i="${i}" aria-label="Remove">✕</button></span>`
-      )).join('');
-    }
-    datesList.addEventListener('click', e=>{
-      const b=e.target.closest('button[data-i]'); if(!b) return;
-      dates.splice(+b.dataset.i,1); renderDates(); updatePreview();
-    });
-
-    function addDate(d){ dates.push(d); renderDates(); updatePreview(); }
-    function addWeeklyClones(){
-      const baseDate = document.getElementById('date').value;
-      const start = document.getElementById('start').value || '19:30';
-      const end   = document.getElementById('end').value   || '22:30';
-      if(!baseDate) return;
-      const base = new Date(baseDate+'T12:00:00');
-      for(let w=1; w<=4; w++){
-        const d = new Date(base); d.setDate(d.getDate()+7*w);
-        const iso = d.toISOString().slice(0,10);
-        addDate({date: iso, start, end});
-      }
-    }
-    document.getElementById('addDateBtn').addEventListener('click', ()=>{
-      const d=date.value, s=start.value, e=end.value;
-      if(!d||!s||!e) return; addDate({date:d,start:s,end:e});
-    });
-    document.getElementById('addWeeklyBtn').addEventListener('click', addWeeklyClones);
-    document.getElementById('clearDatesBtn').addEventListener('click', ()=>{ dates.length=0; renderDates(); updatePreview(); });
-
-    // ===== Form utils
-    const el = id => document.getElementById(id);
-    const MSG = el('msg');
-
-    function fieldsToDraft(existingId=null){
-      const vis = document.querySelector('input[name="vis"]:checked')?.value || 'public';
-      const status = el('saveAsDraft').value === 'pending' ? 'pending_review' : 'draft';
-      return {
-        id: existingId || ('draft-' + Date.now()),
-        status,
-        title: el('title').value.trim(),
-        category: el('category').value,
-        priceLabel: el('price').value.trim(),
-        venue: el('venue').value.trim(),
-        city: el('city').value.trim(),
-        postcode: el('postcode').value.trim(),
-        address: el('address').value.trim(),
-        description: el('desc').value.trim(),
-        dates: dates.slice(),
-        visibility: vis,
-        restrict: (vis==='restricted') ? {
-          postcode: el('restrictPostcode').value.trim(),
-          radiusMiles: Number(el('restrictRadius').value||0)
-        } : null,
-        image: "" // future upload URL
-      };
-    }
-
-    function validate(){
-      const req=['title','category','venue','city','postcode'];
-      for(const id of req){ const x=el(id); if(!x.value){ x.focus(); return `${id} is required`; } }
-      if(dates.length===0) return 'Add at least one date';
-      return '';
-    }
-
-    function clearForm(){
-      ['title','price','venue','city','postcode','address','desc','restrictPostcode','restrictRadius'].forEach(id=>el(id).value='');
-      el('category').value='';
-      el('draftId').value='';
-      dates.length=0; renderDates();
-      document.querySelector('input[name="vis"][value="public"]').checked = true;
-      restrictRow.style.display='none';
-      updatePreview();
-    }
-
-    // ===== Preview wiring
-    function fmtBadge(d){ if(!d.length) return (el('city').value||'City')+' • Date'; const one=d[0]; return `${(el('city').value||'City')} • ${one.date}`; }
-    function fmtMeta(){ const v=el('venue').value||'Venue', s=(dates[0]?.start||'19:30'), e=(dates[0]?.end||'22:30'); return `${v} • ${s}–${e}`; }
-    function updatePreview(){
-      el('pTitle').textContent = el('title').value || 'Event title';
-      el('pMeta').textContent  = fmtMeta();
-      el('pBadge').textContent = fmtBadge(dates);
-      el('pPrice').textContent = (el('price').value || 'Price');
-      el('pStatus').textContent = (el('saveAsDraft').value === 'pending') ? 'pending' : 'draft';
-    }
-    ['title','venue','city','price','date','start','end','saveAsDraft'].forEach(id=>{
-      el(id).addEventListener('input', updatePreview);
-      el(id).addEventListener('change', updatePreview);
-    });
-
-    // ===== Save / Export / Reset
-    let editingId = null;
-
-    el('eventForm').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const err=validate(); if(err){ MSG.innerHTML=`<span class="error">✕ ${err}</span>`; return; }
-      const list = loadDrafts();
-      if (editingId){
-        const idx = list.findIndex(d=>d.id===editingId);
-        if (idx>=0) list[idx] = fieldsToDraft(editingId);
-        else list.unshift(fieldsToDraft(editingId));
-      } else {
-        const draft = fieldsToDraft(null);
-        editingId = draft.id;
-        list.unshift(draft);
-      }
-      saveDrafts(list);
-      el('draftId').value = editingId;
-      MSG.innerHTML = `<span class="success">✓ Draft saved locally (${editingId}).</span>`;
-      renderDrafts();
-    });
-
-    el('exportBtn').addEventListener('click', ()=>{
-      const err=validate(); if(err){ MSG.innerHTML=`<span class="error">✕ ${err}</span>`; return; }
-      const draft = fieldsToDraft(editingId || null);
-      const blob = new Blob([JSON.stringify(draft,null,2)], {type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a=document.createElement('a'); a.href=url; a.download=(draft.title||'event-draft')+'.json';
-      document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
-      MSG.innerHTML = `<span class="success">✓ JSON exported.</span>`;
-    });
-
-    el('resetBtn').addEventListener('click', ()=>{
-      editingId=null; clearForm(); MSG.textContent='Ready for a new draft.';
-    });
-
-    // ===== My Drafts
-    const draftsGrid = document.getElementById('draftsGrid');
-    const draftsEmpty = document.getElementById('draftsEmpty');
-
-    function draftCardHTML(d){
-      const imgLayer = d.image
-        ? `<div class="thumb-img" style="background-image:url('${d.image.replace(/'/g,"\\'")}')"></div>`
-        : `<div class="thumb-gradient"></div>`;
-      const badge = `${d.city||'City'} • ${(d.dates?.[0]?.date)||'Date'}`;
-      return `
-      <div class="card" data-id="${d.id}">
-        <div class="thumb">
-          ${imgLayer}
-          <span class="badge">${badge}</span>
-          <span class="pill">${d.status||'draft'}</span>
-        </div>
-        <h3 class="card-title">${d.title||'Untitled event'}</h3>
-        <p class="meta">${d.venue||'Venue'} • ${(d.dates?.[0]?.start||'19:30')}–${(d.dates?.[0]?.end||'22:30')}</p>
-        <span class="price-chip">${d.priceLabel||'Price'}</span>
-        <div class="tile-actions">
-          <button class="btn small ghost" data-act="edit" data-id="${d.id}">Edit</button>
-          <button class="btn small ghost" data-act="delete" data-id="${d.id}">Delete</button>
-        </div>
-      </div>`;
-    }
-
-    function renderDrafts(){
-      const list = loadDrafts();
-      draftsEmpty.style.display = list.length ? 'none' : '';
-      draftsGrid.innerHTML = list.map(draftCardHTML).join('');
-    }
-
-    draftsGrid.addEventListener('click', (e)=>{
-      const btn = e.target.closest('button[data-act]');
-      if(!btn) return;
-      const id = btn.dataset.id;
-      const list = loadDrafts();
-      const idx = list.findIndex(d=>d.id===id);
-      if (idx<0) return;
-
-      if (btn.dataset.act === 'delete'){
-        if (!confirm('Delete this draft?')) return;
-        list.splice(idx,1); saveDrafts(list);
-        renderDrafts();
-        if (editingId === id){ editingId = null; clearForm(); MSG.textContent='Draft deleted.'; }
-        return;
-      }
-
-      if (btn.dataset.act === 'edit'){
-        const d = list[idx];
-        editingId = d.id;
-        el('draftId').value = d.id;
-        el('title').value = d.title||'';
-        el('category').value = d.category||'';
-        el('price').value = d.priceLabel||'';
-        el('venue').value = d.venue||'';
-        el('city').value = d.city||'';
-        el('postcode').value = d.postcode||'';
-        el('address').value = d.address||'';
-        el('desc').value = d.description||'';
-        // visibility
-        (d.visibility==='restricted'
-          ? document.querySelector('input[name="vis"][value="restricted"]')
-          : document.querySelector('input[name="vis"][value="public"]')
-        ).checked = true;
-        restrictRow.style.display = (d.visibility==='restricted') ? '' : 'none';
-        el('restrictPostcode').value = d.restrict?.postcode || '';
-        el('restrictRadius').value = d.restrict?.radiusMiles || '';
-        // status
-        el('saveAsDraft').value = (d.status==='pending_review') ? 'pending' : 'draft';
-        // dates
-        dates.length = 0;
-        (d.dates||[]).forEach(x=>dates.push(x));
-        renderDates();
-        updatePreview();
-        MSG.textContent = 'Draft loaded for editing.';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
-
-    // ===== Init
-    function updatePreviewOnly(){ updatePreview(); }
-    window.addEventListener('DOMContentLoaded', ()=>{
-      renderDrafts();
-      updatePreviewOnly();
-    });
+      openBtn.addEventListener('click', openMenu);
+      closeBtn.addEventListener('click', closeMenu);
+      overlay.addEventListener('click', closeMenu);
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+    })();
   </script>
 </body>
 </html>
