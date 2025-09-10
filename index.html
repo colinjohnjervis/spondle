@@ -1,184 +1,151 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle — Discover what’s on near you</title>
 
-  <!-- Tailwind build (your existing CSS) -->
-  <link rel="stylesheet" href="app.v15.css" />
+  <!-- Your main stylesheet (cache-busted) -->
+  <link rel="stylesheet" href="app.v15.css?v=29" />
 
-  <!-- PWA friendly color -->
-  <meta name="theme-color" content="#0b0f14" />
-
+  <!-- Minimal, isolated styles to guarantee the sidebar looks/animates even if app CSS is cached -->
   <style>
-    /* Drawer & backdrop transitions—kept tiny & independent of Tailwind */
-    .drawer {
-      transition: transform 240ms cubic-bezier(.2,.8,.2,1);
-      will-change: transform;
-    }
-    .backdrop {
-      transition: opacity 180ms ease;
-    }
-    /* Prevent body scroll when drawer is open */
-    .no-scroll { overflow: hidden; }
+    :root { --sb-bg: #0b0f14; --sb-panel: #0f141a; --sb-text:#e8f0f7; --sb-dim:#9fb2c5; }
+    .header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(10,14,18,.92),rgba(10,14,18,.86));backdrop-filter:saturate(120%) blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .brand{display:flex;align-items:center;gap:.6rem;padding:.9rem 1rem}
+    .brand .dot{width:.7rem;height:.7rem;border-radius:50%;background:#47ffa8;box-shadow:0 0 14px rgba(71,255,168,.6)}
+    .brand .name{font-weight:700;color:var(--sb-text);font-size:1.1rem;letter-spacing:.2px}
+    .burger{margin-left:auto;margin-right:1rem;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .burger:active{transform:scale(.98)}
+    .burger svg{stroke:#e6eef6}
+    /* Sidebar */
+    #sb-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:60}
+    #sb-panel{position:fixed;inset:0 auto 0 0;width:min(86vw,320px);background:var(--sb-panel);transform:translateX(-100%);transition:transform .25s ease;box-shadow:3px 0 22px rgba(0,0,0,.35);z-index:61;display:flex;flex-direction:column}
+    #sb-panel header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+    #sb-panel h3{margin:0;font-size:1rem;color:var(--sb-text);font-weight:700}
+    #sb-panel nav{padding:10px 10px 18px}
+    #sb-panel a{display:flex;align-items:center;gap:.55rem;padding:12px 10px;border-radius:10px;color:var(--sb-text);text-decoration:none}
+    #sb-panel a:hover{background:rgba(255,255,255,.06)}
+    #sb-panel .muted{color:var(--sb-dim);font-size:.92rem}
+    .sb-open #sb-backdrop{opacity:1;pointer-events:auto}
+    .sb-open #sb-panel{transform:translateX(0)}
+    body.sb-open{overflow:hidden}
+    /* Hero + section titles remain styled by your app.v15.css; these fallbacks keep spacing if CSS is stale */
+    .container{max-width:1100px;margin:0 auto;padding:0 16px}
+    .hero{margin:16px auto 10px;border-radius:20px;padding:22px;background:linear-gradient(145deg,#12202c,#0f1620 55%,#141f2b)}
+    .hero h1{color:#e8f0f7;font-size:1.9rem;margin:.25rem 0 .6rem}
+    .hero p{color:#b3c3d4;margin:0 0 1rem}
+    .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+    .btn{padding:12px 16px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.06);color:#e8f0f7;text-decoration:none;font-weight:600}
+    .btn.primary{background:linear-gradient(90deg,#65d0ff,#60ffa3);color:#052029;border:none}
+    .section-title{color:#e8f0f7;font-size:1.6rem;margin:18px 0 6px}
+    .spacer{height:6px}
   </style>
 </head>
+<body>
 
-<body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-500/30">
-  <!-- Header -->
-  <header class="sticky top-0 z-40 bg-slate-950/80 backdrop-blur supports-[backdrop-filter]:bg-slate-950/60 border-b border-slate-800">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-      <!-- Brand -->
-      <a href="index.html" class="inline-flex items-center gap-2">
-        <span class="size-3 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d39980]"></span>
-        <span class="font-semibold text-xl tracking-tight">Spondle</span>
-      </a>
-
-      <!-- Burger -->
-      <button id="burgerBtn"
-        class="inline-flex items-center justify-center rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-700/70
-               px-3.5 py-2.5 text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-        aria-controls="mobileDrawer" aria-expanded="false" aria-label="Open menu">
-        <!-- 3-line icon -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="container" style="display:flex;align-items:center;">
+      <div class="brand">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="name">Spondle</span>
+      </div>
+      <button id="burger" class="burger" aria-label="Open menu">
+        <!-- 3-line burger -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
       </button>
     </div>
   </header>
 
-  <!-- Backdrop -->
-  <div id="drawerBackdrop"
-       class="backdrop fixed inset-0 z-40 bg-black/60 opacity-0 pointer-events-none"></div>
+  <!-- SIDEBAR -->
+  <div id="sb-backdrop" aria-hidden="true"></div>
+  <aside id="sb-panel" aria-hidden="true">
+    <header>
+      <h3>Menu</h3>
+      <button id="sb-close" class="burger" aria-label="Close menu" style="margin:0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e6eef6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </header>
+    <nav>
+      <a href="events.html"><span>Explore events</span></a>
+      <a href="favourites.html"><span>Favourites</span></a>
+      <a href="organisers.html"><span>For organisers</span></a>
+      <a href="login.html"><span>Sign in / Account</span></a>
 
-  <!-- Left Drawer -->
-  <aside id="mobileDrawer"
-         class="drawer fixed inset-y-0 left-0 z-50 w-[86%] max-w-xs translate-x-[-100%]
-                bg-slate-900 border-r border-slate-800 shadow-2xl">
-    <div class="h-full flex flex-col">
-      <!-- Drawer header -->
-      <div class="px-4 pt-4 pb-3 flex items-center justify-between border-b border-slate-800">
-        <div class="flex items-center gap-2">
-          <span class="size-3 rounded-full bg-emerald-400"></span>
-          <span class="font-semibold">Spondle</span>
-        </div>
-        <button id="closeDrawer"
-          class="rounded-lg p-2 text-slate-300 hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-          aria-label="Close menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Drawer nav -->
-      <nav class="p-2 space-y-1 overflow-y-auto">
-        <a href="events.html"
-           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Explore events</a>
-        <a href="favourites.html"
-           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Favourites</a>
-        <a href="organiser-dashboard.html"
-           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">For organisers</a>
-
-        <div class="h-px my-2 bg-slate-800"></div>
-
-        <a href="login.html"
-           class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Sign in / Account</a>
-
-        <div class="h-px my-2 bg-slate-800"></div>
-
-        <!-- Quick links -->
-        <a href="#latest" class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Latest events</a>
-        <a href="#popular" class="block rounded-xl px-3.5 py-3 text-slate-100 hover:bg-slate-800/70">Popular right now</a>
-      </nav>
-
-      <div class="mt-auto p-4 text-xs text-slate-400 border-t border-slate-800">
-        © 2025 Spondle
-      </div>
-    </div>
+      <div class="spacer"></div>
+      <div class="muted" style="padding:8px 10px 0">Quick links</div>
+      <a href="#popular"><span>Popular right now</span></a>
+      <a href="#latest"><span>Latest events</span></a>
+    </nav>
+    <div style="margin-top:auto;padding:12px 14px;color:#93a8ba;border-top:1px solid rgba(255,255,255,.06)">© 2025 Spondle</div>
   </aside>
 
-  <!-- Main -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-    <!-- Hero -->
-    <section class="rounded-3xl bg-gradient-to-br from-slate-800/70 to-slate-900/70 border border-slate-800 shadow-[0_10px_30px_-12px_rgba(0,0,0,.6)] p-6 sm:p-8">
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-        Discover what’s on near you
-      </h1>
-      <p class="mt-3 text-slate-300 max-w-2xl">
-        Gigs, comedy, food markets, film nights, community events and more — across the UK.
-      </p>
-      <div class="mt-6 flex gap-3">
-        <a href="events.html"
-           class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-sky-400 to-blue-500
-                  px-5 py-3 font-semibold text-slate-900 hover:opacity-90">
-          Search events
-        </a>
-        <a href="organiser-dashboard.html"
-           class="inline-flex items-center justify-center rounded-2xl border border-slate-700 bg-slate-800
-                  px-5 py-3 font-semibold text-slate-100 hover:bg-slate-700">
-          List your event
-        </a>
+  <!-- HERO -->
+  <main class="container">
+    <section class="hero">
+      <h1>Discover what’s on near you</h1>
+      <p>Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="events.html">Search events</a>
+        <a class="btn" href="organisers.html">List your event</a>
       </div>
     </section>
 
-    <!-- Latest -->
-    <section id="latest" class="mt-10">
-      <h2 class="text-2xl sm:text-3xl font-bold">Latest events</h2>
+    <!-- LATEST EVENTS -->
+    <h2 id="latest" class="section-title">Latest events</h2>
+    <div id="events-list" class="events-list"></div>
 
-      <!-- Events list container (JS fills this) -->
-      <div id="events-list" class="mt-6 grid gap-5 sm:gap-6">
-        <!-- Cards are injected here by your existing script -->
-      </div>
-
-      <!-- Load more -->
-      <div class="mt-6 flex justify-center">
-        <button id="load-more"
-          class="rounded-2xl border border-slate-700 bg-slate-800 px-5 py-3 font-semibold text-slate-100
-                 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed">
-          Load more
-        </button>
-      </div>
-    </section>
+    <div style="display:flex;justify-content:center;margin:18px 0 30px">
+      <button id="load-more" class="btn" data-page="1">Load more</button>
+    </div>
   </main>
 
-  <!-- Your existing app logic (renders cards, hearts, load more, etc.) -->
-  <script src="auth.js" defer></script>
-  <script src="app.v15.js" defer></script>
+  <!-- Your existing scripts (cache-busted) -->
+  <script defer src="auth.js?v=29"></script>
+  <script defer src="app.js?v=29"></script>
 
-  <!-- Drawer script (tiny, independent) -->
+  <!-- Tiny, isolated JS to handle the sidebar reliably -->
   <script>
     (function () {
       const body = document.body;
-      const burger = document.getElementById('burgerBtn');
-      const drawer = document.getElementById('mobileDrawer');
-      const backdrop = document.getElementById('drawerBackdrop');
-      const closeBtn = document.getElementById('closeDrawer');
+      const burger = document.getElementById('burger');
+      const closeBtn = document.getElementById('sb-close');
+      const panel = document.getElementById('sb-panel');
+      const backdrop = document.getElementById('sb-backdrop');
 
-      function openDrawer() {
-        drawer.style.transform = 'translateX(0)';
-        backdrop.classList.remove('pointer-events-none');
-        backdrop.style.opacity = '1';
-        body.classList.add('no-scroll');
-        burger.setAttribute('aria-expanded', 'true');
+      function openMenu() {
+        body.classList.add('sb-open');
+        panel.setAttribute('aria-hidden', 'false');
+        backdrop.setAttribute('aria-hidden', 'false');
+      }
+      function closeMenu() {
+        body.classList.remove('sb-open');
+        panel.setAttribute('aria-hidden', 'true');
+        backdrop.setAttribute('aria-hidden', 'true');
       }
 
-      function closeDrawer() {
-        drawer.style.transform = 'translateX(-100%)';
-        backdrop.style.opacity = '0';
-        // wait for opacity transition to finish before disabling pointer events
-        setTimeout(() => backdrop.classList.add('pointer-events-none'), 180);
-        body.classList.remove('no-scroll');
-        burger.setAttribute('aria-expanded', 'false');
-      }
+      burger?.addEventListener('click', openMenu);
+      closeBtn?.addEventListener('click', closeMenu);
+      backdrop?.addEventListener('click', closeMenu);
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
 
-      burger.addEventListener('click', openDrawer);
-      closeBtn.addEventListener('click', closeDrawer);
-      backdrop.addEventListener('click', closeDrawer);
-
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeDrawer();
+      // Optional: scroll-to anchors inside the sidebar then close
+      panel.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]');
+        if (!a) return;
+        e.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+        closeMenu();
       });
     })();
   </script>
