@@ -43,11 +43,16 @@
     .sb-foot{margin-top:auto;padding:16px 20px;color:var(--muted);border-top:1px solid var(--border);font-size:.95rem}
 
     /* Cards — identical to index.html */
-    .event-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+    .event-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.35);position:relative}
     .event-img{aspect-ratio:16/9;object-fit:cover;width:100%}
     .chip{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted)}
-    .heart{transition:transform .1s ease;}
+    .heart{transition:transform .1s ease; position:relative; z-index:2;}
     .heart:active{transform:scale(.9)}
+
+    /* Invisible stretched link to make the whole tile clickable */
+    .stretched-link{position:absolute; inset:0; z-index:1; text-decoration:none; color:inherit; background:transparent;}
+    /* Accessible, visually-hidden helper (for link text) */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   </style>
 </head>
 <body>
@@ -92,7 +97,7 @@
     </div>
   </section>
 
-  <!-- (Optional) filters placeholder, visually light and non-functional for now -->
+  <!-- (Optional) filters placeholder -->
   <section id="filters" class="px-4 sm:px-6 lg:px-8 mt-6">
     <div class="rounded-xl border border-[color:var(--border)] bg-[color:var(--panel)] p-4 text-sm text-[color:var(--muted)]">
       Filters coming soon (date, price, distance, category).
@@ -114,6 +119,9 @@
   <!-- Card template -->
   <template id="eventCardTpl">
     <article class="event-card">
+      <!-- Invisible full-card link (set href in JS) -->
+      <a class="stretched-link"><span class="sr-only">View details</span></a>
+
       <div class="relative h-40">
         <img class="event-img" />
         <button class="absolute top-3 right-3 rounded-full bg-black/40 backdrop-blur p-2 heart" aria-label="Add to favourites">
@@ -130,9 +138,6 @@
         </div>
         <h3 class="text-lg font-bold title mb-1"></h3>
         <p class="text-white/70 venue"></p>
-      </div>
-      <div class="px-4 pb-4">
-        <a class="inline-block px-3 py-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--panel)] text-sm detailsLink">View details</a>
       </div>
     </article>
   </template>
@@ -154,7 +159,7 @@
       window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
     })();
 
-    /* ===== Events + pagination (identical behaviour to index.html, incl. smooth scroll) ===== */
+    /* ===== Events + pagination (unchanged; includes smooth scroll) ===== */
     const PAGE_SIZE = 12;
     let offset = 0;
 
@@ -207,14 +212,21 @@
         const date=node.querySelector('.date'); date.textContent=`${ev.city} • ${ev.date}`;
         node.querySelector('.title').textContent=ev.title;
         node.querySelector('.venue').textContent=ev.venue;
-        node.querySelector('.detailsLink').href=`event.html?id=${encodeURIComponent(ev.id)}`;
+
+        // Set full-tile invisible link target
+        const link=node.querySelector('.stretched-link');
+        link.href=`event.html?id=${encodeURIComponent(ev.id)}`;
+        link.setAttribute('aria-label', `View details: ${ev.title}`);
+
         img.src=ev.image; img.alt=ev.title;
 
+        // Heart behaviour (unchanged)
         const heart=node.querySelector('.heart');
         const favs=getFavs();
         if (favs.has(ev.id)) heart.style.background="rgba(236,72,153,.9)";
         heart.addEventListener('click',(e)=>{
-          e.stopPropagation();
+          e.stopPropagation(); // prevent the full-card link from firing
+          e.preventDefault();
           const set=getFavs();
           if(set.has(ev.id)){ set.delete(ev.id); heart.style.background="rgba(0,0,0,.4)"; }
           else{ set.add(ev.id); heart.style.background="rgba(236,72,153,.9)"; }
