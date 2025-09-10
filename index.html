@@ -4,298 +4,277 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle — Discover what’s on near you</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-
+  <meta name="color-scheme" content="dark">
+  <!-- Tailwind (CDN for now) -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root{
-      --bg:#0c0f13; --card:#12171d; --muted:#9fb3c8; --text:#e7edf4;
-      --accent1:#6ee7f2; --accent2:#7aa2ff; --ring:rgba(255,255,255,.08);
-      --brand-dot:#23e381;
+      --bg:#0b0f14;--panel:#111620;--card:#121a24;--ink:#e7edf3;--muted:#a7b2bf;
+      --border:rgba(255,255,255,.08);--shine:linear-gradient(135deg,#1a2431,#111620);
+      --overlay:rgba(0,0,0,.45);--brand:#39d353;
+      --shadow:0 18px 50px rgba(0,0,0,.45);
+      --radius:16px;--radius-sm:12px;--speed:.26s;
     }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-    a{color:inherit;text-decoration:none}
-    .container{max-width:980px;margin:0 auto;padding:16px}
+    html,body{background:#0b0f14;color:var(--ink);}
+    .glass {background:linear-gradient(180deg, rgba(10,12,16,.9), rgba(10,12,16,.55) 70%, rgba(10,12,16,0));
+            backdrop-filter: blur(6px);}
+    /* ===== Locked Sidebar (v1 you liked) ===== */
+    .sb-overlay{position:fixed;inset:0;background:var(--overlay);backdrop-filter:saturate(120%) blur(2px);
+      opacity:0;pointer-events:none;transition:opacity var(--speed) ease;z-index:60}
+    .sb-overlay.active{opacity:1;pointer-events:auto}
+    .sb-panel{position:fixed;top:0;left:0;height:100dvh;width:82vw;max-width:420px;background:#151a21;
+      color:var(--ink);box-shadow:var(--shadow);transform:translateX(-100%);
+      transition:transform var(--speed) ease;z-index:70;display:flex;flex-direction:column}
+    .sb-panel.open{transform:translateX(0)}
+    .sb-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+    .sb-title{font-weight:700;letter-spacing:.3px}
+    .sb-close{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.04);
+      border:1px solid var(--border);color:var(--ink)}
+    .sb-list{padding:10px 10px 6px 10px}
+    .sb-item{display:block;padding:14px 12px;margin:4px 0;border-radius:12px;color:var(--ink);text-decoration:none}
+    .sb-item:hover{background:rgba(255,255,255,.05)}
+    .sb-section{margin:8px 10px 0 10px;padding:10px 12px;font-size:.9rem;color:var(--muted);border-top:1px solid var(--border)}
+    .sb-foot{margin-top:auto;padding:16px 20px;color:var(--muted);border-top:1px solid var(--border);font-size:.95rem}
+    body.sb-lock{overflow:hidden}
 
-    /* Header */
-    .header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(12,15,19,.9), rgba(12,15,19,.75) 60%, rgba(12,15,19,0));backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid var(--ring)}
-    .header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-    .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--brand-dot);box-shadow:0 0 0 6px rgba(35,227,129,.12)}
-    .burger{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;border:1px solid var(--ring);background:rgba(255,255,255,.03);cursor:pointer}
-    .burger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;position:relative}
-    .burger span::before,.burger span::after{content:"";position:absolute;left:0;width:20px;height:2px;background:var(--text);border-radius:2px}
-    .burger span::before{top:-6px}.burger span::after{top:6px}
+    /* Top bar - minimal */
+    .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
+    .burger{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+    .burger-lines,.burger-lines::before,.burger-lines::after{content:"";display:block;width:20px;height:2px;border-radius:2px;background:var(--ink);position:relative}
+    .burger-lines::before{position:absolute;transform:translateY(-6px)}
+    .burger-lines::after{position:absolute;transform:translateY(6px)}
 
-    /* Side drawer */
-    .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:60}
-    .drawer{position:fixed;inset:0 25% 0 auto;max-width:min(420px,92vw);transform:translateX(-100%);transition:transform .28s cubic-bezier(.2,.7,.2,1);background:linear-gradient(180deg,#0e1318,#0b0f13);border-right:1px solid var(--ring);z-index:61;display:flex;flex-direction:column}
-    .drawer.open{transform:translateX(0)}
-    .drawer-backdrop.show{opacity:1;pointer-events:auto}
-    .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--ring)}
-    .close{width:40px;height:40px;border-radius:10px;border:1px solid var(--ring);display:grid;place-items:center;background:rgba(255,255,255,.04);cursor:pointer}
-    .close i{width:18px;height:2px;background:var(--text);transform:rotate(45deg);position:relative}
-    .close i::after{content:"";position:absolute;width:18px;height:2px;background:var(--text);transform:rotate(90deg)}
-    .drawer-body{padding:8px 16px 18px;overflow:auto}
-    .menu-group{margin:14px 0}
-    .menu-title{font-size:.86rem;color:var(--muted);margin:12px 0 6px}
-    .menu a{display:block;padding:12px 10px;border-radius:10px;border:1px solid transparent}
-    .menu a:hover{background:rgba(255,255,255,.04);border-color:var(--ring)}
-
-    /* Hero */
-    .hero{margin:16px 0 10px}
-    .panel{background:radial-gradient(1200px 400px at -10% -40%, rgba(110,231,242,.12), transparent 40%), radial-gradient(1200px 400px at 110% -40%, rgba(122,162,255,.12), transparent 40%), var(--card);
-      border:1px solid var(--ring);border-radius:18px;padding:22px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
-    .hero h1{margin:0 0 8px;font-size:1.9rem;line-height:1.2}
-    .hero p{margin:0 0 18px;color:var(--muted)}
-    .btn{display:inline-block;padding:12px 16px;border-radius:12px;border:1px solid var(--ring);background:rgba(255,255,255,.04);font-weight:600}
-    .btn.primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#0b1117;border:none}
-
-    /* Events */
-    h2.section{font-size:1.8rem;margin:22px 0 10px}
-    #events-list{display:grid;gap:14px;grid-template-columns:1fr}
-    @media(min-width:560px){#events-list{grid-template-columns:1fr 1fr}}
-    @media(min-width:900px){#events-list{grid-template-columns:1fr 1fr 1fr}}
-    .card{background:var(--card);border:1px solid var(--ring);border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.2)}
-    .media{aspect-ratio:16/9;background:#0b1115;position:relative;overflow:hidden}
-    .media img{width:100%;height:100%;object-fit:cover;display:block}
-    .fav{position:absolute;right:10px;top:10px;width:38px;height:38px;border-radius:10px;border:1px solid var(--ring);background:rgba(0,0,0,.35);backdrop-filter:blur(3px);display:grid;place-items:center;cursor:pointer}
-    .fav svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
-    .fav.active svg{fill:#ff6b81;stroke:#ff6b81}
-    .body{padding:14px}
-    .meta{font-size:.82rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px}
-    .title{font-weight:700;margin:0 0 6px}
-    .price{display:inline-block;margin-top:6px;font-size:.86rem;border:1px solid var(--ring);padding:6px 10px;border-radius:999px;color:#cfe6ff}
-    .loadmore-wrap{display:grid;place-items:center;margin:18px 0 28px}
-    #load-more{padding:12px 18px;border-radius:12px;border:1px solid var(--ring);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer}
-    #load-more:disabled{opacity:.5;cursor:not-allowed}
-
-    /* Footer */
-    .footer{border-top:1px solid var(--ring);padding:18px;margin-top:22px;color:var(--muted);text-align:center}
+    /* Cards */
+    .event-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+    .event-img{aspect-ratio:16/9;object-fit:cover;width:100%}
+    .chip{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted)}
+    .fav-btn{position:absolute;right:12px;top:12px;width:44px;height:44px;border-radius:14px;background:rgba(16,20,26,.75);
+      display:grid;place-items:center;border:1px solid var(--border);backdrop-filter: blur(4px)}
+    .fav-btn svg{opacity:.9}
+    .fav-active{color:#ff7ab6}
   </style>
 </head>
-<body>
+<body class="min-h-screen">
 
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner container">
-      <div class="brand">
-        <span class="brand-dot"></span>
-        <span>Spondle</span>
-      </div>
-      <button class="burger" id="open-drawer" aria-label="Open menu"><span></span></button>
+  <!-- Top bar -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="font-semibold tracking-wide">Spondle</span>
     </div>
+    <button id="sbOpen" class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sbPanel">
+      <span class="burger-lines" aria-hidden="true"></span>
+    </button>
   </header>
 
-  <!-- Drawer -->
-  <div class="drawer-backdrop" id="drawer-backdrop"></div>
-  <aside class="drawer" id="drawer">
-    <div class="drawer-head">
-      <div class="brand" style="gap:8px"><span class="brand-dot"></span><strong>Spondle</strong></div>
-      <button class="close" id="close-drawer" aria-label="Close menu"><i></i></button>
+  <!-- Sidebar -->
+  <div id="sbOverlay" class="sb-overlay" hidden></div>
+  <aside id="sbPanel" class="sb-panel" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+    <div class="sb-head">
+      <div class="sb-title">Menu</div>
+      <button id="sbClose" class="sb-close" aria-label="Close menu">✕</button>
     </div>
-    <div class="drawer-body">
-      <div class="menu-group">
-        <div class="menu">
-          <a href="events.html">Explore events</a>
-          <a href="favourites.html">Favourites</a>
-          <a href="organiser_dashboard.html">For organisers</a>
-          <a href="login.html" id="account-link">Sign in / Account</a>
-        </div>
-      </div>
-      <div class="menu-group">
-        <div class="menu-title">Quick links</div>
-        <div class="menu">
-          <a href="#popular">Popular right now</a>
-          <a href="#latest">Latest events</a>
-        </div>
-      </div>
-      <div class="footer">© 2025 Spondle</div>
-    </div>
+    <nav class="sb-list">
+      <a class="sb-item" href="/events.html">Explore events</a>
+      <a class="sb-item" href="/favourites.html">Favourites</a>
+      <a class="sb-item" href="/organiser_dashboard.html">For organisers</a>
+      <a class="sb-item" href="/login.html">Sign in / Account</a>
+      <div class="sb-section">Quick links</div>
+      <a class="sb-item" href="#popular">Popular right now</a>
+      <a class="sb-item" href="#latest">Latest events</a>
+    </nav>
+    <div class="sb-foot">© 2025 Spondle</div>
   </aside>
 
-  <main class="container">
-    <!-- Hero -->
-    <section class="hero">
-      <div class="panel">
-        <h1>Discover what’s on near you</h1>
-        <p>Gigs, comedy, food markets, film nights, community events and more — across the UK.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <a class="btn primary" href="events.html">Search events</a>
-          <a class="btn" href="organiser_dashboard.html">List your event</a>
-        </div>
+  <!-- Hero -->
+  <section class="px-4 sm:px-6 lg:px-8 mt-4">
+    <div class="rounded-2xl border border-[color:var(--border)] bg-[color:var(--panel)] p-6 md:p-8 shadow-xl">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Discover what’s on near you</h1>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
+        Gigs, comedy, food markets, film nights, community events and more — across the UK.
+      </p>
+      <div class="mt-6 flex gap-3">
+        <a href="/events.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500/30 to-blue-500/30 border border-[color:var(--border)]">
+          Search events
+        </a>
+        <a href="/organiser_dashboard.html" class="px-4 py-2 rounded-xl border border-[color:var(--border)]">
+          List your event
+        </a>
       </div>
-    </section>
-
-    <!-- Events -->
-    <h2 class="section" id="latest">Latest events</h2>
-    <div id="events-list" aria-live="polite"></div>
-    <div class="loadmore-wrap">
-      <button id="load-more">Load more</button>
     </div>
-  </main>
+  </section>
 
-  <footer class="footer">© 2025 Spondle</footer>
+  <!-- Latest events -->
+  <section id="latest" class="px-4 sm:px-6 lg:px-8 pt-8 pb-20">
+    <h2 class="text-3xl font-bold mb-4">Latest events</h2>
 
-  <!-- (Optional) Supabase auth label if auth.js is present -->
+    <div id="eventsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+    <div class="flex justify-center mt-6">
+      <button id="loadMore" class="px-5 py-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--panel)]">
+        Load more
+      </button>
+    </div>
+  </section>
+
+  <footer class="px-4 sm:px-6 lg:px-8 pb-10 text-[color:var(--muted)]">© 2025 Spondle</footer>
+
+  <!-- Icons -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="heart" viewBox="0 0 24 24">
+      <path d="M12 21s-6.716-4.232-9.24-7.2C.91 11.54.75 8.74 2.4 7.08c1.65-1.66 4.33-1.66 5.98 0L12 10.8l3.62-3.72c1.65-1.66 4.33-1.66 5.98 0 1.65 1.66 1.49 4.46-.36 6.72C18.716 16.768 12 21 12 21z" fill="currentColor"/>
+    </symbol>
+  </svg>
+
   <script>
-    // Show "Signed in as ..." if auth.js has set window.currentUserEmail
+    /* ===== Sidebar behaviour (locked v1) ===== */
     (function(){
-      const link = document.getElementById('account-link');
-      if (!link) return;
-      try {
-        if (window.currentUserEmail) {
-          link.textContent = `Account (${window.currentUserEmail})`;
-        }
-      } catch(e){}
-    })();
-  </script>
+      const body = document.body;
+      const openBtn = document.getElementById('sbOpen');
+      const closeBtn = document.getElementById('sbClose');
+      const panel = document.getElementById('sbPanel');
+      const overlay = document.getElementById('sbOverlay');
 
-  <!-- Events loader -->
-  <script>
-    // ---- Data source ----
-    const EVENTS_JSON_URL = 'events.json'; // if present; otherwise we fallback
-    // A safe fallback so the page never looks empty in case the JSON isn’t there.
-    const FALLBACK_EVENTS = [
+      function openMenu(){
+        panel.hidden=false; overlay.hidden=false;
+        requestAnimationFrame(()=>{
+          panel.classList.add('open'); overlay.classList.add('active');
+          body.classList.add('sb-lock');
+          openBtn.setAttribute('aria-expanded','true');
+        });
+      }
+      function closeMenu(){
+        panel.classList.remove('open'); overlay.classList.remove('active');
+        body.classList.remove('sb-lock');
+        openBtn.setAttribute('aria-expanded','false');
+        setTimeout(()=>{ panel.hidden=true; overlay.hidden=true; }, 260);
+      }
+      openBtn.addEventListener('click', openMenu);
+      closeBtn.addEventListener('click', closeMenu);
+      overlay.addEventListener('click', closeMenu);
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
+    })();
+
+    /* ===== Event rendering with graceful data fallback ===== */
+
+    // 1) Try to use an already-defined dataset (from another file) if present:
+    let EVENTS = Array.isArray(window.SPONDLE_EVENTS) ? window.SPONDLE_EVENTS.slice() : [];
+
+    // 2) If empty, try fetching a common location (if your repo has it):
+    const tryFetch = async () => {
+      if (EVENTS.length) return;
+      try {
+        const res = await fetch('/data/events.json', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json)) EVENTS = json;
+        }
+      } catch(_) {}
+    };
+
+    // 3) If still empty after fetch, use a tiny built-in sample (so the page never looks “empty”)
+    const sample = [
       {
-        id:'e1', title:'The Harbourside Sessions', city:'Bristol', date:'2025-09-12',
-        category:'Live Music', venue:'The Louisiana', price:'Free Entry',
-        image:'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1400&auto=format&fit=crop'
+        id: "evt-001",
+        city: "Bristol", date: "Sep 12", category: "Live Music",
+        title: "The Harbourside Sessions",
+        venue: "The Louisiana", time: "19:30–22:30", price: "Free Entry",
+        image: "https://images.unsplash.com/photo-1517232115160-ff93364542dd?q=80&w=1200&auto=format&fit=crop"
       },
       {
-        id:'e2', title:'Acoustic Sessions at The Fleece', city:'Bristol', date:'2025-09-21',
-        category:'Live Music', venue:'The Fleece', price:'£8',
-        image:'https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=1400&auto=format&fit=crop'
+        id: "evt-002",
+        city: "Bristol", date: "Sep 21", category: "Live Music",
+        title: "Acoustic Sessions at The Fleece",
+        venue: "The Fleece", time: "19:00–22:00", price: "£8",
+        image: "https://images.unsplash.com/photo-1506157786151-b8491531f063?q=80&w=1200&auto=format&fit=crop"
       },
       {
-        id:'e3', title:'Family Science Day', city:'Manchester', date:'2025-09-28',
-        category:'Community', venue:'Science & Industry Museum', price:'£6',
-        image:'https://images.unsplash.com/photo-1551836022-4c4c79ecde51?q=80&w=1400&auto=format&fit=crop'
+        id: "evt-003",
+        city: "Manchester", date: "Sep 28", category: "Community",
+        title: "Family Science Day",
+        venue: "Science and Industry Mus.", time: "10:00–16:00", price: "£6",
+        image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1200&auto=format&fit=crop"
       }
     ];
 
-    const PAGE_SIZE = 12;
-    let allEvents = [];
-    let page = 0;
-
-    const listEl = document.getElementById('events-list');
-    const loadBtn = document.getElementById('load-more');
-
     // Favourites (localStorage)
-    const FAV_KEY = 'spondle_favourites';
-    const getFaves = () => new Set(JSON.parse(localStorage.getItem(FAV_KEY) || '[]'));
-    const setFaves = s => localStorage.setItem(FAV_KEY, JSON.stringify([...s]));
+    const favKey = 'spondle:favs';
+    const getFavs = () => {
+      try { return JSON.parse(localStorage.getItem(favKey)) || []; } catch { return []; }
+    };
+    const setFavs = (arr) => localStorage.setItem(favKey, JSON.stringify(arr));
+    const toggleFav = (id) => {
+      const favs = new Set(getFavs());
+      favs.has(id) ? favs.delete(id) : favs.add(id);
+      setFavs([...favs]);
+    };
+    const isFav = (id) => new Set(getFavs()).has(id);
 
-    function favButton(id){
-      const btn = document.createElement('button');
-      btn.className = 'fav';
-      btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.7-4.35-9.33-7.6C.46 10.96 2 7.5 5.1 7.5c1.86 0 3.13 1.02 3.9 2.15.77-1.13 2.04-2.15 3.9-2.15 3.1 0 4.64 3.46 2.43 5.9C18.7 16.65 12 21 12 21Z"/></svg>`;
-      const faves = getFaves();
-      if (faves.has(id)) btn.classList.add('active');
-      btn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        e.preventDefault();
-        const s = getFaves();
-        if (s.has(id)) s.delete(id); else s.add(id);
-        setFaves(s);
-        btn.classList.toggle('active');
-      });
-      return btn;
-    }
-
-    function card(ev){
-      const el = document.createElement('article');
-      el.className = 'card';
-      el.innerHTML = `
-        <div class="media">
-          <img alt="" loading="lazy" src="${ev.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1400&auto=format&fit=crop'}" />
+    // Render one card
+    const cardHTML = (e) => `
+      <article class="event-card relative overflow-hidden">
+        <img class="event-img" src="${e.image || 'https://picsum.photos/800/450?blur=2'}" alt="" loading="lazy">
+        <button class="fav-btn group" data-fav="${e.id}" aria-label="Add to favourites" title="Favourite">
+          <svg width="22" height="22" class="${isFav(e.id)?'fav-active':''}"><use href="#heart"/></svg>
+        </button>
+        <div class="p-4 sm:p-5">
+          <div class="flex flex-wrap gap-2 text-sm mb-2">
+            <span class="chip px-2.5 py-1 rounded-full">${e.city} • ${e.date}</span>
+            <span class="chip px-2.5 py-1 rounded-full">${e.category}</span>
+          </div>
+          <h3 class="text-xl font-semibold leading-snug">${e.title}</h3>
+          <p class="text-[color:var(--muted)] mt-1">${e.venue} • ${e.time || ''}</p>
+          <div class="mt-3">
+            <span class="chip inline-block px-3 py-1.5 rounded-full">${e.price || ''}</span>
+          </div>
         </div>
-        <div class="body">
-          <div class="meta"><span>${ev.city}</span>•<span>${ev.category}</span>•<span>${formatDate(ev.date)}</span></div>
-          <h3 class="title">${ev.title}</h3>
-          <div class="meta">${ev.venue || ''}</div>
-          <span class="price">${ev.price || 'Free'}</span>
-        </div>
-      `;
-      el.querySelector('.media').appendChild(favButton(ev.id));
-      el.addEventListener('click', ()=> {
-        // Navigate to event page if you have one:
-        window.location.href = `event.html?id=${encodeURIComponent(ev.id)}`;
+      </article>
+    `;
+
+    const listEl = document.getElementById('eventsList');
+    const btnMore = document.getElementById('loadMore');
+    let page = 0, pageSize = 12;
+
+    function renderPage(){
+      const start = page * pageSize;
+      const slice = EVENTS.slice(start, start + pageSize);
+      if (!slice.length) { btnMore.disabled = true; btnMore.classList.add('opacity-50','cursor-not-allowed'); return; }
+      const html = slice.map(cardHTML).join('');
+      listEl.insertAdjacentHTML('beforeend', html);
+
+      // wire hearts
+      slice.forEach(e=>{
+        const b = listEl.querySelector(`[data-fav="${e.id}"]`);
+        if(!b) return;
+        b.addEventListener('click', () => {
+          toggleFav(e.id);
+          b.querySelector('svg').classList.toggle('fav-active', isFav(e.id));
+        });
       });
-      return el;
-    }
 
-    function formatDate(iso){
-      try{
-        const d = new Date(iso);
-        return d.toLocaleDateString(undefined,{day:'2-digit',month:'short'});
-      }catch{return ''}
-    }
-
-    function renderNext(){
-      const start = page * PAGE_SIZE;
-      const slice = allEvents.slice(start, start + PAGE_SIZE);
-      slice.forEach(ev => listEl.appendChild(card(ev)));
       page++;
-      if (page * PAGE_SIZE >= allEvents.length){
-        loadBtn.disabled = true;
-        loadBtn.textContent = 'No more events';
-      } else {
-        loadBtn.disabled = false;
-        loadBtn.textContent = 'Load more';
+      if (page * pageSize >= EVENTS.length) {
+        btnMore.disabled = true; btnMore.classList.add('opacity-50','cursor-not-allowed');
       }
     }
-
-    async function loadData(){
-      try{
-        const res = await fetch(EVENTS_JSON_URL, {cache:'no-store'});
-        if (!res.ok) throw new Error('no json');
-        const data = await res.json();
-        // Expect either {events:[...]} or [...]
-        const arr = Array.isArray(data) ? data : (data.events || []);
-        if (!arr.length) throw new Error('empty');
-        allEvents = normalize(arr);
-      }catch{
-        // Fallback so page isn’t empty
-        allEvents = normalize(FALLBACK_EVENTS);
-      }
-    }
-
-    function normalize(arr){
-      // Coerce into the fields we use
-      return arr.map((e,i)=>({
-        id: e.id || `ev-${i}`,
-        title: e.title || e.name || 'Untitled event',
-        city: e.city || e.location || e.region || 'UK',
-        date: e.date || e.start_date || new Date().toISOString().slice(0,10),
-        category: e.category || e.type || 'General',
-        venue: e.venue || e.place || '',
-        price: e.price || e.cost || 'Free',
-        image: e.image || e.img || e.photo
-      }));
-    }
-
-    loadBtn.addEventListener('click', renderNext);
 
     (async function init(){
-      await loadData();
-      renderNext(); // first 12 (or fewer if fallback)
-    })();
+      await tryFetch();
+      if (!EVENTS.length) EVENTS = sample;
 
-    // Drawer wiring
-    const drawer = document.getElementById('drawer');
-    const backdrop = document.getElementById('drawer-backdrop');
-    document.getElementById('open-drawer').addEventListener('click', ()=>{
-      drawer.classList.add('open'); backdrop.classList.add('show');
-    });
-    document.getElementById('close-drawer').addEventListener('click', ()=>{
-      drawer.classList.remove('open'); backdrop.classList.remove('show');
-    });
-    backdrop.addEventListener('click', ()=>{
-      drawer.classList.remove('open'); backdrop.classList.remove('show');
-    });
+      // Optional: sort newest first by a naive date label if present
+      try{
+        EVENTS.sort((a,b)=>{
+          const toKey = (d)=>Date.parse(d?.fullDate || d?.date || '')||0;
+          return toKey(b)-toKey(a);
+        });
+      }catch(_){}
+
+      renderPage();
+      btnMore.addEventListener('click', renderPage);
+    })();
   </script>
 </body>
 </html>
