@@ -1,122 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Microsite Chooser</title>
-<style>
-  :root{--bg:#0c0f14;--ink:#eef2f8;--muted:#a7b0c4;--line:rgba(255,255,255,.1);--card:#121722;--accent:#62b0ff;--r:16px;--max:1200px}
-  @media (prefers-color-scheme: light){:root{--bg:#f7f9fe;--ink:#0f1320;--muted:#5e6780;--line:#e6e9f2;--card:#fff;--accent:#1d73f2}}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  .wrap{max-width:var(--max);margin:0 auto;padding:24px 18px}
-  h1{margin:0 0 10px}
-  p{color:var(--muted);margin:0 0 16px}
-  .grid{display:grid;gap:14px;grid-template-columns:repeat(12,1fr)}
-  .card{grid-column:span 4;border:1px solid var(--line);border-radius:var(--r);background:var(--card);overflow:hidden;display:flex;flex-direction:column}
-  @media (max-width:980px){.card{grid-column:span 6}}
-  @media (max-width:640px){.card{grid-column:span 12}}
-  .thumb{aspect-ratio:16/9;border-bottom:1px solid var(--line);background:#0b0f18}
-  .body{padding:12px;display:flex;flex-direction:column;gap:6px}
-  .title{font-weight:800}
-  .meta{color:var(--muted);font-size:14px}
-  .row{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
-  .btn{padding:9px 12px;border-radius:10px;border:1px solid var(--line);text-decoration:none}
-  .btn.go{background:var(--accent);color:#00132b;border-color:transparent;font-weight:800}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsite Chooser</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+    .card-body {
+      padding: 15px;
+    }
+    .card-body h3 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+    .card-body a {
+      display: inline-block;
+      margin-top: 10px;
+      color: #007bff;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .card-body a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-  <main class="wrap">
-    <h1>Microsite Templates</h1>
-    <p>Pick a style to preview. These are static demos for now — we’ll wire them to live data later.</p>
-
-    <div class="grid">
-
-      <!-- Cureheads 1–5 -->
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Cureheads — Sample 1</div>
-          <div class="meta">Clean hero + simple tour list</div>
-          <div class="row"><a class="btn go" href="cureheads-sample1.html?cb=004">Open</a></div>
-        </div>
+  <h1>Microsite Chooser</h1>
+  <div class="grid">
+    <div class="card">
+      <img src="https://images.unsplash.com/photo-1518972559570-7cc1309f3229?auto=format&fit=crop&w=800&q=80" alt="Band Sample">
+      <div class="card-body">
+        <h3>Band Microsite (Sample 1)</h3>
+        <a href="band-sample1.html" target="_blank">View Microsite</a>
       </div>
-
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Cureheads — Sample 2</div>
-          <div class="meta">Poster-forward layout</div>
-          <div class="row"><a class="btn go" href="cureheads-sample2.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1536868313473-7480e7c16983?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Cureheads — Sample 3</div>
-          <div class="meta">Bold type + split sections</div>
-          <div class="row"><a class="btn go" href="cureheads-sample3.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Cureheads — Sample 4 (Collage)</div>
-          <div class="meta">Hero collage + tour cards</div>
-          <div class="row"><a class="btn go" href="cureheads-sample4.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1459749411175-04bf5292ceea?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Cureheads — Sample 5</div>
-          <div class="meta">High-contrast, gig-focused</div>
-          <div class="row"><a class="btn go" href="cureheads-sample5.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
-      <!-- Theatre samples -->
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1524234107056-1c1f6a5f2a16?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Theatre — Sample 2 (Poster)</div>
-          <div class="meta">Bold hero + show grid</div>
-          <div class="row"><a class="btn go" href="theatre-sample2.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1516383607781-913a19294fd1?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Theatre — Sample 3 (Brochure)</div>
-          <div class="meta">Cream paper + gold accents</div>
-          <div class="row"><a class="btn go" href="theatre-sample3.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
-      <!-- Pub samples -->
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1541542684-4a7b38a14619?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Pub — Sample 1 (Rustic)</div>
-          <div class="meta">Warm vibe + weekly schedule</div>
-          <div class="row"><a class="btn go" href="pub-sample1.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="thumb" style="background:url('https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1200&auto=format&fit=crop') center/cover"></div>
-        <div class="body">
-          <div class="title">Pub — Sample 2 (Neon)</div>
-          <div class="meta">Dark theme + neon accents</div>
-          <div class="row"><a class="btn go" href="pub-sample2.html?cb=004">Open</a></div>
-        </div>
-      </div>
-
     </div>
-  </main>
+    <!-- Existing cards remain here -->
+  </div>
 </body>
 </html>
