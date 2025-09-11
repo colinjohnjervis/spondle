@@ -7,49 +7,46 @@
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + styles -->
+  <!-- Shared layout + styles (locked) -->
   <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
   <link rel="stylesheet" href="./styles.css?v=3">
+
   <style>
-    .tab {
-      cursor: pointer;
-      padding: 10px 16px;
-      border-bottom: 2px solid transparent;
-      font-weight: 600;
-      color: var(--muted);
-      transition: color 0.2s, border 0.2s;
-    }
-    .tab.active {
-      border-color: var(--brand);
-      color: white;
-    }
+    .tab { cursor: pointer; padding: 10px 16px; border-bottom: 2px solid transparent; font-weight: 600; color: var(--muted); transition: color .2s, border .2s; }
+    .tab.active { border-color: var(--brand); color: #fff; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+    .ev-card { display: grid; grid-template-columns: 88px 1fr; gap: 12px; align-items: center; }
+    .ev-thumb { width: 88px; height: 66px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); background: #111; }
+    .muted { color: var(--muted); }
+    .btn { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,.04); }
+    .grid-tiles { display: grid; gap: 12px; grid-template-columns: repeat(1, minmax(0,1fr)); }
+    @media (min-width: 640px) { .grid-tiles { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (min-width: 1024px) { .grid-tiles { grid-template-columns: repeat(3, minmax(0,1fr)); } }
   </style>
 </head>
 <body>
-  <!-- Sidebar + Header -->
+  <!-- Sidebar + Header (locked) -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
-    <!-- Profile Header -->
+    <!-- Profile header -->
     <section class="panel p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
       <div class="flex items-center gap-4">
-        <img src="https://via.placeholder.com/100" alt="Profile"
-          class="w-20 h-20 rounded-full border border-gray-600 object-cover">
+        <img src="https://via.placeholder.com/100" alt="Profile" class="w-20 h-20 rounded-full border border-gray-600 object-cover">
         <div>
           <h1 class="text-2xl font-bold">Alex Eventlover</h1>
-          <p class="text-[color:var(--muted)]">📍 Bristol, UK</p>
+          <p class="muted">📍 Bristol, UK</p>
         </div>
       </div>
-      <div class="flex gap-4">
+      <div class="flex gap-6">
         <div class="text-center">
-          <p class="text-xl font-bold">12</p>
-          <p class="text-[color:var(--muted)] text-sm">Favourites</p>
+          <p class="text-xl font-bold" id="stat-favs">0</p>
+          <p class="muted text-sm">Favourites</p>
         </div>
         <div class="text-center">
-          <p class="text-xl font-bold">5</p>
-          <p class="text-[color:var(--muted)] text-sm">Following</p>
+          <p class="text-xl font-bold" id="stat-following">0</p>
+          <p class="muted text-sm">Following</p>
         </div>
       </div>
       <button class="px-4 py-2 bg-[color:var(--brand)] text-black rounded-md font-medium">Edit Profile</button>
@@ -69,18 +66,18 @@
       <!-- Overview -->
       <div id="overview" class="tab-content active mt-6 space-y-6">
         <div>
-          <h2 class="text-xl font-semibold mb-3">Upcoming Favourites</h2>
-          <p class="text-[color:var(--muted)]">Events you’re planning to attend soon.</p>
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
-            <div class="panel p-4 text-center">🎵 Gig Example</div>
-            <div class="panel p-4 text-center">🎭 Theatre Example</div>
-            <div class="panel p-4 text-center">🍻 Pub Quiz</div>
+          <h2 class="text-xl font-semibold mb-2">Upcoming Favourites</h2>
+          <p class="muted">Events you’re planning to attend soon.</p>
+          <div id="overview-upcoming" class="grid-tiles mt-3"></div>
+          <div id="overview-upcoming-empty" class="panel p-4 mt-3 hidden">
+            <p class="muted">No upcoming favourites yet. Tap the ♥︎ on events to add them.</p>
           </div>
         </div>
+
         <div>
-          <h2 class="text-xl font-semibold mb-3">Recommendations</h2>
-          <p class="text-[color:var(--muted)]">Based on your favourites and interests.</p>
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+          <h2 class="text-xl font-semibold mb-2">Recommendations</h2>
+          <p class="muted">Based on your favourites and interests.</p>
+          <div class="grid-tiles mt-3">
             <div class="panel p-4 text-center">🎶 Jazz Night</div>
             <div class="panel p-4 text-center">🏹 Archery Class</div>
             <div class="panel p-4 text-center">🍷 Wine Tasting</div>
@@ -91,24 +88,23 @@
       <!-- Favourites -->
       <div id="favourites" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">All Favourites</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div class="panel p-4 text-center">🎤 Karaoke Night</div>
-          <div class="panel p-4 text-center">🎶 Rock Concert</div>
-          <div class="panel p-4 text-center">🎭 Shakespeare Play</div>
+        <div id="favs-grid" class="grid-tiles"></div>
+        <div id="favs-empty" class="panel p-4 mt-3 hidden">
+          <p class="muted">No favourites yet. Find events and tap the ♥︎ to save them.</p>
         </div>
       </div>
 
-      <!-- Lists -->
+      <!-- Lists (placeholder, unchanged) -->
       <div id="lists" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">My Lists</h2>
-        <p class="text-[color:var(--muted)]">Group events into themed lists (e.g. “Summer Plans”).</p>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+        <p class="muted">Group events into themed lists (e.g. “Summer Plans”).</p>
+        <div class="grid-tiles mt-3">
           <div class="panel p-4 text-center">🌞 Summer Plans</div>
           <div class="panel p-4 text-center">🎉 Friends Night Out</div>
         </div>
       </div>
 
-      <!-- Following -->
+      <!-- Following (placeholder, unchanged) -->
       <div id="following" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">You’re Following</h2>
         <ul class="space-y-3">
@@ -117,29 +113,129 @@
         </ul>
       </div>
 
-      <!-- Preferences -->
+      <!-- Preferences (placeholder, unchanged) -->
       <div id="preferences" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">Preferences</h2>
-        <ul class="space-y-3 text-[color:var(--muted)]">
+        <ul class="space-y-3 muted">
           <li>Primary Location: Bristol (10mi)</li>
           <li>Secondary Locations: Bath (25mi)</li>
           <li>Interests: Music, Theatre, Comedy</li>
         </ul>
       </div>
 
-      <!-- Privacy -->
+      <!-- Privacy (placeholder, unchanged) -->
       <div id="privacy" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">Privacy Settings</h2>
-        <p class="text-[color:var(--muted)]">Control visibility of your favourites and data export options.</p>
+        <p class="muted">Control visibility of your favourites and data export options.</p>
       </div>
     </section>
   </main>
 
+  <!-- Shared layout JS (locked) -->
   <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>
-    Layout.init();
 
-    // Tab switching
+  <!-- Your events dataset (already in repo) -->
+  <script src="./events-data.js?v=3"></script>
+
+  <script>
+    // Keep layout highlight (optional)
+    Layout.init({ active: 'profile' });
+
+    // ---- Helpers to read existing data without changing other pages ----
+    function getAllEvents() {
+      // Try a few common globals used earlier
+      return (window.EVENTS || window.sampleEvents || window.events || []);
+    }
+
+    function getFavourites() {
+      // Support either key name to match earlier implementations
+      const raw = localStorage.getItem('spondle_favourites') ?? localStorage.getItem('favourites');
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        // Can be array of ids or object map; normalise to array of ids
+        if (Array.isArray(parsed)) return parsed;
+        if (parsed && typeof parsed === 'object') return Object.keys(parsed).filter(k => parsed[k]);
+        return [];
+      } catch { return []; }
+    }
+
+    function parseDate(d) {
+      // Accept ISO or 'YYYY-MM-DD', fallback to invalid
+      const t = Date.parse(d);
+      return isNaN(t) ? null : new Date(t);
+    }
+
+    // ---- Renderers (non-invasive; no style changes) ----
+    function renderFavourites(allEvents, favIds) {
+      const container = document.getElementById('favs-grid');
+      const empty = document.getElementById('favs-empty');
+      container.innerHTML = '';
+
+      const favEvents = allEvents.filter(ev => favIds.includes(String(ev.id)));
+      document.getElementById('stat-favs').textContent = favEvents.length;
+
+      if (favEvents.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      favEvents.forEach(ev => {
+        const a = document.createElement('a');
+        a.href = ev.url || `./event.html?id=${encodeURIComponent(ev.id)}`;
+        a.className = 'panel p-3';
+        a.innerHTML = `
+          <div class="ev-card">
+            <img class="ev-thumb" src="${ev.image || ev.img || 'https://via.placeholder.com/160x120?text=Event'}" alt="">
+            <div>
+              <div class="font-semibold">${ev.title || ev.name || 'Untitled Event'}</div>
+              <div class="muted text-sm">${ev.venue || ev.location || ''}</div>
+              <div class="muted text-sm">${ev.date || ev.datetime || ''}</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(a);
+      });
+    }
+
+    function renderUpcoming(allEvents, favIds) {
+      const container = document.getElementById('overview-upcoming');
+      const empty = document.getElementById('overview-upcoming-empty');
+      container.innerHTML = '';
+
+      const now = new Date();
+      const favEvents = allEvents.filter(ev => favIds.includes(String(ev.id)));
+      const withDates = favEvents.map(ev => ({ ev, dt: parseDate(ev.date || ev.datetime) }))
+                                 .filter(x => x.dt && x.dt >= now)
+                                 .sort((a,b)=> a.dt - b.dt)
+                                 .slice(0, 6);
+
+      if (withDates.length === 0) {
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      withDates.forEach(({ev}) => {
+        const a = document.createElement('a');
+        a.href = ev.url || `./event.html?id=${encodeURIComponent(ev.id)}`;
+        a.className = 'panel p-3';
+        a.innerHTML = `
+          <div class="ev-card">
+            <img class="ev-thumb" src="${ev.image || ev.img || 'https://via.placeholder.com/160x120?text=Event'}" alt="">
+            <div>
+              <div class="font-semibold">${ev.title || ev.name || 'Untitled Event'}</div>
+              <div class="muted text-sm">${ev.venue || ev.location || ''}</div>
+              <div class="muted text-sm">${ev.date || ev.datetime || ''}</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(a);
+      });
+    }
+
+    // ---- Tabs (unchanged behaviour) ----
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -148,6 +244,17 @@
         document.getElementById(tab.dataset.tab).classList.add('active');
       });
     });
+
+    // ---- Initialise rendering ----
+    (function initProfileData(){
+      const events = getAllEvents();
+      const favIds = getFavourites().map(String);
+
+      renderFavourites(events, favIds);
+      renderUpcoming(events, favIds);
+      // Following count remains placeholder (0) until we wire follows
+      document.getElementById('stat-following').textContent = '0';
+    })();
   </script>
 </body>
 </html>
