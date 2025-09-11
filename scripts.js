@@ -21,6 +21,31 @@
   const saveFavs = (set)=> localStorage.setItem(FAV_KEY, JSON.stringify([...set]));
   const isFav = (id)=> getFavs().has(id);
 
+  // --- Heart UI updater: fills the WHOLE CIRCLE when favourited ---
+  function updateHeartUI(btnEl, on){
+    if (!btnEl) return;
+    // background circle fill (pink/red) when ON, translucent black when OFF
+    if (on) {
+      btnEl.style.background = 'rgba(236, 72, 153, 0.95)'; // Tailwind pink-500 tone
+      btnEl.style.border = '1px solid rgba(236,72,153,0.35)';
+      // white heart glyph when ON (stroke only so it pops on pink)
+      btnEl.innerHTML = `
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+        </svg>`;
+      btnEl.setAttribute('aria-label','Remove from favourites');
+    } else {
+      btnEl.style.background = 'rgba(0,0,0,.40)';
+      btnEl.style.border = '1px solid rgba(255,255,255,.18)';
+      // empty heart when OFF
+      btnEl.innerHTML = `
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+        </svg>`;
+      btnEl.setAttribute('aria-label','Add to favourites');
+    }
+  }
+
   let page = 0;
   const PAGE_SIZE = 12;
 
@@ -47,20 +72,23 @@
       img.src = ev.image; img.alt = ev.title;
       imgWrap.appendChild(img);
 
-      // heart
+      // heart (favourite)
       const heart = document.createElement('button');
-      heart.className = 'absolute top-3 right-3 rounded-full bg-black/40 backdrop-blur p-2 z-[2]';
-      heart.setAttribute('aria-label', isFav(ev.id) ? 'Remove from favourites' : 'Add to favourites');
-      heart.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="${isFav(ev.id)?'#ec4899':'none'}" stroke="#fff" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
+      heart.className = 'absolute top-3 right-3 rounded-full backdrop-blur p-2 z-[2]';
+      heart.style.border = '1px solid rgba(255,255,255,.18)';
+      // initial UI state
+      updateHeartUI(heart, isFav(ev.id));
+      // toggle on click
       heart.addEventListener('click', (e)=>{
         e.preventDefault(); e.stopPropagation();
         const favs = getFavs();
-        if (favs.has(ev.id)) favs.delete(ev.id); else favs.add(ev.id);
+        const onNow = favs.has(ev.id);
+        if (onNow) favs.delete(ev.id); else favs.add(ev.id);
         saveFavs(favs);
-        // update icon
-        heart.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="${favs.has(ev.id)?'#ec4899':'none'}" stroke="#fff" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
+        updateHeartUI(heart, favs.has(ev.id));
       });
       imgWrap.appendChild(heart);
+
       card.appendChild(imgWrap);
 
       // meta
@@ -92,7 +120,7 @@
       const firstNewIndex = start;
       const firstNewCard = grid.children[firstNewIndex];
       if (firstNewCard) {
-        const y = firstNewCard.getBoundingClientRect().top + window.scrollY - 64; // slight offset under sticky bar
+        const y = firstNewCard.getBoundingClientRect().top + window.scrollY - 64; // offset under sticky bar
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
     }
