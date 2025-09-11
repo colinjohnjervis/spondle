@@ -6,8 +6,10 @@
   <title>Spondle — Discover Events</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/spondle-layout.css?v=1">
-  <link rel="stylesheet" href="/styles.css?v=1">
+
+  <!-- Shared layout + page styles -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=2">
+  <link rel="stylesheet" href="./styles.css?v=2"><!-- keep if you already use it -->
 </head>
 <body>
   <!-- Shared sticky header + sidebar -->
@@ -24,25 +26,23 @@
 
     <!-- Results grid -->
     <section>
-      <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-        <!-- Event tiles are rendered here dynamically (unchanged functionality) -->
-      </div>
+      <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
       <div class="flex justify-center mt-6">
         <button id="loadMoreBtn"
           class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
           Load More
         </button>
       </div>
+      <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load events.</p>
     </section>
   </main>
 
-  <!-- Scripts -->
-  <script src="/spondle-layout.js?v=1"></script>
-  <script src="/events-data.js?v=1"></script>
-  <script src="/scripts.js?v=1"></script>
-  <script>
-    // Highlight "Home" in sidebar
-    Layout.init({ active: 'home' });
-  </script>
+  <!-- Shared layout logic -->
+  <script src="./spondle-layout.js?v=2"></script>
+  <script>Layout.init({ active: 'home' });</script>
+
+  <!-- Events data + renderer (RELATIVE paths so they won’t 404) -->
+  <script src="./events-data.js?v=2"></script>
+  <script src="./scripts.js?v=2"></script>
 </body>
 </html>
