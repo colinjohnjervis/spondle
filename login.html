@@ -3,143 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spondle — Sign in</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <style>
-    :root{color-scheme:dark}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:#0b0f14;color:#e7eef6}
-    .wrap{max-width:640px;margin:48px auto;padding:0 16px}
-    h1{font-size:34px;margin:0 0 8px}
-    p{opacity:.85}
-    .card{background:#0f1720;border:1px solid #1c2835;border-radius:14px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
-    input{flex:1;min-width:240px;background:#0b1118;border:1px solid #263344;border-radius:12px;padding:14px 16px;color:#e7eef6;font-size:16px;outline:none}
-    button{background:linear-gradient(135deg,#64fbd2,#6aa8ff);color:#08202a;border:0;border-radius:12px;padding:12px 18px;font-weight:700}
-    .muted{opacity:.7;font-size:14px}
-    .link{color:#91c8ff;text-decoration:none}
-    .hr{height:1px;background:#1b2734;margin:16px 0}
-    .ok{color:#67f6c5}
-    .err{color:#ff9a9a}
-    .debug{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; background:#091017; padding:10px; border-radius:10px; border:1px solid #1a2633; white-space:pre-wrap}
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <title>Login – Spondle</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./styles.css?v=3">
 </head>
 <body>
-  <div class="wrap">
-    <h1>Spondle — Sign in</h1>
-    <p>Enter your email and we’ll send you a secure one-time sign-in link.</p>
+  <div id="layout-root"></div>
 
-    <div class="card">
-      <div class="row">
-        <input id="email" type="email" placeholder="you@email.com" autocomplete="email" />
-        <button id="send">Send magic link</button>
-      </div>
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <section class="panel p-6 md:p-8 max-w-md mx-auto">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-4">Sign in</h1>
+      <form id="login-form" class="space-y-4">
+        <input type="email" id="email" placeholder="Your email"
+          class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
+        <button type="submit"
+          class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
+          Send magic link
+        </button>
+      </form>
+      <p id="message" class="mt-4 text-[color:var(--muted)]"></p>
+    </section>
+  </main>
 
-      <div class="hr"></div>
+  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script>Layout.init({ active: 'login' });</script>
 
-      <div class="row">
-        <button id="signout" style="background:#182534;color:#cfe6ff">Sign out</button>
-        <a class="link" href="index.html">← Back to home</a>
-      </div>
-
-      <div class="hr"></div>
-
-      <div id="status" class="muted">Ready.</div>
-      <div id="debug" class="debug" style="display:none"></div>
-    </div>
-  </div>
-
-  <script>
-    // --- Supabase client (uses your existing auth.js values inlined here for safety) ---
-    // If you prefer centralising, you can remove this and keep auth.js; just keep the same env values.
-    const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const d = (id) => document.getElementById(id);
-    const status = d('status');
-    const debugBox = d('debug');
-
-    function setStatus(msg, cls) {
-      status.className = 'muted ' + (cls || '');
-      status.textContent = msg;
-    }
-    function showDebug(obj) {
-      debugBox.style.display = 'block';
-      try { debugBox.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj,null,2); }
-      catch { debugBox.textContent = String(obj); }
-    }
-
-    async function redirectToAccount() {
-      // Small delay to ensure session is stored
-      await new Promise(r => setTimeout(r, 150));
-      window.location.href = 'account.html';
-    }
-
-    // --- Complete any inbound auth flow on page load ---
-    (async function completeInboundAuth() {
-      try {
-        const url = new URL(window.location.href);
-
-        // 1) Newer PKCE style: ?code=...
-        const code = url.searchParams.get('code');
-        if (code) {
-          setStatus('Completing sign-in (code)…');
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) { setStatus('Sign-in error', 'err'); return showDebug(error); }
-          setStatus('Signed in via code ✓', 'ok');
-          return redirectToAccount();
-        }
-
-        // 2) Legacy hash tokens: #access_token=…&refresh_token=…
-        if (window.location.hash && window.location.hash.includes('access_token')) {
-          setStatus('Completing sign-in (tokens)…');
-          const hash = new URLSearchParams(window.location.hash.substring(1));
-          const access_token = hash.get('access_token');
-          const refresh_token = hash.get('refresh_token');
-          if (access_token && refresh_token) {
-            const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
-            if (error) { setStatus('Sign-in error', 'err'); return showDebug(error); }
-            setStatus('Signed in via tokens ✓', 'ok');
-            return redirectToAccount();
-          }
-        }
-
-        // 3) Already have a session?
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          setStatus(`Already signed in as ${session.user.email}`, 'ok');
-        } else {
-          setStatus('Ready. Enter your email to receive a magic link.');
-        }
-      } catch (e) {
-        setStatus('Init error', 'err');
-        showDebug(e);
-      }
-    })();
-
-    // --- Send magic link ---
-    d('send').addEventListener('click', async () => {
-      const email = d('email').value.trim();
-      if (!email) return setStatus('Please enter an email.', 'err');
-
-      setStatus('Sending magic link…');
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: 'https://spondle.vercel.app/login.html' } // land back here; this page completes the session
-      });
-      if (error) { setStatus('Failed to send link', 'err'); return showDebug(error); }
-      setStatus('Magic link sent. Check your email (open in your browser, not in the mail app view).', 'ok');
-    });
-
-    // --- Sign out ---
-    d('signout').addEventListener('click', async () => {
-      const { error } = await supabase.auth.signOut();
-      if (error) { setStatus('Sign-out error', 'err'); return showDebug(error); }
-      setStatus('Signed out.', 'ok');
-      // clear hash / query in case you refresh
-      history.replaceState({}, document.title, 'login.html');
-    });
-  </script>
+  <script src="./auth.js?v=2"></script>
 </body>
 </html>
