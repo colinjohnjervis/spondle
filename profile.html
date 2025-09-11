@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Profile – Spondle</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Shared layout + styles -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <style>
+    .tab {
+      cursor: pointer;
+      padding: 10px 16px;
+      border-bottom: 2px solid transparent;
+      font-weight: 600;
+      color: var(--muted);
+      transition: color 0.2s, border 0.2s;
+    }
+    .tab.active {
+      border-color: var(--brand);
+      color: white;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+  <!-- Sidebar + Header -->
+  <div id="layout-root"></div>
+
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <!-- Profile Header -->
+    <section class="panel p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div class="flex items-center gap-4">
+        <img src="https://via.placeholder.com/100" alt="Profile"
+          class="w-20 h-20 rounded-full border border-gray-600 object-cover">
+        <div>
+          <h1 class="text-2xl font-bold">Alex Eventlover</h1>
+          <p class="text-[color:var(--muted)]">📍 Bristol, UK</p>
+        </div>
+      </div>
+      <div class="flex gap-4">
+        <div class="text-center">
+          <p class="text-xl font-bold">12</p>
+          <p class="text-[color:var(--muted)] text-sm">Favourites</p>
+        </div>
+        <div class="text-center">
+          <p class="text-xl font-bold">5</p>
+          <p class="text-[color:var(--muted)] text-sm">Following</p>
+        </div>
+      </div>
+      <button class="px-4 py-2 bg-[color:var(--brand)] text-black rounded-md font-medium">Edit Profile</button>
+    </section>
+
+    <!-- Tabs -->
+    <section>
+      <div class="flex gap-4 border-b border-gray-700 overflow-x-auto">
+        <div class="tab active" data-tab="overview">Overview</div>
+        <div class="tab" data-tab="favourites">Favourites</div>
+        <div class="tab" data-tab="lists">Lists</div>
+        <div class="tab" data-tab="following">Following</div>
+        <div class="tab" data-tab="preferences">Preferences</div>
+        <div class="tab" data-tab="privacy">Privacy</div>
+      </div>
+
+      <!-- Overview -->
+      <div id="overview" class="tab-content active mt-6 space-y-6">
+        <div>
+          <h2 class="text-xl font-semibold mb-3">Upcoming Favourites</h2>
+          <p class="text-[color:var(--muted)]">Events you’re planning to attend soon.</p>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+            <div class="panel p-4 text-center">🎵 Gig Example</div>
+            <div class="panel p-4 text-center">🎭 Theatre Example</div>
+            <div class="panel p-4 text-center">🍻 Pub Quiz</div>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold mb-3">Recommendations</h2>
+          <p class="text-[color:var(--muted)]">Based on your favourites and interests.</p>
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+            <div class="panel p-4 text-center">🎶 Jazz Night</div>
+            <div class="panel p-4 text-center">🏹 Archery Class</div>
+            <div class="panel p-4 text-center">🍷 Wine Tasting</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Favourites -->
+      <div id="favourites" class="tab-content mt-6">
+        <h2 class="text-xl font-semibold mb-3">All Favourites</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="panel p-4 text-center">🎤 Karaoke Night</div>
+          <div class="panel p-4 text-center">🎶 Rock Concert</div>
+          <div class="panel p-4 text-center">🎭 Shakespeare Play</div>
+        </div>
+      </div>
+
+      <!-- Lists -->
+      <div id="lists" class="tab-content mt-6">
+        <h2 class="text-xl font-semibold mb-3">My Lists</h2>
+        <p class="text-[color:var(--muted)]">Group events into themed lists (e.g. “Summer Plans”).</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
+          <div class="panel p-4 text-center">🌞 Summer Plans</div>
+          <div class="panel p-4 text-center">🎉 Friends Night Out</div>
+        </div>
+      </div>
+
+      <!-- Following -->
+      <div id="following" class="tab-content mt-6">
+        <h2 class="text-xl font-semibold mb-3">You’re Following</h2>
+        <ul class="space-y-3">
+          <li class="panel p-4 flex justify-between">The Globe Pub <button class="text-red-400">Unfollow</button></li>
+          <li class="panel p-4 flex justify-between">Jazz Club <button class="text-red-400">Unfollow</button></li>
+        </ul>
+      </div>
+
+      <!-- Preferences -->
+      <div id="preferences" class="tab-content mt-6">
+        <h2 class="text-xl font-semibold mb-3">Preferences</h2>
+        <ul class="space-y-3 text-[color:var(--muted)]">
+          <li>Primary Location: Bristol (10mi)</li>
+          <li>Secondary Locations: Bath (25mi)</li>
+          <li>Interests: Music, Theatre, Comedy</li>
+        </ul>
+      </div>
+
+      <!-- Privacy -->
+      <div id="privacy" class="tab-content mt-6">
+        <h2 class="text-xl font-semibold mb-3">Privacy Settings</h2>
+        <p class="text-[color:var(--muted)]">Control visibility of your favourites and data export options.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script>
+    Layout.init();
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
