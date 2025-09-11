@@ -33,6 +33,7 @@ const Layout = (function(){
           ${navLink('/events.html','events','Events')}
           ${navLink('/organisers.html','organisers','Organisers')}
           ${navLink('/favourites.html','favourites','Favourites')}
+          ${navLink('/profile.html','profile','My Profile')}
           ${navLink('/login.html','login','Sign in')}
         </nav>
       </aside>
