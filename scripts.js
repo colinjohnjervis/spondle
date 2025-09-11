@@ -21,23 +21,27 @@
   const saveFavs = (set)=> localStorage.setItem(FAV_KEY, JSON.stringify([...set]));
   const isFav = (id)=> getFavs().has(id);
 
-  // --- Heart UI updater: fills the WHOLE CIRCLE when favourited ---
+  // Force the whole circular background ON when favourited
   function updateHeartUI(btnEl, on){
     if (!btnEl) return;
-    // background circle fill (pink/red) when ON, translucent black when OFF
+
+    // lock base shape
+    btnEl.className = 'absolute top-3 right-3 rounded-full p-2 z-[2]';
+    btnEl.style.setProperty('backdrop-filter','blur(6px)','important');
+
     if (on) {
-      btnEl.style.background = 'rgba(236, 72, 153, 0.95)'; // Tailwind pink-500 tone
-      btnEl.style.border = '1px solid rgba(236,72,153,0.35)';
-      // white heart glyph when ON (stroke only so it pops on pink)
+      // solid pink circle + subtle border — use !important to beat any CSS
+      btnEl.style.setProperty('background','rgba(236,72,153,0.95)','important');
+      btnEl.style.setProperty('border','1px solid rgba(236,72,153,0.35)','important');
       btnEl.innerHTML = `
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
           <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
         </svg>`;
       btnEl.setAttribute('aria-label','Remove from favourites');
     } else {
-      btnEl.style.background = 'rgba(0,0,0,.40)';
-      btnEl.style.border = '1px solid rgba(255,255,255,.18)';
-      // empty heart when OFF
+      // translucent dark circle + white border
+      btnEl.style.setProperty('background','rgba(0,0,0,0.40)','important');
+      btnEl.style.setProperty('border','1px solid rgba(255,255,255,0.18)','important');
       btnEl.innerHTML = `
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
           <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
@@ -72,11 +76,9 @@
       img.src = ev.image; img.alt = ev.title;
       imgWrap.appendChild(img);
 
-      // heart (favourite)
+      // heart button
       const heart = document.createElement('button');
-      heart.className = 'absolute top-3 right-3 rounded-full backdrop-blur p-2 z-[2]';
-      heart.style.border = '1px solid rgba(255,255,255,.18)';
-      // initial UI state
+      // initial UI
       updateHeartUI(heart, isFav(ev.id));
       // toggle on click
       heart.addEventListener('click', (e)=>{
@@ -115,12 +117,12 @@
       btn.classList.remove('hidden');
     }
 
-    // Smoothly bring the first new card to the top of the viewport (your preferred behavior)
+    // Smoothly bring the first new card to the top of the viewport
     if (slice.length > 0) {
       const firstNewIndex = start;
       const firstNewCard = grid.children[firstNewIndex];
       if (firstNewCard) {
-        const y = firstNewCard.getBoundingClientRect().top + window.scrollY - 64; // offset under sticky bar
+        const y = firstNewCard.getBoundingClientRect().top + window.scrollY - 64;
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
     }
