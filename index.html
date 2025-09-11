@@ -9,14 +9,14 @@
 
   <!-- Shared layout + page styles -->
   <link rel="stylesheet" href="./spondle-layout.css?v=2">
-  <link rel="stylesheet" href="./styles.css?v=2"><!-- keep if you already use it -->
+  <link rel="stylesheet" href="./styles.css?v=2">
+  <link rel="stylesheet" href="./hearts.css?v=1"><!-- NEW -->
 </head>
 <body>
   <!-- Shared sticky header + sidebar -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
-    <!-- Hero / Intro -->
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Discover Events Near You</h1>
       <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
@@ -24,7 +24,6 @@
       </p>
     </section>
 
-    <!-- Results grid -->
     <section>
       <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
       <div class="flex justify-center mt-6">
@@ -37,12 +36,12 @@
     </section>
   </main>
 
-  <!-- Shared layout logic -->
+  <!-- Shared layout + page scripts -->
   <script src="./spondle-layout.js?v=2"></script>
   <script>Layout.init({ active: 'home' });</script>
 
-  <!-- Events data + renderer (RELATIVE paths so they won’t 404) -->
+  <!-- Events data + renderer -->
   <script src="./events-data.js?v=2"></script>
-  <script src="./scripts.js?v=2"></script>
+  <script src="./scripts.js?v=heart3"></script>
 </body>
 </html>
