@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Band Microsite Sample</title>
+  <meta name="description" content="Sample artist microsite template with tour dates, music, merch, and mailing list.">
+  <style>
+    :root{
+      --bg:#0b0b0c;
+      --fg:#f5f7fb;
+      --muted:#b7bcc8;
+      --accent:#7cc4ff;
+      --accent-2:#ffce73;
+      --card:#121316;
+      --card-2:#16171b;
+      --ring:rgba(124,196,255,.35);
+      --radius:14px;
+      --gap:20px;
+      --max:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:var(--max);margin:0 auto;padding:0 20px}
+    /* Header */
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter: saturate(120%) blur(8px);
+      background:linear-gradient(to bottom, rgba(11,11,12,.8), rgba(11,11,12,.4));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;height:64px;
+    }
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.4px}
+    .brand img{width:36px;height:36px;border-radius:8px;object-fit:cover}
+    .nav-links{display:flex;gap:18px;align-items:center}
+    .nav-links a{color:var(--muted);font-weight:600;font-size:.95rem;opacity:.9}
+    .nav-links a:hover{color:var(--fg)}
+    .cta{
+      padding:10px 14px;border-radius:999px;background:var(--accent);
+      color:#001725;font-weight:700;box-shadow:0 0 0 0 var(--ring);
+      transition:.2s transform ease, .2s box-shadow ease
+    }
+    .cta:hover{transform:translateY(-1px);box-shadow:0 0 0 6px var(--ring)}
+    /* Hero */
+    .hero{
+      position:relative;isolation:isolate;min-height:62vh;display:grid;place-items:center;
+      background:
+        linear-gradient(180deg, rgba(7,8,10,.6), rgba(7,8,10,.9)),
+        url("https://images.unsplash.com/photo-1518972559570-7cc1309f3229?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
+    }
+    .hero-inner{padding:80px 0;text-align:center}
+    .kicker{color:var(--accent);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:.8rem}
+    .h1{font-size:clamp(2rem,4vw,3.2rem);line-height:1.12;margin:.5rem 0 1rem}
+    .h1 span{background:linear-gradient(90deg,#fff,#cfe9ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+    .btn{
+      padding:12px 16px;border-radius:12px;background:var(--card);
+      border:1px solid rgba(255,255,255,.08);color:var(--fg);font-weight:700
+    }
+    .btn:hover{border-color:rgba(255,255,255,.18)}
+    .btn.primary{background:var(--accent);color:#041a2a;border:none}
+    .sub{color:var(--muted);max-width:720px;margin:10px auto 0;font-size:1.05rem}
+    section{padding:56px 0;border-top:1px solid rgba(255,255,255,.06)}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:18px}
+    .section-title{font-size:1.4rem}
+    .section-desc{color:var(--muted);font-size:.95rem}
+    /* Dates */
+    .dates{display:grid;gap:12px}
+    .date-card{
+      background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);
+      padding:16px;display:grid;grid-template-columns:100px 1fr auto;gap:14px;align-items:center
+    }
+    .date-day{text-align:center;background:var(--card-2);border:1px solid rgba(255,255,255,.06);
+      border-radius:12px;padding:10px 8px}
+    .date-day .big{display:block;font-weight:800;font-size:1.6rem}
+    .date-where{color:var(--muted);font-size:.95rem}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:#1a1d22;border:1px solid rgba(255,255,255,.08);font-weight:700;white-space:nowrap}
+    .pill.buy{background:var(--accent);color:#021625;border:none}
+    /* Music */
+    .music-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+    .embed{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px}
+    .embed iframe{width:100%;height:152px;border:0;border-radius:10px;background:#000}
+    .embed .t{font-weight:700;margin:.5rem 0 .2rem}
+    .embed .d{color:var(--muted);font-size:.95rem}
+    /* Mailing list */
+    .mail{display:grid;gap:12px;background:linear-gradient(180deg,#111319,#0d0f14);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:18px}
+    .mail form{display:flex;gap:10px;flex-wrap:wrap}
+    .mail input{flex:1;min-width:220px;background:#0c0e12;color:var(--fg);padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
+    .mail button{padding:12px 16px;border-radius:10px;font-weight:800;background:var(--accent-2);color:#2a1b00;border:none}
+    /* Merch */
+    .merch-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);overflow:hidden}
+    .card img{width:100%;height:200px;object-fit:cover;background:#0e1014}
+    .card .c-body{padding:14px}
+    .price{color:var(--muted)}
+    footer{padding:38px 0;border-top:1px solid rgba(255,255,255,.06);color:var(--muted)}
+    .socials{display:flex;gap:12px;flex-wrap:wrap}
+    .socials a{padding:8px 12px;border:1px solid rgba(255,255,255,.1);border-radius:999px}
+    @media (max-width:640px){
+      .date-card{grid-template-columns:80px 1fr}
+      .date-card .pill{grid-column:1 / -1;justify-self:start}
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="container">
+    <nav class="nav">
+      <a class="brand" href="#home">
+        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=200&q=80" alt="Logo">
+        <span>Sample Band</span>
+      </a>
+      <div class="nav-links">
+        <a href="#tour">Tour</a>
+        <a href="#music">Music</a>
+        <a href="#mailing-list">Mailing List</a>
+        <a href="#merch">Shop</a>
+        <a class="cta" href="#tour">Get Tickets</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<section id="home" class="hero">
+  <div class="hero-inner container">
+    <div class="kicker">New Album Out Now</div>
+    <h1 class="h1"><span>“Across The Skyline”</span></h1>
+    <p class="sub">Stream the album, grab tickets for the upcoming tour, and join our mailing list.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="#tour">See Tour Dates</a>
+      <a class="btn" href="#music">Listen</a>
+      <a class="btn" href="#merch">Shop Merch</a>
+    </div>
+  </div>
+</section>
+
+<main>
+<section id="tour">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title">Tour Dates</h2>
+      <div class="section-desc">Catch us live around the UK & Europe.</div>
+    </div>
+    <div class="dates">
+      <article class="date-card">
+        <div class="date-day"><span class="big">12</span> Oct</div>
+        <div><div style="font-weight:800">O2 Academy</div><div class="date-where">Bristol, UK</div></div>
+        <a class="pill buy" href="#">Tickets</a>
+      </article>
+      <article class="date-card">
+        <div class="date-day"><span class="big">18</span> Oct</div>
+        <div><div style="font-weight:800">King Tut's</div><div class="date-where">Glasgow, UK</div></div>
+        <a class="pill buy" href="#">Tickets</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="music">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title">Music</h2>
+      <div class="section-desc">Listen to the new record.</div>
+    </div>
+    <div class="music-grid">
+      <div class="embed">
+        <iframe src="https://open.spotify.com/embed/track/4cOdK2wGLETKBW3PvgPWqT?utm_source=generator"></iframe>
+        <div class="t">Skyline</div><div class="d">Single · 3:44</div>
+      </div>
+      <div class="embed">
+        <iframe src="https://open.spotify.com/embed/album/7gsWAHLeT0w7es6FofOXk1"></iframe>
+        <div class="t">Across The Skyline</div><div class="d">Album · 10 tracks</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="mailing-list">
+  <div class="container">
+    <div class="section-head"><h2 class="section-title">Join the Mailing List</h2></div>
+    <div class="mail">
+      <form onsubmit="event.preventDefault(); alert('Thanks for joining!');">
+        <input type="email" placeholder="your@email.com" required />
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section id="merch">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="section-title">Shop Merch</h2>
+    </div>
+    <div class="merch-grid">
+      <a class="card" href="#">
+        <img src="https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=80" alt="Shirt">
+        <div class="c-body"><div style="font-weight:800">Tour Tee</div><div class="price">£25.00</div></div>
+      </a>
+      <a class="card" href="#">
+        <img src="https://images.unsplash.com/photo-1556306535-abccb078632e?auto=format&fit=crop&w=1200&q=80" alt="Vinyl">
+        <div class="c-body"><div style="font-weight:800">Vinyl</div><div class="price">£20.00</div></div>
+      </a>
+      <a class="card" href="#">
+        <img src="https://images.unsplash.com/photo-1512203492609-8f9a9a49fdb4?auto=format&fit=crop&w=1200&q=80" alt="Hoodie">
+        <div class="c-body"><div style="font-weight:800">Hoodie</div><div class="price">£40.00</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div>© <span id="y"></span> Sample Band</div>
+    <div class="socials">
+      <a href="#">Instagram</a><a href="#">YouTube</a><a href="#">TikTok</a>
+    </div>
+  </div>
+</footer>
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
