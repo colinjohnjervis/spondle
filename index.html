@@ -3,257 +3,46 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spondle — What’s on near you</title>
+  <title>Spondle — Discover Events</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{
-      --bg:#0b0f14;--panel:#111620;--card:#121a24;--ink:#e7edf3;--muted:#a7b2bf;
-      --border:rgba(255,255,255,.08);--overlay:rgba(0,0,0,.45);--brand:#39d353;
-      --shadow:0 18px 50px rgba(0,0,0,.45);--speed:.28s;
-    }
-    html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-    .glass{background:linear-gradient(180deg, rgba(10,12,16,.9), rgba(10,12,16,.55) 70%, rgba(10,12,16,0));
-           border-bottom:1px solid var(--border);backdrop-filter: blur(6px);}
-
-    /* Sidebar (LOCKED) */
-    .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px}
-    .brand{display:flex;align-items:center;gap:10px}
-    .brand-dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
-    .burger{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid var(--border)}
-    .burger-lines,.burger-lines::before,.burger-lines::after{content:"";display:block;width:20px;height:2px;border-radius:2px;background:var(--ink);position:relative}
-    .burger-lines::before{position:absolute;transform:translateY(-6px)}
-    .burger-lines::after{position:absolute;transform:translateY(6px)}
-
-    #sbOverlay{position:fixed;inset:0;background:var(--overlay);opacity:0;pointer-events:none;transition:opacity var(--speed) ease;z-index:65}
-    #sbPanel{position:fixed;top:0;left:0;height:100dvh;width:min(86vw,420px);background:#151a21;color:var(--ink);
-             box-shadow:var(--shadow);transform:translateX(-100%);transition:transform var(--speed) cubic-bezier(.2,.7,.2,1);z-index:70;display:flex;flex-direction:column;border-right:1px solid var(--border)}
-    body.sb-open #sbOverlay{opacity:1;pointer-events:auto}
-    body.sb-open #sbPanel{transform:translateX(0)}
-    body.sb-open{overflow:hidden}
-
-    .sb-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
-    .sb-title{font-weight:700;letter-spacing:.3px}
-    .sb-close{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--ink)}
-    .sb-list{padding:10px 10px 6px 10px}
-    .sb-item{display:block;padding:14px 12px;margin:4px 0;border-radius:12px;color:var(--ink);text-decoration:none}
-    .sb-item:hover{background:rgba(255,255,255,.05)}
-    .sb-section{margin:8px 10px 0 10px;padding:10px 12px;font-size:.9rem;color:var(--muted);border-top:1px solid var(--border)}
-    .sb-foot{margin-top:auto;padding:16px 20px;color:var(--muted);border-top:1px solid var(--border);font-size:.95rem}
-
-    /* Cards (LOCKED style) */
-    .event-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.35);position:relative}
-    .event-img{aspect-ratio:16/9;object-fit:cover;width:100%}
-    .chip{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted)}
-    .heart{transition:transform .1s ease; position:relative; z-index:2;}
-    .heart:active{transform:scale(.9)}
-
-    /* Invisible stretched link to make the whole tile clickable */
-    .stretched-link{position:absolute; inset:0; z-index:1; text-decoration:none; color:inherit; background:transparent;}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  </style>
+  <link rel="stylesheet" href="/spondle-layout.css?v=1">
+  <link rel="stylesheet" href="/styles.css?v=1">
 </head>
 <body>
+  <!-- Shared sticky header + sidebar -->
+  <div id="layout-root"></div>
 
-  <!-- Top bar -->
-  <header class="topbar glass">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      <span class="font-semibold tracking-wide">Spondle</span>
-    </div>
-    <button id="sbOpen" class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sbPanel">
-      <span class="burger-lines" aria-hidden="true"></span>
-    </button>
-  </header>
-
-  <!-- Overlay + Panel -->
-  <div id="sbOverlay" aria-hidden="true"></div>
-  <aside id="sbPanel" role="dialog" aria-modal="true" aria-label="Menu">
-    <div class="sb-head">
-      <div class="sb-title">Menu</div>
-      <button id="sbClose" class="sb-close" aria-label="Close menu">✕</button>
-    </div>
-    <nav class="sb-list">
-      <a class="sb-item" href="/events.html">Explore events</a>
-      <a class="sb-item" href="/favourites.html">Favourites</a>
-      <a class="sb-item" href="/organisers.html">For organisers</a>
-      <a class="sb-item" href="/login.html">Sign in / Account</a>
-      <div class="sb-section">Quick links</div>
-      <a class="sb-item" href="#popular">Popular right now</a>
-      <a class="sb-item" href="#latest">Latest events</a>
-    </nav>
-    <div class="sb-foot">© 2025 Spondle</div>
-  </aside>
-
-  <!-- Hero -->
-  <section class="px-4 sm:px-6 lg:px-8 mt-4">
-    <div class="rounded-2xl border border-[color:var(--border)] bg-[color:var(--panel)] p-6 md:p-8 shadow-xl">
-      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Discover what’s on near you</h1>
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <!-- Hero / Intro -->
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Discover Events Near You</h1>
       <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
-        Gigs, comedy, food markets, film nights, community events and more — across the UK.
+        Browse local gigs, theatre shows, pub nights, and more. Save favourites, share events, and explore everything happening nearby.
       </p>
-      <div class="mt-6 flex gap-3">
-        <a href="/events.html" class="px-4 py-2 rounded-xl bg-gradient-to-r from-sky-500/30 to-blue-500/30 border border-[color:var(--border)]">
-          Search events
-        </a>
-        <a href="/organisers.html" class="px-4 py-2 rounded-xl border border-[color:var(--border)]">
-          List your event
-        </a>
+    </section>
+
+    <!-- Results grid -->
+    <section>
+      <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+        <!-- Event tiles are rendered here dynamically (unchanged functionality) -->
       </div>
-    </div>
-  </section>
-
-  <!-- Latest events -->
-  <section id="latest" class="px-4 sm:px-6 lg:px-8 pt-8 pb-20">
-    <h2 class="text-3xl font-bold mb-4">Latest events</h2>
-    <div id="eventsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-    <div class="flex justify-center mt-6">
-      <button id="loadMoreBtn" class="px-5 py-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--panel)]">
-        Load more
-      </button>
-    </div>
-  </section>
-
-  <footer class="px-4 sm:px-6 lg:px-8 pb-10 text-[color:var(--muted)]">© 2025 Spondle</footer>
-
-  <!-- Card template -->
-  <template id="eventCardTpl">
-    <article class="event-card">
-      <!-- Invisible full-card link (set href in JS) -->
-      <a class="stretched-link"><span class="sr-only">View details</span></a>
-
-      <div class="relative h-40">
-        <img class="event-img" />
-        <button class="absolute top-3 right-3 rounded-full bg-black/40 backdrop-blur p-2 heart" aria-label="Add to favourites">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-          </svg>
+      <div class="flex justify-center mt-6">
+        <button id="loadMoreBtn"
+          class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
+          Load More
         </button>
       </div>
-      <div class="p-4">
-        <div class="flex flex-wrap gap-2 text-xs text-white/70 mb-2">
-          <span class="chip px-2.5 py-1 rounded-full"></span>
-          <span>•</span>
-          <span class="date"></span>
-        </div>
-        <h3 class="text-lg font-bold title mb-1"></h3>
-        <p class="text-white/70 venue"></p>
-      </div>
-    </article>
-  </template>
+    </section>
+  </main>
 
+  <!-- Scripts -->
+  <script src="/spondle-layout.js?v=1"></script>
+  <script src="/events-data.js?v=1"></script>
+  <script src="/scripts.js?v=1"></script>
   <script>
-    /* Sidebar JS (LOCKED) */
-    (function(){
-      const body = document.body;
-      const openBtn = document.getElementById('sbOpen');
-      const closeBtn = document.getElementById('sbClose');
-      const overlay = document.getElementById('sbOverlay');
-
-      function openMenu(){ body.classList.add('sb-open'); openBtn.setAttribute('aria-expanded','true'); }
-      function closeMenu(){ body.classList.remove('sb-open'); openBtn.setAttribute('aria-expanded','false'); }
-
-      openBtn.addEventListener('click', openMenu);
-      closeBtn.addEventListener('click', closeMenu);
-      overlay.addEventListener('click', closeMenu);
-      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
-    })();
-
-    /* Events + pagination with smooth scroll (LOCKED) */
-    const PAGE_SIZE = 12;
-    let offset = 0;
-
-    const eventsData = [
-      {id:"ev-001",title:"The Harbourside Sessions",date:"Sep 12",city:"Bristol",category:"Live Music",venue:"The Louisiana",priceLabel:"Free Entry",image:"https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=1600&auto=format&fit=crop"},
-      {id:"ev-002",title:"Acoustic Sessions at The Fleece",date:"Sep 21",city:"Bristol",category:"Live Music",venue:"The Fleece",priceLabel:"£8",image:"https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=1600&auto=format&fit=crop"},
-      {id:"ev-003",title:"Family Science Day",date:"Sep 28",city:"Manchester",category:"Community",venue:"Science and Industry Mus.",priceLabel:"£6",image:"https://images.unsplash.com/photo-1551836022-4c4c79ecde51?q=80&w=1600&auto=format&fit=crop"}
-    ];
-
-    (()=>{
-      const pics=[
-        "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?q=80&w=1600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?q=80&w=1600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=1600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1600&auto=format&fit=crop",
-        "https://images.unsplash.com/photo-1520975922203-bc1e37a1c9c5?q=80&w=1600&auto=format&fit=crop"
-      ];
-      const cats=["Comedy","Food & Drink","Film","Community","Theatre","Live Music"];
-      const cities=["Bristol","Leeds","Cardiff","Manchester","Edinburgh","Liverpool","Glasgow","London"];
-      const start=eventsData.length+1, target=36;
-      for(let i=start;i<=target;i++){
-        const img=pics[i%pics.length], cat=cats[i%cats.length], city=cities[i%cities.length];
-        const day=((i%28)+1).toString().padStart(2,'0');
-        eventsData.push({
-          id:`ev-${i.toString().padStart(3,'0')}`,
-          title:`${cat} Night #${i}`,
-          date:`Oct ${day}`, city, category:cat, venue:`${city} Arts Hub`,
-          priceLabel:(i%3===0)?"Free Entry":`£${(i%5+5)}`, image:img
-        });
-      }
-    })();
-
-    const FAV_KEY='sp_favs_v1';
-    const getFavs=()=>new Set(JSON.parse(localStorage.getItem(FAV_KEY)||'[]'));
-    const saveFavs=(set)=>localStorage.setItem(FAV_KEY,JSON.stringify([...set]));
-
-    function renderNext({autoScroll=false} = {}){
-      const grid=document.getElementById('eventsGrid');
-      const tpl=document.getElementById('eventCardTpl');
-      const startChildCount = grid.children.length;
-
-      const slice=eventsData.slice(offset, offset+PAGE_SIZE);
-      slice.forEach(ev=>{
-        const node=tpl.content.cloneNode(true);
-        const img=node.querySelector('img');
-        const chip=node.querySelector('.chip'); chip.textContent=ev.category;
-        const date=node.querySelector('.date'); date.textContent=`${ev.city} • ${ev.date}`;
-        node.querySelector('.title').textContent=ev.title;
-        node.querySelector('.venue').textContent=ev.venue;
-
-        // Set full-tile invisible link target
-        const link=node.querySelector('.stretched-link');
-        link.href=`event.html?id=${encodeURIComponent(ev.id)}`;
-        link.setAttribute('aria-label', `View details: ${ev.title}`);
-
-        img.src=ev.image; img.alt=ev.title;
-
-        // Heart behaviour (unchanged)
-        const heart=node.querySelector('.heart');
-        const favs=getFavs();
-        if (favs.has(ev.id)) heart.style.background="rgba(236,72,153,.9)";
-        heart.addEventListener('click',(e)=>{
-          e.stopPropagation();
-          e.preventDefault();
-          const set=getFavs();
-          if(set.has(ev.id)){ set.delete(ev.id); heart.style.background="rgba(0,0,0,.4)"; }
-          else{ set.add(ev.id); heart.style.background="rgba(236,72,153,.9)"; }
-          saveFavs(set);
-        });
-
-        grid.appendChild(node);
-      });
-
-      offset+=slice.length;
-      const btn=document.getElementById('loadMoreBtn');
-      if(offset>=eventsData.length){
-        btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed');
-      }
-
-      // Smooth scroll to first newly-added card (account for sticky header)
-      if (autoScroll && slice.length) {
-        const firstNew = grid.children[startChildCount];
-        if (firstNew) {
-          const header = document.querySelector('.topbar');
-          const headerH = header ? header.getBoundingClientRect().height : 0;
-          const top = firstNew.getBoundingClientRect().top + window.pageYOffset - headerH - 8;
-          window.scrollTo({ top, behavior: 'smooth' });
-        }
-      }
-    }
-
-    document.getElementById('loadMoreBtn').addEventListener('click', ()=>renderNext({autoScroll:true}));
-    renderNext();
+    // Highlight "Home" in sidebar
+    Layout.init({ active: 'home' });
   </script>
 </body>
 </html>
