@@ -1,0 +1,19 @@
+/* Ensures the whole circular button fills when favourited */
+.heart-btn{
+  position:absolute; top:0.75rem; right:0.75rem; z-index:2;
+  padding:0.5rem; border-radius:9999px;
+  backdrop-filter: blur(6px);
+  background: rgba(0,0,0,.40);
+  border: 1px solid rgba(255,255,255,.18);
+}
+.heart-btn svg{ display:block }
+
+/* ON state: solid pink circle with white heart line */
+.heart-btn.fav-on{
+  background: rgba(236,72,153,0.95) !important;               /* pink-500 */
+  border: 1px solid rgba(236,72,153,0.35) !important;
+}
+.heart-btn.fav-on svg path{
+  stroke: #ffffff !important;
+  fill: none !important;
+}
