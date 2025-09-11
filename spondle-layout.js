@@ -1,6 +1,4 @@
-// Shared sticky header + left drawer sidebar
-// Injects layout into #layout-root and wires up interactions
-
+// Shared fixed header + left drawer sidebar
 const Layout = (function(){
   function headerHTML(){
     return `
@@ -40,10 +38,7 @@ const Layout = (function(){
       </aside>
     `;
   }
-
-  function navLink(href, key, label){
-    return `<a href="${href}" data-key="${key}">${label}</a>`;
-  }
+  function navLink(href, key, label){ return `<a href="${href}" data-key="${key}">${label}</a>`; }
 
   function mount(activeKey){
     const root = document.getElementById('layout-root');
@@ -55,7 +50,6 @@ const Layout = (function(){
     const overlay= document.getElementById('sp-overlay');
     const nav    = document.getElementById('sp-nav');
 
-    // active highlighting
     if (activeKey){
       [...nav.querySelectorAll('a')].forEach(a=>{
         a.classList.toggle('is-active', a.dataset.key === activeKey);
@@ -68,20 +62,9 @@ const Layout = (function(){
     burger.addEventListener('click', open);
     close.addEventListener('click', shut);
     overlay.addEventListener('click', shut);
-
-    // Escape closes
-    window.addEventListener('keydown', (e)=>{
-      if (e.key === 'Escape') shut();
-    }, { passive: true });
-
-    // Close when navigating a link in the drawer (mobile-friendly)
-    nav.addEventListener('click', (e)=>{
-      const a = e.target.closest('a');
-      if (a) shut();
-    });
+    window.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') shut(); }, { passive:true });
+    nav.addEventListener('click', (e)=>{ const a=e.target.closest('a'); if (a) shut(); });
   }
 
-  return {
-    init: ({active}={}) => mount(active)
-  };
+  return { init: ({active}={}) => mount(active) };
 })();
