@@ -1,190 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Favourites – Spondle</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <link rel="stylesheet" href="app.v15.css" />
-  <link rel="stylesheet" href="app.v17.css" />
-
-  <style>
-    :root { --header-offset: 72px; }
-
-    .grid { display:grid; gap:14px; }
-    @media (min-width:680px){ .grid{ grid-template-columns:1fr 1fr; } }
-    @media (min-width:980px){ .grid{ grid-template-columns:1fr 1fr 1fr; } }
-
-    .heart { font-size:18px; line-height:1; }
-    .heart.is-saved { color:var(--accent,#7de1c3); }
-
-    .card { scroll-margin-top: var(--header-offset); }
-
-    /* Thumbnail styling (matches homepage & events) */
-    .thumb {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      background: linear-gradient(135deg, #1a2230, #0d1220);
-      border: 1px solid rgba(255,255,255,0.06);
-      margin-bottom: 10px;
-    }
-    .thumb::before { content:""; display:block; padding-top:56.25%; }
-    .thumb-img {
-      position: absolute; inset:0;
-      background-position:center;
-      background-size:cover;
-      filter: saturate(1.05) contrast(1.02);
-    }
-    .thumb-gradient {
-      position: absolute; inset:0;
-      background:
-        radial-gradient(60% 80% at 20% 20%, rgba(94,241,186,0.25) 0%, rgba(94,241,186,0) 60%),
-        radial-gradient(70% 80% at 80% 20%, rgba(119,194,255,0.25) 0%, rgba(119,194,255,0) 60%),
-        linear-gradient(180deg, rgba(0,0,0,0.00) 40%, rgba(0,0,0,0.25) 100%);
-    }
-    .thumb .badge {
-      position:absolute; left:10px; bottom:10px;
-      background:rgba(14,18,23,0.7);
-      border:1px solid rgba(255,255,255,0.08);
-      padding:6px 10px; border-radius:999px; font-size:12px;
-      backdrop-filter:blur(4px);
-    }
-    .thumb .heart {
-      position:absolute; right:10px; top:10px;
-      background:rgba(14,18,23,0.6);
-      border:1px solid rgba(255,255,255,0.08);
-      width:34px; height:34px; border-radius:999px;
-      display:grid; place-items:center; cursor:pointer;
-    }
-
-    /* Empty state */
-    .empty {
-      text-align:center; padding:40px 16px; color:var(--muted,#9aa3b2);
-      border:1px dashed rgba(255,255,255,0.12); border-radius:16px;
-      background:#0f1420;
-    }
-    .empty .btn { margin-top:12px; display:inline-block; }
-  </style>
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <link rel="stylesheet" href="./hearts.css?v=2">
 </head>
 <body>
-  <!-- Header -->
-  <header class="site-header" id="siteHeader">
-    <div class="nav-wrap">
-      <a class="brand" href="index.html">
-        <span class="brand-dot" aria-hidden="true"></span>
-        <span class="brand-name">Spondle</span>
-        <span class="beta-pill">Beta</span>
-      </a>
-      <nav class="main-nav" aria-label="Primary">
-        <a class="nav-tab" href="index.html">Explore<br/>Events</a>
-        <a class="nav-tab is-active" href="favourites.html">Favourites <span id="favBadge" class="badge" hidden>0</span></a>
-        <a class="nav-tab" href="events.html">All<br/>Events</a>
-        <a class="nav-tab" href="organisers.html">For<br/>Organisers</a>
-      </nav>
-    </div>
-  </header>
-  <div class="header-spacer" id="headerSpacer"></div>
+  <div id="layout-root"></div>
 
-  <!-- Page -->
-  <main class="page">
-    <section class="section">
-      <h1 class="section-title">Your saved events</h1>
-      <div id="emptyState" class="empty" style="display:none">
-        <p>No favourites yet.</p>
-        <a class="btn" href="events.html">Browse events</a>
-      </div>
-      <div id="favGrid" class="grid" aria-live="polite"></div>
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold">My Favourites</h1>
+      <p class="text-[color:var(--muted)] mt-3">Events you’ve saved.</p>
+    </section>
+
+    <section>
+      <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
+      <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load favourites.</p>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <small>© 2025 Spondle • build v32e</small>
-  </footer>
+  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script>Layout.init({ active: 'favourites' });</script>
 
-  <script>
-    // ===== Favourites
-    const FKEY = 'spondle:favs';
-    const readFavs = () => { try { return JSON.parse(localStorage.getItem(FKEY)||'[]'); } catch { return []; } };
-    const writeFavs = l => localStorage.setItem(FKEY, JSON.stringify(l));
-    const isSaved = id => readFavs().includes(id);
-    const setHeart = (btn, saved) => { btn.textContent = saved ? '♥':'♡'; btn.classList.toggle('is-saved',saved); };
-    const updateBadge = () => {
-      const n = readFavs().length, b=document.getElementById('favBadge');
-      if(n>0){ b.textContent=n; b.hidden=false; } else b.hidden=true;
-    };
-    const toggleFav = (id, btn) => {
-      const favs=readFavs(); const i=favs.indexOf(id);
-      if(i>=0)favs.splice(i,1); else favs.push(id);
-      writeFavs(favs); setHeart(btn,i<0); updateBadge();
-      // If we removed a fav from this page, also remove its card
-      if(i>=0){
-        const card = btn.closest('a.card');
-        if(card){ card.remove(); if(!favGrid.children.length) showEmpty(true); }
-      }
-    };
-    document.addEventListener('click',e=>{
-      const b=e.target.closest('button.heart'); if(!b)return;
-      e.preventDefault(); e.stopPropagation();
-      toggleFav(b.dataset.id,b);
-    });
-
-    // ===== Sticky header spacing
-    const setSpacer=()=>{
-      const h=document.getElementById('siteHeader').offsetHeight;
-      document.getElementById('headerSpacer').style.height=h+'px';
-      document.documentElement.style.setProperty('--header-offset',(h+8)+'px');
-    };
-    window.addEventListener('load',setSpacer,{once:true});
-    window.addEventListener('resize',setSpacer);
-
-    // ===== Data: use SAMPLE_EVENTS if present, else generate
-    function sampleEvents(){
-      if (window.SAMPLE_EVENTS && Array.isArray(window.SAMPLE_EVENTS)) return window.SAMPLE_EVENTS;
-      const c=["Bristol","Manchester","Edinburgh","Cardiff","Leeds","London","Bath","Oxford"];
-      const cat=["Live Music","Comedy","Food & Drink","Theatre","Community","Film","Talks","Family"];
-      const v=["The Fleece","The Louisiana","The Stand","The Apple","Academy","Arts Centre","Playhouse","Union"];
-      const out=[]; for(let i=0;i<60;i++){
-        out.push({
-          id:"e"+(1000+i), city:c[i%c.length], date:`${10+(i%20)} Oct`,
-          category:cat[i%cat.length], title:`${cat[i%cat.length]} Night #${i+1}`,
-          venue:v[i%v.length], time:"19:30–22:30",
-          priceLabel:(i%5===0)?"Free Entry":"£"+(6+(i%12)),
-          image:""
-        });
-      } return out;
-    }
-
-    function cardHTML(ev){
-      const saved=isSaved(ev.id), heart=saved?'♥':'♡', sc=saved?' is-saved':'';
-      const imgLayer=ev.image?`<div class="thumb-img" style="background-image:url('${ev.image}')"></div>`:`<div class="thumb-gradient"></div>`;
-      return `<a class="card" href="event.html?id=${encodeURIComponent(ev.id)}">
-        <div class="thumb">${imgLayer}<span class="badge">${ev.city} • ${ev.date}</span>
-        <button class="heart${sc}" type="button" data-id="${ev.id}">${heart}</button></div>
-        <h3 class="card-title">${ev.title}</h3><p class="meta">${ev.venue} • ${ev.time}</p>
-        <span class="price-chip">${ev.priceLabel}</span></a>`;
-    }
-
-    const favGrid = document.getElementById('favGrid');
-    const emptyBox = document.getElementById('emptyState');
-    function showEmpty(show){ emptyBox.style.display = show ? '' : 'none'; }
-
-    function render(){
-      updateBadge();
-      const ids = readFavs();
-      if (!ids.length){ showEmpty(true); favGrid.innerHTML=''; return; }
-
-      const all = sampleEvents();
-      const byId = new Map(all.map(e=>[e.id,e]));
-      const events = ids.map(id=>byId.get(id)).filter(Boolean);
-
-      if (!events.length){ showEmpty(true); favGrid.innerHTML=''; return; }
-
-      showEmpty(false);
-      favGrid.innerHTML = events.map(cardHTML).join('');
-    }
-
-    window.addEventListener('DOMContentLoaded', render);
-  </script>
+  <script src="./events-data.js?v=2"></script>
+  <script src="./scripts.js?v=heart4"></script>
 </body>
 </html>
