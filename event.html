@@ -3,192 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Spondle — Event</title>
+  <title>Event Details – Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root{
-      --bg:#0b0f14;--panel:#111620;--card:#121a24;--ink:#e7edf3;--muted:#a7b2bf;
-      --border:rgba(255,255,255,.08);--overlay:rgba(0,0,0,.45);--brand:#39d353;
-      --shadow:0 18px 50px rgba(0,0,0,.45);--speed:.28s;
-    }
-    html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-    .glass{background:linear-gradient(180deg, rgba(10,12,16,.9), rgba(10,12,16,.55) 70%, rgba(10,12,16,0));
-           border-bottom:1px solid var(--border);backdrop-filter: blur(6px);}
 
-    /* ===== LOCKED SIDEBAR (same as index/events) ===== */
-    .topbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;height:56px;padding:0 14px}
-    .brand{display:flex;align-items:center;gap:10px}
-    .brand-dot{width:10px;height:10px;border-radius:999px;background:var(--brand)}
-    .burger{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.05);border:1px solid var(--border)}
-    .burger-lines,.burger-lines::before,.burger-lines::after{content:"";display:block;width:20px;height:2px;border-radius:2px;background:var(--ink);position:relative}
-    .burger-lines::before{position:absolute;transform:translateY(-6px)}
-    .burger-lines::after{position:absolute;transform:translateY(6px)}
-
-    #sbOverlay{position:fixed;inset:0;background:var(--overlay);opacity:0;pointer-events:none;transition:opacity var(--speed) ease;z-index:65}
-    #sbPanel{position:fixed;top:0;left:0;height:100dvh;width:min(86vw,420px);background:#151a21;color:var(--ink);
-             box-shadow:var(--shadow);transform:translateX(-100%);transition:transform var(--speed) cubic-bezier(.2,.7,.2,1);z-index:70;display:flex;flex-direction:column;border-right:1px solid var(--border)}
-    body.sb-open #sbOverlay{opacity:1;pointer-events:auto}
-    body.sb-open #sbPanel{transform:translateX(0)}
-    body.sb-open{overflow:hidden}
-
-    .sb-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
-    .sb-title{font-weight:700;letter-spacing:.3px}
-    .sb-close{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--ink)}
-    .sb-list{padding:10px 10px 6px 10px}
-    .sb-item{display:block;padding:14px 12px;margin:4px 0;border-radius:12px;color:var(--ink);text-decoration:none}
-    .sb-item:hover{background:rgba(255,255,255,.05)}
-    .sb-section{margin:8px 10px 0 10px;padding:10px 12px;font-size:.9rem;color:var(--muted);border-top:1px solid var(--border)}
-    .sb-foot{margin-top:auto;padding:16px 20px;color:var(--muted);border-top:1px solid var(--border);font-size:.95rem}
-
-    /* Simple content cards */
-    .panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:16px}
-    .event-hero{aspect-ratio:16/9;object-fit:cover;width:100%;border-radius:14px}
-  </style>
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./styles.css?v=3">
 </head>
 <body>
+  <div id="layout-root"></div>
 
-  <!-- Top bar -->
-  <header class="topbar glass">
-    <div class="brand">
-      <span class="brand-dot"></span>
-      <span class="font-semibold tracking-wide">Spondle</span>
-    </div>
-    <button id="sbOpen" class="burger" aria-label="Open menu" aria-expanded="false" aria-controls="sbPanel">
-      <span class="burger-lines" aria-hidden="true"></span>
-    </button>
-  </header>
-
-  <!-- Overlay + Panel -->
-  <div id="sbOverlay" aria-hidden="true"></div>
-  <aside id="sbPanel" role="dialog" aria-modal="true" aria-label="Menu">
-    <div class="sb-head">
-      <div class="sb-title">Menu</div>
-      <button id="sbClose" class="sb-close" aria-label="Close menu">✕</button>
-    </div>
-    <nav class="sb-list">
-      <a class="sb-item" href="/index.html">Home</a>
-      <a class="sb-item" href="/events.html">Explore events</a>
-      <a class="sb-item" href="/favourites.html">Favourites</a>
-      <a class="sb-item" href="/organisers.html">For organisers</a>
-      <a class="sb-item" href="/login.html">Sign in / Account</a>
-      <div class="sb-section">Quick links</div>
-      <a class="sb-item" href="#summary">Event summary</a>
-      <a class="sb-item" href="#details">Details</a>
-    </nav>
-    <div class="sb-foot">© 2025 Spondle</div>
-  </aside>
-
-  <!-- Event header/summary -->
-  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-6">
-    <section id="summary" class="panel p-6 md:p-8">
-      <div class="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 id="evTitle" class="text-2xl md:text-3xl font-extrabold tracking-tight">Event title</h1>
-          <p id="evMeta" class="text-[color:var(--muted)] mt-2">City • Date • Venue</p>
-        </div>
-        <div class="flex gap-2">
-          <button class="px-3 py-2 rounded-lg border border-[color:var(--border)]">Share</button>
-          <button class="px-3 py-2 rounded-lg border border-[color:var(--border)]">Add to calendar</button>
-          <a id="ticketBtn" class="px-3 py-2 rounded-lg border border-[color:var(--border)]" href="#" target="_blank" rel="noopener">Tickets</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Hero + details placeholder -->
-    <section id="details" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 card p-4">
-        <img id="evImage" class="event-hero mb-4" alt="Event image" />
-        <h2 class="text-xl font-bold mb-2">About this event</h2>
-        <p class="text-[color:var(--muted)]">
-          This is a placeholder event page. We’ll surface full details here later (description, schedule, performers,
-          map, and organiser info). For now, this page simply reflects the event you clicked from the results grid.
-        </p>
-      </div>
-      <aside class="card p-4">
-        <h3 class="font-semibold mb-2">Quick info</h3>
-        <ul class="text-[color:var(--muted)] space-y-1">
-          <li><strong>Category:</strong> <span id="evCat">—</span></li>
-          <li><strong>Date:</strong> <span id="evDate">—</span></li>
-          <li><strong>City:</strong> <span id="evCity">—</span></li>
-          <li><strong>Venue:</strong> <span id="evVenue">—</span></li>
-          <li><strong>Price:</strong> <span id="evPrice">—</span></li>
-        </ul>
-      </aside>
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold">Event Details Placeholder</h1>
+      <p class="text-[color:var(--muted)] mt-3">This page will show event details in the future.</p>
     </section>
   </main>
 
-  <footer class="px-4 sm:px-6 lg:px-8 py-10 text-[color:var(--muted)]">© 2025 Spondle</footer>
-
-  <script>
-    /* ===== Sidebar JS (locked behaviour) ===== */
-    (function(){
-      const body = document.body;
-      const openBtn = document.getElementById('sbOpen');
-      const closeBtn = document.getElementById('sbClose');
-      const overlay = document.getElementById('sbOverlay');
-
-      function openMenu(){ body.classList.add('sb-open'); openBtn.setAttribute('aria-expanded','true'); }
-      function closeMenu(){ body.classList.remove('sb-open'); openBtn.setAttribute('aria-expanded','false'); }
-
-      openBtn.addEventListener('click', openMenu);
-      closeBtn.addEventListener('click', closeMenu);
-      overlay.addEventListener('click', closeMenu);
-      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeMenu(); });
-    })();
-
-    /* ===== Minimal placeholder data loader =====
-       Reads ?id= from the URL. If it matches our sample IDs, show nice data; otherwise show generic placeholders. */
-    const url = new URL(window.location.href);
-    const id = url.searchParams.get('id');
-
-    // Mirror the IDs/titles we used on the listing pages so this feels connected
-    const sample = {
-      "ev-001": {
-        title:"The Harbourside Sessions",
-        city:"Bristol", date:"Sep 12", category:"Live Music", venue:"The Louisiana",
-        price:"Free Entry",
-        image:"https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?q=80&w=1600&auto=format&fit=crop",
-        tickets:"#"
-      },
-      "ev-002": {
-        title:"Acoustic Sessions at The Fleece",
-        city:"Bristol", date:"Sep 21", category:"Live Music", venue:"The Fleece",
-        price:"£8",
-        image:"https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=1600&auto=format&fit=crop",
-        tickets:"#"
-      },
-      "ev-003": {
-        title:"Family Science Day",
-        city:"Manchester", date:"Sep 28", category:"Community", venue:"Science and Industry Mus.",
-        price:"£6",
-        image:"https://images.unsplash.com/photo-1551836022-4c4c79ecde51?q=80&w=1600&auto=format&fit=crop",
-        tickets:"#"
-      }
-      // Other ids will fall back to generic placeholder content
-    };
-
-    const ev = sample[id] || {
-      title:"Event details", city:"—", date:"—", category:"—", venue:"—", price:"—",
-      image:"https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?q=80&w=1600&auto=format&fit=crop",
-      tickets:"#"
-    };
-
-    // Populate UI
-    document.getElementById('evTitle').textContent = ev.title;
-    document.getElementById('evMeta').textContent = `${ev.city} • ${ev.date} • ${ev.venue}`;
-    document.getElementById('evImage').src = ev.image;
-    document.getElementById('evImage').alt = ev.title;
-
-    document.getElementById('evCat').textContent = ev.category;
-    document.getElementById('evDate').textContent = ev.date;
-    document.getElementById('evCity').textContent = ev.city;
-    document.getElementById('evVenue').textContent = ev.venue;
-    document.getElementById('evPrice').textContent = ev.price;
-
-    const t = document.getElementById('ticketBtn');
-    t.href = ev.tickets || '#';
-  </script>
+  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script>Layout.init();</script>
 </body>
 </html>
