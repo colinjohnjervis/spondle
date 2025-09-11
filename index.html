@@ -7,10 +7,10 @@
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + page styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=2">
-  <link rel="stylesheet" href="./styles.css?v=2">
-  <link rel="stylesheet" href="./hearts.css?v=1"><!-- NEW -->
+  <!-- Shared layout + page styles (version bumps to bust cache) -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=3">
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <link rel="stylesheet" href="./hearts.css?v=2">
 </head>
 <body>
   <!-- Shared sticky header + sidebar -->
@@ -36,12 +36,12 @@
     </section>
   </main>
 
-  <!-- Shared layout + page scripts -->
-  <script src="./spondle-layout.js?v=2"></script>
+  <!-- Shared layout logic (version bump) -->
+  <script src="./spondle-layout.js?v=3"></script>
   <script>Layout.init({ active: 'home' });</script>
 
   <!-- Events data + renderer -->
   <script src="./events-data.js?v=2"></script>
-  <script src="./scripts.js?v=heart3"></script>
+  <script src="./scripts.js?v=heart4"></script>
 </body>
 </html>
