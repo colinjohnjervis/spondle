@@ -10,10 +10,8 @@
     return;
   }
 
-  // Sort by date ascending (oldest first) for consistency
   const events = [...window.EVENTS].sort((a,b)=> new Date(a.date)-new Date(b.date));
 
-  // Favourites helpers
   const getFavs = ()=> {
     try { return new Set(JSON.parse(localStorage.getItem(FAV_KEY)||'[]')); }
     catch { return new Set(); }
@@ -21,33 +19,14 @@
   const saveFavs = (set)=> localStorage.setItem(FAV_KEY, JSON.stringify([...set]));
   const isFav = (id)=> getFavs().has(id);
 
-  // Force the whole circular background ON when favourited
-  function updateHeartUI(btnEl, on){
+  function setHeartState(btnEl, on){
     if (!btnEl) return;
-
-    // lock base shape
-    btnEl.className = 'absolute top-3 right-3 rounded-full p-2 z-[2]';
-    btnEl.style.setProperty('backdrop-filter','blur(6px)','important');
-
-    if (on) {
-      // solid pink circle + subtle border — use !important to beat any CSS
-      btnEl.style.setProperty('background','rgba(236,72,153,0.95)','important');
-      btnEl.style.setProperty('border','1px solid rgba(236,72,153,0.35)','important');
-      btnEl.innerHTML = `
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
-          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-        </svg>`;
-      btnEl.setAttribute('aria-label','Remove from favourites');
-    } else {
-      // translucent dark circle + white border
-      btnEl.style.setProperty('background','rgba(0,0,0,0.40)','important');
-      btnEl.style.setProperty('border','1px solid rgba(255,255,255,0.18)','important');
-      btnEl.innerHTML = `
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
-          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-        </svg>`;
-      btnEl.setAttribute('aria-label','Add to favourites');
-    }
+    btnEl.classList.toggle('fav-on', !!on);
+    btnEl.setAttribute('aria-label', on ? 'Remove from favourites' : 'Add to favourites');
+    btnEl.innerHTML = `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+      </svg>`;
   }
 
   let page = 0;
@@ -76,18 +55,18 @@
       img.src = ev.image; img.alt = ev.title;
       imgWrap.appendChild(img);
 
-      // heart button
+      // heart button (uses CSS classes for state)
       const heart = document.createElement('button');
-      // initial UI
-      updateHeartUI(heart, isFav(ev.id));
-      // toggle on click
+      heart.type = 'button';
+      heart.className = 'heart-btn';
+      setHeartState(heart, isFav(ev.id));
       heart.addEventListener('click', (e)=>{
         e.preventDefault(); e.stopPropagation();
         const favs = getFavs();
         const onNow = favs.has(ev.id);
         if (onNow) favs.delete(ev.id); else favs.add(ev.id);
         saveFavs(favs);
-        updateHeartUI(heart, favs.has(ev.id));
+        setHeartState(heart, favs.has(ev.id));
       });
       imgWrap.appendChild(heart);
 
@@ -117,7 +96,7 @@
       btn.classList.remove('hidden');
     }
 
-    // Smoothly bring the first new card to the top of the viewport
+    // Smooth scroll so first new card sits just under sticky bar
     if (slice.length > 0) {
       const firstNewIndex = start;
       const firstNewCard = grid.children[firstNewIndex];
