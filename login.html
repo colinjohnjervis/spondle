@@ -3,85 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login – Spondle</title>
-  <meta name="color-scheme" content="dark" />
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
-  <link rel="stylesheet" href="./styles.css?v=3">
+  <title>Test Login – Spondle</title>
 </head>
 <body>
-  <div id="layout-root"></div>
+  <h1>Module Test</h1>
 
-  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
-    <section class="panel p-6 md:p-8 max-w-md mx-auto">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-4" id="form-title">Sign in</h1>
+  <form id="test-form">
+    <input type="email" id="email" placeholder="Email">
+    <button type="submit">Test Login</button>
+  </form>
 
-      <!-- LOGIN/SIGNUP FORM -->
-      <form id="auth-form" class="space-y-4">
-        <input type="email" id="email" placeholder="Your email"
-          class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
-        <button type="submit"
-          class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition"
-          id="submit-button">
-          Send magic link
-        </button>
-      </form>
-
-      <!-- TOGGLE LINK -->
-      <p id="toggle-link" class="mt-4 text-[color:var(--muted)] text-sm">
-        New here? <a href="#" onclick="toggleForm()" class="underline">Create an account</a>
-      </p>
-
-      <!-- STATUS MESSAGE -->
-      <p id="message" class="mt-4 text-[color:var(--muted)]"></p>
-    </section>
-  </main>
-
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'login' });</script>
+  <p id="message"></p>
 
   <script type="module">
-    import { signInWithEmail } from './auth.js';
+    import { testFunction } from './auth.js';
 
-    const form = document.getElementById("auth-form");
-    const emailInput = document.getElementById("email");
-    const message = document.getElementById("message");
-    const title = document.getElementById("form-title");
-    const submitButton = document.getElementById("submit-button");
-    const toggleLink = document.getElementById("toggle-link");
+    console.log("✅ Module loaded");
 
-    let isCreatingAccount = false;
+    const form = document.getElementById('test-form');
+    const emailInput = document.getElementById('email');
+    const message = document.getElementById('message');
 
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = emailInput.value.trim();
-      if (!email) {
-        message.textContent = "Please enter your email.";
-        return;
-      }
-
-      message.textContent = isCreatingAccount ? "Creating account..." : "Sending magic link...";
-      try {
-        await signInWithEmail(email);
-        message.textContent = isCreatingAccount
-          ? "✅ Account created! Check your inbox to finish setup."
-          : "✅ Check your inbox for the magic link.";
-      } catch (err) {
-        console.error(err);
-        message.textContent = "❌ There was a problem. Please try again.";
-      }
+      message.textContent = "Calling testFunction...";
+      testFunction(email);
     });
-
-    window.toggleForm = function () {
-      isCreatingAccount = !isCreatingAccount;
-      title.textContent = isCreatingAccount ? "Create account" : "Sign in";
-      submitButton.textContent = isCreatingAccount ? "Create account" : "Send magic link";
-      toggleLink.innerHTML = isCreatingAccount
-        ? `Already have an account? <a href="#" onclick="toggleForm()" class="underline">Sign in</a>`
-        : `New here? <a href="#" onclick="toggleForm()" class="underline">Create an account</a>`;
-      message.textContent = "";
-    };
   </script>
 </body>
 </html>
