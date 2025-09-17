@@ -6,19 +6,18 @@
   <title>My Account – Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-
   <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
   <link rel="stylesheet" href="./styles.css?v=3">
 </head>
 <body>
   <div id="layout-root"></div>
 
-  <main class="px-4 sm:px-6 lg:px-8 mt-10 space-y-8 text-center">
-    <section class="panel p-6 md:p-8 max-w-xl mx-auto">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-2">My Account</h1>
-      <p id="user-email" class="text-lg text-[color:var(--muted)] mb-6">Loading...</p>
-      <button id="logout-btn"
-        class="px-5 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition">
+  <main class="px-4 sm:px-6 lg:px-8 mt-4">
+    <section class="panel p-6 md:p-8 max-w-md mx-auto text-center space-y-4">
+      <h1 class="text-3xl md:text-4xl font-extrabold">My Account</h1>
+      <p id="status" class="text-[color:var(--muted)]">Loading...</p>
+      <button id="logout-button"
+        class="py-2 px-4 bg-red-600 text-white font-medium rounded-md hover:opacity-90 transition">
         Log out
       </button>
     </section>
@@ -27,27 +26,41 @@
   <script src="./spondle-layout.js?v=layout-fixed1"></script>
   <script>Layout.init({ active: 'account' });</script>
 
+  <!-- INLINE Supabase AUTH LOGIC -->
   <script type="module">
-    import { getCurrentUser, signOut } from './auth.js';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
 
-    const emailEl = document.getElementById('user-email');
-    const logoutBtn = document.getElementById('logout-btn');
+    const status = document.getElementById("status");
+    const logoutButton = document.getElementById("logout-button");
 
-    // Load current user
-    const user = await getCurrentUser();
-    if (!user) {
-      // Not logged in – redirect
-      window.location.href = 'login.html';
-    } else {
-      // Show email
-      emailEl.textContent = user.email;
+    async function getUser() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        status.textContent = "❌ Not signed in. Redirecting...";
+        setTimeout(() => {
+          window.location.href = "/login.html";
+        }, 1500);
+      } else {
+        status.textContent = `✅ Signed in as ${user.email}`;
+      }
     }
 
-    // Logout
-    logoutBtn.addEventListener('click', async () => {
-      await signOut();
-      window.location.href = 'login.html';
+    logoutButton.addEventListener("click", async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        alert("❌ Error logging out: " + error.message);
+      } else {
+        alert("✅ Logged out!");
+        window.location.href = "/login.html";
+      }
     });
+
+    getUser();
   </script>
 </body>
 </html>
