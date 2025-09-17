@@ -3,16 +3,15 @@ import { supabase } from './supabaseClient.js'
 
 // --- SIGN IN WITH MAGIC LINK ---
 export async function signInWithEmail(email) {
-  const { error } = await supabase.auth.signInWithOtp({
+  const { data, error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: window.location.origin, // Redirect back to site after login
+      emailRedirectTo: `${window.location.origin}/auth-callback.html`,
     },
   })
 
   if (error) {
-    console.error("Error sending magic link:", error.message)
-    alert("Error sending magic link: " + error.message)
+    alert("Magic link error:\n" + JSON.stringify(error, null, 2))
   } else {
     alert("Magic link sent! Please check your email.")
   }
