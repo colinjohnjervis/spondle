@@ -1,36 +1,90 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login – Spondle</title>
   <meta name="color-scheme" content="dark" />
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <script src="https://cdn.tailwindcss.com"></script>  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
   <link rel="stylesheet" href="./styles.css?v=3">
 </head>
 <body>
-  <div id="layout-root"></div>
-
-  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+  <div id="layout-root"></div>  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8 max-w-md mx-auto">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-4">Sign in</h1>
-      <form id="login-form" class="space-y-4">
-        <input type="email" id="email" placeholder="Your email"
-          class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
-        <button type="submit"
-          class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
-          Send magic link
-        </button>
-      </form>
-      <p id="message" class="mt-4 text-[color:var(--muted)]"></p>
-    </section>
-  </main>
+      <h1 id="form-title" class="text-3xl md:text-4xl font-extrabold mb-4">Sign in</h1><!-- Sign In Form -->
+  <form id="login-form" class="space-y-4">
+    <input type="email" id="login-email" placeholder="Your email"
+      class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
+    <button type="submit"
+      class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
+      Send magic link
+    </button>
+  </form>
 
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'login' });</script>
+  <!-- Sign Up Form -->
+  <div id="signup-form" class="space-y-4 hidden">
+    <input type="text" id="signup-name" placeholder="Name (optional)"
+      class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
+    <input type="email" id="signup-email" placeholder="Email"
+      class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
+    <input type="password" id="signup-password" placeholder="Password"
+      class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
+    <button id="signup-button"
+      class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
+      Create account
+    </button>
+  </div>
 
-  <script src="./auth.js?v=2"></script>
-</body>
+  <p id="toggle-auth-mode" class="mt-4 text-sm text-[color:var(--muted)] cursor-pointer hover:underline">
+    Don't have an account? <strong>Sign up</strong>
+  </p>
+  <p id="message" class="mt-4 text-[color:var(--muted)]"></p>
+</section>
+
+  </main>  <script src="./spondle-layout.js?v=layout-fixed1"></script>  <script>Layout.init({ active: 'login' });</script>  <script src="./auth.js?v=2"></script>  <script>
+    const toggleLink = document.getElementById('toggle-auth-mode');
+    const formTitle = document.getElementById('form-title');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const message = document.getElementById('message');
+
+    let isSignup = false;
+
+    toggleLink.addEventListener('click', () => {
+      isSignup = !isSignup;
+      loginForm.classList.toggle('hidden', isSignup);
+      signupForm.classList.toggle('hidden', !isSignup);
+      formTitle.textContent = isSignup ? 'Create account' : 'Sign in';
+      toggleLink.innerHTML = isSignup
+        ? 'Already have an account? <strong>Sign in</strong>'
+        : "Don't have an account? <strong>Sign up</strong>";
+      message.textContent = '';
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      message.textContent = '';
+      const email = document.getElementById('login-email').value.trim();
+      try {
+        await SpondleAuth.login(email);
+        message.textContent = 'Magic link sent! Check your inbox.';
+      } catch (err) {
+        message.textContent = err.message;
+      }
+    });
+
+    document.getElementById('signup-button').addEventListener('click', async () => {
+      message.textContent = '';
+      const name = document.getElementById('signup-name').value.trim();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      try {
+        await SpondleAuth.signup({ name, email, password });
+        window.location.href = 'events.html';
+      } catch (err) {
+        message.textContent = err.message;
+      }
+    });
+  </script></body>
 </html>
