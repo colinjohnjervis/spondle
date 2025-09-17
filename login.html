@@ -1,47 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
+<!-- login.html --><!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Spondle – Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="dark" />
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
-  <link rel="stylesheet" href="./styles.css?v=3">
+  <title>Login</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="layout-root"></div>
-
-  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
-    <section class="panel p-6 md:p-8 max-w-md mx-auto">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-4" id="form-title">Sign in</h1>
-
-      <!-- LOGIN/SIGNUP FORM -->
-      <form id="auth-form" class="space-y-4">
-        <input type="email" id="email" placeholder="Your email"
-          class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
-        <button type="submit"
-          class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition"
-          id="submit-button">
-          Send magic link
-        </button>
-      </form>
-
-      <!-- TOGGLE LINK -->
-      <p id="toggle-link" class="mt-4 text-[color:var(--muted)] text-sm">
-        New here? <a href="#" onclick="toggleForm()" class="underline">Create an account</a>
-      </p>
-
-      <!-- STATUS MESSAGE -->
-      <p id="message" class="mt-4 text-[color:var(--muted)]"></p>
-    </section>
-  </main>
-
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'login' });</script>
-
-  <!-- ✅ Move script logic here -->
-  <script type="module" src="./login.js"></script>
-</body>
+  <div class="form-container">
+    <h2 id="form-title">Sign in</h2>
+    <input type="email" id="email" placeholder="Email" required />
+    <button id="submit-button">Send magic link</button>
+    <p>
+      <span id="toggle-text">New here?</span>
+      <a href="#" id="toggle-link">Create an account</a>
+    </p>
+    <p id="message"></p>
+  </div>  <script type="module" src="./logout.js"></script>  <script type="module" src="./auth.js"></script></body>
 </html>
