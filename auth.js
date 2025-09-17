@@ -1,45 +1,58 @@
 // auth.js
 import { supabase } from './supabaseClient.js';
 
-// --- SIGN IN WITH MAGIC LINK ---
 export async function signInWithEmail(email) {
   try {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin + "/account.html",
-      },
+        emailRedirectTo: `${window.location.origin}/account.html`
+      }
     });
 
     if (error) {
-      console.error("Magic link error:", error.message);
-      alert("❌ " + error.message);
-    } else {
-      alert("✅ Magic link sent! Please check your email.");
+      throw error;
     }
+
+    alert("✅ Check your inbox for the magic link.");
   } catch (err) {
-    console.error("Unexpected error:", err.message);
-    alert("❌ Unexpected error: " + err.message);
+    alert("❌ " + err.message);
   }
 }
 
-// --- SIGN OUT USER ---
-export async function signOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error("Sign out error:", error.message);
-    alert("❌ Error signing out: " + error.message);
-  } else {
-    alert("✅ Signed out!");
-  }
-}
+// Toggle UI behavior
+document.addEventListener("DOMContentLoaded", () => {
+  let isCreatingAccount = false;
 
-// --- GET CURRENT USER ---
-export async function getCurrentUser() {
-  const { data, error } = await supabase.auth.getUser();
-  if (error) {
-    console.error("Get user error:", error.message);
-    return null;
-  }
-  return data?.user || null;
-}
+  const title = document.getElementById("form-title");
+  const button = document.getElementById("submit-button");
+  const toggleLink = document.getElementById("toggle-link");
+  const toggleText = document.getElementById("toggle-text");
+  const message = document.getElementById("message");
+  const emailInput = document.getElementById("email");
+
+  const updateUI = () => {
+    title.textContent = isCreatingAccount ? "Create account" : "Sign in";
+    button.textContent = isCreatingAccount ? "Create account" : "Send magic link";
+    toggleText.textContent = isCreatingAccount ? "Already have an account?" : "New here?";
+    toggleLink.textContent = isCreatingAccount ? "Sign in" : "Create an account";
+    message.textContent = "";
+  };
+
+  toggleLink?.addEventListener("click", (e) => {
+    e.preventDefault();
+    isCreatingAccount = !isCreatingAccount;
+    updateUI();
+  });
+
+  button?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = emailInput?.value?.trim();
+    if (!email) {
+      message.textContent = "Please enter your email.";
+      return;
+    }
+    message.textContent = isCreatingAccount ? "Creating account..." : "Sending magic link...";
+    await signInWithEmail(email);
+  });
+});
