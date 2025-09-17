@@ -1,7 +1,12 @@
 // logout.js
 import { signOut } from './auth.js';
 
-document.getElementById("logout-button").addEventListener("click", async () => {
-  await signOut();
-  window.location.href = "/login.html";
+document.addEventListener("DOMContentLoaded", () => {
+  const logoutButton = document.getElementById("logout-button");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", async () => {
+      await signOut();
+      window.location.href = "/login.html";
+    });
+  }
 });
