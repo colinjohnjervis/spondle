@@ -40,27 +40,33 @@
   <script src="./spondle-layout.js?v=layout-fixed1"></script>
   <script>Layout.init({ active: 'login' });</script>
 
-  <script src="./auth.js?v=2"></script>
-  <script>
+  <script type="module">
+    import { signInWithEmail } from './auth.js';
+
     const form = document.getElementById("login-form");
     const emailInput = document.getElementById("email");
     const message = document.getElementById("message");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      const email = emailInput.value.trim();
+      if (!email) {
+        message.textContent = "Please enter your email.";
+        return;
+      }
+
       message.textContent = "Sending magic link...";
       try {
-        await SpondleAuth.login({ email: emailInput.value.trim() });
-        message.textContent = "Check your inbox for the magic link.";
+        await signInWithEmail(email);
+        message.textContent = "✅ Check your inbox for the magic link.";
       } catch (err) {
         console.error(err);
-        message.textContent = "There was a problem. Please try again.";
+        message.textContent = "❌ There was a problem. Please try again.";
       }
     });
 
-    // Toggle logic (optional—no password)
+    // Optional toggle logic for changing title/message
     function toggleForm() {
-      // Optional: Switch between titles if you plan to support registration later
       const title = document.getElementById("form-title");
       if (title.textContent.includes("Sign in")) {
         title.textContent = "Create account";
