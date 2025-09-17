@@ -1,71 +1,36 @@
-// Shared fixed header + left drawer sidebar
-const Layout = (function(){
-  function headerHTML(){
-    return `
-      <header class="sp-header">
-        <div class="sp-header__inner max-w-7xl mx-auto">
-          <a class="sp-logo" href="/index.html" aria-label="Spondle home">
-            <span class="sp-logo__dot"></span>
-            <span class="sp-logo__text">Spondle</span>
-          </a>
-          <button class="sp-burger" id="sp-burger" aria-label="Open menu">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-              <path d="M3 6h18M3 12h18M3 18h18"/>
-            </svg>
-          </button>
-        </div>
-      </header>
-      <div class="sp-overlay" id="sp-overlay"></div>
-      <aside class="sp-sidebar" id="sp-sidebar" aria-label="Sidebar">
-        <div class="sp-sidebar__head">
-          <a class="sp-logo" href="/index.html">
-            <span class="sp-logo__dot"></span>
-            <span class="sp-logo__text">Spondle</span>
-          </a>
-          <button class="sp-close" id="sp-close" aria-label="Close menu">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-              <path d="M6 6l12 12M18 6l-12 12"/>
-            </svg>
-          </button>
-        </div>
-        <nav class="sp-nav" id="sp-nav">
-          ${navLink('/index.html','home','Home')}
-          ${navLink('/events.html','events','Events')}
-          ${navLink('/organisers.html','organisers','Organisers')}
-          ${navLink('/favourites.html','favourites','Favourites')}
-          ${navLink('/profile.html','profile','My Profile')}
-          ${navLink('/login.html','login','Sign in')}
-        </nav>
-      </aside>
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabase = createClient(
+  "https://jvuunvnbpdfrttusgelz.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+);
+
+export const Layout = {
+  init({ active }) {
+    const nav = document.createElement("nav");
+    nav.className = "sidebar";
+    nav.innerHTML = `
+      <div class="logo">🟢 Spondle</div>
+      <ul>
+        <li><a href="/index.html" class="${active === 'home' ? 'active' : ''}">Home</a></li>
+        <li><a href="/events.html" class="${active === 'events' ? 'active' : ''}">Events</a></li>
+        <li><a href="/organisers.html" class="${active === 'organisers' ? 'active' : ''}">Organisers</a></li>
+        <li><a href="/favourites.html" class="${active === 'favourites' ? 'active' : ''}">Favourites</a></li>
+        <li id="auth-link">
+          <a href="/login.html" class="${active === 'login' ? 'active' : ''}">Sign in</a>
+        </li>
+      </ul>
     `;
-  }
-  function navLink(href, key, label){ return `<a href="${href}" data-key="${key}">${label}</a>`; }
+    document.getElementById("layout-root").appendChild(nav);
 
-  function mount(activeKey){
-    const root = document.getElementById('layout-root');
-    if (!root) return;
-    root.innerHTML = headerHTML();
-
-    const burger = document.getElementById('sp-burger');
-    const close  = document.getElementById('sp-close');
-    const overlay= document.getElementById('sp-overlay');
-    const nav    = document.getElementById('sp-nav');
-
-    if (activeKey){
-      [...nav.querySelectorAll('a')].forEach(a=>{
-        a.classList.toggle('is-active', a.dataset.key === activeKey);
-      });
-    }
-
-    const open = ()=> document.body.classList.add('sp-drawer-open');
-    const shut = ()=> document.body.classList.remove('sp-drawer-open');
-
-    burger.addEventListener('click', open);
-    close.addEventListener('click', shut);
-    overlay.addEventListener('click', shut);
-    window.addEventListener('keydown', (e)=>{ if (e.key === 'Escape') shut(); }, { passive:true });
-    nav.addEventListener('click', (e)=>{ const a=e.target.closest('a'); if (a) shut(); });
-  }
-
-  return { init: ({active}={}) => mount(active) };
-})();
+    // ✅ Update UI if user is logged in
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      const authLink = document.getElementById("auth-link");
+      if (user) {
+        authLink.innerHTML = `<a href="/account.html">My Account</a>`;
+      } else {
+        authLink.innerHTML = `<a href="/login.html">Sign in</a>`;
+      }
+    });
+  },
+};
