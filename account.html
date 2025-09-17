@@ -3,47 +3,51 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your account</title>
-  <link rel="stylesheet" href="app.v15.css">
+  <title>My Account – Spondle</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./styles.css?v=3">
 </head>
-<body class="bg-slate-900 text-slate-100">
-  <main class="container mx-auto max-w-lg p-6">
-    <h1 class="text-2xl font-bold mb-4">Account</h1>
-    <div id="info" class="rounded-lg bg-slate-800 p-4 mb-6"></div>
-    <div class="flex gap-3">
-      <a href="/index.html" class="btn">← Back to home</a>
-      <button id="signout" class="btn btn-secondary">Sign out</button>
-    </div>
+<body>
+  <div id="layout-root"></div>
+
+  <main class="px-4 sm:px-6 lg:px-8 mt-10 space-y-8 text-center">
+    <section class="panel p-6 md:p-8 max-w-xl mx-auto">
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-2">My Account</h1>
+      <p id="user-email" class="text-lg text-[color:var(--muted)] mb-6">Loading...</p>
+      <button id="logout-btn"
+        class="px-5 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition">
+        Log out
+      </button>
+    </section>
   </main>
 
+  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script>Layout.init({ active: 'account' });</script>
+
   <script type="module">
-    import { supabase, signOut } from './auth.js';
+    import { getCurrentUser, signOut } from './auth.js';
 
-    const info = document.getElementById('info');
-    const { data: { session } } = await supabase.auth.getSession();
+    const emailEl = document.getElementById('user-email');
+    const logoutBtn = document.getElementById('logout-btn');
 
-    if (session?.user) {
-      const u = session.user;
-      info.innerHTML = `
-        <p><strong>Status:</strong> Signed in</p>
-        <p><strong>Email:</strong> ${u.email}</p>
-        <p><strong>User ID:</strong> ${u.id}</p>
-      `;
+    // Load current user
+    const user = await getCurrentUser();
+    if (!user) {
+      // Not logged in – redirect
+      window.location.href = 'login.html';
     } else {
-      info.innerHTML = `
-        <p><strong>Status:</strong> Not signed in</p>
-        <p><a class="underline" href="/login.html">Go to Sign in</a></p>
-      `;
+      // Show email
+      emailEl.textContent = user.email;
     }
 
-    document.getElementById('signout').addEventListener('click', async () => {
+    // Logout
+    logoutBtn.addEventListener('click', async () => {
       await signOut();
-      window.location.href = '/login.html';
+      window.location.href = 'login.html';
     });
   </script>
-  <style>
-    .btn { padding:.6rem 1rem; background:linear-gradient(90deg,#6EE7F9,#A78BFA); color:#0b1220; border-radius:.6rem; font-weight:600 }
-    .btn-secondary { background:#1f2937; color:#e5e7eb }
-  </style>
 </body>
 </html>
