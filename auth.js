@@ -1,13 +1,13 @@
 // auth.js
 import { supabase } from './supabaseClient.js';
 
-// --- SIGN IN WITH MAGIC LINK ---
+// --- SIGN IN / REGISTER WITH MAGIC LINK ---
 export async function signInWithEmail(email) {
   try {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.origin + "/account.html", // Redirect after login
+        emailRedirectTo: window.location.origin + "/account.html",
       },
     });
 
