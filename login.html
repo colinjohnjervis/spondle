@@ -1,48 +1,46 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login – Spondle</title>
   <meta name="color-scheme" content="dark" />
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <script src="https://cdn.tailwindcss.com"></script>  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
   <link rel="stylesheet" href="./styles.css?v=3">
 </head>
 <body>
-  <div id="layout-root"></div>
-
-  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+  <div id="layout-root"></div>  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8 max-w-md mx-auto">
-      <h1 class="text-3xl md:text-4xl font-extrabold mb-4" id="form-title">Sign in</h1>
+      <h1 class="text-3xl md:text-4xl font-extrabold mb-4" id="form-title">Sign in</h1><!-- LOGIN/SIGNUP FORM -->
+  <form id="auth-form" class="space-y-4">
+    <input type="email" id="email" placeholder="Your email"
+      class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
+    <button type="submit"
+      class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition"
+      id="submit-button">
+      Send magic link
+    </button>
+  </form>
 
-      <!-- LOGIN/SIGNUP FORM -->
-      <form id="auth-form" class="space-y-4">
-        <input type="email" id="email" placeholder="Your email"
-          class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
-        <button type="submit"
-          class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition"
-          id="submit-button">
-          Send magic link
-        </button>
-      </form>
+  <!-- TOGGLE LINK -->
+  <p id="toggle-link" class="mt-4 text-[color:var(--muted)] text-sm">
+    New here? <a href="#" onclick="toggleForm()" class="underline">Create an account</a>
+  </p>
 
-      <!-- TOGGLE LINK -->
-      <p id="toggle-link" class="mt-4 text-[color:var(--muted)] text-sm">
-        New here? <a href="#" onclick="toggleForm()" class="underline">Create an account</a>
-      </p>
+  <!-- STATUS MESSAGE -->
+  <p id="message" class="mt-4 text-[color:var(--muted)]"></p>
+</section>
 
-      <!-- STATUS MESSAGE -->
-      <p id="message" class="mt-4 text-[color:var(--muted)]"></p>
-    </section>
-  </main>
+  </main>  <script src="./spondle-layout.js?v=layout-fixed1"></script>  <script>Layout.init({ active: 'login' });</script>  <!-- INLINE AUTH LOGIC -->  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'login' });</script>
+    const supabase = createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
 
-  <script type="module">
-    import { signInWithEmail } from './auth.js';
+    console.log("✅ Supabase client initialized");
 
     const form = document.getElementById("auth-form");
     const emailInput = document.getElementById("email");
@@ -63,13 +61,24 @@
 
       message.textContent = isCreatingAccount ? "Creating account..." : "Sending magic link...";
       try {
-        await signInWithEmail(email); // Supabase creates user if it doesn't exist
-        message.textContent = isCreatingAccount
-          ? "✅ Account created! Check your inbox to finish setup."
-          : "✅ Check your inbox for the magic link.";
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin + "/account.html",
+          },
+        });
+
+        if (error) {
+          console.error("Magic link error:", error.message);
+          message.textContent = "❌ " + error.message;
+        } else {
+          message.textContent = isCreatingAccount
+            ? "✅ Account created! Check your inbox to finish setup."
+            : "✅ Check your inbox for the magic link.";
+        }
       } catch (err) {
-        console.error(err);
-        message.textContent = "❌ There was a problem. Please try again.";
+        console.error("Unexpected error:", err.message);
+        message.textContent = "❌ Unexpected error. Please try again.";
       }
     });
 
@@ -82,6 +91,5 @@
         : `New here? <a href="#" onclick="toggleForm()" class="underline">Create an account</a>`;
       message.textContent = "";
     };
-  </script>
-</body>
+  </script></body>
 </html>
