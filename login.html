@@ -17,12 +17,13 @@
     <section class="panel p-6 md:p-8 max-w-md mx-auto">
       <h1 class="text-3xl md:text-4xl font-extrabold mb-4" id="form-title">Sign in</h1>
 
-      <!-- LOGIN FORM -->
-      <form id="login-form" class="space-y-4">
+      <!-- LOGIN/SIGNUP FORM -->
+      <form id="auth-form" class="space-y-4">
         <input type="email" id="email" placeholder="Your email"
           class="w-full px-3 py-2 rounded-md border border-gray-700 bg-gray-900 text-white">
         <button type="submit"
-          class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
+          class="w-full py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition"
+          id="submit-button">
           Send magic link
         </button>
       </form>
@@ -43,9 +44,14 @@
   <script type="module">
     import { signInWithEmail } from './auth.js';
 
-    const form = document.getElementById("login-form");
+    const form = document.getElementById("auth-form");
     const emailInput = document.getElementById("email");
     const message = document.getElementById("message");
+    const title = document.getElementById("form-title");
+    const submitButton = document.getElementById("submit-button");
+    const toggleLink = document.getElementById("toggle-link");
+
+    let isCreatingAccount = false;
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -55,27 +61,27 @@
         return;
       }
 
-      message.textContent = "Sending magic link...";
+      message.textContent = isCreatingAccount ? "Creating account..." : "Sending magic link...";
       try {
-        await signInWithEmail(email);
-        message.textContent = "✅ Check your inbox for the magic link.";
+        await signInWithEmail(email); // Supabase creates user if it doesn't exist
+        message.textContent = isCreatingAccount
+          ? "✅ Account created! Check your inbox to finish setup."
+          : "✅ Check your inbox for the magic link.";
       } catch (err) {
         console.error(err);
         message.textContent = "❌ There was a problem. Please try again.";
       }
     });
 
-    // Optional toggle logic for changing title/message
-    function toggleForm() {
-      const title = document.getElementById("form-title");
-      if (title.textContent.includes("Sign in")) {
-        title.textContent = "Create account";
-        message.textContent = "Enter your email to create an account.";
-      } else {
-        title.textContent = "Sign in";
-        message.textContent = "";
-      }
-    }
+    window.toggleForm = function () {
+      isCreatingAccount = !isCreatingAccount;
+      title.textContent = isCreatingAccount ? "Create account" : "Sign in";
+      submitButton.textContent = isCreatingAccount ? "Create account" : "Send magic link";
+      toggleLink.innerHTML = isCreatingAccount
+        ? `Already have an account? <a href="#" onclick="toggleForm()" class="underline">Sign in</a>`
+        : `New here? <a href="#" onclick="toggleForm()" class="underline">Create an account</a>`;
+      message.textContent = "";
+    };
   </script>
 </body>
 </html>
