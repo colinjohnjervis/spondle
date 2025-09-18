@@ -7,29 +7,83 @@ const supabase = createClient(
 
 export const Layout = {
   init({ active }) {
-    const nav = document.createElement("nav");
-    nav.className = "sidebar";
-    nav.innerHTML = `
-      <div class="logo">🟢 Spondle</div>
-      <ul>
-        <li><a href="/index.html" class="${active === 'home' ? 'active' : ''}">Home</a></li>
-        <li><a href="/events.html" class="${active === 'events' ? 'active' : ''}">Events</a></li>
-        <li><a href="/organisers.html" class="${active === 'organisers' ? 'active' : ''}">Organisers</a></li>
-        <li><a href="/favourites.html" class="${active === 'favourites' ? 'active' : ''}">Favourites</a></li>
-        <li id="auth-link">
-          <a href="/login.html" class="${active === 'login' ? 'active' : ''}">Sign in</a>
-        </li>
-      </ul>
-    `;
-    document.getElementById("layout-root").appendChild(nav);
+    const root = document.getElementById("layout-root");
 
-    // ✅ Update UI if user is logged in
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      const authLink = document.getElementById("auth-link");
-      if (user) {
-        authLink.innerHTML = `<a href="/account.html">My Account</a>`;
+    // --- Sticky Header ---
+    const header = document.createElement("header");
+    header.className = "sp-header";
+    header.innerHTML = `
+      <div class="sp-header__inner">
+        <a href="/index.html" class="sp-logo">
+          <div class="sp-logo__dot"></div>
+          <div class="sp-logo__text">Spondle</div>
+        </a>
+        <button class="sp-burger" id="burgerBtn" aria-label="Open menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    // --- Overlay + Sidebar ---
+    const overlay = document.createElement("div");
+    overlay.className = "sp-overlay";
+    overlay.id = "sidebarOverlay";
+
+    const sidebar = document.createElement("aside");
+    sidebar.className = "sp-sidebar";
+    sidebar.id = "sidebarDrawer";
+    sidebar.innerHTML = `
+      <div class="sp-sidebar__head">
+        <a href="/index.html" class="sp-logo">
+          <div class="sp-logo__dot"></div>
+          <div class="sp-logo__text">Spondle</div>
+        </a>
+        <button class="sp-close" id="closeSidebarBtn" aria-label="Close menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <nav class="sp-nav" id="sidebarNav">
+        <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
+        <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
+        <a href="/organisers.html" class="${active === 'organisers' ? 'is-active' : ''}">Organisers</a>
+        <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
+        <a href="#" id="authLink" class="${active === 'login' ? 'is-active' : ''}">Sign in</a>
+      </nav>
+    `;
+
+    // Append to layout root
+    root.appendChild(header);
+    root.appendChild(overlay);
+    root.appendChild(sidebar);
+
+    // --- Toggle logic ---
+    document.getElementById("burgerBtn").onclick = () => {
+      document.body.classList.add("sp-drawer-open");
+    };
+    document.getElementById("closeSidebarBtn").onclick = () => {
+      document.body.classList.remove("sp-drawer-open");
+    };
+    overlay.onclick = () => {
+      document.body.classList.remove("sp-drawer-open");
+    };
+
+    // --- Supabase auth link ---
+    const authLink = document.getElementById("authLink");
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        authLink.textContent = "Sign out";
+        authLink.onclick = async (e) => {
+          e.preventDefault();
+          await supabase.auth.signOut();
+          location.reload(); // Refresh UI
+        };
       } else {
-        authLink.innerHTML = `<a href="/login.html">Sign in</a>`;
+        authLink.textContent = "Sign in";
+        authLink.setAttribute("href", "/login.html");
       }
     });
   },
