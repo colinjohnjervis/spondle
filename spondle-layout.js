@@ -9,9 +9,9 @@ const supabase = createClient(
 
 window.Layout = {
   init({ active }) {
-    const header = document.createElement("header");
-    header.className = "sp-header";
-    header.innerHTML = `
+    const nav = document.createElement("nav");
+    nav.className = "sp-header";
+    nav.innerHTML = `
       <div class="sp-header__inner">
         <a href="/index.html" class="sp-logo">
           <span class="sp-logo__dot"></span>
@@ -33,14 +33,16 @@ window.Layout = {
     overlay.className = "sp-overlay";
     overlay.onclick = () => document.body.classList.remove("sp-drawer-open");
 
-    const sidebar = document.createElement("aside");
+    const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
-        <button class="sp-close" onclick="document.body.classList.remove('sp-drawer-open')">✕</button>
+        <button class="sp-close" onclick="document.body.classList.remove('sp-drawer-open')">
+          ✕
+        </button>
       </div>
-      <nav class="sp-nav">
+      <nav class="sp-nav" id="sp-nav">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
         <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
         <a href="/organisers.html" class="${active === 'organisers' ? 'is-active' : ''}">Organisers</a>
@@ -51,14 +53,27 @@ window.Layout = {
 
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
-    document.body.prepend(header);
+    document.body.prepend(nav);
 
-    // Update auth link
+    // Set auth status
     supabase.auth.getUser().then(({ data: { user } }) => {
       const authLink = document.getElementById("auth-link");
-      if (authLink) {
-        authLink.innerText = user ? "Sign out" : "Sign in";
-        authLink.href = user ? "/logout.html" : "/login.html";
+      const nav = document.getElementById("sp-nav");
+
+      if (user && nav && authLink) {
+        // Create and insert the "My Profile" link
+        const profileLink = document.createElement("a");
+        profileLink.href = "/account.html";
+        profileLink.textContent = "My Profile";
+        profileLink.className = active === 'account' ? 'is-active' : '';
+        nav.insertBefore(profileLink, authLink);
+
+        // Change Sign in to Sign out
+        authLink.innerText = "Sign out";
+        authLink.href = "/logout.html";
+      } else if (authLink) {
+        authLink.innerText = "Sign in";
+        authLink.href = "/login.html";
       }
     });
   }
