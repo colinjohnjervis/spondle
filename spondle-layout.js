@@ -8,7 +8,9 @@ const supabase = createClient(
 );
 
 window.Layout = {
-  init({ active }) {
+  async init({ active }) {
+    const { data: { user } } = await supabase.auth.getUser(); // ⏳ Wait for Supabase session
+
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -45,7 +47,6 @@ window.Layout = {
         <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
         <a href="/organisers.html" class="${active === 'organisers' ? 'is-active' : ''}">Organisers</a>
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
-        <!-- Auth links inserted below -->
       </nav>
     `;
 
@@ -53,31 +54,27 @@ window.Layout = {
     document.body.prepend(sidebar);
     document.body.prepend(nav);
 
-    // ✅ Load auth-related links
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      const navContainer = document.getElementById("sidebar-links");
-      if (!navContainer) return;
+    // ✅ Inject auth-specific links
+    const navContainer = document.getElementById("sidebar-links");
+    if (!navContainer) return;
 
-      if (user) {
-        // If signed in, show My Profile and Sign Out
-        const profileLink = document.createElement("a");
-        profileLink.href = "/account.html";
-        profileLink.textContent = "My Profile";
+    if (user) {
+      const profileLink = document.createElement("a");
+      profileLink.href = "/account.html";
+      profileLink.textContent = "My Profile";
 
-        const logoutLink = document.createElement("a");
-        logoutLink.href = "/logout.html";
-        logoutLink.textContent = "Sign out";
+      const logoutLink = document.createElement("a");
+      logoutLink.href = "/logout.html";
+      logoutLink.textContent = "Sign out";
 
-        navContainer.appendChild(profileLink);
-        navContainer.appendChild(logoutLink);
-      } else {
-        // If not signed in, show Sign In
-        const loginLink = document.createElement("a");
-        loginLink.href = "/login.html";
-        loginLink.className = active === "login" ? "is-active" : "";
-        loginLink.textContent = "Sign in";
-        navContainer.appendChild(loginLink);
-      }
-    });
+      navContainer.appendChild(profileLink);
+      navContainer.appendChild(logoutLink);
+    } else {
+      const loginLink = document.createElement("a");
+      loginLink.href = "/login.html";
+      loginLink.className = active === "login" ? "is-active" : "";
+      loginLink.textContent = "Sign in";
+      navContainer.appendChild(loginLink);
+    }
   }
 };
