@@ -8,7 +8,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared layout + styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed2">
   <link rel="stylesheet" href="./styles.css?v=3">
 </head>
 <body>
@@ -17,13 +17,16 @@
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8 space-y-4">
-      <!-- Hero image -->
-      <img
-        src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
-        alt="Sample event"
-        class="w-full h-64 md:h-80 object-cover rounded-lg border border-gray-700"
-      >
       
+      <!-- ✅ Updated hero image to match tile style -->
+      <div class="relative h-40">
+        <img
+          src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
+          alt="Sample event"
+          class="w-full h-full object-cover"
+        >
+      </div>
+
       <!-- Event info -->
       <h1 class="text-3xl md:text-4xl font-extrabold">Sample Event Title</h1>
       <p class="text-[color:var(--muted)]">📍 Venue Name, City</p>
@@ -48,7 +51,7 @@
     </section>
   </main>
 
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script src="./spondle-layout.js?v=layout-fixed2"></script>
   <script>Layout.init();</script>
 </body>
 </html>
