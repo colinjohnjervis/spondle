@@ -9,7 +9,16 @@ const supabase = createClient(
 
 window.Layout = {
   init({ active }) {
-    // Inject header
+    // Ensure DOM is fully ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => this._renderLayout(active));
+    } else {
+      this._renderLayout(active);
+    }
+  },
+
+  _renderLayout(active) {
+    // Header
     const header = document.createElement("header");
     header.className = "sp-header";
     header.innerHTML = `
@@ -30,12 +39,12 @@ window.Layout = {
       </div>
     `;
 
-    // Inject sidebar overlay
+    // Overlay
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     overlay.onclick = () => document.body.classList.remove("sp-drawer-open");
 
-    // Inject sidebar
+    // Sidebar
     const sidebar = document.createElement("aside");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
@@ -52,12 +61,12 @@ window.Layout = {
       </nav>
     `;
 
-    // Inject everything
+    // Inject into DOM
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
     document.body.prepend(header);
 
-    // ✅ Check auth and update auth link
+    // Update auth link
     supabase.auth.getUser().then(({ data: { user } }) => {
       const authLink = document.getElementById("auth-link");
       if (authLink) {
