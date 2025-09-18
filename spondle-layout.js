@@ -1,13 +1,10 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+// spondle-layout.js (non-module, safe on every page)
+// - No `import`
+// - Works with <script src="./spondle-layout.js"> (classic script)
+// - Uses window.supabase if present, otherwise leaves "Sign in"
 
-const supabase = createClient(
-  "https://jvuunvnbpdfrttusgelz.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-);
-
-export const Layout = {
-  init({ active }) {
-    // 1. Render the sidebar immediately
+(function () {
+  function renderSidebar(active) {
     const nav = document.createElement("nav");
     nav.className = "sidebar";
     nav.innerHTML = `
@@ -22,35 +19,50 @@ export const Layout = {
         </li>
       </ul>
     `;
-    const layoutRoot = document.getElementById("layout-root");
-    if (layoutRoot) {
-      layoutRoot.appendChild(nav);
-    }
+    const root = document.getElementById("layout-root");
+    if (root) root.appendChild(nav);
+  }
 
-    // 2. Then safely check session *after* layout renders
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        const authLink = document.getElementById("auth-link");
-        if (!authLink) return;
+  async function updateAuthLink(active) {
+    // Only run if Supabase client exists globally
+    const sb = window.supabase;
+    const authLink = document.getElementById("auth-link");
+    if (!authLink || !sb || !sb.auth || !sb.auth.getSession) return;
 
-        if (session && session.user) {
-          // Logged in: show Sign out
-          authLink.innerHTML = `<a href="#" id="sign-out-link">Sign out</a>`;
-          const signOutLink = document.getElementById("sign-out-link");
-          if (signOutLink) {
-            signOutLink.addEventListener("click", async (e) => {
-              e.preventDefault();
-              await supabase.auth.signOut();
-              window.location.href = "/login.html";
-            });
-          }
-        } else {
-          // Not logged in: keep Sign in link
-          authLink.innerHTML = `<a href="/login.html" class="${active === 'login' ? 'active' : ''}">Sign in</a>`;
+    try {
+      const { data } = await sb.auth.getSession();
+      const session = data && data.session;
+      if (session && session.user) {
+        // Logged in → show Sign out
+        authLink.innerHTML = `<a href="#" id="sign-out-link">Sign out</a>`;
+        const signOut = document.getElementById("sign-out-link");
+        if (signOut) {
+          signOut.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+              await sb.auth.signOut();
+            } catch (_) {}
+            // Redirect back to login after sign out
+            window.location.href = "/login.html";
+          });
         }
-      })
-      .catch((err) => {
-        console.error("❌ Error checking session:", err);
-      });
-  },
-};
+      } else {
+        // Not logged in → show Sign in (keep active class behavior)
+        authLink.innerHTML = `<a href="/login.html" class="${active === 'login' ? 'active' : ''}">Sign in</a>`;
+      }
+    } catch (_) {
+      // On any error, leave default "Sign in"
+    }
+  }
+
+  // Public API used by pages: Layout.init({ active: '...' })
+  window.Layout = {
+    init({ active }) {
+      renderSidebar(active);
+      // Try to update auth link now…
+      updateAuthLink(active);
+      // …and try once more after a short delay in case supabase loads later
+      setTimeout(() => updateAuthLink(active), 500);
+    },
+  };
+})();
