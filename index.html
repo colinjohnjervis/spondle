@@ -7,13 +7,13 @@
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + page styles (version bumps to bust cache) -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=3">
-  <link rel="stylesheet" href="./styles.css?v=3">
-  <link rel="stylesheet" href="./hearts.css?v=2">
+  <!-- Styles -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=1000">
+  <link rel="stylesheet" href="./styles.css?v=1000">
+  <link rel="stylesheet" href="./hearts.css?v=1000">
 </head>
 <body>
-  <!-- Shared sticky header + sidebar -->
+  <!-- Header + Sidebar injected -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
@@ -36,12 +36,15 @@
     </section>
   </main>
 
-  <!-- Shared layout logic (version bump) -->
-  <script src="./spondle-layout.js?v=3"></script>
-  <script>Layout.init({ active: 'home' });</script>
+  <!-- JS -->
+  <script src="./spondle-layout.js?v=1000" type="module"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "home" });
+    });
+  </script>
 
-  <!-- Events data + renderer -->
-  <script src="./events-data.js?v=2"></script>
-  <script src="./scripts.js?v=heart4"></script>
+  <script src="./events-data.js?v=1000"></script>
+  <script src="./scripts.js?v=1000"></script>
 </body>
 </html>
