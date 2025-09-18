@@ -9,9 +9,10 @@ const supabase = createClient(
 
 window.Layout = {
   init({ active }) {
-    const nav = document.createElement("nav");
-    nav.className = "sp-header";
-    nav.innerHTML = `
+    // Inject header
+    const header = document.createElement("header");
+    header.className = "sp-header";
+    header.innerHTML = `
       <div class="sp-header__inner">
         <a href="/index.html" class="sp-logo">
           <span class="sp-logo__dot"></span>
@@ -29,18 +30,18 @@ window.Layout = {
       </div>
     `;
 
+    // Inject sidebar overlay
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     overlay.onclick = () => document.body.classList.remove("sp-drawer-open");
 
-    const sidebar = document.createElement("div");
+    // Inject sidebar
+    const sidebar = document.createElement("aside");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
-        <button class="sp-close" onclick="document.body.classList.remove('sp-drawer-open')">
-          ✕
-        </button>
+        <button class="sp-close" onclick="document.body.classList.remove('sp-drawer-open')">✕</button>
       </div>
       <nav class="sp-nav">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
@@ -51,16 +52,22 @@ window.Layout = {
       </nav>
     `;
 
+    // Inject everything
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
-    document.body.prepend(nav);
+    document.body.prepend(header);
 
-    // Set auth status
+    // ✅ Check auth and update auth link
     supabase.auth.getUser().then(({ data: { user } }) => {
       const authLink = document.getElementById("auth-link");
       if (authLink) {
-        authLink.innerText = user ? "Sign out" : "Sign in";
-        authLink.href = user ? "/logout.html" : "/login.html";
+        if (user) {
+          authLink.innerText = "Sign out";
+          authLink.href = "/logout.html";
+        } else {
+          authLink.innerText = "Sign in";
+          authLink.href = "/login.html";
+        }
       }
     });
   }
