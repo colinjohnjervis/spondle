@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signing Out...</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./spondle-layout.css?v=3">
+  <link rel="stylesheet" href="./styles.css?v=3">
+</head>
+<body class="flex items-center justify-center h-screen">
+  <div class="text-center text-white text-lg font-medium">
+    Signing you out...
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
+
+    // Sign out and redirect
+    supabase.auth.signOut().then(() => {
+      window.location.href = "/index.html";
+    });
+  </script>
+</body>
+</html>
