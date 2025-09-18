@@ -7,6 +7,7 @@ const supabase = createClient(
 
 export const Layout = {
   init({ active }) {
+    // 1. Build static sidebar first
     const nav = document.createElement("nav");
     nav.className = "sidebar";
     nav.innerHTML = `
@@ -23,11 +24,13 @@ export const Layout = {
     `;
     document.getElementById("layout-root").appendChild(nav);
 
-    // ✅ Update UI based on session
+    // 2. Then update auth status after DOM is available
     supabase.auth.getSession().then(({ data: { session } }) => {
       const authLink = document.getElementById("auth-link");
+      if (!authLink) return;
+
       if (session && session.user) {
-        // User is logged in — show Sign out
+        // Logged in: show Sign out
         authLink.innerHTML = `<a href="#" id="sign-out-link">Sign out</a>`;
         const signOutLink = document.getElementById("sign-out-link");
         signOutLink.addEventListener("click", async (e) => {
@@ -36,7 +39,7 @@ export const Layout = {
           window.location.href = "/login.html";
         });
       } else {
-        // Not logged in — keep Sign in
+        // Not logged in: ensure it says Sign in
         authLink.innerHTML = `<a href="/login.html" class="${active === 'login' ? 'active' : ''}">Sign in</a>`;
       }
     });
