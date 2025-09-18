@@ -23,13 +23,21 @@ export const Layout = {
     `;
     document.getElementById("layout-root").appendChild(nav);
 
-    // ✅ Update UI if user is logged in
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    // ✅ Update UI based on session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       const authLink = document.getElementById("auth-link");
-      if (user) {
-        authLink.innerHTML = `<a href="/account.html">My Account</a>`;
+      if (session && session.user) {
+        // User is logged in — show Sign out
+        authLink.innerHTML = `<a href="#" id="sign-out-link">Sign out</a>`;
+        const signOutLink = document.getElementById("sign-out-link");
+        signOutLink.addEventListener("click", async (e) => {
+          e.preventDefault();
+          await supabase.auth.signOut();
+          window.location.href = "/login.html";
+        });
       } else {
-        authLink.innerHTML = `<a href="/login.html">Sign in</a>`;
+        // Not logged in — keep Sign in
+        authLink.innerHTML = `<a href="/login.html" class="${active === 'login' ? 'active' : ''}">Sign in</a>`;
       }
     });
   },
