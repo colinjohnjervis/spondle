@@ -1,3 +1,5 @@
+// spondle-layout.js
+
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -36,16 +38,14 @@ window.Layout = {
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
-        <button class="sp-close" onclick="document.body.classList.remove('sp-drawer-open')">
-          ✕
-        </button>
+        <button class="sp-close" onclick="document.body.classList.remove('sp-drawer-open')">✕</button>
       </div>
-      <nav class="sp-nav" id="sp-nav">
+      <nav class="sp-nav" id="sidebar-links">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
         <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
         <a href="/organisers.html" class="${active === 'organisers' ? 'is-active' : ''}">Organisers</a>
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
-        <a href="/login.html" id="auth-link" class="${active === 'login' ? 'is-active' : ''}">Sign in</a>
+        <!-- Auth links inserted below -->
       </nav>
     `;
 
@@ -53,26 +53,30 @@ window.Layout = {
     document.body.prepend(sidebar);
     document.body.prepend(nav);
 
-    // Auth logic
+    // ✅ Load auth-related links
     supabase.auth.getUser().then(({ data: { user } }) => {
-      const authLink = document.getElementById("auth-link");
-      const nav = document.getElementById("sp-nav");
+      const navContainer = document.getElementById("sidebar-links");
+      if (!navContainer) return;
 
-      if (user && nav && authLink) {
-        // Add My Profile link above Sign out
+      if (user) {
+        // If signed in, show My Profile and Sign Out
         const profileLink = document.createElement("a");
         profileLink.href = "/account.html";
-        profileLink.innerText = "My Profile";
-        profileLink.className = `${active === 'account' ? 'is-active' : ''}`;
+        profileLink.textContent = "My Profile";
 
-        nav.insertBefore(profileLink, authLink);
+        const logoutLink = document.createElement("a");
+        logoutLink.href = "/logout.html";
+        logoutLink.textContent = "Sign out";
 
-        // Update Sign out
-        authLink.innerText = "Sign out";
-        authLink.href = "/logout.html";
-      } else if (authLink) {
-        authLink.innerText = "Sign in";
-        authLink.href = "/login.html";
+        navContainer.appendChild(profileLink);
+        navContainer.appendChild(logoutLink);
+      } else {
+        // If not signed in, show Sign In
+        const loginLink = document.createElement("a");
+        loginLink.href = "/login.html";
+        loginLink.className = active === "login" ? "is-active" : "";
+        loginLink.textContent = "Sign in";
+        navContainer.appendChild(loginLink);
       }
     });
   }
