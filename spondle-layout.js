@@ -9,16 +9,6 @@ const supabase = createClient(
 
 window.Layout = {
   init({ active }) {
-    // Ensure DOM is fully ready
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => this._renderLayout(active));
-    } else {
-      this._renderLayout(active);
-    }
-  },
-
-  _renderLayout(active) {
-    // Header
     const header = document.createElement("header");
     header.className = "sp-header";
     header.innerHTML = `
@@ -39,12 +29,10 @@ window.Layout = {
       </div>
     `;
 
-    // Overlay
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     overlay.onclick = () => document.body.classList.remove("sp-drawer-open");
 
-    // Sidebar
     const sidebar = document.createElement("aside");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
@@ -61,7 +49,6 @@ window.Layout = {
       </nav>
     `;
 
-    // Inject into DOM
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
     document.body.prepend(header);
@@ -70,13 +57,8 @@ window.Layout = {
     supabase.auth.getUser().then(({ data: { user } }) => {
       const authLink = document.getElementById("auth-link");
       if (authLink) {
-        if (user) {
-          authLink.innerText = "Sign out";
-          authLink.href = "/logout.html";
-        } else {
-          authLink.innerText = "Sign in";
-          authLink.href = "/login.html";
-        }
+        authLink.innerText = user ? "Sign out" : "Sign in";
+        authLink.href = user ? "/logout.html" : "/login.html";
       }
     });
   }
