@@ -1,5 +1,3 @@
-// spondle-layout.js
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -55,20 +53,21 @@ window.Layout = {
     document.body.prepend(sidebar);
     document.body.prepend(nav);
 
-    // Set auth status
+    // Auth logic
     supabase.auth.getUser().then(({ data: { user } }) => {
       const authLink = document.getElementById("auth-link");
       const nav = document.getElementById("sp-nav");
 
       if (user && nav && authLink) {
-        // Create and insert the "My Profile" link
+        // Add My Profile link above Sign out
         const profileLink = document.createElement("a");
         profileLink.href = "/account.html";
-        profileLink.textContent = "My Profile";
-        profileLink.className = active === 'account' ? 'is-active' : '';
+        profileLink.innerText = "My Profile";
+        profileLink.className = `${active === 'account' ? 'is-active' : ''}`;
+
         nav.insertBefore(profileLink, authLink);
 
-        // Change Sign in to Sign out
+        // Update Sign out
         authLink.innerText = "Sign out";
         authLink.href = "/logout.html";
       } else if (authLink) {
