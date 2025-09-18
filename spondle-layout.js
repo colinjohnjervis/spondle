@@ -60,7 +60,7 @@ window.Layout = {
 
     if (user) {
       const profileLink = document.createElement("a");
-      profileLink.href = "/profile.html"; // 🔄 Changed from /account.html to /profile.html
+      profileLink.href = "/profile.html";
       profileLink.textContent = "My Profile";
 
       const logoutLink = document.createElement("a");
