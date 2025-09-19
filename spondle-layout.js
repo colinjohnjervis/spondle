@@ -17,7 +17,7 @@ window.Layout = {
           <span class="sp-logo__dot"></span>
           <span class="sp-logo__text">Spondle</span>
         </a>
-        <button class="sp-burger" id="burger-toggle">
+        <button class="sp-burger" id="burger-toggle" aria-label="Toggle menu">
           <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
             class="feather feather-menu">
@@ -31,14 +31,13 @@ window.Layout = {
 
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
-    overlay.onclick = closeSidebar;
 
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
-        <button class="sp-close" onclick="window.Layout.closeSidebar()">✕</button>
+        <button class="sp-close" id="close-sidebar" aria-label="Close menu">✕</button>
       </div>
       <nav class="sp-nav" id="sidebar-links">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
@@ -52,29 +51,43 @@ window.Layout = {
     document.body.prepend(sidebar);
     document.body.prepend(nav);
 
-    // Burger toggle logic
-    document.getElementById('burger-toggle').addEventListener('click', () => {
-      document.body.classList.add('sp-drawer-open');
-      document.getElementById('burger-icon').outerHTML = `
-        <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="feather feather-x">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>`;
+    // ✅ Event listener for burger toggle
+    const burgerBtn = document.getElementById("burger-toggle");
+    const burgerIcon = document.getElementById("burger-icon");
+
+    burgerBtn.addEventListener("click", () => {
+      document.body.classList.add("sp-drawer-open");
+      updateBurgerIcon(true);
     });
 
-    window.Layout.closeSidebar = () => {
-      document.body.classList.remove('sp-drawer-open');
-      document.getElementById('burger-icon').outerHTML = `
-        <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          class="feather feather-menu">
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>`;
-    };
+    // ✅ Event listener for sidebar close
+    document.getElementById("close-sidebar").addEventListener("click", () => {
+      document.body.classList.remove("sp-drawer-open");
+      updateBurgerIcon(false);
+    });
+
+    // ✅ Close if overlay clicked
+    overlay.addEventListener("click", () => {
+      document.body.classList.remove("sp-drawer-open");
+      updateBurgerIcon(false);
+    });
+
+    function updateBurgerIcon(isOpen) {
+      burgerIcon.outerHTML = isOpen
+        ? `<svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="feather feather-x">
+             <line x1="18" y1="6" x2="6" y2="18"/>
+             <line x1="6" y1="6" x2="18" y2="18"/>
+           </svg>`
+        : `<svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             class="feather feather-menu">
+             <line x1="3" y1="12" x2="21" y2="12"/>
+             <line x1="3" y1="6" x2="21" y2="6"/>
+             <line x1="3" y1="18" x2="21" y2="18"/>
+           </svg>`;
+    }
 
     // ✅ Inject auth-specific links
     const navContainer = document.getElementById("sidebar-links");
