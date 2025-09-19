@@ -1,0 +1,86 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Event – Spondle</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./spondle-layout.css?v=1006">
+  <link rel="stylesheet" href="./styles.css?v=1006">
+</head>
+<body class="bg-black text-white">
+  <div id="layout-root"></div>  <main class="px-4 sm:px-6 lg:px-8 mt-4">
+    <section class="panel p-6 md:p-8 max-w-2xl mx-auto">
+      <h1 class="text-3xl font-extrabold mb-6">Create Event</h1>
+      <form id="eventForm" class="space-y-4">
+        <input type="text" name="title" placeholder="Event title" required class="w-full rounded p-2 bg-gray-900 border border-gray-700" /><textarea name="description" placeholder="Event description" rows="4" required class="w-full rounded p-2 bg-gray-900 border border-gray-700"></textarea>
+
+    <input type="text" name="image_url" placeholder="Image URL" required class="w-full rounded p-2 bg-gray-900 border border-gray-700" />
+
+    <input type="text" name="venue" placeholder="Venue name" required class="w-full rounded p-2 bg-gray-900 border border-gray-700" />
+
+    <input type="text" name="city" placeholder="City / Town" required class="w-full rounded p-2 bg-gray-900 border border-gray-700" />
+
+    <input type="date" name="event_date" required class="w-full rounded p-2 bg-gray-900 border border-gray-700" />
+
+    <input type="time" name="event_time" required class="w-full rounded p-2 bg-gray-900 border border-gray-700" />
+
+    <input type="text" name="price_label" placeholder="e.g. Free, £10, Donation" class="w-full rounded p-2 bg-gray-900 border border-gray-700" />
+
+    <select name="category" required class="w-full rounded p-2 bg-gray-900 border border-gray-700">
+      <option value="">Select category</option>
+      <option>Live Music</option>
+      <option>Comedy</option>
+      <option>Theatre</option>
+      <option>Club Night</option>
+      <option>Art Exhibition</option>
+      <option>Workshop</option>
+      <option>Outdoor Market</option>
+      <option>Family Day</option>
+      <option>Quiz Night</option>
+      <option>Beer Festival</option>
+    </select>
+
+    <select name="publish_status" required class="w-full rounded p-2 bg-gray-900 border border-gray-700">
+      <option value="">Publish status</option>
+      <option>draft</option>
+      <option>published</option>
+      <option>cancelled</option>
+    </select>
+
+    <button type="submit" class="w-full bg-[color:var(--brand)] text-black font-semibold py-2 rounded hover:opacity-90">Submit</button>
+    <p id="eventSuccess" class="text-green-400 hidden mt-2">✅ Event submitted successfully</p>
+    <p id="eventError" class="text-red-400 hidden mt-2">❌ Failed to submit event</p>
+  </form>
+</section>
+
+  </main>  <script src="./spondle-layout.js?v=1006" type="module"></script>  <script>
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
+
+    const form = document.getElementById('eventForm');
+    const successMsg = document.getElementById('eventSuccess');
+    const errorMsg = document.getElementById('eventError');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      successMsg.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+
+      const data = Object.fromEntries(new FormData(form));
+
+      const { error } = await supabase.from('events').insert([{ ...data }]);
+
+      if (error) {
+        console.error(error);
+        errorMsg.classList.remove('hidden');
+      } else {
+        successMsg.classList.remove('hidden');
+        form.reset();
+      }
+    });
+  </script></body>
+</html>
