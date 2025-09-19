@@ -1,5 +1,3 @@
-// spondle-layout.js
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -9,7 +7,7 @@ const supabase = createClient(
 
 window.Layout = {
   async init({ active }) {
-    const { data: { user } } = await supabase.auth.getUser(); // ⏳ Wait for Supabase session
+    const { data: { user } } = await supabase.auth.getUser();
 
     const nav = document.createElement("nav");
     nav.className = "sp-header";
@@ -19,8 +17,8 @@ window.Layout = {
           <span class="sp-logo__dot"></span>
           <span class="sp-logo__text">Spondle</span>
         </a>
-        <button class="sp-burger" onclick="document.body.classList.add('sp-drawer-open')">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+        <button class="sp-burger" id="burger-toggle">
+          <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
             class="feather feather-menu">
             <line x1="3" y1="12" x2="21" y2="12"/>
@@ -33,14 +31,14 @@ window.Layout = {
 
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
-    overlay.onclick = () => document.body.classList.remove("sp-drawer-open");
+    overlay.onclick = closeSidebar;
 
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
-        <button class="sp-close" onclick="document.body.classList.remove('sp-drawer-open')">✕</button>
+        <button class="sp-close" onclick="window.Layout.closeSidebar()">✕</button>
       </div>
       <nav class="sp-nav" id="sidebar-links">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
@@ -54,6 +52,30 @@ window.Layout = {
     document.body.prepend(sidebar);
     document.body.prepend(nav);
 
+    // Burger toggle logic
+    document.getElementById('burger-toggle').addEventListener('click', () => {
+      document.body.classList.add('sp-drawer-open');
+      document.getElementById('burger-icon').outerHTML = `
+        <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="feather feather-x">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>`;
+    });
+
+    window.Layout.closeSidebar = () => {
+      document.body.classList.remove('sp-drawer-open');
+      document.getElementById('burger-icon').outerHTML = `
+        <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="feather feather-menu">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>`;
+    };
+
     // ✅ Inject auth-specific links
     const navContainer = document.getElementById("sidebar-links");
     if (!navContainer) return;
@@ -61,7 +83,7 @@ window.Layout = {
     if (user) {
       const profileLink = document.createElement("a");
       profileLink.href = "/profile.html";
-      profileLink.textContent = "My Profile 2";
+      profileLink.textContent = "My Profile";
 
       const logoutLink = document.createElement("a");
       logoutLink.href = "/logout.html";
