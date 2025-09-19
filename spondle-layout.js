@@ -1,3 +1,4 @@
+// spondle-layout.js
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -6,9 +7,10 @@ const supabase = createClient(
 );
 
 window.Layout = {
-  async init({ active }) {
+  async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Create header
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -17,27 +19,65 @@ window.Layout = {
           <span class="sp-logo__dot"></span>
           <span class="sp-logo__text">Spondle</span>
         </a>
-        <button class="sp-burger" id="burger-toggle" aria-label="Toggle menu">
-          <svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-            class="feather feather-menu">
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
-        </button>
       </div>
     `;
 
+    // Create burger button with toggle
+    const burgerButton = document.createElement("button");
+    burgerButton.className = "sp-burger";
+    burgerButton.setAttribute("aria-label", "Toggle menu");
+
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("width", "24");
+    icon.setAttribute("height", "24");
+    icon.setAttribute("fill", "none");
+    icon.setAttribute("stroke", "currentColor");
+    icon.setAttribute("stroke-width", "2");
+    icon.setAttribute("stroke-linecap", "round");
+    icon.setAttribute("stroke-linejoin", "round");
+    icon.innerHTML = `
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    `;
+
+    burgerButton.appendChild(icon);
+
+    burgerButton.onclick = () => {
+      const isOpen = document.body.classList.toggle("sp-drawer-open");
+      icon.innerHTML = isOpen
+        ? `
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        `
+        : `
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        `;
+    };
+
+    nav.querySelector(".sp-header__inner").appendChild(burgerButton);
+
+    // Create overlay
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
+    overlay.onclick = () => {
+      document.body.classList.remove("sp-drawer-open");
+      icon.innerHTML = `
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      `;
+    };
 
+    // Create sidebar
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
-        <button class="sp-close" id="close-sidebar" aria-label="Close menu">✕</button>
+        <button class="sp-close" aria-label="Close sidebar">✕</button>
       </div>
       <nav class="sp-nav" id="sidebar-links">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
@@ -47,49 +87,22 @@ window.Layout = {
       </nav>
     `;
 
+    // Add close button logic
+    sidebar.querySelector(".sp-close").onclick = () => {
+      document.body.classList.remove("sp-drawer-open");
+      icon.innerHTML = `
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      `;
+    };
+
+    // Inject layout
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
     document.body.prepend(nav);
 
-    // ✅ Event listener for burger toggle
-    const burgerBtn = document.getElementById("burger-toggle");
-    const burgerIcon = document.getElementById("burger-icon");
-
-    burgerBtn.addEventListener("click", () => {
-      document.body.classList.add("sp-drawer-open");
-      updateBurgerIcon(true);
-    });
-
-    // ✅ Event listener for sidebar close
-    document.getElementById("close-sidebar").addEventListener("click", () => {
-      document.body.classList.remove("sp-drawer-open");
-      updateBurgerIcon(false);
-    });
-
-    // ✅ Close if overlay clicked
-    overlay.addEventListener("click", () => {
-      document.body.classList.remove("sp-drawer-open");
-      updateBurgerIcon(false);
-    });
-
-    function updateBurgerIcon(isOpen) {
-      burgerIcon.outerHTML = isOpen
-        ? `<svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             class="feather feather-x">
-             <line x1="18" y1="6" x2="6" y2="18"/>
-             <line x1="6" y1="6" x2="18" y2="18"/>
-           </svg>`
-        : `<svg id="burger-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             class="feather feather-menu">
-             <line x1="3" y1="12" x2="21" y2="12"/>
-             <line x1="3" y1="6" x2="21" y2="6"/>
-             <line x1="3" y1="18" x2="21" y2="18"/>
-           </svg>`;
-    }
-
-    // ✅ Inject auth-specific links
+    // Inject auth-specific links
     const navContainer = document.getElementById("sidebar-links");
     if (!navContainer) return;
 
@@ -109,6 +122,7 @@ window.Layout = {
       loginLink.href = "/login.html";
       loginLink.className = active === "login" ? "is-active" : "";
       loginLink.textContent = "Sign in";
+
       navContainer.appendChild(loginLink);
     }
   }
