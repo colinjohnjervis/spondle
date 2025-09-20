@@ -95,11 +95,11 @@
 
       wrapper.innerHTML = `
         <div>
-          <input type="text" name="venue[]" placeholder="Venue ID" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
         <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="date" name="event_date[]" placeholder="Date" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" placeholder="Time" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
         <div>
           <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
