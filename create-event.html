@@ -9,19 +9,16 @@
 <body class="bg-black text-white p-6">
   <h1 class="text-3xl font-bold mb-6">Create Event</h1>
   <form id="eventForm" class="space-y-6">
-    <!-- Event Name -->
     <div>
       <label class="block mb-1 font-medium">Event Name</label>
       <input type="text" name="title" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
     </div>
 
-    <!-- Description -->
     <div>
       <label class="block mb-1 font-medium">Description</label>
       <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
     </div>
 
-    <!-- Category -->
     <div>
       <label class="block mb-1 font-medium">Category</label>
       <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
@@ -38,7 +35,6 @@
       </select>
     </div>
 
-    <!-- Publish Status -->
     <div>
       <label class="block mb-1 font-medium">Publish Status</label>
       <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
@@ -48,23 +44,22 @@
       </select>
     </div>
 
-    <!-- Image URL -->
     <div>
       <label class="block mb-1 font-medium">Image URL</label>
       <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
     </div>
 
-    <!-- Schedule Tabs -->
     <div>
       <label class="block mb-2 font-medium">Schedule</label>
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded" data-type="single">Single</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded" data-type="recurring">Recurring</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded" data-type="tour">Tour</button>
+      <div class="flex justify-between space-x-2 mb-4">
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded flex-1" data-type="single">Single</button>
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded flex-1" data-type="recurring">Recurring</button>
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded flex-1" data-type="tour">Tour</button>
       </div>
       <input type="hidden" name="event_type" id="eventType" value="single">
+
       <div id="tabContent">
-        <!-- Will be dynamically replaced -->
+        <!-- Replaced dynamically -->
       </div>
     </div>
 
@@ -101,7 +96,15 @@
         <div class="space-y-2">
           <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
 
-          <label class="block text-sm">Recurring Dates:</label>
+          <label class="block text-sm mt-2">Recurring Pattern:</label>
+          <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+            <option value="">None</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+
+          <label class="block text-sm mt-2">Recurring Dates:</label>
           <div class="space-y-2">
             <input type="date" name="event_date[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
             <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
@@ -157,21 +160,21 @@
       section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
     }
 
-    // Load default tab
+    // Load default view
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-
       const baseData = {
         title: formData.get('title'),
         category: formData.get('category'),
         publish_status: formData.get('publish_status'),
         image: formData.get('image'),
         description: formData.get('description'),
-        event_type: formData.get('event_type')
+        event_type: formData.get('event_type'),
+        recurring_pattern: formData.get('recurring_pattern') || null
       };
 
       const venues = formData.getAll('venue[]');
@@ -199,4 +202,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
