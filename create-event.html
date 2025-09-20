@@ -101,6 +101,9 @@
           <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
           <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
+        <div>
+          <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
       `;
 
       scheduleSection.insertBefore(wrapper, addScheduleBtn);
@@ -128,13 +131,15 @@
       const venues = formData.getAll('venue[]');
       const dates = formData.getAll('event_date[]');
       const times = formData.getAll('event_time[]');
+      const ticketLinks = formData.getAll('tickets_url[]');
 
       for (let i = 0; i < venues.length; i++) {
         const event = {
           ...baseData,
           venue: venues[i],
           event_date: dates[i],
-          event_time: times[i]
+          event_time: times[i],
+          tickets_url: ticketLinks[i] || null
         };
         const { error } = await supabase.from('events').insert([event]);
         if (error) console.error('Error:', error);
