@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,68 +6,68 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6">
-  <h1 class="text-3xl font-bold mb-6">Create Event</h1>
-  <form id="eventForm" class="space-y-6">
+  <h1 class="text-3xl font-bold mb-6">Create Event</h1>  <form id="eventForm" class="space-y-6">
+    <!-- Event Name -->
     <div>
       <label class="block mb-1 font-medium">Event Name</label>
       <input type="text" name="title" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
+    </div><!-- Description -->
+<div>
+  <label class="block mb-1 font-medium">Description</label>
+  <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
+</div>
 
-    <div>
-      <label class="block mb-1 font-medium">Description</label>
-      <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
-    </div>
+<!-- Category -->
+<div>
+  <label class="block mb-1 font-medium">Category</label>
+  <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+    <option value="Music">Music</option>
+    <option value="Comedy">Comedy</option>
+    <option value="Theatre">Theatre</option>
+    <option value="Talks">Talks</option>
+    <option value="Festivals">Festivals</option>
+    <option value="Beer Festivals">Beer Festivals</option>
+    <option value="Archery">Archery</option>
+    <option value="Frisbee Golf">Frisbee Golf</option>
+    <option value="Crazy Golf">Crazy Golf</option>
+    <option value="Murder Mystery">Murder Mystery</option>
+  </select>
+</div>
 
-    <div>
-      <label class="block mb-1 font-medium">Category</label>
-      <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <option value="Music">Music</option>
-        <option value="Comedy">Comedy</option>
-        <option value="Theatre">Theatre</option>
-        <option value="Talks">Talks</option>
-        <option value="Festivals">Festivals</option>
-        <option value="Beer Festivals">Beer Festivals</option>
-        <option value="Archery">Archery</option>
-        <option value="Frisbee Golf">Frisbee Golf</option>
-        <option value="Crazy Golf">Crazy Golf</option>
-        <option value="Murder Mystery">Murder Mystery</option>
-      </select>
-    </div>
+<!-- Publish Status -->
+<div>
+  <label class="block mb-1 font-medium">Publish Status</label>
+  <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+    <option value="draft">Draft</option>
+    <option value="published">Published</option>
+    <option value="archived">Archived</option>
+  </select>
+</div>
 
-    <div>
-      <label class="block mb-1 font-medium">Publish Status</label>
-      <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-        <option value="archived">Archived</option>
-      </select>
-    </div>
+<!-- Image URL -->
+<div>
+  <label class="block mb-1 font-medium">Image URL</label>
+  <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+</div>
 
-    <div>
-      <label class="block mb-1 font-medium">Image URL</label>
-      <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
+<!-- Schedule Tabs -->
+<div>
+  <label class="block mb-2 font-medium">Schedule</label>
+  <div class="flex space-x-2 justify-between mb-4">
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
+  </div>
+  <input type="hidden" name="event_type" id="eventType" value="single">
+  <div id="tabContent"></div>
+</div>
 
-    <div>
-      <label class="block mb-2 font-medium">Schedule</label>
-      <div class="flex justify-between space-x-2 mb-4">
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded flex-1" data-type="single">Single</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded flex-1" data-type="recurring">Recurring</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded flex-1" data-type="tour">Tour</button>
-      </div>
-      <input type="hidden" name="event_type" id="eventType" value="single">
+<!-- Submit -->
+<button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
+  Submit Event
+</button>
 
-      <div id="tabContent">
-        <!-- Replaced dynamically -->
-      </div>
-    </div>
-
-    <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
-      Submit Event
-    </button>
-  </form>
-
-  <script type="module">
+  </form>  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
@@ -90,30 +89,26 @@
             <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
           </div>
           <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>`,
-
+        </div>`
+      ,
       recurring: () => `
         <div class="space-y-2">
           <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-
-          <label class="block text-sm mt-2">Recurring Pattern:</label>
+          <label class="block text-sm">Recurring Dates:</label>
           <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-            <option value="">None</option>
+            <option value="">Choose pattern (optional)</option>
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
           </select>
-
-          <label class="block text-sm mt-2">Recurring Dates:</label>
           <div class="space-y-2">
             <input type="date" name="event_date[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
             <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
           </div>
-
           <input type="time" name="event_time[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
           <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>`,
-
+        </div>`
+      ,
       tour: () => `
         <div id="scheduleSection" class="space-y-4">
           <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
@@ -123,8 +118,10 @@
     function loadTab(type) {
       tabContent.innerHTML = views[type]();
       eventTypeInput.value = type;
-
-      if (type === 'tour') createScheduleInput();
+      if (type === 'tour') {
+        createScheduleInput();
+        document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
+      }
       if (type === 'recurring') {
         document.getElementById('addRecurringDate').addEventListener('click', () => {
           const newInput = document.createElement('input');
@@ -160,7 +157,7 @@
       section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
     }
 
-    // Load default view
+    // Initial view
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
@@ -173,8 +170,7 @@
         publish_status: formData.get('publish_status'),
         image: formData.get('image'),
         description: formData.get('description'),
-        event_type: formData.get('event_type'),
-        recurring_pattern: formData.get('recurring_pattern') || null
+        event_type: formData.get('event_type')
       };
 
       const venues = formData.getAll('venue[]');
@@ -200,6 +196,5 @@
       tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
       tabBtns[0].classList.add('bg-blue-500');
     });
-  </script>
-</body>
+  </script></body>
 </html>
