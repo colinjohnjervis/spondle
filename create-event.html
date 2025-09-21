@@ -71,6 +71,7 @@
     </button>
   </form>
 
+  <!-- Venue Template -->
   <template id="venueSearchTemplate">
     <div class="space-y-2">
       <label class="block text-sm">Venue</label>
@@ -96,7 +97,6 @@
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContent = document.getElementById('tabContent');
     const eventTypeInput = document.getElementById('eventType');
-
     const venueTemplate = document.getElementById('venueSearchTemplate');
 
     async function createVenueSearchElement() {
@@ -220,8 +220,10 @@
       });
     });
 
-    await loadTab('single');
-    tabBtns[0].classList.add('bg-blue-500');
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadTab('single');
+      tabBtns[0].classList.add('bg-blue-500');
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -244,7 +246,6 @@
       for (let i = 0; i < venueIds.length; i++) {
         let venue_id = venueIds[i];
 
-        // If empty, try to create new venue
         if (!venue_id) {
           const nameEl = document.querySelectorAll('.new-venue-name')[i];
           const emailEl = document.querySelectorAll('.new-venue-email')[i];
