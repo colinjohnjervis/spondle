@@ -54,10 +54,10 @@
 <!-- Schedule Tabs -->
 <div>
   <label class="block mb-2 font-medium">Schedule</label>
-  <div class="flex space-x-2 justify-between mb-4">
-    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
-    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
-    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
+  <div class="grid grid-cols-3 gap-2 mb-4">
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded" data-type="single">Single</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded" data-type="recurring">Recurring</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded" data-type="tour">Tour</button>
   </div>
   <input type="hidden" name="event_type" id="eventType" value="single">
   <div id="tabContent"></div>
@@ -82,27 +82,19 @@
     const eventTypeInput = document.getElementById('eventType');
 
     const views = {
-      single: venueBlock,
-      recurring: recurringBlock,
-      tour: tourBlock
-    };
-
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
-        btn.classList.add('bg-blue-500');
-        loadTab(btn.dataset.type);
-      });
-    });
-
-    function venueBlock() {
-      return venueHTML();
-    }
-
-    function recurringBlock() {
-      return `
+      single: () => `
         <div class="space-y-2">
-          ${venueHTML()}
+          <div class="venue-search"></div>
+          <div class="flex gap-4">
+            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          </div>
+          <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>`
+      ,
+      recurring: () => `
+        <div class="space-y-2">
+          <div class="venue-search"></div>
           <label class="block text-sm">Recurring Dates:</label>
           <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
             <option value="">Choose pattern (optional)</option>
@@ -116,31 +108,13 @@
           </div>
           <input type="time" name="event_time[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
           <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>`;
-    }
-
-    function tourBlock() {
-      return `<div id="scheduleSection" class="space-y-4">
-        <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
-      </div>`;
-    }
-
-    function venueHTML() {
-      return `<input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      <div class="flex gap-4">
-        <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>
-      <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">`;
-    }
-
-    function createScheduleInput() {
-      const section = document.getElementById('scheduleSection');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
-      wrapper.innerHTML = venueHTML();
-      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
-    }
+        </div>`
+      ,
+      tour: () => `
+        <div id="scheduleSection" class="space-y-4">
+          <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+        </div>`
+    };
 
     function loadTab(type) {
       tabContent.innerHTML = views[type]();
@@ -161,9 +135,42 @@
           document.getElementById('addRecurringDate').before(newInput);
         });
       }
+
+      // Inject venue search/create
+      setupVenueSearch();
     }
 
-    // Initial view
+    function createScheduleInput() {
+      const section = document.getElementById('scheduleSection');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
+      wrapper.innerHTML = `
+        <div class="venue-search"></div>
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      `;
+      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
+      setupVenueSearch(wrapper.querySelector('.venue-search'));
+    }
+
+    function setupVenueSearch(container) {
+      if (!container) {
+        container = document.querySelector('.venue-search');
+      }
+      container.innerHTML = `<input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">`;
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+        btn.classList.add('bg-blue-500');
+        loadTab(btn.dataset.type);
+      });
+    });
+
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
