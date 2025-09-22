@@ -91,6 +91,9 @@
     </div>
 
     <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
+
+    <!-- 🔴 Error Banner (added here) -->
+    <div id="errorBanner" class="hidden mt-4 p-4 bg-red-500 text-white rounded text-sm"></div>
   </form>
 
   <script type="module">
@@ -101,6 +104,7 @@
     );
 
     const form = document.getElementById('eventForm');
+    const errorBanner = document.getElementById('errorBanner');
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContent = document.getElementById('tabContent');
     const eventTypeInput = document.getElementById('eventType');
@@ -280,6 +284,9 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      errorBanner.classList.add('hidden');
+      errorBanner.textContent = '';
+
       const formData = new FormData(form);
       const baseData = {
         event_name: formData.get('event_name'),
@@ -302,13 +309,15 @@
           event_time: times[i],
           tickets_url: ticketLinks[i] || null
         };
+
         const { error } = await supabase.from('events').insert([event]);
         if (error) {
-          console.error('Error inserting event:', error);
+          errorBanner.textContent = `Failed to save event: ${error.message}`;
+          errorBanner.classList.remove('hidden');
+          return;
         }
       }
 
-      alert('Event(s) submitted!');
       form.reset();
       loadTab('single');
       tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
@@ -316,4 +325,4 @@
     });
   </script>
 </body>
-</html>
+        </html>
