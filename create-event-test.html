@@ -141,7 +141,8 @@
 
           const { data: venues } = await supabase.from('venues')
             .select('id,venue_name,street_name,postcode')
-            .ilike('venue_name', `%${q}%`);
+            .ilike('venue_name', `%${q}%`)
+            .limit(5); // <-- LIMIT applied here
 
           venueList.innerHTML = '';
 
