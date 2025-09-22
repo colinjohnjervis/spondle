@@ -1,0 +1,324 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spondle – Venue Search</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #fff;
+      --fg: #111;
+      --muted: #666;
+      --border: #ddd;
+      --radius: 12px;
+    }body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+}
+
+h1 { margin-bottom: 8px; }
+
+.search-box {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 16px;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+
+.venue-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--bg);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.venue-card strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.no-results {
+  text-align: center;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+.no-results a {
+  color: green;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.venue-form {
+  margin-top: 20px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 600ms ease, opacity 600ms ease;
+}
+
+.venue-form.open {
+  opacity: 1;
+}
+
+.venue-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-sizing: border-box;
+}
+
+.venue-form button {
+  width: 100%;
+  padding: 10px;
+  background: black;
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Venues</h1>
+    <input
+      type="text"
+      id="search"
+      class="search-box"
+      placeholder="Search by venue name, street, postcode, or town/city"
+      autocomplete="off"
+    />
+    <div id="venue-list"></div>
+    <div class="no-results" id="no-results" style="display: none;">
+      No results — <a href="#" id="create-venue-link">Create a new venue</a>
+    </div><div class="venue-form" id="venue-form">
+  <input type="text" placeholder="Venue name" />
+  <input type="text" placeholder="Street address" />
+  <input type="text" placeholder="Postcode" />
+  <button>Create Venue</button>
+</div>
+
+  </div>  <script>
+    const SB_URL  = "https://jvuunvnbpdfrttusgelz.supabase.co";
+    const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+
+    const searchInput = document.getElementById('search');
+    const venueList = document.getElementById('venue-list');
+    const noResults = document.getElementById('no-results');
+    const createVenueLink = document.getElementById('create-venue-link');
+    const venueForm = document.getElementById('venue-form');
+
+    async function sbFetch(pathWithQuery, opts = {}) {
+      const url = SB_URL.replace(/\/+\$/, "") + pathWithQuery;
+      const res = await fetch(url, {
+        headers: {
+          apikey: SB_ANON,
+          Authorization: `Bearer ${SB_ANON}`,
+          ...(opts.method ? { 'Content-Type': 'application/json', Prefer: 'return=representation' } : {})
+        },
+        ...opts
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+      return res.headers.get('content-type')?.includes('application/json') ? res.json() : res.text();
+    }
+
+    async function searchVenues(q) {
+      const like = `%25${encodeURIComponent(q)}%25`;
+
+      const vQuery =
+        `/rest/v1/venues?select=id,venue_name,street_name,postcode,location_id`
+        + `&or=(venue_name.ilike.${like},street_name.ilike.${like},postcode.ilike.${like})`
+        + `&limit=25`;
+
+      const locQuery =
+        `/rest/v1/location?select=id,town_city,county&town_city=ilike.${like}&limit=25`;
+
+      const [venuesA, locationsMatch] = await Promise.all([
+        sbFetch(vQuery),
+        sbFetch(locQuery),
+      ]);
+
+      let venuesB = [];
+      if (locationsMatch.length) {
+        const ids = locationsMatch.map(l => l.id).filter(Boolean);
+        const inList = ids.map(id => `"${id}"`).join(",");
+        const venuesByLocQuery =
+          `/rest/v1/venues?select=id,venue_name,street_name,postcode,location_id`
+          + `&location_id=in.(${encodeURIComponent(inList)})`
+          + `&limit=50`;
+        venuesB = await sbFetch(venuesByLocQuery);
+      }
+
+      const byId = new Map();
+      [...venuesA, ...venuesB].forEach(v => byId.set(v.id, v));
+      const merged = [...byId.values()];
+
+      let locMap = new Map();
+      if (merged.length) {
+        const locIds = [...new Set(merged.map(v => v.location_id).filter(Boolean))];
+        if (locIds.length) {
+          const inList = locIds.map(id => `"${id}"`).join(",");
+          const locs = await sbFetch(`/rest/v1/location?select=id,town_city,county&id=in.(${encodeURIComponent(inList)})`);
+          locMap = new Map(locs.map(l => [l.id, l]));
+        }
+      }
+
+      return merged.map(v => ({
+        id: v.id,
+        name: v.venue_name,
+        street: v.street_name || "",
+        postcode: v.postcode || "",
+        town_city: (locMap.get(v.location_id)?.town_city) || "",
+      }));
+    }
+
+    function openForm() {
+      venueForm.classList.add('open');
+      venueForm.style.maxHeight = '0px';
+      void venueForm.offsetHeight;
+      venueForm.style.maxHeight = venueForm.scrollHeight + 'px';
+      venueForm.style.opacity = 1;
+    }
+
+    function renderVenues(items) {
+      venueList.innerHTML = '';
+      if (!items.length) {
+        noResults.style.display = 'none';
+        const card = document.createElement('div');
+        card.className = 'venue-card';
+        card.innerHTML = `
+          <span>No results — <a href="#" class="create-venue-inline" style="color: green; text-decoration: none; font-weight: bold;">Create a new venue</a></span>
+        `;
+        venueList.appendChild(card);
+
+        const inline = card.querySelector('.create-venue-inline');
+        inline.addEventListener('click', (e) => {
+          e.preventDefault();
+          openForm();
+          venueList.innerHTML = '';
+        });
+        return;
+      }
+      noResults.style.display = 'none';
+
+      items.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'venue-card';
+        const addressParts = [v.street, v.town_city, v.postcode].filter(Boolean);
+        const address = addressParts.join(', ');
+        card.innerHTML = `<strong>${v.name}</strong>${address}`;
+
+        card.addEventListener('click', () => {
+          searchInput.value = v.name;
+          venueList.innerHTML = '';
+          noResults.style.display = 'none';
+        });
+
+        venueList.appendChild(card);
+      });
+    }
+
+    let lastController = null;
+    searchInput.addEventListener('input', async () => {
+      const query = searchInput.value.trim().toLowerCase();
+      venueList.innerHTML = '';
+      if (!query) {
+        noResults.style.display = 'none';
+        return;
+      }
+
+      if (lastController) lastController.abort();
+      lastController = new AbortController();
+      const signal = lastController.signal;
+
+      try {
+        const results = await searchVenues(query);
+        if (signal.aborted) return;
+        renderVenues(results);
+      } catch {
+        if (signal.aborted) return;
+        noResults.style.display = 'block';
+      }
+    });
+
+    createVenueLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      openForm();
+      venueList.innerHTML = '';
+      noResults.style.display = 'none';
+    });
+
+    (function wireCreateVenue() {
+      const nameInput = venueForm.querySelector('input[placeholder="Venue name"]');
+      const streetInput = venueForm.querySelector('input[placeholder="Street address"]');
+      const postcodeInput = venueForm.querySelector('input[placeholder="Postcode"]');
+      const submitBtn = venueForm.querySelector('button');
+
+      submitBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+
+        const payload = {
+          venue_name: (nameInput.value || '').trim(),
+          street_name: (streetInput.value || '').trim(),
+          postcode: (postcodeInput.value || '').trim(),
+        };
+
+        if (!payload.venue_name) {
+          alert('Please enter a venue name.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+
+        try {
+          await sbFetch('/rest/v1/venues', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+          });
+
+          searchInput.value = payload.venue_name;
+          venueList.innerHTML = '';
+          noResults.style.display = 'none';
+
+          nameInput.value = '';
+          streetInput.value = '';
+          postcodeInput.value = '';
+
+          venueForm.classList.remove('open');
+          venueForm.style.maxHeight = '0px';
+          venueForm.style.opacity = 0;
+
+          const results = await searchVenues(payload.venue_name);
+          renderVenues(results);
+        } catch (err) {
+          console.error(err);
+          alert('There was a problem creating the venue. Check console for details.');
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    })();
+  </script></body>
+</html>
