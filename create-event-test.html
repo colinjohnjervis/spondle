@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,13 +22,15 @@
       border-radius: 12px;
       box-sizing: border-box;
     }
-    .relative { position: relative; }
+    .input-wrapper {
+      position: relative;
+    }
     .clear-btn {
       position: absolute;
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      background: none;
+      background: transparent;
       border: none;
       color: #aaa;
       font-size: 18px;
@@ -50,14 +51,11 @@
       </div>
       <input type="hidden" name="event_type" id="eventType" value="single">
       <div id="tabContent"></div>
-    </div>
+    </div><button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
+  Submit Event
+</button>
 
-    <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
-      Submit Event
-    </button>
-  </form>
-
-  <script type="module">
+  </form>  <!-- Inline Script -->  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
@@ -71,10 +69,12 @@
 
     const views = {
       single: () => `<div class="space-y-2">
-        <div class="relative">
-          <input type="text" id="search" placeholder="Search by venue name..." class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <button type="button" id="clearSearch" class="clear-btn" style="display:none;">&times;</button>
-          <input type="hidden" name="venue[]" id="venue-id">
+        <div>
+          <div class="input-wrapper">
+            <input type="text" id="search" placeholder="Search by venue name..." class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+            <button type="button" id="clearVenue" class="clear-btn" title="Clear">&times;</button>
+          </div>
+          <input type="text" id="venue-id" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
           <div id="venue-list" class="mt-2"></div>
           <div class="no-results" id="no-results" style="display: none;">
             No results — <a href="#" id="create-venue-link" class="text-green-500">Create a new venue</a>
@@ -118,7 +118,6 @@
     function loadTab(type) {
       tabContent.innerHTML = views[type]();
       eventTypeInput.value = type;
-
       if (type === 'tour') {
         createScheduleInput();
         document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
@@ -134,6 +133,79 @@
         });
       }
       if (type === 'single') wireVenueSearch();
+    }
+
+    function wireVenueSearch() {
+      const searchInput = document.getElementById('search');
+      const venueIdInput = document.getElementById('venue-id');
+      const venueList = document.getElementById('venue-list');
+      const noResults = document.getElementById('no-results');
+      const venueForm = document.getElementById('venue-form');
+      const clearBtn = document.getElementById('clearVenue');
+
+      searchInput.addEventListener('input', async () => {
+        const q = searchInput.value.trim();
+        if (!q) {
+          venueList.innerHTML = '';
+          return;
+        }
+
+        const { data: venues } = await supabase.from('venues')
+          .select('id,venue_name,street_name,postcode')
+          .ilike('venue_name', `%${q}%`);
+
+        venueList.innerHTML = '';
+
+        if (!venues.length) {
+          noResults.style.display = 'block';
+          return;
+        }
+
+        noResults.style.display = 'none';
+        venues.forEach(v => {
+          const card = document.createElement('div');
+          card.className = 'venue-card';
+          card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name}, ${v.postcode}`;
+          card.addEventListener('click', () => {
+            searchInput.value = v.venue_name;
+            venueIdInput.value = v.id;
+            venueList.innerHTML = '';
+          });
+          venueList.appendChild(card);
+        });
+      });
+
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        venueIdInput.value = '';
+        venueList.innerHTML = '';
+        venueForm.style.display = 'none';
+        noResults.style.display = 'none';
+      });
+
+      document.getElementById('create-venue-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        venueForm.style.display = 'block';
+      });
+
+      document.getElementById('venue-submit').addEventListener('click', async () => {
+        const name = document.getElementById('venue-name').value.trim();
+        const street = document.getElementById('venue-street').value.trim();
+        const postcode = document.getElementById('venue-postcode').value.trim();
+
+        if (!name) return alert('Enter a venue name');
+
+        const { data, error } = await supabase.from('venues')
+          .insert([{ venue_name: name, street_name: street, postcode }])
+          .select('id');
+
+        if (error) return alert('Error creating venue');
+
+        searchInput.value = name;
+        venueIdInput.value = data[0].id;
+        venueForm.style.display = 'none';
+        venueList.innerHTML = '';
+      });
     }
 
     function createScheduleInput() {
@@ -159,78 +231,6 @@
       });
     });
 
-    function wireVenueSearch() {
-      const searchInput = document.getElementById('search');
-      const venueList = document.getElementById('venue-list');
-      const noResults = document.getElementById('no-results');
-      const venueForm = document.getElementById('venue-form');
-      const clearBtn = document.getElementById('clearSearch');
-      const venueIdField = document.getElementById('venue-id');
-
-      searchInput.addEventListener('input', async () => {
-        const q = searchInput.value.trim();
-        clearBtn.style.display = q ? 'block' : 'none';
-        venueIdField.value = '';
-        venueList.innerHTML = '';
-        noResults.style.display = 'none';
-        venueForm.style.display = 'none';
-
-        if (!q) return;
-
-        const { data: venues } = await supabase.from('venues')
-          .select('id,venue_name,street_name,postcode')
-          .ilike('venue_name', `%${q}%`);
-
-        if (!venues.length) {
-          noResults.style.display = 'block';
-          return;
-        }
-
-        venues.forEach(v => {
-          const card = document.createElement('div');
-          card.className = 'venue-card';
-          card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name}, ${v.postcode}`;
-          card.addEventListener('click', () => {
-            searchInput.value = v.venue_name;
-            venueIdField.value = v.id;
-            venueList.innerHTML = '';
-            clearBtn.style.display = 'block';
-          });
-          venueList.appendChild(card);
-        });
-      });
-
-      clearBtn.addEventListener('click', () => {
-        searchInput.value = '';
-        venueIdField.value = '';
-        clearBtn.style.display = 'none';
-        venueList.innerHTML = '';
-        noResults.style.display = 'none';
-        venueForm.style.display = 'none';
-      });
-
-      document.getElementById('create-venue-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        venueForm.style.display = 'block';
-      });
-
-      document.getElementById('venue-submit').addEventListener('click', async () => {
-        const name = document.getElementById('venue-name').value.trim();
-        const street = document.getElementById('venue-street').value.trim();
-        const postcode = document.getElementById('venue-postcode').value.trim();
-
-        if (!name) return alert('Enter a venue name');
-        const { data, error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]).select().single();
-        if (error) return alert('Error creating venue');
-
-        searchInput.value = data.venue_name;
-        venueIdField.value = data.id;
-        venueForm.style.display = 'none';
-        venueList.innerHTML = '';
-        clearBtn.style.display = 'block';
-      });
-    }
-
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
@@ -246,15 +246,15 @@
         event_type: formData.get('event_type')
       };
 
-      const venues = formData.getAll('venue[]');
+      const venueIds = formData.getAll('venue_id[]');
       const dates = formData.getAll('event_date[]');
       const times = formData.getAll('event_time[]');
       const ticketLinks = formData.getAll('tickets_url[]');
 
-      for (let i = 0; i < venues.length; i++) {
+      for (let i = 0; i < venueIds.length; i++) {
         const event = {
           ...baseData,
-          venue: venues[i],
+          venue_id: venueIds[i],
           event_date: dates[i],
           event_time: times[i],
           tickets_url: ticketLinks[i] || null
@@ -269,6 +269,5 @@
       tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
       tabBtns[0].classList.add('bg-blue-500');
     });
-  </script>
-</body>
-  </html>
+  </script></body>
+</html>
