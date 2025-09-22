@@ -1,41 +1,90 @@
 <!doctype html>
+
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Events – Spondle</title>
   <meta name="color-scheme" content="dark" />
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <script src="https://cdn.tailwindcss.com"></script>  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
   <link rel="stylesheet" href="./styles.css?v=3">
   <link rel="stylesheet" href="./hearts.css?v=2">
 </head>
 <body>
-  <div id="layout-root"></div>
-
-  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+  <div id="layout-root"></div>  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
       <p class="text-[color:var(--muted)] mt-3">Browse the latest listings from all organisers.</p>
-    </section>
+    </section><section>
+  <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
+  <div class="flex justify-center mt-6">
+    <button id="loadMoreBtn"
+      class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
+      Load More
+    </button>
+  </div>
+  <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load events.</p>
+</section>
 
-    <section>
-      <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
-      <div class="flex justify-center mt-6">
-        <button id="loadMoreBtn"
-          class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
-          Load More
-        </button>
-      </div>
-      <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load events.</p>
-    </section>
-  </main>
+  </main>  <script src="./spondle-layout.js?v=layout-fixed1"></script>  <script>Layout.init({ active: 'events' });</script>  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'events' });</script>
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
 
-  <script src="./events-data.js?v=2"></script>
-  <script src="./scripts.js?v=heart4"></script>
-</body>
+    const eventsGrid = document.getElementById('eventsGrid');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const eventsError = document.getElementById('eventsError');
+
+    let page = 0;
+    const PAGE_SIZE = 12;
+
+    async function loadEvents() {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('publish_status', 'published')
+        .gte('event_date', new Date().toISOString().split('T')[0])
+        .order('event_date', { ascending: true })
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+
+      if (error) {
+        eventsError.classList.remove('hidden');
+        return;
+      }
+
+      if (!data.length && page === 0) {
+        eventsGrid.innerHTML = '<p class="text-gray-400">No upcoming events found.</p>';
+        loadMoreBtn.style.display = 'none';
+        return;
+      }
+
+      data.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'rounded-xl overflow-hidden shadow bg-gray-900';
+        card.innerHTML = `
+          <img src="${event.image_url || './fallback.jpg'}" alt="${event.event_name}" class="w-full h-40 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
+            <p class="text-sm text-gray-400 mb-2">${event.event_date} at ${event.event_time || 'TBA'}</p>
+            <p class="text-sm text-gray-300">${event.description?.slice(0, 100) || ''}...</p>
+          </div>
+        `;
+        eventsGrid.appendChild(card);
+      });
+
+      page++;
+
+      if (data.length < PAGE_SIZE) {
+        loadMoreBtn.style.display = 'none';
+      }
+    }
+
+    loadMoreBtn.addEventListener('click', loadEvents);
+
+    // Initial load
+    loadEvents();
+  </script></body>
 </html>
