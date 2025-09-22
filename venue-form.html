@@ -1,222 +1,214 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html><html lang="en">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Test Venue Dropdown Only – Spondle</title>
+  <title>Create Event – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6">
   <h1 class="text-3xl font-bold mb-6">Create Event</h1>
   <form id="eventForm" class="space-y-6">
-  <!-- Event Name -->
-  <div>
-    <label class="block mb-1 font-medium">Event Name</label>
-    <input type="text" name="title" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-  </div>  <!-- Description -->  <div>
-    <label class="block mb-1 font-medium">Description</label>
-    <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
-  </div>  <!-- Category -->  <div>
-    <label class="block mb-1 font-medium">Category</label>
-    <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      <option value="Music">Music</option>
-      <option value="Comedy">Comedy</option>
-      <option value="Theatre">Theatre</option>
-      <option value="Talks">Talks</option>
-      <option value="Festivals">Festivals</option>
-      <option value="Beer Festivals">Beer Festivals</option>
-      <option value="Archery">Archery</option>
-      <option value="Frisbee Golf">Frisbee Golf</option>
-      <option value="Crazy Golf">Crazy Golf</option>
-      <option value="Murder Mystery">Murder Mystery</option>
-    </select>
-  </div>  <!-- Publish Status -->  <div>
-    <label class="block mb-1 font-medium">Publish Status</label>
-    <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      <option value="draft">Draft</option>
-      <option value="published">Published</option>
-      <option value="archived">Archived</option>
-    </select>
-  </div>  <!-- Image URL -->  <div>
-    <label class="block mb-1 font-medium">Image URL</label>
-    <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-  </div>  <!-- Schedule Tabs -->  <div>
-    <label class="block mb-2 font-medium">Schedule</label>
-    <div class="flex space-x-2 justify-between mb-4">
-      <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
-      <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
-      <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
-    </div>
-    <input type="hidden" name="event_type" id="eventType" value="single">
-    <div id="tabContent">
-  <!-- Venue Search UI for Single Tab -->
-  <div id="singleTabVenue" class="space-y-4 hidden">
+    <!-- Event Name -->
     <div>
-      <label for="venueSearchInput" class="block text-sm font-medium">Search for a venue</label>
-      <input type="text" id="venueSearchInput" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="Search by name, street, town, or postcode" autocomplete="off" />
-    </div><div id="venueResults"></div>
+      <label class="block mb-1 font-medium">Event Name</label>
+      <input type="text" name="title" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+    </div>
+    <!-- Description -->
+    <div>
+      <label class="block mb-1 font-medium">Description</label>
+      <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
+    </div>
+    <!-- Category -->
+    <div>
+      <label class="block mb-1 font-medium">Category</label>
+      <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <option value="Music">Music</option>
+        <option value="Comedy">Comedy</option>
+        <option value="Theatre">Theatre</option>
+        <option value="Talks">Talks</option>
+        <option value="Festivals">Festivals</option>
+        <option value="Beer Festivals">Beer Festivals</option>
+        <option value="Archery">Archery</option>
+        <option value="Frisbee Golf">Frisbee Golf</option>
+        <option value="Crazy Golf">Crazy Golf</option>
+        <option value="Murder Mystery">Murder Mystery</option>
+      </select>
+    </div>
+    <!-- Publish Status -->
+    <div>
+      <label class="block mb-1 font-medium">Publish Status</label>
+      <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+        <option value="archived">Archived</option>
+      </select>
+    </div>
+    <!-- Image URL -->
+    <div>
+      <label class="block mb-1 font-medium">Image URL</label>
+      <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+    </div>
+    <!-- Schedule Tabs -->
+    <div>
+      <label class="block mb-2 font-medium">Schedule</label>
+      <div class="flex space-x-2 justify-between mb-4">
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
+      </div>
+      <input type="hidden" name="event_type" id="eventType" value="single">
+      <div id="tabContent"></div>
+    </div>
+    <!-- Submit -->
+    <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
+      Submit Event
+    </button>
+  </form>  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<div class="text-sm text-gray-400" id="noResults" style="display: none;">
-  No results — <a href="#" id="showVenueForm" class="text-green-400 font-semibold">Create a new venue</a>
-</div>
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
 
-<div id="venueForm" class="space-y-2 hidden">
-  <input type="text" id="newVenueName" placeholder="Venue name" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-  <input type="text" id="newVenueStreet" placeholder="Street address" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-  <input type="text" id="newVenuePostcode" placeholder="Postcode" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-  <button type="button" id="createVenueBtn" class="w-full p-2 bg-green-600 hover:bg-green-500 text-white font-semibold rounded">Create Venue</button>
-</div>
+    const form = document.getElementById('eventForm');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContent = document.getElementById('tabContent');
+    const eventTypeInput = document.getElementById('eventType');
 
-<input type="hidden" name="venue_id[]" id="selectedVenueId">
+    async function getVenueSearchInput() {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'space-y-2';
 
-  </div>
-</div>
-  </div>  <!-- Submit -->  <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
-    Submit Event
-  </button>
-</form>  <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      const label = document.createElement('label');
+      label.className = 'block text-sm';
+      label.textContent = 'Venue Name (Search)';
 
-  const supabase = createClient(
-    'https://jvuunvnbpdfrttusgelz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-  );
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Start typing venue name...';
+      input.className = 'venue-search w-full p-2 bg-gray-800 border border-gray-600 rounded';
+      input.setAttribute('autocomplete', 'off');
+      input.required = true;
+      input.name = 'venue_search';
 
-  async function loadVenueDropdown() {
-    const dropdown = document.getElementById('venueSelect');
-    dropdown.innerHTML = '<option>Loading venues...</option>';
-    try {
-      const { data, error } = await supabase.from('venues').select('id, name').order('name');
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        dropdown.innerHTML = '<option>No venues found</option>';
-        return;
-      }
-      dropdown.innerHTML = '<option value="">Select a venue</option>' +
-        data.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
-    } catch (err) {
-      console.error('Error loading venues:', err);
-      dropdown.innerHTML = '<option>Error loading venues</option>';
-    }
-  }
+      const dropdown = document.createElement('div');
+      dropdown.className = 'venue-dropdown space-y-1 bg-white text-black border border-gray-400 rounded p-2 hidden max-h-60 overflow-y-auto';
 
-  window.addEventListener('DOMContentLoaded', loadVenueDropdown);
-</script>  <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+      const hiddenVenueId = document.createElement('input');
+      hiddenVenueId.type = 'hidden';
+      hiddenVenueId.name = 'venue_id[]';
 
-  const supabase = createClient(
-    'https://jvuunvnbpdfrttusgelz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-  );
+      input.addEventListener('input', async () => {
+        const term = input.value.trim();
+        if (!term) {
+          dropdown.classList.add('hidden');
+          return;
+        }
+        const { data, error } = await supabase
+          .from('venues')
+          .select('id, name')
+          .ilike('name', `%${term}%`)
+          .limit(10);
 
-  const form = document.getElementById('eventForm');
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const tabContent = document.getElementById('tabContent');
-  const eventTypeInput = document.getElementById('eventType');
-
-  const venueSearchInput = document.getElementById('venueSearchInput');
-  const venueResults = document.getElementById('venueResults');
-  const noResults = document.getElementById('noResults');
-  const venueForm = document.getElementById('venueForm');
-  const showVenueForm = document.getElementById('showVenueForm');
-  const selectedVenueId = document.getElementById('selectedVenueId');
-
-  async function searchVenues(query) {
-    const like = `%25${encodeURIComponent(query)}%25`;
-    const [venuesRes, locationRes] = await Promise.all([
-      supabase.from('venues').select('id, venue_name, street_name, postcode, location_id').or(`venue_name.ilike.${like},street_name.ilike.${like},postcode.ilike.${like}`).limit(25),
-      supabase.from('location').select('id, town_city, county').ilike('town_city', `%${query}%`).limit(25)
-    ]);
-
-    const venues = venuesRes.data || [];
-    const locationMatches = locationRes.data || [];
-
-    let extraVenues = [];
-    if (locationMatches.length) {
-      const ids = locationMatches.map(loc => loc.id);
-      const match = await supabase.from('venues')
-        .select('id, venue_name, street_name, postcode, location_id')
-        .in('location_id', ids);
-      extraVenues = match.data || [];
-    }
-
-    const allVenues = [...venues, ...extraVenues];
-    const seen = new Map();
-    allVenues.forEach(v => seen.set(v.id, v));
-
-    return [...seen.values()];
-  }
-
-  function renderVenueResults(venues) {
-    venueResults.innerHTML = '';
-    if (!venues.length) {
-      noResults.style.display = 'block';
-      return;
-    }
-    noResults.style.display = 'none';
-
-    venues.forEach(v => {
-      const div = document.createElement('div');
-      div.className = 'p-2 border border-gray-700 rounded cursor-pointer hover:bg-gray-800';
-      div.innerHTML = `<strong>${v.venue_name}</strong><br>${[v.street_name, v.postcode].filter(Boolean).join(', ')}`;
-      div.addEventListener('click', () => {
-        selectedVenueId.value = v.id;
-        venueSearchInput.value = v.venue_name;
-        venueResults.innerHTML = '';
-        venueForm.classList.add('hidden');
-        noResults.style.display = 'none';
+        dropdown.innerHTML = '';
+        if (data?.length) {
+          data.forEach(venue => {
+            const item = document.createElement('div');
+            item.textContent = venue.name;
+            item.className = 'cursor-pointer hover:bg-gray-200 p-1 rounded';
+            item.addEventListener('click', () => {
+              input.value = venue.name;
+              hiddenVenueId.value = venue.id;
+              dropdown.classList.add('hidden');
+            });
+            dropdown.appendChild(item);
+          });
+          dropdown.classList.remove('hidden');
+        } else {
+          dropdown.classList.add('hidden');
+        }
       });
-      venueResults.appendChild(div);
+
+      wrapper.appendChild(label);
+      wrapper.appendChild(input);
+      wrapper.appendChild(hiddenVenueId);
+      wrapper.appendChild(dropdown);
+      return wrapper;
+    }
+
+    async function renderTab(type) {
+      tabContent.innerHTML = '';
+      eventTypeInput.value = type;
+
+      if (type === 'single') {
+        const container = document.createElement('div');
+        container.className = 'space-y-2';
+
+        const venueBlock = await getVenueSearchInput();
+        container.appendChild(venueBlock);
+
+        container.innerHTML += `
+          <div class="flex gap-4">
+            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          </div>
+          <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        `;
+
+        tabContent.appendChild(container);
+      }
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+        btn.classList.add('bg-blue-500');
+        await renderTab(btn.dataset.type);
+      });
     });
-  }
 
-  venueSearchInput?.addEventListener('input', async () => {
-    const q = venueSearchInput.value.trim();
-    selectedVenueId.value = '';
-    venueResults.innerHTML = '';
-    if (q.length < 2) {
-      noResults.style.display = 'none';
-      return;
-    }
-    const results = await searchVenues(q);
-    renderVenueResults(results);
-  });
+    window.addEventListener('DOMContentLoaded', async () => {
+      tabBtns[0].classList.add('bg-blue-500');
+      await renderTab('single');
+    });
 
-  showVenueForm?.addEventListener('click', (e) => {
-    e.preventDefault();
-    venueForm.classList.remove('hidden');
-    venueResults.innerHTML = '';
-    noResults.style.display = 'none';
-  });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
 
-  document.getElementById('createVenueBtn')?.addEventListener('click', async () => {
-    const name = document.getElementById('newVenueName').value.trim();
-    const street = document.getElementById('newVenueStreet').value.trim();
-    const postcode = document.getElementById('newVenuePostcode').value.trim();
+      const baseData = {
+        title: formData.get('title'),
+        category: formData.get('category'),
+        publish_status: formData.get('publish_status'),
+        image: formData.get('image'),
+        description: formData.get('description'),
+        event_type: formData.get('event_type')
+      };
 
-    if (!name) {
-      alert('Venue name is required');
-      return;
-    }
+      const venueIds = formData.getAll('venue_id[]');
+      const dates = formData.getAll('event_date[]');
+      const times = formData.getAll('event_time[]');
+      const ticketLinks = formData.getAll('tickets_url[]');
 
-    const { data, error } = await supabase.from('venues')
-      .insert({ venue_name: name, street_name: street, postcode })
-      .select().single();
+      for (let i = 0; i < venueIds.length; i++) {
+        const event = {
+          ...baseData,
+          venue_id: venueIds[i],
+          event_date: dates[i],
+          event_time: times[i],
+          tickets_url: ticketLinks[i] || null
+        };
 
-    if (error) {
-      alert('Failed to create venue');
-      console.error(error);
-      return;
-    }
+        const { error } = await supabase.from('events').insert([event]);
+        if (error) console.error('Insert error:', error);
+      }
 
-    selectedVenueId.value = data.id;
-    venueSearchInput.value = name;
-    venueForm.classList.add('hidden');
-    venueResults.innerHTML = '';
-  });
-
-  // Highlight Single tab on load
-  window.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.tab-btn[data-type="single"]').classList.add('bg-blue-500');
-    document.getElementById('singleTabVenue').classList.remove('hidden');
-  });
-</script></body>
+      alert('Event(s) submitted!');
+      form.reset();
+      await renderTab('single');
+      tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+      tabBtns[0].classList.add('bg-blue-500');
+    });
+  </script></body>
 </html>
