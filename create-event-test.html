@@ -51,11 +51,11 @@
       </div>
       <input type="hidden" name="event_type" id="eventType" value="single">
       <div id="tabContent"></div>
-    </div><button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
-  Submit Event
-</button>
-
-  </form>  <!-- Inline Script -->  <script type="module">
+    </div>
+    <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
+      Submit Event
+    </button>
+  </form>  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
@@ -67,25 +67,26 @@
     const tabContent = document.getElementById('tabContent');
     const eventTypeInput = document.getElementById('eventType');
 
+    const venueSearchBlock = (prefix = '') => `
+      <div class="input-wrapper">
+        <input type="text" id="${prefix}search" placeholder="Search by venue name..." class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <button type="button" id="${prefix}clearVenue" class="clear-btn" title="Clear">&times;</button>
+      </div>
+      <input type="text" id="${prefix}venue-id" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
+      <div id="${prefix}venue-list" class="mt-2"></div>
+      <div class="no-results" id="${prefix}no-results" style="display: none;">
+        No results — <a href="#" id="${prefix}create-venue-link" class="text-green-500">Create a new venue</a>
+      </div>
+      <div class="venue-form mt-4" id="${prefix}venue-form" style="display:none;">
+        <input type="text" placeholder="Venue name" id="${prefix}venue-name" class="bg-gray-800 border border-gray-600">
+        <input type="text" placeholder="Street address" id="${prefix}venue-street" class="bg-gray-800 border border-gray-600">
+        <input type="text" placeholder="Postcode" id="${prefix}venue-postcode" class="bg-gray-800 border border-gray-600">
+        <button type="button" id="${prefix}venue-submit" class="bg-green-500 text-black">Create Venue</button>
+      </div>`;
+
     const views = {
       single: () => `<div class="space-y-2">
-        <div>
-          <div class="input-wrapper">
-            <input type="text" id="search" placeholder="Search by venue name..." class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-            <button type="button" id="clearVenue" class="clear-btn" title="Clear">&times;</button>
-          </div>
-          <input type="text" id="venue-id" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
-          <div id="venue-list" class="mt-2"></div>
-          <div class="no-results" id="no-results" style="display: none;">
-            No results — <a href="#" id="create-venue-link" class="text-green-500">Create a new venue</a>
-          </div>
-          <div class="venue-form mt-4" id="venue-form" style="display:none;">
-            <input type="text" placeholder="Venue name" id="venue-name" class="bg-gray-800 border border-gray-600">
-            <input type="text" placeholder="Street address" id="venue-street" class="bg-gray-800 border border-gray-600">
-            <input type="text" placeholder="Postcode" id="venue-postcode" class="bg-gray-800 border border-gray-600">
-            <button type="button" id="venue-submit" class="bg-green-500 text-black">Create Venue</button>
-          </div>
-        </div>
+        <div>${venueSearchBlock('')}</div>
         <div class="flex gap-4">
           <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
           <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
@@ -94,7 +95,7 @@
       </div>`,
 
       recurring: () => `<div class="space-y-2">
-        <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <div>${venueSearchBlock('rec_')}</div>
         <label class="block text-sm">Recurring Dates:</label>
         <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
           <option value="">Choose pattern (optional)</option>
@@ -111,44 +112,27 @@
       </div>`,
 
       tour: () => `<div id="scheduleSection" class="space-y-4">
+        <div>${venueSearchBlock('tour_')}</div>
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
         <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
       </div>`
     };
 
-    function loadTab(type) {
-      tabContent.innerHTML = views[type]();
-      eventTypeInput.value = type;
-      if (type === 'tour') {
-        createScheduleInput();
-        document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
-      }
-      if (type === 'recurring') {
-        document.getElementById('addRecurringDate').addEventListener('click', () => {
-          const newInput = document.createElement('input');
-          newInput.type = 'date';
-          newInput.name = 'event_date[]';
-          newInput.required = true;
-          newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
-          document.getElementById('addRecurringDate').before(newInput);
-        });
-      }
-      if (type === 'single') wireVenueSearch();
-    }
+    function wireVenueSearch(prefix = '') {
+      const searchInput = document.getElementById(`${prefix}search`);
+      const venueIdInput = document.getElementById(`${prefix}venue-id`);
+      const venueList = document.getElementById(`${prefix}venue-list`);
+      const noResults = document.getElementById(`${prefix}no-results`);
+      const venueForm = document.getElementById(`${prefix}venue-form`);
+      const clearBtn = document.getElementById(`${prefix}clearVenue`);
 
-    function wireVenueSearch() {
-      const searchInput = document.getElementById('search');
-      const venueIdInput = document.getElementById('venue-id');
-      const venueList = document.getElementById('venue-list');
-      const noResults = document.getElementById('no-results');
-      const venueForm = document.getElementById('venue-form');
-      const clearBtn = document.getElementById('clearVenue');
-
-      searchInput.addEventListener('input', async () => {
+      searchInput?.addEventListener('input', async () => {
         const q = searchInput.value.trim();
-        if (!q) {
-          venueList.innerHTML = '';
-          return;
-        }
+        if (!q) return venueList.innerHTML = '';
 
         const { data: venues } = await supabase.from('venues')
           .select('id,venue_name,street_name,postcode')
@@ -175,7 +159,7 @@
         });
       });
 
-      clearBtn.addEventListener('click', () => {
+      clearBtn?.addEventListener('click', () => {
         searchInput.value = '';
         venueIdInput.value = '';
         venueList.innerHTML = '';
@@ -183,15 +167,15 @@
         noResults.style.display = 'none';
       });
 
-      document.getElementById('create-venue-link').addEventListener('click', (e) => {
+      document.getElementById(`${prefix}create-venue-link`)?.addEventListener('click', (e) => {
         e.preventDefault();
         venueForm.style.display = 'block';
       });
 
-      document.getElementById('venue-submit').addEventListener('click', async () => {
-        const name = document.getElementById('venue-name').value.trim();
-        const street = document.getElementById('venue-street').value.trim();
-        const postcode = document.getElementById('venue-postcode').value.trim();
+      document.getElementById(`${prefix}venue-submit`)?.addEventListener('click', async () => {
+        const name = document.getElementById(`${prefix}venue-name`).value.trim();
+        const street = document.getElementById(`${prefix}venue-street`).value.trim();
+        const postcode = document.getElementById(`${prefix}venue-postcode`).value.trim();
 
         if (!name) return alert('Enter a venue name');
 
@@ -208,19 +192,25 @@
       });
     }
 
-    function createScheduleInput() {
-      const section = document.getElementById('scheduleSection');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
-      wrapper.innerHTML = `
-        <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>
-        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      `;
-      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
+    function loadTab(type) {
+      tabContent.innerHTML = views[type]();
+      eventTypeInput.value = type;
+      if (type === 'tour') {
+        wireVenueSearch('tour_');
+        document.getElementById('addScheduleBtn').addEventListener('click', () => alert('Dynamic tour blocks not implemented yet'));
+      }
+      if (type === 'recurring') {
+        wireVenueSearch('rec_');
+        document.getElementById('addRecurringDate').addEventListener('click', () => {
+          const newInput = document.createElement('input');
+          newInput.type = 'date';
+          newInput.name = 'event_date[]';
+          newInput.required = true;
+          newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
+          document.getElementById('addRecurringDate').before(newInput);
+        });
+      }
+      if (type === 'single') wireVenueSearch();
     }
 
     tabBtns.forEach(btn => {
