@@ -51,7 +51,9 @@
       <div id="tabContent"></div>
     </div>
     <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
-  </form>  <script type="module">
+  </form>
+
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
@@ -95,6 +97,10 @@
 
       recurring: () => `<div class="space-y-2">
         ${venueSearchBlock()}
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
         <label class="block text-sm">Recurring Dates:</label>
         <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
           <option value="">Choose pattern (optional)</option>
@@ -102,11 +108,7 @@
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
-        <div class="space-y-2">
-          <input type="date" name="event_date[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-        </div>
-        <input type="time" name="event_time[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
         <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
       </div>`,
 
@@ -270,5 +272,6 @@
       tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
       tabBtns[0].classList.add('bg-blue-500');
     });
-  </script></body>
+  </script>
+</body>
 </html>
