@@ -1,32 +1,40 @@
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Events – Spondle</title>
   <meta name="color-scheme" content="dark" />
-  <script src="https://cdn.tailwindcss.com"></script>  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
   <link rel="stylesheet" href="./styles.css?v=3">
   <link rel="stylesheet" href="./hearts.css?v=2">
 </head>
 <body>
-  <div id="layout-root"></div>  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+  <div id="layout-root"></div>
+
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
       <p class="text-[color:var(--muted)] mt-3">Browse the latest listings from all organisers.</p>
-    </section><section>
-  <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
-  <div class="flex justify-center mt-6">
-    <button id="loadMoreBtn"
-      class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
-      Load More
-    </button>
-  </div>
-  <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load events.</p>
-</section>
+    </section>
 
-  </main>  <script src="./spondle-layout.js?v=layout-fixed1"></script>  <script>Layout.init({ active: 'events' });</script>  <script type="module">
+    <section>
+      <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
+      <div class="flex justify-center mt-6">
+        <button id="loadMoreBtn"
+          class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
+          Load More
+        </button>
+      </div>
+      <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load events.</p>
+    </section>
+  </main>
+
+  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script>Layout.init({ active: 'events' });</script>
+
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
@@ -41,16 +49,29 @@
     let page = 0;
     const PAGE_SIZE = 12;
 
+    // Helper to get today's date in UTC (yyyy-mm-dd)
+    function getTodayUTC() {
+      const now = new Date();
+      const year = now.getUTCFullYear();
+      const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(now.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     async function loadEvents() {
+      const today = getTodayUTC();
+
       const { data, error } = await supabase
         .from('events')
         .select('*')
         .eq('publish_status', 'published')
-        .gte('event_date', new Date().toISOString().split('T')[0])
+        .gte('event_date', today)
         .order('event_date', { ascending: true })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
       if (error) {
+        console.error('Error loading events:', error.message);
+        eventsError.textContent = `Couldn’t load events: ${error.message}`;
         eventsError.classList.remove('hidden');
         return;
       }
@@ -86,5 +107,6 @@
 
     // Initial load
     loadEvents();
-  </script></body>
+  </script>
+</body>
 </html>
