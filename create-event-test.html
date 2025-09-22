@@ -43,6 +43,7 @@
   <h1 class="text-3xl font-bold mb-6">Create Event</h1>
   <form id="eventForm" class="space-y-6">
 
+    <!-- Basic Info -->
     <div>
       <label class="block mb-2">Event Name</label>
       <input type="text" name="event_name" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
@@ -78,7 +79,7 @@
       <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
     </div>
 
-    <!-- Scheduling -->
+    <!-- Schedule Tabs -->
     <div>
       <label class="block mb-2 font-medium">Schedule</label>
       <div class="flex space-x-2 justify-between mb-4">
@@ -90,10 +91,11 @@
       <div id="tabContent"></div>
     </div>
 
+    <!-- Submit & Banner -->
     <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
 
-    <!-- 🔴 Error Banner (added here) -->
-    <div id="errorBanner" class="hidden mt-4 p-4 bg-red-500 text-white rounded text-sm"></div>
+    <!-- Banner for error/success -->
+    <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
   </form>
 
   <script type="module">
@@ -104,7 +106,7 @@
     );
 
     const form = document.getElementById('eventForm');
-    const errorBanner = document.getElementById('errorBanner');
+    const banner = document.getElementById('banner');
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContent = document.getElementById('tabContent');
     const eventTypeInput = document.getElementById('eventType');
@@ -136,7 +138,7 @@
           <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
           <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
-        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
       </div>`,
 
       recurring: () => `<div class="space-y-2">
@@ -153,7 +155,7 @@
           <option value="monthly">Monthly</option>
         </select>
         <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
       </div>`,
 
       tour: () => `<div id="scheduleSection" class="space-y-4">
@@ -162,13 +164,19 @@
           <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
           <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
-        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
         <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
       </div>`
     };
 
+    function showBanner(message, success = true) {
+      banner.textContent = message;
+      banner.className = `mt-4 text-center px-4 py-2 rounded text-sm ${success ? 'bg-green-600 text-black' : 'bg-red-600 text-white'}`;
+      banner.style.display = 'block';
+    }
+
     function wireVenueSearch() {
-      document.querySelectorAll('.input-wrapper').forEach((wrapper) => {
+      document.querySelectorAll('.input-wrapper').forEach(wrapper => {
         const searchInput = wrapper.querySelector('.search');
         const venueIdInput = wrapper.parentElement.querySelector('.venue-id');
         const venueList = wrapper.parentElement.querySelector('.venue-list');
@@ -178,23 +186,10 @@
 
         searchInput.addEventListener('input', async () => {
           const q = searchInput.value.trim();
-          if (!q) {
-            venueList.innerHTML = '';
-            return;
-          }
-
-          const { data: venues } = await supabase.from('venues')
-            .select('id,venue_name,street_name,postcode')
-            .ilike('venue_name', `%${q}%`)
-            .limit(5);
-
+          if (!q) return venueList.innerHTML = '';
+          const { data: venues } = await supabase.from('venues').select('id,venue_name,street_name,postcode').ilike('venue_name', `%${q}%`).limit(5);
           venueList.innerHTML = '';
-
-          if (!venues.length) {
-            noResults.style.display = 'block';
-            return;
-          }
-
+          if (!venues.length) return noResults.style.display = 'block';
           noResults.style.display = 'none';
           venues.forEach(v => {
             const card = document.createElement('div');
@@ -226,15 +221,9 @@
           const name = wrapper.parentElement.querySelector('.venue-name').value.trim();
           const street = wrapper.parentElement.querySelector('.venue-street').value.trim();
           const postcode = wrapper.parentElement.querySelector('.venue-postcode').value.trim();
-
           if (!name) return alert('Enter a venue name');
-
-          const { data, error } = await supabase.from('venues')
-            .insert([{ venue_name: name, street_name: street, postcode }])
-            .select('id');
-
+          const { data, error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]).select('id');
           if (error) return alert('Error creating venue');
-
           searchInput.value = name;
           venueIdInput.value = data[0].id;
           venueForm.style.display = 'none';
@@ -284,9 +273,6 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      errorBanner.classList.add('hidden');
-      errorBanner.textContent = '';
-
       const formData = new FormData(form);
       const baseData = {
         event_name: formData.get('event_name'),
@@ -295,11 +281,12 @@
         image_url: formData.get('image_url'),
         description: formData.get('description')
       };
-
       const venueIds = formData.getAll('venue_id[]');
       const dates = formData.getAll('event_date[]');
       const times = formData.getAll('event_time[]');
-      const ticketLinks = formData.getAll('tickets_url[]');
+      const ticketLinks = formData.getAll('ticket_url[]');
+
+      let hadError = false;
 
       for (let i = 0; i < venueIds.length; i++) {
         const event = {
@@ -307,22 +294,22 @@
           venue_id: venueIds[i],
           event_date: dates[i],
           event_time: times[i],
-          tickets_url: ticketLinks[i] || null
+          ticket_url: ticketLinks[i] || null
         };
-
         const { error } = await supabase.from('events').insert([event]);
-        if (error) {
-          errorBanner.textContent = `Failed to save event: ${error.message}`;
-          errorBanner.classList.remove('hidden');
-          return;
-        }
+        if (error) hadError = true;
       }
 
-      form.reset();
-      loadTab('single');
-      tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
-      tabBtns[0].classList.add('bg-blue-500');
+      if (hadError) {
+        showBanner('Some events failed to submit.', false);
+      } else {
+        showBanner('Event(s) submitted successfully!', true);
+        form.reset();
+        loadTab('single');
+        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+        tabBtns[0].classList.add('bg-blue-500');
+      }
     });
   </script>
 </body>
-        </html>
+</html>
