@@ -33,122 +33,81 @@
   </main>
 
   <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'events' });</script>
-
   <script>
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    Layout.init({ active: 'events' });
+  </script>
 
-    const supabase = window.supabase = supabase || {};
-    supabase.client = supabaseClient(supabaseUrl, supabaseKey);
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    function supabaseClient(url, key) {
-      return {
-        from: (table) => ({
-          select: function (columns = '*') {
-            this.query = { table, columns };
-            return this;
-          },
-          eq: function (column, value) {
-            this.query.eq = { column, value };
-            return this;
-          },
-          gte: function (column, value) {
-            this.query.gte = { column, value };
-            return this;
-          },
-          order: function (column, { ascending }) {
-            this.query.order = { column, ascending };
-            return this;
-          },
-          range: function (from, to) {
-            this.query.range = { from, to };
-            return this.execute();
-          },
-          async execute() {
-            const { table, columns, eq, gte, order, range } = this.query;
-            let url = `${supabaseUrl}/rest/v1/${table}?select=${columns}`;
-            const filters = [];
-
-            if (eq) filters.push(`${eq.column}=eq.${encodeURIComponent(eq.value)}`);
-            if (gte) filters.push(`${gte.column}=gte.${encodeURIComponent(gte.value)}`);
-            if (order) url += `&order=${order.column}.${order.ascending ? 'asc' : 'desc'}`;
-            if (range) url += `&offset=${range.from}&limit=${range.to - range.from + 1}`;
-            if (filters.length) url += '&' + filters.join('&');
-
-            const res = await fetch(url, {
-              headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` }
-            });
-            if (!res.ok) return { data: [], error: await res.text() };
-            return { data: await res.json(), error: null };
-          }
-        })
-      };
-    }
+    const supabaseUrl = 'https://zvfvqvwjmyqnlxkskmib.supabase.co';
+    const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const eventsGrid = document.getElementById('eventsGrid');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const eventsError = document.getElementById('eventsError');
 
-    let page = 0;
-    const PAGE_SIZE = 12;
+    let allEvents = [];
+    let currentIndex = 0;
+    const pageSize = 12;
 
-    function renderEventCard(event) {
-      const imageUrl = event.image_url?.trim()
-        ? event.image_url
-        : `https://source.unsplash.com/featured/?concert,festival,comedy&sig=${Math.floor(Math.random() * 1000)}`;
+    function renderEvents(startIndex) {
+      const eventsToShow = allEvents.slice(startIndex, startIndex + pageSize);
+      for (const event of eventsToShow) {
+        const card = document.createElement('div');
+        card.className = 'bg-gray-900 rounded-lg overflow-hidden shadow-md';
 
-      const timeText = event.event_time || 'TBA';
-      const desc = event.description?.slice(0, 100) || '';
+        const imageUrl = event.image_url && event.image_url.trim() !== ''
+          ? event.image_url
+          : 'https://source.unsplash.com/800x600/?concert,event';
 
-      const card = document.createElement('div');
-      card.className = 'rounded-xl overflow-hidden shadow bg-gray-900';
-      card.innerHTML = `
-        <img src="${imageUrl}" alt="${event.event_name}" class="w-full h-40 object-cover">
-        <div class="p-4">
-          <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-          <p class="text-sm text-gray-400 mb-2">${event.event_date} at ${timeText}</p>
-          <p class="text-sm text-gray-300">${desc}...</p>
-        </div>
-      `;
-      return card;
-    }
-
-    async function loadEvents() {
-      const { data, error } = await supabase.client
-        .from('events')
-        .select('*')
-        .eq('publish_status', 'published')
-        .gte('event_date', new Date().toISOString().split('T')[0])
-        .order('event_date', { ascending: true })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-
-      if (error) {
-        eventsError.classList.remove('hidden');
-        console.error('Error loading events:', error);
-        return;
-      }
-
-      if (!data.length && page === 0) {
-        eventsGrid.innerHTML = '<p class="text-gray-400">No upcoming events found.</p>';
-        loadMoreBtn.style.display = 'none';
-        return;
-      }
-
-      data.forEach(event => {
-        const card = renderEventCard(event);
+        card.innerHTML = `
+          <img src="${imageUrl}" alt="${event.event_name}" class="w-full h-40 object-cover">
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
+            <p class="text-sm text-gray-400 mb-2">${event.event_date} at ${event.event_time || 'TBA'}</p>
+            <p class="text-sm text-gray-300">${event.description?.slice(0, 100) || ''}...</p>
+          </div>
+        `;
         eventsGrid.appendChild(card);
-      });
+      }
 
-      page++;
-
-      if (data.length < PAGE_SIZE) {
+      currentIndex += eventsToShow.length;
+      if (currentIndex >= allEvents.length) {
         loadMoreBtn.style.display = 'none';
       }
     }
 
-    loadMoreBtn.addEventListener('click', loadEvents);
-    loadEvents();
+    loadMoreBtn.addEventListener('click', () => renderEvents(currentIndex));
+
+    async function fetchEvents() {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('publish_status', 'Published');
+
+        if (error) throw error;
+
+        // Filter for future events
+        const now = new Date();
+        allEvents = data.filter(event => {
+          const eventDate = new Date(event.event_date);
+          return eventDate > now;
+        });
+
+        // Sort by event_date ascending
+        allEvents.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
+
+        renderEvents(currentIndex);
+      } catch (err) {
+        console.error('Failed to load events:', err.message);
+        eventsError.classList.remove('hidden');
+      }
+    }
+
+    fetchEvents();
   </script>
 </body>
 </html>
