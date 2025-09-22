@@ -12,57 +12,62 @@
     <div>
       <label class="block mb-1 font-medium">Event Name</label>
       <input type="text" name="title" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
-    <!-- Description -->
-    <div>
-      <label class="block mb-1 font-medium">Description</label>
-      <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
-    </div>
-    <!-- Category -->
-    <div>
-      <label class="block mb-1 font-medium">Category</label>
-      <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <option value="Music">Music</option>
-        <option value="Comedy">Comedy</option>
-        <option value="Theatre">Theatre</option>
-        <option value="Talks">Talks</option>
-        <option value="Festivals">Festivals</option>
-        <option value="Beer Festivals">Beer Festivals</option>
-        <option value="Archery">Archery</option>
-        <option value="Frisbee Golf">Frisbee Golf</option>
-        <option value="Crazy Golf">Crazy Golf</option>
-        <option value="Murder Mystery">Murder Mystery</option>
-      </select>
-    </div>
-    <!-- Publish Status -->
-    <div>
-      <label class="block mb-1 font-medium">Publish Status</label>
-      <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-        <option value="archived">Archived</option>
-      </select>
-    </div>
-    <!-- Image URL -->
-    <div>
-      <label class="block mb-1 font-medium">Image URL</label>
-      <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
-    <!-- Schedule Tabs -->
-    <div>
-      <label class="block mb-2 font-medium">Schedule</label>
-      <div class="flex space-x-2 justify-between mb-4">
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
-      </div>
-      <input type="hidden" name="event_type" id="eventType" value="single">
-      <div id="tabContent"></div>
-    </div>
-    <!-- Submit -->
-    <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
-      Submit Event
-    </button>
+    </div><!-- Description -->
+<div>
+  <label class="block mb-1 font-medium">Description</label>
+  <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
+</div>
+
+<!-- Category -->
+<div>
+  <label class="block mb-1 font-medium">Category</label>
+  <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+    <option value="Music">Music</option>
+    <option value="Comedy">Comedy</option>
+    <option value="Theatre">Theatre</option>
+    <option value="Talks">Talks</option>
+    <option value="Festivals">Festivals</option>
+    <option value="Beer Festivals">Beer Festivals</option>
+    <option value="Archery">Archery</option>
+    <option value="Frisbee Golf">Frisbee Golf</option>
+    <option value="Crazy Golf">Crazy Golf</option>
+    <option value="Murder Mystery">Murder Mystery</option>
+  </select>
+</div>
+
+<!-- Publish Status -->
+<div>
+  <label class="block mb-1 font-medium">Publish Status</label>
+  <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+    <option value="draft">Draft</option>
+    <option value="published">Published</option>
+    <option value="archived">Archived</option>
+  </select>
+</div>
+
+<!-- Image URL -->
+<div>
+  <label class="block mb-1 font-medium">Image URL</label>
+  <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+</div>
+
+<!-- Schedule Tabs -->
+<div>
+  <label class="block mb-2 font-medium">Schedule</label>
+  <div class="flex space-x-2 justify-between mb-4">
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
+  </div>
+  <input type="hidden" name="event_type" id="eventType" value="single">
+  <div id="tabContent"></div>
+</div>
+
+<!-- Submit -->
+<button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
+  Submit Event
+</button>
+
   </form>  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -76,64 +81,23 @@
     const tabContent = document.getElementById('tabContent');
     const eventTypeInput = document.getElementById('eventType');
 
-    async function getVenueSearchInput() {
+    async function getVenueSelector(index = 0) {
+      const venues = await supabase.from('venues').select('id, venue_name').order('venue_name');
       const wrapper = document.createElement('div');
       wrapper.className = 'space-y-2';
 
       const label = document.createElement('label');
       label.className = 'block text-sm';
-      label.textContent = 'Venue Name (Search)';
+      label.textContent = 'Venue';
 
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = 'Start typing venue name...';
-      input.className = 'venue-search w-full p-2 bg-gray-800 border border-gray-600 rounded';
-      input.setAttribute('autocomplete', 'off');
-      input.required = true;
-      input.name = 'venue_search';
-
-      const dropdown = document.createElement('div');
-      dropdown.className = 'venue-dropdown space-y-1 bg-white text-black border border-gray-400 rounded p-2 hidden max-h-60 overflow-y-auto';
-
-      const hiddenVenueId = document.createElement('input');
-      hiddenVenueId.type = 'hidden';
-      hiddenVenueId.name = 'venue_id[]';
-
-      input.addEventListener('input', async () => {
-        const term = input.value.trim();
-        if (!term) {
-          dropdown.classList.add('hidden');
-          return;
-        }
-        const { data, error } = await supabase
-          .from('venues')
-          .select('id, name')
-          .ilike('name', `%${term}%`)
-          .limit(10);
-
-        dropdown.innerHTML = '';
-        if (data?.length) {
-          data.forEach(venue => {
-            const item = document.createElement('div');
-            item.textContent = venue.name;
-            item.className = 'cursor-pointer hover:bg-gray-200 p-1 rounded';
-            item.addEventListener('click', () => {
-              input.value = venue.name;
-              hiddenVenueId.value = venue.id;
-              dropdown.classList.add('hidden');
-            });
-            dropdown.appendChild(item);
-          });
-          dropdown.classList.remove('hidden');
-        } else {
-          dropdown.classList.add('hidden');
-        }
-      });
+      const select = document.createElement('select');
+      select.required = true;
+      select.className = 'venue-dropdown w-full p-2 bg-gray-800 border border-gray-600 rounded';
+      select.name = 'venue_id[]';
+      select.innerHTML = `<option value="">Select a venue</option>` + venues.data.map(v => `<option value="${v.id}">${v.venue_name}</option>`).join('');
 
       wrapper.appendChild(label);
-      wrapper.appendChild(input);
-      wrapper.appendChild(hiddenVenueId);
-      wrapper.appendChild(dropdown);
+      wrapper.appendChild(select);
       return wrapper;
     }
 
@@ -144,10 +108,8 @@
       if (type === 'single') {
         const container = document.createElement('div');
         container.className = 'space-y-2';
-
-        const venueBlock = await getVenueSearchInput();
+        const venueBlock = await getVenueSelector();
         container.appendChild(venueBlock);
-
         container.innerHTML += `
           <div class="flex gap-4">
             <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
@@ -155,8 +117,68 @@
           </div>
           <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
         `;
-
         tabContent.appendChild(container);
+      }
+
+      if (type === 'recurring') {
+        const container = document.createElement('div');
+        container.className = 'space-y-2';
+        const venueBlock = await getVenueSelector();
+        container.appendChild(venueBlock);
+        container.innerHTML += `
+          <label class="block text-sm">Recurring Dates:</label>
+          <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+            <option value="">Choose pattern (optional)</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <div class="space-y-2">
+            <input type="date" name="event_date[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+            <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
+          </div>
+          <input type="time" name="event_time[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        `;
+        tabContent.appendChild(container);
+
+        container.querySelector('#addRecurringDate').addEventListener('click', () => {
+          const newDate = document.createElement('input');
+          newDate.type = 'date';
+          newDate.name = 'event_date[]';
+          newDate.required = true;
+          newDate.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
+          container.querySelector('#addRecurringDate').before(newDate);
+        });
+      }
+
+      if (type === 'tour') {
+        tabContent.innerHTML = `
+          <div id="scheduleSection" class="space-y-4">
+            <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+          </div>
+        `;
+
+        async function addScheduleRow() {
+          const section = document.getElementById('scheduleSection');
+          const wrapper = document.createElement('div');
+          wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
+
+          const venueBlock = await getVenueSelector();
+          wrapper.appendChild(venueBlock);
+
+          wrapper.innerHTML += `
+            <div class="flex gap-4">
+              <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+              <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+            </div>
+            <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          `;
+          section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
+        }
+
+        await addScheduleRow();
+        document.getElementById('addScheduleBtn').addEventListener('click', addScheduleRow);
       }
     }
 
@@ -211,4 +233,4 @@
       tabBtns[0].classList.add('bg-blue-500');
     });
   </script></body>
-</html>
+  </html>
