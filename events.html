@@ -74,10 +74,12 @@
         const card = document.createElement('div');
         card.className = 'rounded-xl overflow-hidden shadow bg-gray-900';
 
-        const imageUrl = event.image_url || 'https://source.unsplash.com/random/800x600/?concert,event,night';
+        const imageContent = event.image_url
+          ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
+          : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
         card.innerHTML = `
-          <img src="${imageUrl}" alt="${event.event_name}" class="w-full h-40 object-cover">
+          ${imageContent}
           <div class="p-4">
             <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
             <p class="text-sm text-gray-400 mb-2">${event.event_date} at ${event.event_time || 'TBA'}</p>
