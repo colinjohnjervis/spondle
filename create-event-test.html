@@ -1,42 +1,238 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html><html lang="en">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Test Venue Dropdown Only – Spondle</title>
+  <title>Create Event – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .venue-card {
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #111;
+      cursor: pointer;
+    }
+    .venue-card strong { display: block; margin-bottom: 4px; }
+    .no-results { text-align: center; color: #888; margin-top: 10px; }
+    .venue-form input, .venue-form button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body class="bg-black text-white p-6">
   <h1 class="text-3xl font-bold mb-6">Create Event</h1>
-  <form id="testForm" class="space-y-6">
-  <div>
-    <label class="block mb-1 font-medium">Venue</label>
-    <select id="venueSelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></select>
+  <form id="eventForm" class="space-y-6">
+    <!-- Event Info Fields Here (Same as before, unchanged) --><!-- Schedule Tabs -->
+<div>
+  <label class="block mb-2 font-medium">Schedule</label>
+  <div class="flex space-x-2 justify-between mb-4">
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
+    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
   </div>
-</form>  <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  <input type="hidden" name="event_type" id="eventType" value="single">
+  <div id="tabContent"></div>
+</div>
 
-  const supabase = createClient(
-    'https://jvuunvnbpdfrttusgelz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-  );
+<button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
+  Submit Event
+</button>
 
-  async function loadVenueDropdown() {
-    const dropdown = document.getElementById('venueSelect');
-    dropdown.innerHTML = '<option>Loading venues...</option>';
-    try {
-      const { data, error } = await supabase.from('venues').select('id, name').order('name');
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        dropdown.innerHTML = '<option>No venues found</option>';
-        return;
+  </form>  <!-- Venue search/create script injected inline (works with all tabs) -->  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
+
+    const form = document.getElementById('eventForm');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContent = document.getElementById('tabContent');
+    const eventTypeInput = document.getElementById('eventType');
+
+    const views = {
+      single: () => `<div class="space-y-2">
+        <div>
+          <input type="text" id="search" placeholder="Search by venue name..." class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <div id="venue-list" class="mt-2"></div>
+          <div class="no-results" id="no-results" style="display: none;">
+            No results — <a href="#" id="create-venue-link" class="text-green-500">Create a new venue</a>
+          </div>
+          <div class="venue-form mt-4" id="venue-form" style="display:none;">
+            <input type="text" placeholder="Venue name" id="venue-name" class="bg-gray-800 border border-gray-600">
+            <input type="text" placeholder="Street address" id="venue-street" class="bg-gray-800 border border-gray-600">
+            <input type="text" placeholder="Postcode" id="venue-postcode" class="bg-gray-800 border border-gray-600">
+            <button type="button" id="venue-submit" class="bg-green-500 text-black">Create Venue</button>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      </div>`,
+
+      recurring: () => `<div class="space-y-2">
+        <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <label class="block text-sm">Recurring Dates:</label>
+        <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <option value="">Choose pattern (optional)</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+        <div class="space-y-2">
+          <input type="date" name="event_date[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
+        </div>
+        <input type="time" name="event_time[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      </div>`,
+
+      tour: () => `<div id="scheduleSection" class="space-y-4">
+        <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+      </div>`
+    };
+
+    function loadTab(type) {
+      tabContent.innerHTML = views[type]();
+      eventTypeInput.value = type;
+      if (type === 'tour') {
+        createScheduleInput();
+        document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
       }
-      dropdown.innerHTML = '<option value="">Select a venue</option>' +
-        data.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
-    } catch (err) {
-      console.error('Error loading venues:', err);
-      dropdown.innerHTML = '<option>Error loading venues</option>';
+      if (type === 'recurring') {
+        document.getElementById('addRecurringDate').addEventListener('click', () => {
+          const newInput = document.createElement('input');
+          newInput.type = 'date';
+          newInput.name = 'event_date[]';
+          newInput.required = true;
+          newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
+          document.getElementById('addRecurringDate').before(newInput);
+        });
+      }
+      if (type === 'single') wireVenueSearch();
     }
-  }
 
-  window.addEventListener('DOMContentLoaded', loadVenueDropdown);
-</script>  <script type="module" src="./final-create-event.js"></script></body>
+    function createScheduleInput() {
+      const section = document.getElementById('scheduleSection');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
+      wrapper.innerHTML = `
+        <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      `;
+      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+        btn.classList.add('bg-blue-500');
+        loadTab(btn.dataset.type);
+      });
+    });
+
+    function wireVenueSearch() {
+      const searchInput = document.getElementById('search');
+      const venueList = document.getElementById('venue-list');
+      const noResults = document.getElementById('no-results');
+      const venueForm = document.getElementById('venue-form');
+
+      searchInput.addEventListener('input', async () => {
+        const q = searchInput.value.trim();
+        if (!q) return venueList.innerHTML = '';
+
+        const { data: venues } = await supabase.from('venues')
+          .select('id,venue_name,street_name,postcode')
+          .ilike('venue_name', `%${q}%`);
+
+        venueList.innerHTML = '';
+
+        if (!venues.length) {
+          noResults.style.display = 'block';
+          return;
+        }
+
+        noResults.style.display = 'none';
+        venues.forEach(v => {
+          const card = document.createElement('div');
+          card.className = 'venue-card';
+          card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name}, ${v.postcode}`;
+          card.addEventListener('click', () => {
+            searchInput.value = v.venue_name;
+            venueList.innerHTML = '';
+          });
+          venueList.appendChild(card);
+        });
+      });
+
+      document.getElementById('create-venue-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        venueForm.style.display = 'block';
+      });
+
+      document.getElementById('venue-submit').addEventListener('click', async () => {
+        const name = document.getElementById('venue-name').value.trim();
+        const street = document.getElementById('venue-street').value.trim();
+        const postcode = document.getElementById('venue-postcode').value.trim();
+
+        if (!name) return alert('Enter a venue name');
+        const { error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]);
+        if (error) return alert('Error creating venue');
+
+        searchInput.value = name;
+        venueForm.style.display = 'none';
+        venueList.innerHTML = '';
+      });
+    }
+
+    loadTab('single');
+    tabBtns[0].classList.add('bg-blue-500');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const baseData = {
+        title: formData.get('title'),
+        category: formData.get('category'),
+        publish_status: formData.get('publish_status'),
+        image: formData.get('image'),
+        description: formData.get('description'),
+        event_type: formData.get('event_type')
+      };
+
+      const venues = formData.getAll('venue[]');
+      const dates = formData.getAll('event_date[]');
+      const times = formData.getAll('event_time[]');
+      const ticketLinks = formData.getAll('tickets_url[]');
+
+      for (let i = 0; i < venues.length; i++) {
+        const event = {
+          ...baseData,
+          venue: venues[i],
+          event_date: dates[i],
+          event_time: times[i],
+          tickets_url: ticketLinks[i] || null
+        };
+        const { error } = await supabase.from('events').insert([event]);
+        if (error) console.error('Error:', error);
+      }
+
+      alert('Event(s) submitted!');
+      form.reset();
+      loadTab('single');
+      tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+      tabBtns[0].classList.add('bg-blue-500');
+    });
+  </script></body>
 </html>
