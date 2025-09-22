@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -27,23 +28,25 @@
 <body class="bg-black text-white p-6">
   <h1 class="text-3xl font-bold mb-6">Create Event</h1>
   <form id="eventForm" class="space-y-6">
-    <!-- Event Info Fields Here (Same as before, unchanged) --><!-- Schedule Tabs -->
-<div>
-  <label class="block mb-2 font-medium">Schedule</label>
-  <div class="flex space-x-2 justify-between mb-4">
-    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
-    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
-    <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
-  </div>
-  <input type="hidden" name="event_type" id="eventType" value="single">
-  <div id="tabContent"></div>
-</div>
+    <!-- Schedule Tabs -->
+    <div>
+      <label class="block mb-2 font-medium">Schedule</label>
+      <div class="flex space-x-2 justify-between mb-4">
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
+        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
+      </div>
+      <input type="hidden" name="event_type" id="eventType" value="single">
+      <div id="tabContent"></div>
+    </div>
 
-<button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
-  Submit Event
-</button>
+    <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
+      Submit Event
+    </button>
+  </form>
 
-  </form>  <!-- Venue search/create script injected inline (works with all tabs) -->  <script type="module">
+  <!-- Inline Script -->
+  <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
@@ -59,6 +62,7 @@
       single: () => `<div class="space-y-2">
         <div>
           <input type="text" id="search" placeholder="Search by venue name..." class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="text" id="venue-id" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
           <div id="venue-list" class="mt-2"></div>
           <div class="no-results" id="no-results" style="display: none;">
             No results — <a href="#" id="create-venue-link" class="text-green-500">Create a new venue</a>
@@ -119,31 +123,9 @@
       if (type === 'single') wireVenueSearch();
     }
 
-    function createScheduleInput() {
-      const section = document.getElementById('scheduleSection');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
-      wrapper.innerHTML = `
-        <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>
-        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      `;
-      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
-    }
-
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
-        btn.classList.add('bg-blue-500');
-        loadTab(btn.dataset.type);
-      });
-    });
-
     function wireVenueSearch() {
       const searchInput = document.getElementById('search');
+      const venueIdInput = document.getElementById('venue-id');
       const venueList = document.getElementById('venue-list');
       const noResults = document.getElementById('no-results');
       const venueForm = document.getElementById('venue-form');
@@ -170,6 +152,7 @@
           card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name}, ${v.postcode}`;
           card.addEventListener('click', () => {
             searchInput.value = v.venue_name;
+            venueIdInput.value = v.id;
             venueList.innerHTML = '';
           });
           venueList.appendChild(card);
@@ -187,14 +170,39 @@
         const postcode = document.getElementById('venue-postcode').value.trim();
 
         if (!name) return alert('Enter a venue name');
-        const { error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]);
+
+        const { data, error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]).select('id');
         if (error) return alert('Error creating venue');
 
         searchInput.value = name;
+        venueIdInput.value = data[0].id;
         venueForm.style.display = 'none';
         venueList.innerHTML = '';
       });
     }
+
+    function createScheduleInput() {
+      const section = document.getElementById('scheduleSection');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
+      wrapper.innerHTML = `
+        <input type="text" name="venue[]" placeholder="Venue" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      `;
+      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+        btn.classList.add('bg-blue-500');
+        loadTab(btn.dataset.type);
+      });
+    });
 
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
@@ -211,15 +219,15 @@
         event_type: formData.get('event_type')
       };
 
-      const venues = formData.getAll('venue[]');
+      const venueIds = formData.getAll('venue_id[]');
       const dates = formData.getAll('event_date[]');
       const times = formData.getAll('event_time[]');
       const ticketLinks = formData.getAll('tickets_url[]');
 
-      for (let i = 0; i < venues.length; i++) {
+      for (let i = 0; i < venueIds.length; i++) {
         const event = {
           ...baseData,
-          venue: venues[i],
+          venue_id: venueIds[i],
           event_date: dates[i],
           event_time: times[i],
           tickets_url: ticketLinks[i] || null
@@ -234,5 +242,6 @@
       tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
       tabBtns[0].classList.add('bg-blue-500');
     });
-  </script></body>
+  </script>
+</body>
 </html>
