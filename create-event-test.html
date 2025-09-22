@@ -23,9 +23,7 @@
       border-radius: 12px;
       box-sizing: border-box;
     }
-    .input-wrapper {
-      position: relative;
-    }
+    .input-wrapper { position: relative; }
     .clear-btn {
       position: absolute;
       right: 10px;
@@ -43,14 +41,10 @@
   <h1 class="text-3xl font-bold mb-6">Create Event</h1>
   <form id="eventForm" class="space-y-6">
 
+    <!-- MAIN EVENT FIELDS -->
     <div>
       <label class="block mb-2">Event Name</label>
-      <input type="text" name="title" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
-
-    <div>
-      <label class="block mb-2">Description</label>
-      <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
+      <input type="text" name="event_name" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
     </div>
 
     <div>
@@ -67,7 +61,7 @@
 
     <div>
       <label class="block mb-2">Image URL</label>
-      <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="https://example.com/image.jpg">
+      <input type="url" name="image_url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="https://example.com/image.jpg">
     </div>
 
     <div>
@@ -78,6 +72,12 @@
       </select>
     </div>
 
+    <div>
+      <label class="block mb-2">Description</label>
+      <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
+    </div>
+
+    <!-- SCHEDULING SECTION -->
     <div>
       <label class="block mb-2 font-medium">Schedule</label>
       <div class="flex space-x-2 justify-between mb-4">
@@ -92,6 +92,7 @@
     <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
   </form>
 
+  <!-- SCRIPT SECTION -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
@@ -163,7 +164,7 @@
     };
 
     function wireVenueSearch() {
-      document.querySelectorAll('.input-wrapper').forEach((wrapper) => {
+      document.querySelectorAll('.input-wrapper').forEach(wrapper => {
         const searchInput = wrapper.querySelector('.search');
         const venueIdInput = wrapper.parentElement.querySelector('.venue-id');
         const venueList = wrapper.parentElement.querySelector('.venue-list');
@@ -173,22 +174,16 @@
 
         searchInput.addEventListener('input', async () => {
           const q = searchInput.value.trim();
-          if (!q) {
-            venueList.innerHTML = '';
-            return;
-          }
+          if (!q) return (venueList.innerHTML = '');
 
-          const { data: venues } = await supabase.from('venues')
+          const { data: venues } = await supabase
+            .from('venues')
             .select('id,venue_name,street_name,postcode')
             .ilike('venue_name', `%${q}%`)
             .limit(5);
 
           venueList.innerHTML = '';
-
-          if (!venues.length) {
-            noResults.style.display = 'block';
-            return;
-          }
+          if (!venues.length) return (noResults.style.display = 'block');
 
           noResults.style.display = 'none';
           venues.forEach(v => {
@@ -212,7 +207,7 @@
           noResults.style.display = 'none';
         });
 
-        wrapper.parentElement.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
+        wrapper.parentElement.querySelector('.create-venue-link')?.addEventListener('click', e => {
           e.preventDefault();
           venueForm.style.display = 'block';
         });
@@ -221,10 +216,10 @@
           const name = wrapper.parentElement.querySelector('.venue-name').value.trim();
           const street = wrapper.parentElement.querySelector('.venue-street').value.trim();
           const postcode = wrapper.parentElement.querySelector('.venue-postcode').value.trim();
-
           if (!name) return alert('Enter a venue name');
 
-          const { data, error } = await supabase.from('venues')
+          const { data, error } = await supabase
+            .from('venues')
             .insert([{ venue_name: name, street_name: street, postcode }])
             .select('id');
 
@@ -281,10 +276,10 @@
       e.preventDefault();
       const formData = new FormData(form);
       const baseData = {
-        title: formData.get('title'),
+        event_name: formData.get('event_name'),
         category: formData.get('category'),
         publish_status: formData.get('publish_status'),
-        image: formData.get('image'),
+        image_url: formData.get('image_url'),
         description: formData.get('description'),
         event_type: formData.get('event_type')
       };
