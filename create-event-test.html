@@ -1,287 +1,42 @@
-<!DOCTYPE html><html lang="en">
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Event – Spondle</title>
+  <title>Test Venue Dropdown Only – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6">
   <h1 class="text-3xl font-bold mb-6">Create Event</h1>
-  <form id="eventForm" class="space-y-6">
-    <!-- Event Name -->
-    <div>
-      <label class="block mb-1 font-medium">Event Name</label>
-      <input type="text" name="title" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
+  <form id="testForm" class="space-y-6">
+  <div>
+    <label class="block mb-1 font-medium">Venue</label>
+    <select id="venueSelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></select>
+  </div>
+</form>  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    <!-- Description -->
-    <div>
-      <label class="block mb-1 font-medium">Description</label>
-      <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
-    </div>
+  const supabase = createClient(
+    'https://jvuunvnbpdfrttusgelz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+  );
 
-    <!-- Category -->
-    <div>
-      <label class="block mb-1 font-medium">Category</label>
-      <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <option value="Music">Music</option>
-        <option value="Comedy">Comedy</option>
-        <option value="Theatre">Theatre</option>
-        <option value="Talks">Talks</option>
-        <option value="Festivals">Festivals</option>
-        <option value="Beer Festivals">Beer Festivals</option>
-        <option value="Archery">Archery</option>
-        <option value="Frisbee Golf">Frisbee Golf</option>
-        <option value="Crazy Golf">Crazy Golf</option>
-        <option value="Murder Mystery">Murder Mystery</option>
-      </select>
-    </div>
-
-    <!-- Publish Status -->
-    <div>
-      <label class="block mb-1 font-medium">Publish Status</label>
-      <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-        <option value="archived">Archived</option>
-      </select>
-    </div>
-
-    <!-- Image URL -->
-    <div>
-      <label class="block mb-1 font-medium">Image URL</label>
-      <input type="url" name="image" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
-
-    <!-- Schedule Tabs -->
-    <div>
-      <label class="block mb-2 font-medium">Schedule</label>
-      <div class="flex space-x-2 justify-between mb-4">
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
-        <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
-      </div>
-      <input type="hidden" name="event_type" id="eventType" value="single">
-      <div id="tabContent"></div>
-    </div>
-
-    <!-- Submit -->
-    <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">
-      Submit Event
-    </button>
-  </form>
-
-  <template id="venueSearchTemplate">
-    <div class="space-y-2">
-      <label class="block text-sm">Venue</label>
-      <select required class="venue-dropdown w-full p-2 bg-gray-800 border border-gray-600 rounded"></select>
-      <button type="button" class="create-new-venue text-sm text-blue-400">+ Create New Venue</button>
-      <div class="new-venue-fields hidden space-y-2">
-        <input type="text" class="new-venue-name w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="New Venue Name">
-        <input type="email" class="new-venue-email w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="Contact Email (required)">
-      </div>
-      <input type="hidden" name="venue_id[]" class="venue-id">
-    </div>
-  </template>
-
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-    );
-
-    async function main() {
-      const form = document.getElementById('eventForm');
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      const tabContent = document.getElementById('tabContent');
-      const eventTypeInput = document.getElementById('eventType');
-      const venueTemplate = document.getElementById('venueSearchTemplate');
-
-      async function createVenueSearchElement() {
-        const clone = venueTemplate.content.cloneNode(true);
-        const dropdown = clone.querySelector('.venue-dropdown');
-        const hiddenId = clone.querySelector('.venue-id');
-        const toggleBtn = clone.querySelector('.create-new-venue');
-        const newVenueFields = clone.querySelector('.new-venue-fields');
-        const nameInput = clone.querySelector('.new-venue-name');
-        const emailInput = clone.querySelector('.new-venue-email');
-
-        const { data: venues } = await supabase.from('venues').select('id, name').order('name');
-
-        dropdown.innerHTML = `<option value="">Select a venue</option>` + venues.map(v =>
-          `<option value="${v.id}">${v.name}</option>`
-        ).join('');
-
-        dropdown.addEventListener('change', () => {
-          hiddenId.value = dropdown.value;
-          nameInput.value = '';
-          emailInput.value = '';
-        });
-
-        toggleBtn.addEventListener('click', () => {
-          newVenueFields.classList.toggle('hidden');
-          dropdown.disabled = !dropdown.disabled;
-          if (!newVenueFields.classList.contains('hidden')) {
-            hiddenId.value = '';
-          }
-        });
-
-        return { wrapper: clone, hiddenId, nameInput, emailInput, dropdown };
+  async function loadVenueDropdown() {
+    const dropdown = document.getElementById('venueSelect');
+    dropdown.innerHTML = '<option>Loading venues...</option>';
+    try {
+      const { data, error } = await supabase.from('venues').select('id, name').order('name');
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        dropdown.innerHTML = '<option>No venues found</option>';
+        return;
       }
-
-      async function createScheduleInput() {
-        const section = document.getElementById('scheduleSection');
-        const wrapper = document.createElement('div');
-        wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
-
-        const venueBlock = await createVenueSearchElement();
-        wrapper.appendChild(venueBlock.wrapper);
-
-        wrapper.innerHTML += `
-          <div class="flex gap-4">
-            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          </div>
-          <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        `;
-        section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
-      }
-
-      const views = {
-        single: async () => {
-          const block = document.createElement('div');
-          block.className = 'space-y-2';
-          const venueBlock = await createVenueSearchElement();
-          block.appendChild(venueBlock.wrapper);
-          block.innerHTML += `
-            <div class="flex gap-4">
-              <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-              <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-            </div>
-            <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          `;
-          tabContent.innerHTML = '';
-          tabContent.appendChild(block);
-        },
-        recurring: async () => {
-          const block = document.createElement('div');
-          block.className = 'space-y-2';
-          const venueBlock = await createVenueSearchElement();
-          block.appendChild(venueBlock.wrapper);
-          block.innerHTML += `
-            <label class="block text-sm">Recurring Dates:</label>
-            <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-              <option value="">Choose pattern (optional)</option>
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-            <div class="space-y-2">
-              <input type="date" name="event_date[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-              <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-            </div>
-            <input type="time" name="event_time[]" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-            <input type="url" name="tickets_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          `;
-          tabContent.innerHTML = '';
-          tabContent.appendChild(block);
-          document.getElementById('addRecurringDate').addEventListener('click', () => {
-            const newInput = document.createElement('input');
-            newInput.type = 'date';
-            newInput.name = 'event_date[]';
-            newInput.required = true;
-            newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
-            document.getElementById('addRecurringDate').before(newInput);
-          });
-        },
-        tour: async () => {
-          tabContent.innerHTML = `
-            <div id="scheduleSection" class="space-y-4">
-              <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
-            </div>
-          `;
-          await createScheduleInput();
-          document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
-        }
-      };
-
-      async function loadTab(type) {
-        await views[type]();
-        eventTypeInput.value = type;
-      }
-
-      tabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
-          btn.classList.add('bg-blue-500');
-          loadTab(btn.dataset.type);
-        });
-      });
-
-      // Load default tab
-      await loadTab('single');
-      tabBtns[0].classList.add('bg-blue-500');
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-
-        const baseData = {
-          title: formData.get('title'),
-          category: formData.get('category'),
-          publish_status: formData.get('publish_status'),
-          image: formData.get('image'),
-          description: formData.get('description'),
-          event_type: formData.get('event_type')
-        };
-
-        const venueIds = formData.getAll('venue_id[]');
-        const dates = formData.getAll('event_date[]');
-        const times = formData.getAll('event_time[]');
-        const ticketLinks = formData.getAll('tickets_url[]');
-
-        for (let i = 0; i < venueIds.length; i++) {
-          let venue_id = venueIds[i];
-
-          if (!venue_id) {
-            const nameEl = document.querySelectorAll('.new-venue-name')[i];
-            const emailEl = document.querySelectorAll('.new-venue-email')[i];
-            if (nameEl && emailEl && nameEl.value && emailEl.value) {
-              const { data: newVenue, error } = await supabase.from('venues').insert({
-                name: nameEl.value,
-                email: emailEl.value
-              }).select().single();
-              if (error) {
-                alert('Error creating new venue');
-                continue;
-              }
-              venue_id = newVenue.id;
-            }
-          }
-
-          const event = {
-            ...baseData,
-            venue_id,
-            event_date: dates[i],
-            event_time: times[i],
-            tickets_url: ticketLinks[i] || null
-          };
-          const { error } = await supabase.from('events').insert([event]);
-          if (error) console.error('Error:', error);
-        }
-
-        alert('Event(s) submitted!');
-        form.reset();
-        await loadTab('single');
-        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
-        tabBtns[0].classList.add('bg-blue-500');
-      });
+      dropdown.innerHTML = '<option value="">Select a venue</option>' +
+        data.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+    } catch (err) {
+      console.error('Error loading venues:', err);
+      dropdown.innerHTML = '<option>Error loading venues</option>';
     }
+  }
 
-    // Call main function on DOM load
-    window.addEventListener('DOMContentLoaded', main);
-  </script>
-</body>
+  window.addEventListener('DOMContentLoaded', loadVenueDropdown);
+</script>  <script type="module" src="./final-create-event.js"></script></body>
 </html>
