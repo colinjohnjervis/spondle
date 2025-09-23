@@ -1,124 +1,112 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Events Mini View – Plugin Layouts</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white p-6 space-y-12">  <h1 class="text-3xl font-bold text-center mb-8">Spondle Plugin – Style Previews</h1>  <!-- STYLE 1 to 4 omitted for brevity (already filled) -->  <!-- STYLE 5: Split Column Layout -->  <section>
+<body class="bg-gray-900 text-white p-6 space-y-12">
+  <h1 class="text-3xl font-bold text-center mb-8">Spondle Plugin – Style Previews</h1>  <!-- STYLE 1: Minimal List -->  <section>
+    <h2 class="text-xl font-semibold mb-4">Style 1: Minimal List</h2>
+    <ul class="space-y-1">
+      <li>2025-10-01 – Event Title 1 @ Venue 1</li>
+      <li>2025-10-02 – Event Title 2 @ Venue 2</li>
+      <li>2025-10-03 – Event Title 3 @ Venue 3</li>
+      <li>2025-10-04 – Event Title 4 @ Venue 4</li>
+      <li>2025-10-05 – Event Title 5 @ Venue 5</li>
+      <li>2025-10-06 – Event Title 6 @ Venue 6</li>
+      <li>2025-10-07 – Event Title 7 @ Venue 7</li>
+      <li>2025-10-08 – Event Title 8 @ Venue 8</li>
+      <li>2025-10-09 – Event Title 9 @ Venue 9</li>
+      <li>2025-10-10 – Event Title 10 @ Venue 10</li>
+    </ul>
+  </section>  <!-- STYLE 2: Card Layout -->  <section>
+    <h2 class="text-xl font-semibold mb-4">Style 2: Card Layout</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Repeat 10 cards -->
+      <div class="bg-gray-800 p-4 rounded shadow" v-for="i in 10">
+        <div class="text-sm text-gray-400">2025-10-0{{i}}</div>
+        <div class="text-lg font-bold">Event Title {{i}}</div>
+        <div class="text-sm">Venue {{i}}</div>
+      </div>
+    </div>
+  </section>  <!-- STYLE 3: Table View -->  <section>
+    <h2 class="text-xl font-semibold mb-4">Style 3: Table View</h2>
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="border-b border-gray-700">
+          <th class="py-2">Date</th>
+          <th class="py-2">Event</th>
+          <th class="py-2">Venue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-gray-800" v-for="i in 10">
+          <td class="py-2">2025-10-0{{i}}</td>
+          <td class="py-2">Event Title {{i}}</td>
+          <td class="py-2">Venue {{i}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>  <!-- STYLE 4: Date Badge Format -->  <section>
+    <h2 class="text-xl font-semibold mb-4">Style 4: Date Badge Format</h2>
+    <div class="space-y-2">
+      <div class="flex items-center space-x-4" v-for="i in 10">
+        <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs">2025-10-0{{i}}</span>
+        <span>Event Title {{i}} @ Venue {{i}}</span>
+      </div>
+    </div>
+  </section>  <!-- STYLE 5: Split Column Layout -->  <section>
     <h2 class="text-xl font-semibold mb-4">Style 5: Split Column Layout</h2>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-      <div class="bg-gray-800 p-3 rounded">2025-10-01<br><strong>Event Title 1</strong><br><span class="text-sm text-gray-400">Venue 1</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-02<br><strong>Event Title 2</strong><br><span class="text-sm text-gray-400">Venue 2</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-03<br><strong>Event Title 3</strong><br><span class="text-sm text-gray-400">Venue 3</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-04<br><strong>Event Title 4</strong><br><span class="text-sm text-gray-400">Venue 4</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-05<br><strong>Event Title 5</strong><br><span class="text-sm text-gray-400">Venue 5</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-06<br><strong>Event Title 6</strong><br><span class="text-sm text-gray-400">Venue 6</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-07<br><strong>Event Title 7</strong><br><span class="text-sm text-gray-400">Venue 7</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-08<br><strong>Event Title 8</strong><br><span class="text-sm text-gray-400">Venue 8</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-09<br><strong>Event Title 9</strong><br><span class="text-sm text-gray-400">Venue 9</span></div>
-      <div class="bg-gray-800 p-3 rounded">2025-10-10<br><strong>Event Title 10</strong><br><span class="text-sm text-gray-400">Venue 10</span></div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-gray-800 p-4 rounded" v-for="i in 10">
+        <div class="text-sm text-gray-400">2025-10-0{{i}}</div>
+        <div class="font-bold">Event Title {{i}}</div>
+        <div class="text-sm">Venue {{i}}</div>
+      </div>
     </div>
   </section>  <!-- STYLE 6: Compact & Mobile Friendly -->  <section>
     <h2 class="text-xl font-semibold mb-4">Style 6: Compact & Mobile Friendly</h2>
-    <ul class="divide-y divide-gray-700">
-      <li class="py-2 text-sm">2025-10-01 – <strong>Event Title 1</strong> @ Venue 1</li>
-      <li class="py-2 text-sm">2025-10-02 – <strong>Event Title 2</strong> @ Venue 2</li>
-      <li class="py-2 text-sm">2025-10-03 – <strong>Event Title 3</strong> @ Venue 3</li>
-      <li class="py-2 text-sm">2025-10-04 – <strong>Event Title 4</strong> @ Venue 4</li>
-      <li class="py-2 text-sm">2025-10-05 – <strong>Event Title 5</strong> @ Venue 5</li>
-      <li class="py-2 text-sm">2025-10-06 – <strong>Event Title 6</strong> @ Venue 6</li>
-      <li class="py-2 text-sm">2025-10-07 – <strong>Event Title 7</strong> @ Venue 7</li>
-      <li class="py-2 text-sm">2025-10-08 – <strong>Event Title 8</strong> @ Venue 8</li>
-      <li class="py-2 text-sm">2025-10-09 – <strong>Event Title 9</strong> @ Venue 9</li>
-      <li class="py-2 text-sm">2025-10-10 – <strong>Event Title 10</strong> @ Venue 10</li>
+    <ul class="divide-y divide-gray-800">
+      <li class="py-2 flex justify-between text-sm" v-for="i in 10">
+        <span>Event Title {{i}} @ Venue {{i}}</span>
+        <span class="text-gray-400">2025-10-0{{i}}</span>
+      </li>
     </ul>
   </section>  <!-- STYLE 7: Icon + Text -->  <section>
     <h2 class="text-xl font-semibold mb-4">Style 7: Icon + Text</h2>
-    <div class="space-y-3">
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-01 – Event Title 1 @ Venue 1</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-02 – Event Title 2 @ Venue 2</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-03 – Event Title 3 @ Venue 3</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-04 – Event Title 4 @ Venue 4</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-05 – Event Title 5 @ Venue 5</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-06 – Event Title 6 @ Venue 6</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-07 – Event Title 7 @ Venue 7</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-08 – Event Title 8 @ Venue 8</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-09 – Event Title 9 @ Venue 9</span></div>
-      <div class="flex items-center space-x-3"><span class="text-green-400">🎫</span><span>2025-10-10 – Event Title 10 @ Venue 10</span></div>
-    </div>
+    <ul class="space-y-2">
+      <li class="flex items-center space-x-3" v-for="i in 10">
+        <span>🌟</span>
+        <span>2025-10-0{{i}} – Event Title {{i}} @ Venue {{i}}</span>
+      </li>
+    </ul>
   </section>  <!-- STYLE 8: Expandable Accordion -->  <section>
     <h2 class="text-xl font-semibold mb-4">Style 8: Expandable Accordion</h2>
     <div class="space-y-2">
-      <!-- Simulated expandable blocks -->
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-01 – Event Title 1</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 1</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-02 – Event Title 2</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 2</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-03 – Event Title 3</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 3</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-04 – Event Title 4</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 4</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-05 – Event Title 5</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 5</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-06 – Event Title 6</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 6</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-07 – Event Title 7</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 7</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-08 – Event Title 8</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 8</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-09 – Event Title 9</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 9</p>
-      </details>
-      <details class="bg-gray-800 p-3 rounded">
-        <summary class="cursor-pointer">2025-10-10 – Event Title 10</summary>
-        <p class="text-sm text-gray-400 mt-2">Venue: Venue 10</p>
+      <details class="bg-gray-800 rounded p-4" v-for="i in 10">
+        <summary class="cursor-pointer font-semibold">Event Title {{i}} – 2025-10-0{{i}}</summary>
+        <p class="mt-2 text-sm text-gray-400">Venue {{i}} – More details about the event go here.</p>
       </details>
     </div>
   </section>  <!-- STYLE 9: Horizontal Scroll -->  <section>
     <h2 class="text-xl font-semibold mb-4">Style 9: Horizontal Scroll</h2>
-    <div class="overflow-x-auto whitespace-nowrap space-x-4 flex pb-2">
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-01<br><strong>Event Title 1</strong><br><span class="text-sm text-gray-400">Venue 1</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-02<br><strong>Event Title 2</strong><br><span class="text-sm text-gray-400">Venue 2</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-03<br><strong>Event Title 3</strong><br><span class="text-sm text-gray-400">Venue 3</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-04<br><strong>Event Title 4</strong><br><span class="text-sm text-gray-400">Venue 4</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-05<br><strong>Event Title 5</strong><br><span class="text-sm text-gray-400">Venue 5</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-06<br><strong>Event Title 6</strong><br><span class="text-sm text-gray-400">Venue 6</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-07<br><strong>Event Title 7</strong><br><span class="text-sm text-gray-400">Venue 7</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-08<br><strong>Event Title 8</strong><br><span class="text-sm text-gray-400">Venue 8</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-09<br><strong>Event Title 9</strong><br><span class="text-sm text-gray-400">Venue 9</span></div>
-      <div class="bg-gray-800 inline-block w-64 p-4 rounded">2025-10-10<br><strong>Event Title 10</strong><br><span class="text-sm text-gray-400">Venue 10</span></div>
+    <div class="flex space-x-4 overflow-x-auto pb-4">
+      <div class="bg-gray-800 p-4 rounded min-w-[200px]" v-for="i in 10">
+        <div class="text-sm text-gray-400">2025-10-0{{i}}</div>
+        <div class="font-bold">Event Title {{i}}</div>
+        <div class="text-sm">Venue {{i}}</div>
+      </div>
     </div>
   </section>  <!-- STYLE 10: Newspaper Block Grid -->  <section>
     <h2 class="text-xl font-semibold mb-4">Style 10: Newspaper Block Grid</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-gray-800 p-4 rounded">2025-10-01<br><strong>Event Title 1</strong><br><span class="text-sm text-gray-400">Venue 1</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-02<br><strong>Event Title 2</strong><br><span class="text-sm text-gray-400">Venue 2</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-03<br><strong>Event Title 3</strong><br><span class="text-sm text-gray-400">Venue 3</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-04<br><strong>Event Title 4</strong><br><span class="text-sm text-gray-400">Venue 4</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-05<br><strong>Event Title 5</strong><br><span class="text-sm text-gray-400">Venue 5</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-06<br><strong>Event Title 6</strong><br><span class="text-sm text-gray-400">Venue 6</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-07<br><strong>Event Title 7</strong><br><span class="text-sm text-gray-400">Venue 7</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-08<br><strong>Event Title 8</strong><br><span class="text-sm text-gray-400">Venue 8</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-09<br><strong>Event Title 9</strong><br><span class="text-sm text-gray-400">Venue 9</span></div>
-      <div class="bg-gray-800 p-4 rounded">2025-10-10<br><strong>Event Title 10</strong><br><span class="text-sm text-gray-400">Venue 10</span></div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="bg-gray-800 p-4" v-for="i in 10">
+        <h3 class="font-bold text-lg">Event Title {{i}}</h3>
+        <p class="text-sm text-gray-400">Date: 2025-10-0{{i}}</p>
+        <p class="text-sm">Venue: Venue {{i}}</p>
+      </div>
     </div>
-  </section></body>
-      </html>
+  </section>
+</body>
+</html>
