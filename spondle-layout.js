@@ -82,7 +82,6 @@ window.Layout = {
       <nav class="sp-nav" id="sidebar-links">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
         <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
-        <a href="/organisers.html" class="${active === 'organisers' ? 'is-active' : ''}">Organisers</a>
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
       </nav>
     `;
@@ -107,6 +106,10 @@ window.Layout = {
     if (!navContainer) return;
 
     if (user) {
+      const dashboardLink = document.createElement("a");
+      dashboardLink.href = "/event-dashboard.html";
+      dashboardLink.textContent = "Event Dashboard";
+
       const profileLink = document.createElement("a");
       profileLink.href = "/profile.html";
       profileLink.textContent = "My Profile";
@@ -115,6 +118,7 @@ window.Layout = {
       logoutLink.href = "/logout.html";
       logoutLink.textContent = "Sign out";
 
+      navContainer.appendChild(dashboardLink);
       navContainer.appendChild(profileLink);
       navContainer.appendChild(logoutLink);
     } else {
