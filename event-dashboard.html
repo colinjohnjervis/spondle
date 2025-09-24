@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Dashboard – Spondle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./spondle-layout.css?v=1000">
+  <link rel="stylesheet" href="./styles.css?v=1000">
+</head>
+<body>
+  <!-- Header + Sidebar injected -->
+  <div id="layout-root"></div>
+
+  <main class="px-4 sm:px-6 lg:px-8 mt-6">
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">
+        Event Dashboard
+      </h1>
+      <p class="text-[color:var(--muted)] mt-3">
+        Welcome to your Event Dashboard.  
+        This is a placeholder page — you’ll soon be able to create, manage, and track your events here.
+      </p>
+    </section>
+  </main>
+
+  <!-- JS -->
+  <script src="./spondle-layout.js?v=1005" type="module"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      // Initialise shared layout
+      window.Layout.init({ active: "dashboard" });
+
+      // Check auth
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = "/login.html";
+      }
+    });
+  </script>
+</body>
+</html>
