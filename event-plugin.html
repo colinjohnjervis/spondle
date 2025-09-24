@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Event Plugin — Spondle</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./spondle-layout.css?v=1000">
+  <link rel="stylesheet" href="./styles.css?v=1000">
+</head>
+<body>
+  <!-- Header + Sidebar injected -->
+  <div id="layout-root"></div>
+
+  <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Event Plugin Generator</h1>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
+        Generate a custom embed code to display your events on your own website.  
+        Just copy the snippet and paste it into your site’s HTML — nothing else required.
+      </p>
+
+      <!-- Generate button -->
+      <div class="mt-6">
+        <button id="generateBtn"
+                class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
+          Generate My Embed Code
+        </button>
+      </div>
+
+      <!-- Output box -->
+      <div id="embedBox" class="hidden mt-6">
+        <h2 class="text-xl font-semibold mb-3">Your Embed Code</h2>
+        <textarea id="embedCode" rows="12"
+                  class="w-full p-3 bg-gray-900 border border-gray-700 rounded text-sm font-mono"
+                  readonly></textarea>
+        <button id="copyBtn"
+                class="mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-400 transition">
+          Copy to Clipboard
+        </button>
+      </div>
+    </section>
+
+    <!-- Preview -->
+    <section id="previewSection" class="panel p-6 md:p-8 hidden">
+      <h2 class="text-xl font-semibold mb-4">Live Preview</h2>
+      <ul id="previewList" class="space-y-2"></ul>
+    </section>
+  </main>
+
+  <!-- JS -->
+  <script src="./spondle-layout.js?v=1005" type="module"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
+
+    const generateBtn = document.getElementById("generateBtn");
+    const embedBox = document.getElementById("embedBox");
+    const embedCode = document.getElementById("embedCode");
+    const copyBtn = document.getElementById("copyBtn");
+    const previewSection = document.getElementById("previewSection");
+    const previewList = document.getElementById("previewList");
+
+    let organiserId = null;
+
+    // Auth check
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      window.location.href = "/login.html";
+    } else {
+      organiserId = user.id;
+    }
+
+    generateBtn.addEventListener("click", () => {
+      if (!organiserId) return;
+
+      // Inline embed code snippet
+      const snippet = `
+<!-- Spondle Events Embed -->
+<div id="spondle-events"></div>
+<script>
+(async () => {
+  const supabaseUrl = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+  const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm");
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const { data: events, error } = await supabase
+    .from("events")
+    .select("event_name, event_date, venue_id, publish_status")
+    .eq("organiser_id", "${organiserId}")
+    .eq("publish_status", "published")
+    .order("event_date", { ascending: true })
+    .limit(10);
+
+  const container = document.getElementById("spondle-events");
+  if (error || !events) {
+    container.innerHTML = "<p style='color:red'>Error loading events</p>";
+    return;
+  }
+  if (!events.length) {
+    container.innerHTML = "<p style='color:gray'>No events to display</p>";
+    return;
+  }
+  container.innerHTML = "<ul style='list-style:none; padding:0; margin:0'>" +
+    events.map(e => 
+      \`<li style="margin:6px 0; padding:6px; background:#222; color:#fff; border-radius:6px;">
+        \${e.event_date} — \${e.event_name} @ Venue \${e.venue_id}
+      </li>\`
+    ).join("") +
+    "</ul>";
+})();
+</script>`.trim();
+
+      embedCode.value = snippet;
+      embedBox.classList.remove("hidden");
+      previewSection.classList.remove("hidden");
+
+      loadPreview();
+    });
+
+    copyBtn.addEventListener("click", () => {
+      embedCode.select();
+      document.execCommand("copy");
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => (copyBtn.textContent = "Copy to Clipboard"), 2000);
+    });
+
+    async function loadPreview() {
+      const { data: events, error } = await supabase
+        .from("events")
+        .select("id, event_name, event_date, venue_id, publish_status")
+        .eq("organiser_id", organiserId)
+        .eq("publish_status", "published")
+        .order("event_date", { ascending: true })
+        .limit(10);
+
+      if (error) {
+        console.error(error);
+        previewList.innerHTML = `<li class="text-red-400">Error loading preview.</li>`;
+        return;
+      }
+
+      if (!events.length) {
+        previewList.innerHTML = `<li class="text-gray-400">No published events to show.</li>`;
+        return;
+      }
+
+      previewList.innerHTML = events.map(e => `
+        <li class="p-3 bg-gray-800 border border-gray-700 rounded">
+          ${e.event_date} — ${e.event_name} @ Venue ${e.venue_id}
+        </li>
+      `).join("");
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "plugin" });
+    });
+  </script>
+</body>
+      </html>
