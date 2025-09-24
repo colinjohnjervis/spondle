@@ -91,8 +91,15 @@
       <div id="tabContent"></div>
     </div>
 
-    <!-- Submit & Banner -->
+    <!-- Submit & Organiser ID -->
     <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
+
+    <!-- Organiser ID (temporary, for dev use) -->
+    <div>
+      <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
+      <input type="text" id="organiser_id" name="organiser_id" readonly
+        class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 text-sm" placeholder="Fetching..." />
+    </div>
 
     <!-- Banner for error/success -->
     <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
@@ -104,6 +111,16 @@
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
+
+    // Auto-fill organiser_id from current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      const organiserInput = document.getElementById('organiser_id');
+      if (user && organiserInput) {
+        organiserInput.value = user.id;
+      } else {
+        organiserInput.value = 'Not logged in';
+      }
+    });
 
     const form = document.getElementById('eventForm');
     const banner = document.getElementById('banner');
@@ -279,7 +296,8 @@
         category: formData.get('category'),
         publish_status: formData.get('publish_status'),
         image_url: formData.get('image_url'),
-        description: formData.get('description')
+        description: formData.get('description'),
+        organiser_id: formData.get('organiser_id')
       };
       const venueIds = formData.getAll('venue_id[]');
       const dates = formData.getAll('event_date[]');
@@ -312,4 +330,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
