@@ -21,11 +21,15 @@
         Manage your events — drafts, published, and past.
       </p>
 
-      <!-- Create Event Button -->
-      <div class="mt-6">
+      <!-- Buttons -->
+      <div class="mt-6 space-x-3">
         <a href="/create-event.html"
            class="inline-block px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
           + Create Event
+        </a>
+        <a href="/events-miniview01.html"
+           class="inline-block px-6 py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-400 transition">
+          View Mini Events
         </a>
       </div>
     </section>
@@ -133,22 +137,24 @@
         if (allowActions) {
           container.querySelectorAll(".publish-btn").forEach(btn => {
             btn.addEventListener("click", async () => {
+              console.log("Publishing event:", btn.dataset.id);
               const { error } = await supabase
                 .from("events")
                 .update({ publish_status: "published" })
                 .eq("id", btn.dataset.id);
-              if (error) console.error(error);
+              if (error) console.error("Publish error:", error);
               else loadEvents();
             });
           });
 
           container.querySelectorAll(".delete-btn").forEach(btn => {
             btn.addEventListener("click", async () => {
+              console.log("Deleting event:", btn.dataset.id);
               const { error } = await supabase
                 .from("events")
                 .delete()
                 .eq("id", btn.dataset.id);
-              if (error) console.error(error);
+              if (error) console.error("Delete error:", error);
               else loadEvents();
             });
           });
@@ -178,4 +184,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
