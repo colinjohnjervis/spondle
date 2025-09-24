@@ -1,9 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Event Dashboard – Spondle</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Event Dashboard — Spondle</title>
+  <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./spondle-layout.css?v=1000">
   <link rel="stylesheet" href="./styles.css?v=1000">
@@ -12,23 +13,21 @@
   <!-- Header + Sidebar injected -->
   <div id="layout-root"></div>
 
-  <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-6">
+  <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
     <section class="panel p-6 md:p-8">
-      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">
-        Event Dashboard
-      </h1>
-      <p class="text-[color:var(--muted)] mt-3">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Event Dashboard</h1>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
         Manage your events — drafts, published, and past.
       </p>
 
-      <!-- Buttons -->
-      <div class="mt-6 space-x-3">
+      <!-- Buttons side-by-side -->
+      <div class="mt-6 flex flex-wrap gap-3">
         <a href="/create-event.html"
-           class="inline-block px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
+           class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
           + Create Event
         </a>
         <a href="/events-miniview01.html"
-           class="inline-block px-6 py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-400 transition">
+           class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-400 transition">
           View Mini Events
         </a>
       </div>
@@ -36,152 +35,55 @@
 
     <!-- Tabs -->
     <section class="panel p-6 md:p-8">
-      <nav class="flex space-x-4 border-b border-gray-700 mb-6">
-        <button class="tab-btn pb-2 border-b-2 border-green-500" data-tab="overview">Overview</button>
-        <button class="tab-btn pb-2 text-gray-400 hover:text-white" data-tab="drafts">Drafts</button>
-        <button class="tab-btn pb-2 text-gray-400 hover:text-white" data-tab="published">Published</button>
-        <button class="tab-btn pb-2 text-gray-400 hover:text-white" data-tab="past">Past Events</button>
-      </nav>
-
-      <!-- Tab Contents -->
-      <div id="tab-overview" class="tab-content">
-        <p class="mb-4 text-gray-400">Quick snapshot of your events:</p>
-        <ul id="overviewStats" class="space-y-2 text-sm"></ul>
+      <div class="border-b border-gray-700 mb-4">
+        <nav class="-mb-px flex space-x-6" id="dashboard-tabs">
+          <button data-tab="overview" class="tab-button border-b-2 border-green-500 text-green-500 px-3 py-2 text-sm font-medium">Overview</button>
+          <button data-tab="drafts" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Drafts</button>
+          <button data-tab="published" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Published</button>
+          <button data-tab="past" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Past Events</button>
+        </nav>
       </div>
 
-      <div id="tab-drafts" class="tab-content hidden">
-        <h2 class="text-xl font-semibold mb-3">Draft Events</h2>
-        <div id="draftEvents" class="space-y-3 text-sm"></div>
-      </div>
+      <div id="tab-content">
+        <!-- Overview -->
+        <div id="overview" class="tab-panel">
+          <h2 class="text-xl font-semibold mb-4">Quick snapshot of your events:</h2>
+          <ul class="list-disc pl-5 text-gray-300">
+            <li>Drafts: <span id="count-drafts">0</span></li>
+            <li>Published: <span id="count-published">0</span></li>
+            <li>Past Events: <span id="count-past">0</span></li>
+            <li>Total: <span id="count-total">0</span></li>
+          </ul>
+        </div>
 
-      <div id="tab-published" class="tab-content hidden">
-        <h2 class="text-xl font-semibold mb-3">Published Events</h2>
-        <div id="publishedEvents" class="space-y-3 text-sm"></div>
-      </div>
+        <!-- Drafts -->
+        <div id="drafts" class="tab-panel hidden">
+          <h2 class="text-xl font-semibold mb-4">Draft Events</h2>
+          <div id="drafts-list" class="space-y-4"></div>
+        </div>
 
-      <div id="tab-past" class="tab-content hidden">
-        <h2 class="text-xl font-semibold mb-3">Past Events</h2>
-        <div id="pastEvents" class="space-y-3 text-sm"></div>
+        <!-- Published -->
+        <div id="published" class="tab-panel hidden">
+          <h2 class="text-xl font-semibold mb-4">Published Events</h2>
+          <div id="published-list" class="space-y-4"></div>
+        </div>
+
+        <!-- Past -->
+        <div id="past" class="tab-panel hidden">
+          <h2 class="text-xl font-semibold mb-4">Past Events</h2>
+          <div id="past-list" class="space-y-4"></div>
+        </div>
       </div>
     </section>
   </main>
 
   <!-- JS -->
   <script src="./spondle-layout.js?v=1005" type="module"></script>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-    );
-
-    const overviewStats = document.getElementById("overviewStats");
-    const draftEvents = document.getElementById("draftEvents");
-    const publishedEvents = document.getElementById("publishedEvents");
-    const pastEvents = document.getElementById("pastEvents");
-
-    // Auth check
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) window.location.href = "/login.html";
-
-    const organiserId = user?.id;
-
-    async function loadEvents() {
-      const { data: events, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("organiser_id", organiserId)
-        .order("event_date", { ascending: true });
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      // Categorise
-      const today = new Date().toISOString().split("T")[0];
-      const drafts = events.filter(e => e.publish_status === "draft");
-      const published = events.filter(e => e.publish_status === "published" && e.event_date >= today);
-      const past = events.filter(e => e.event_date < today);
-
-      // Overview
-      overviewStats.innerHTML = `
-        <li>Drafts: ${drafts.length}</li>
-        <li>Published: ${published.length}</li>
-        <li>Past Events: ${past.length}</li>
-        <li>Total: ${events.length}</li>
-      `;
-
-      // Render helper
-      function renderList(container, list, allowActions = false) {
-        if (!list.length) {
-          container.innerHTML = `<p class="text-gray-500">No events found.</p>`;
-          return;
-        }
-        container.innerHTML = list.map(e => `
-          <div class="p-3 rounded bg-gray-800 border border-gray-700">
-            <strong>${e.event_name}</strong><br/>
-            ${e.event_date} ${e.event_time || ""} @ Venue ${e.venue_id}<br/>
-            <span class="text-xs text-gray-400">${e.publish_status}</span>
-            ${allowActions ? `
-              <div class="mt-2 space-x-2">
-                <button class="publish-btn px-3 py-1 bg-green-500 text-black text-sm rounded"
-                  data-id="${e.id}">Publish</button>
-                <button class="delete-btn px-3 py-1 bg-red-500 text-black text-sm rounded"
-                  data-id="${e.id}">Delete</button>
-              </div>` : ""}
-          </div>
-        `).join("");
-
-        if (allowActions) {
-          container.querySelectorAll(".publish-btn").forEach(btn => {
-            btn.addEventListener("click", async () => {
-              console.log("Publishing event:", btn.dataset.id);
-              const { error } = await supabase
-                .from("events")
-                .update({ publish_status: "published" })
-                .eq("id", btn.dataset.id);
-              if (error) console.error("Publish error:", error);
-              else loadEvents();
-            });
-          });
-
-          container.querySelectorAll(".delete-btn").forEach(btn => {
-            btn.addEventListener("click", async () => {
-              console.log("Deleting event:", btn.dataset.id);
-              const { error } = await supabase
-                .from("events")
-                .delete()
-                .eq("id", btn.dataset.id);
-              if (error) console.error("Delete error:", error);
-              else loadEvents();
-            });
-          });
-        }
-      }
-
-      renderList(draftEvents, drafts, true); // allow Publish/Delete in Drafts
-      renderList(publishedEvents, published);
-      renderList(pastEvents, past);
-    }
-
-    loadEvents();
-
-    // Tab switching
-    const tabButtons = document.querySelectorAll(".tab-btn");
-    const tabContents = document.querySelectorAll(".tab-content");
-
-    tabButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        tabButtons.forEach(b => b.classList.remove("border-green-500", "text-white"));
-        btn.classList.add("border-green-500", "text-white");
-        const tab = btn.dataset.tab;
-
-        tabContents.forEach(c => c.classList.add("hidden"));
-        document.getElementById("tab-" + tab).classList.remove("hidden");
-      });
+  <script src="./event-dashboard.js?v=1000"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "dashboard" });
     });
   </script>
 </body>
-  </html>
+</html>
