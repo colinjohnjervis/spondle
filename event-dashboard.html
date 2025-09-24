@@ -18,8 +18,7 @@
         Event Dashboard
       </h1>
       <p class="text-[color:var(--muted)] mt-3">
-        Welcome to your Event Dashboard.  
-        This is a placeholder page — you’ll soon be able to create, manage, and track your events here.
+        Manage your events — drafts, published, and past.
       </p>
 
       <!-- Create Event Button -->
@@ -28,6 +27,37 @@
            class="inline-block px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
           + Create Event
         </a>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <section class="panel p-6 md:p-8">
+      <nav class="flex space-x-4 border-b border-gray-700 mb-6">
+        <button class="tab-btn pb-2 border-b-2 border-green-500" data-tab="overview">Overview</button>
+        <button class="tab-btn pb-2 text-gray-400 hover:text-white" data-tab="drafts">Drafts</button>
+        <button class="tab-btn pb-2 text-gray-400 hover:text-white" data-tab="published">Published</button>
+        <button class="tab-btn pb-2 text-gray-400 hover:text-white" data-tab="past">Past Events</button>
+      </nav>
+
+      <!-- Tab Contents -->
+      <div id="tab-overview" class="tab-content">
+        <p class="mb-4 text-gray-400">Quick snapshot of your events:</p>
+        <ul id="overviewStats" class="space-y-2 text-sm"></ul>
+      </div>
+
+      <div id="tab-drafts" class="tab-content hidden">
+        <h2 class="text-xl font-semibold mb-3">Draft Events</h2>
+        <div id="draftEvents" class="space-y-3 text-sm"></div>
+      </div>
+
+      <div id="tab-published" class="tab-content hidden">
+        <h2 class="text-xl font-semibold mb-3">Published Events</h2>
+        <div id="publishedEvents" class="space-y-3 text-sm"></div>
+      </div>
+
+      <div id="tab-past" class="tab-content hidden">
+        <h2 class="text-xl font-semibold mb-3">Past Events</h2>
+        <div id="pastEvents" class="space-y-3 text-sm"></div>
       </div>
     </section>
   </main>
@@ -42,15 +72,78 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    window.addEventListener("DOMContentLoaded", async () => {
-      // Initialise shared layout
-      window.Layout.init({ active: "dashboard" });
+    const overviewStats = document.getElementById("overviewStats");
+    const draftEvents = document.getElementById("draftEvents");
+    const publishedEvents = document.getElementById("publishedEvents");
+    const pastEvents = document.getElementById("pastEvents");
 
-      // Check auth
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = "/login.html";
+    // Auth check
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) window.location.href = "/login.html";
+
+    const organiserId = user?.id;
+
+    async function loadEvents() {
+      const { data: events, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("organiser_id", organiserId)
+        .order("event_date", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        return;
       }
+
+      // Categorise
+      const today = new Date().toISOString().split("T")[0];
+      const drafts = events.filter(e => e.publish_status === "draft");
+      const published = events.filter(e => e.publish_status === "published" && e.event_date >= today);
+      const past = events.filter(e => e.event_date < today);
+
+      // Overview
+      overviewStats.innerHTML = `
+        <li>Drafts: ${drafts.length}</li>
+        <li>Published: ${published.length}</li>
+        <li>Past Events: ${past.length}</li>
+        <li>Total: ${events.length}</li>
+      `;
+
+      // Render helper
+      function renderList(container, list) {
+        if (!list.length) {
+          container.innerHTML = `<p class="text-gray-500">No events found.</p>`;
+          return;
+        }
+        container.innerHTML = list.map(e => `
+          <div class="p-3 rounded bg-gray-800 border border-gray-700">
+            <strong>${e.event_name}</strong><br/>
+            ${e.event_date} ${e.event_time || ""} @ Venue ${e.venue_id}<br/>
+            <span class="text-xs text-gray-400">${e.publish_status}</span>
+          </div>
+        `).join("");
+      }
+
+      renderList(draftEvents, drafts);
+      renderList(publishedEvents, published);
+      renderList(pastEvents, past);
+    }
+
+    loadEvents();
+
+    // Tab switching
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabButtons.forEach(b => b.classList.remove("border-green-500", "text-white"));
+        btn.classList.add("border-green-500", "text-white");
+        const tab = btn.dataset.tab;
+
+        tabContents.forEach(c => c.classList.add("hidden"));
+        document.getElementById("tab-" + tab).classList.remove("hidden");
+      });
     });
   </script>
 </body>
