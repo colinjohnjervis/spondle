@@ -4,39 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle – Event Plugin Generator</title>
-  <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { background: #0f172a; color: #fff; font-family: ui-sans-serif, system-ui; }
-    .panel { background: #1e293b; border-radius: 0.75rem; padding: 1.5rem; }
-    textarea { width: 100%; padding: 0.5rem; border-radius: 0.375rem; font-family: monospace; }
-    button { border-radius: 0.375rem; padding: 0.5rem 1rem; font-weight: 600; }
-  </style>
 </head>
-<body class="p-6">
-  <div class="panel mb-6">
-    <h1 class="text-2xl font-bold mb-2">Event Plugin Generator</h1>
-    <p class="mb-4 text-gray-300">
-      Generate a custom embed code to display your events on your own website.
-      Just copy the snippet and paste it into your site’s HTML — nothing else required.
-    </p>
-    <button id="generateBtn" class="bg-green-500 text-black">Generate My Embed Code</button>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-gray-800 p-6 rounded-lg shadow mb-6">
+      <h1 class="text-2xl font-bold mb-2">Event Plugin Generator</h1>
+      <p class="text-gray-300 mb-4">
+        Generate a custom embed code to display your events on your own website.
+        Just copy the snippet and paste it into your site’s HTML — nothing else required.
+      </p>
+      <button id="generateBtn" class="px-4 py-2 bg-green-500 text-black rounded font-semibold hover:opacity-90">
+        Generate My Embed Code
+      </button>
+    </div>
+
+    <div id="embedBox" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-2">Your Embed Code</h2>
+      <textarea id="embedCode" class="w-full p-3 text-sm font-mono bg-gray-900 text-green-400 rounded h-48"></textarea>
+      <button id="copyBtn" class="mt-2 px-4 py-2 bg-blue-500 text-black rounded hover:opacity-90">
+        Copy to Clipboard
+      </button>
+    </div>
+
+    <div id="previewSection" class="hidden">
+      <h2 class="text-xl font-semibold mb-2">Preview</h2>
+      <div id="previewList" class="bg-gray-800 p-4 rounded"></div>
+    </div>
   </div>
 
-  <div id="embedBox" class="panel hidden mb-6">
-    <h2 class="text-xl font-semibold mb-2">Your Embed Code</h2>
-    <textarea id="embedCode" rows="3" readonly></textarea>
-    <button id="copyBtn" class="bg-blue-500 text-white mt-2">Copy to Clipboard</button>
-  </div>
-
-  <div id="previewSection" class="panel hidden">
-    <h2 class="text-xl font-semibold mb-2">Preview</h2>
-    <div id="previewList" class="space-y-2 text-gray-200"></div>
-  </div>
-
-  <!-- Supabase -->
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
@@ -52,19 +50,52 @@
 
     let organiserId = null;
 
-    async function init() {
+    async function getUser() {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        organiserId = user.id; // using user.id as organiser_id for now
-      }
+      if (user) organiserId = user.id; 
     }
 
-    generateBtn.addEventListener("click", () => {
+    generateBtn.addEventListener("click", async () => {
+      await getUser();
       if (!organiserId) {
-        alert("You need to be logged in to generate your plugin code.");
+        alert("You must be logged in to generate your embed code.");
         return;
       }
-      const snippet = `<script src="https://spondle-uk.vercel.app/plugin.js" data-organiser="${organiserId}"></script>`;
+
+      // Build inline snippet
+      const snippet = `
+<div id="spondle-events"></div>
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const supabase = createClient("https://jvuunvnbpdfrttusgelz.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY");
+
+  const organiserId = "${organiserId}";
+  async function loadEvents() {
+    const { data: events, error } = await supabase
+      .from("events")
+      .select("event_name, event_date, venue_id")
+      .eq("organiser_id", organiserId)
+      .eq("publish_status", "published")
+      .order("event_date", { ascending: true })
+      .limit(10);
+
+    const container = document.getElementById("spondle-events");
+    if (error) {
+      container.innerHTML = "<p>Error loading events.</p>";
+      return;
+    }
+    if (!events || !events.length) {
+      container.innerHTML = "<p>No upcoming events.</p>";
+      return;
+    }
+
+    container.innerHTML = events.map(e =>
+      \`<div class="py-1">\${e.event_date} — <strong>\${e.event_name}</strong> @ Venue \${e.venue_id}</div>\`
+    ).join("");
+  }
+  loadEvents();
+<\/script>`.trim();
+
       embedCode.value = snippet;
       embedBox.classList.remove("hidden");
       previewSection.classList.remove("hidden");
@@ -81,7 +112,7 @@
     async function loadPreview() {
       const { data: events, error } = await supabase
         .from("events")
-        .select("id, event_name, event_date, venue_id, publish_status, organiser_id")
+        .select("event_name, event_date, venue_id")
         .eq("organiser_id", organiserId)
         .eq("publish_status", "published")
         .order("event_date", { ascending: true })
@@ -89,21 +120,18 @@
 
       if (error) {
         console.error(error);
-        previewList.innerHTML = `<p class="text-red-400">Error loading preview.</p>`;
+        previewList.innerHTML = "<p class='text-red-400'>Error loading preview.</p>";
         return;
       }
-      if (!events.length) {
-        previewList.innerHTML = `<p class="text-gray-400">No published events to show.</p>`;
+      if (!events || !events.length) {
+        previewList.innerHTML = "<p class='text-gray-400'>No published events to show.</p>";
         return;
       }
-      previewList.innerHTML = events.map(e => `
-        <div class="p-2 border-b border-gray-600">
-          ${e.event_date} – <strong>${e.event_name}</strong> @ Venue ${e.venue_id}
-        </div>
-      `).join("");
-    }
 
-    init();
+      previewList.innerHTML = events.map(e =>
+        \`<div class="py-1">\${e.event_date} — <strong>\${e.event_name}</strong> @ Venue \${e.venue_id}</div>\`
+      ).join("");
+    }
   </script>
 </body>
 </html>
