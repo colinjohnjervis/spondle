@@ -110,7 +110,7 @@
       `;
 
       // Render helper
-      function renderList(container, list) {
+      function renderList(container, list, allowActions = false) {
         if (!list.length) {
           container.innerHTML = `<p class="text-gray-500">No events found.</p>`;
           return;
@@ -120,11 +120,42 @@
             <strong>${e.event_name}</strong><br/>
             ${e.event_date} ${e.event_time || ""} @ Venue ${e.venue_id}<br/>
             <span class="text-xs text-gray-400">${e.publish_status}</span>
+            ${allowActions ? `
+              <div class="mt-2 space-x-2">
+                <button class="publish-btn px-3 py-1 bg-green-500 text-black text-sm rounded"
+                  data-id="${e.id}">Publish</button>
+                <button class="delete-btn px-3 py-1 bg-red-500 text-black text-sm rounded"
+                  data-id="${e.id}">Delete</button>
+              </div>` : ""}
           </div>
         `).join("");
+
+        if (allowActions) {
+          container.querySelectorAll(".publish-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+              const { error } = await supabase
+                .from("events")
+                .update({ publish_status: "published" })
+                .eq("id", btn.dataset.id);
+              if (error) console.error(error);
+              else loadEvents();
+            });
+          });
+
+          container.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+              const { error } = await supabase
+                .from("events")
+                .delete()
+                .eq("id", btn.dataset.id);
+              if (error) console.error(error);
+              else loadEvents();
+            });
+          });
+        }
       }
 
-      renderList(draftEvents, drafts);
+      renderList(draftEvents, drafts, true); // allow Publish/Delete in Drafts
       renderList(publishedEvents, published);
       renderList(pastEvents, past);
     }
