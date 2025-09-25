@@ -2,40 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Generate My Event Plugin</title>
+  <title>Generate Your Event Plugin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f9f9f9;
+      font-family: system-ui, sans-serif;
       padding: 2rem;
-      color: #333;
-    }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
+      background: #f9f9f9;
+      color: #111;
     }
     button {
-      background: #111827;
+      background: #1e293b;
       color: white;
       border: none;
       padding: 0.75rem 1.5rem;
-      font-size: 1rem;
       border-radius: 6px;
       cursor: pointer;
     }
     textarea {
-      margin-top: 1.5rem;
       width: 100%;
-      height: 400px;
-      font-family: monospace;
-      font-size: 0.9rem;
+      height: 300px;
+      margin-top: 1rem;
       padding: 1rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      white-space: pre;
-      resize: vertical;
+      font-family: monospace;
+      font-size: 0.95rem;
     }
   </style>
 </head>
@@ -43,7 +34,9 @@
 
   <h1>Generate Your Event Plugin</h1>
   <p>This will create an HTML snippet you can paste into your website to display your events.</p>
+
   <button onclick="generatePlugin()">Generate Plugin Code</button>
+
   <textarea id="pluginCode" readonly placeholder="Your plugin code will appear here..."></textarea>
 
   <script>
@@ -54,61 +47,51 @@
 
     async function generatePlugin() {
       const {
-        data: { user },
+        data: { session },
         error
-      } = await supabase.auth.getUser();
+      } = await supabase.auth.getSession();
 
-      if (error || !user) {
+      if (error || !session || !session.user) {
         alert("You must be logged in to generate your plugin.");
         return;
       }
 
-      const userId = user.id;
+      const userId = session.user.id;
 
       const pluginHTML = `
 <div id="spondle-events"></div>
 <script>
-  const supabase = supabase.createClient(
-    'https://jvuunvnbpdfrttusgelz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-  );
+  (function() {
+    const container = document.getElementById("spondle-events");
 
-  const organiserId = '${userId}';
+    fetch("https://jvuunvnbpdfrttusgelz.supabase.co/rest/v1/events?select=title,date,venue&organiser_id=eq.${userId}", {
+      headers: {
+        apikey: "${supabase.supabaseKey}",
+        Authorization: "Bearer ${supabase.supabaseKey}"
+      }
+    })
+    .then(res => res.json())
+    .then(events => {
+      if (!Array.isArray(events) || events.length === 0) {
+        container.innerHTML = "<p>No events found.</p>";
+        return;
+      }
 
-  async function loadEvents() {
-    const { data, error } = await supabase
-      .from('events')
-      .select('title, date, venue_name')
-      .eq('organiser_id', organiserId)
-      .order('date', { ascending: true });
+      const list = document.createElement("ul");
+      events.forEach(event => {
+        const item = document.createElement("li");
+        item.textContent = event.title + " – " + event.date + " @ " + event.venue;
+        list.appendChild(item);
+      });
 
-    const container = document.getElementById('spondle-events');
-
-    if (error || !data || data.length === 0) {
-      container.innerHTML = '<p>No events found.</p>';
-      return;
-    }
-
-    const list = document.createElement('ul');
-    list.style.listStyle = 'none';
-    list.style.padding = '0';
-
-    data.forEach(event => {
-      const item = document.createElement('li');
-      item.style.marginBottom = '1rem';
-      item.innerHTML = \`
-        <strong>\${event.title}</strong><br>
-        \${new Date(event.date).toLocaleDateString()}<br>
-        \${event.venue_name || ''}
-      \`;
-      list.appendChild(item);
+      container.appendChild(list);
+    })
+    .catch(err => {
+      container.innerHTML = "<p>Error loading events.</p>";
     });
-
-    container.appendChild(list);
-  }
-
-  loadEvents();
-<\/script>`.trim();
+  })();
+</script>
+      `.trim();
 
       document.getElementById("pluginCode").value = pluginHTML;
     }
