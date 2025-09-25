@@ -1,18 +1,73 @@
-<script>
-  async function generatePlugin() {
-    const {
-      data: { user },
-      error
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      alert("You must be logged in to generate your plugin code.");
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generate My Event Plugin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
     }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #2c3e50;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    textarea {
+      width: 100%;
+      height: 400px;
+      margin-top: 1rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
 
-    const userId = user.id;
+  <h1>Generate Your Event Plugin</h1>
+  <p>Click below to generate the HTML snippet you can copy into your website:</p>
 
-    const pluginHTML = String.raw`<!DOCTYPE html>
+  <button onclick="generatePlugin()">Generate Plugin Code</button>
+
+  <textarea id="pluginCode" readonly placeholder="Your plugin code will appear here..."></textarea>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <script>
+    const supabase = supabase.createClient(
+      'https://spondle-uk.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwb25kbGUtdWsiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY5NTM2ODg5NSwiZXhwIjoxOTExOTQ0ODk1fQ.9u-V4VG0GhAvZljR3AslCjV4vbfBni3XDglwhtYGtnY'
+    );
+
+    async function generatePlugin() {
+      const {
+        data: { user },
+        error
+      } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        alert("You must be logged in to generate your plugin code.");
+        return;
+      }
+
+      const userId = user.id;
+
+      const pluginHTML = String.raw`<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -112,6 +167,8 @@
 </body>
 </html>`;
 
-    document.getElementById("pluginCode").value = pluginHTML;
-  }
-                   </script>
+      document.getElementById("pluginCode").value = pluginHTML;
+    }
+  </script>
+</body>
+</html>
