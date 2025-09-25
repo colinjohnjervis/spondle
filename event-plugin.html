@@ -34,6 +34,16 @@
       border-radius: 6px;
       white-space: pre;
     }
+    #errorLog {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #fee;
+      color: #900;
+      border: 1px solid #f99;
+      border-radius: 6px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -41,6 +51,7 @@
   <p>This creates an embeddable HTML snippet showing your events with title, date, and venue name.</p>
   <button onclick="generatePlugin()">Generate Plugin Code</button>
   <textarea id="pluginCode" placeholder="Your plugin code will appear here..."></textarea>
+  <div id="errorLog" style="display: none;"></div>
 
   <script>
     const supabase = supabase.createClient(
@@ -49,15 +60,15 @@
     );
 
     async function generatePlugin() {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user) {
-        alert("You must be logged in to generate your plugin.");
-        return;
-      }
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          throw new Error("You must be logged in to generate your plugin.");
+        }
 
-      const userId = user.id;
+        const userId = user.id;
 
-      const pluginCode = `
+        const pluginCode = `
 <!-- Spondle Events Plugin -->
 <div id="spondle-events"></div>
 <script>
@@ -87,13 +98,19 @@
 <!-- End Plugin -->
 `.trim();
 
-      // Escape properly for HTML display
-      const escaped = pluginCode
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+        // Escape HTML for textarea display
+        const escaped = pluginCode
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
 
-      document.getElementById("pluginCode").value = escaped;
+        document.getElementById("pluginCode").value = escaped;
+        document.getElementById("errorLog").style.display = "none";
+      } catch (err) {
+        const errorBox = document.getElementById("errorLog");
+        errorBox.style.display = "block";
+        errorBox.textContent = err.message || err.toString();
+      }
     }
   </script>
 </body>
