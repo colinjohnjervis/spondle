@@ -32,16 +32,20 @@
     }
     .debug {
       font-size: 13px;
-      color: #888;
+      color: #b00;
       margin-top: 20px;
       white-space: pre-wrap;
+      background: #fff0f0;
+      padding: 10px;
+      border: 1px solid #e0c0c0;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
   <h1>My Events (Plugin Preview)</h1>
   <div id="eventList">Loading...</div>
-  <div class="debug" id="debugLog"></div>
+  <div class="debug" id="debugLog">Debug output will appear here...</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
@@ -53,61 +57,66 @@
     const debugLog = document.getElementById('debugLog');
 
     function log(msg) {
-      debugLog.innerText += `\n${msg}`;
+      debugLog.textContent += '\n' + msg;
     }
 
     async function loadEvents() {
-      log('Getting session...');
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      try {
+        log('Step 1: Getting session...');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      if (sessionError) {
-        eventList.innerText = 'Error getting session.';
-        log(`Session error: ${sessionError.message}`);
-        return;
-      }
+        if (sessionError) {
+          eventList.textContent = 'Error getting session.';
+          log('Session error: ' + sessionError.message);
+          return;
+        }
 
-      if (!session || !session.user) {
-        eventList.innerText = 'You are not logged in.';
-        log('No session or user found.');
-        return;
-      }
+        if (!session || !session.user) {
+          eventList.textContent = 'Not logged in.';
+          log('Session or user missing.');
+          return;
+        }
 
-      const user = session.user;
-      log(`User ID: ${user.id}`);
+        const user = session.user;
+        log('Step 2: User ID = ' + user.id);
 
-      log('Fetching events...');
-      const { data, error } = await supabase
-        .from('events')
-        .select('title, date, venue:venue_id ( name )')
-        .eq('organiser_id', user.id)
-        .order('date', { ascending: true });
+        log('Step 3: Fetching events...');
+        const { data, error } = await supabase
+          .from('events')
+          .select('title, date, venue:venue_id ( name )')
+          .eq('organiser_id', user.id)
+          .order('date', { ascending: true });
 
-      if (error) {
-        eventList.innerText = 'Error loading events.';
-        log(`Query error: ${error.message}`);
-        return;
-      }
+        if (error) {
+          eventList.textContent = 'Error loading events.';
+          log('Query error: ' + error.message);
+          return;
+        }
 
-      if (!data || data.length === 0) {
-        eventList.innerText = 'No events found.';
-        log('No events returned.');
-        return;
-      }
+        if (!data || data.length === 0) {
+          eventList.textContent = 'No events found.';
+          log('No events returned.');
+          return;
+        }
 
-      log(`Found ${data.length} events.`);
+        log(`Step 4: Found ${data.length} events.`);
 
-      eventList.innerHTML = data.map(event => `
-        <div class="event">
-          <div class="event-title">${event.title}</div>
-          <div class="event-details">
-            ${new Date(event.date).toLocaleDateString()}<br>
-            Venue: ${event.venue?.name || 'N/A'}
+        eventList.innerHTML = data.map(event => `
+          <div class="event">
+            <div class="event-title">${event.title}</div>
+            <div class="event-details">
+              ${new Date(event.date).toLocaleDateString()}<br>
+              Venue: ${event.venue?.name || 'N/A'}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `).join('');
+      } catch (err) {
+        eventList.textContent = 'Critical error loading page.';
+        log('JS Exception: ' + err.message);
+      }
     }
 
-    loadEvents();
+    document.addEventListener('DOMContentLoaded', loadEvents);
   </script>
 </body>
 </html>
