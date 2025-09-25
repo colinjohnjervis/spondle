@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Generate Your Event Plugin</title>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: sans-serif;
@@ -12,70 +11,68 @@
       max-width: 600px;
       margin: auto;
     }
+
     textarea {
       width: 100%;
       height: 200px;
-      margin-top: 1rem;
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 14px;
+      margin-top: 1rem;
     }
+
     #errorLog {
       color: red;
       margin-top: 1rem;
       display: none;
     }
+
     button {
-      padding: 10px 20px;
+      padding: 0.6rem 1.2rem;
       background: black;
       color: white;
       border: none;
       cursor: pointer;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
   <h1>Generate Your Event Plugin</h1>
   <p>This will generate an iframe snippet you can paste into your own website to show your events.</p>
-
   <button id="generateBtn">Generate Plugin Code</button>
-  <textarea id="pluginCode" placeholder="Your plugin code will appear here..."></textarea>
+
+  <textarea id="pluginCode" placeholder="Your plugin code will appear here..." readonly></textarea>
   <div id="errorLog"></div>
 
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    // ✅ Initialize Supabase
-    const supabase = supabase.createClient(
-      "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    // Initialize Supabase
+    const supabase = window.supabase.createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
     document.getElementById("generateBtn").addEventListener("click", async () => {
+      const output = document.getElementById("pluginCode");
+      const errorBox = document.getElementById("errorLog");
+      output.value = "";
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
+
       try {
-        document.getElementById("errorLog").style.display = "none";
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (!user) throw new Error("You are not logged in. Please sign in to generate your plugin code.");
 
-        // ✅ Get current user
-        const {
-          data: { user },
-          error
-        } = await supabase.auth.getUser();
+        const organiserId = user.id;
 
-        if (error || !user) {
-          throw new Error("You must be logged in to generate your plugin code.");
-        }
+        const iframeCode = `<iframe src="https://spondle-uk.vercel.app/events-miniview01.html?organiser_id=${organiserId}" width="100%" height="400" frameborder="0"></iframe>`;
 
-        // ✅ Use user.id as organiser_id
-        const pluginCode = `
-<iframe 
-  src="https://spondle-uk.vercel.app/embed-events.html?organiser_id=${user.id}" 
-  width="100%" 
-  height="400" 
-  frameborder="0"
-  style="border: none; overflow: hidden;">
-</iframe>`.trim();
-
-        document.getElementById("pluginCode").value = pluginCode;
+        output.value = iframeCode;
 
       } catch (err) {
-        const errorBox = document.getElementById("errorLog");
         errorBox.textContent = err.message || err.toString();
         errorBox.style.display = "block";
       }
