@@ -68,7 +68,7 @@
       }
     });
     const events = await res.json();
-    const container = document.getElementById('spondle-events');
+    const container = document.getElementById("spondle-events");
     if (!Array.isArray(events) || events.length === 0) {
       container.innerHTML = "<p>No events found.</p>";
       return;
@@ -87,7 +87,13 @@
 <!-- End Plugin -->
 `.trim();
 
-      document.getElementById("pluginCode").value = pluginCode;
+      // Escape properly for HTML display
+      const escaped = pluginCode
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      document.getElementById("pluginCode").value = escaped;
     }
   </script>
 </body>
