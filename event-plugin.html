@@ -1,88 +1,85 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Generate Your Event Plugin</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
   <style>
     body {
-      font-family: system-ui, sans-serif;
-      background: #fff;
-      color: #111;
+      font-family: sans-serif;
       padding: 2rem;
       max-width: 600px;
       margin: auto;
     }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-    }
-    p {
-      margin-bottom: 1.5rem;
-      color: #444;
-    }
-    button {
-      background: #111;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-bottom: 1rem;
-    }
     textarea {
       width: 100%;
-      height: 120px;
+      height: 200px;
+      margin-top: 1rem;
       font-family: monospace;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      font-size: 0.9rem;
     }
     #errorLog {
-      display: none;
       color: red;
       margin-top: 1rem;
+      display: none;
+    }
+    button {
+      padding: 10px 20px;
+      background: black;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Generate Your Event Plugin</h1>
   <p>This will generate an iframe snippet you can paste into your own website to show your events.</p>
-  <button onclick="generatePlugin()">Generate Plugin Code</button>
-  <textarea id="pluginCode" readonly placeholder="Your plugin code will appear here..."></textarea>
-  <div id="errorLog"></div>  <script>
+
+  <button id="generateBtn">Generate Plugin Code</button>
+  <textarea id="pluginCode" placeholder="Your plugin code will appear here..."></textarea>
+  <div id="errorLog"></div>
+
+  <script>
+    // ✅ Initialize Supabase
     const supabase = supabase.createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    async function generatePlugin() {
+    document.getElementById("generateBtn").addEventListener("click", async () => {
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          throw new Error("You must be logged in to generate your plugin.");
+        document.getElementById("errorLog").style.display = "none";
+
+        // ✅ Get current user
+        const {
+          data: { user },
+          error
+        } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          throw new Error("You must be logged in to generate your plugin code.");
         }
 
-        const userId = user.id;
-
+        // ✅ Use user.id as organiser_id
         const pluginCode = `
 <iframe 
-  src="https://spondle-uk.vercel.app/embed-events.html?organiser_id=${userId}" 
+  src="https://spondle-uk.vercel.app/embed-events.html?organiser_id=${user.id}" 
   width="100%" 
   height="400" 
   frameborder="0"
   style="border: none; overflow: hidden;">
-</iframe>
-`.trim();
+</iframe>`.trim();
 
         document.getElementById("pluginCode").value = pluginCode;
-        document.getElementById("errorLog").style.display = "none";
 
       } catch (err) {
         const errorBox = document.getElementById("errorLog");
         errorBox.textContent = err.message || err.toString();
         errorBox.style.display = "block";
       }
-    }
-  </script></body>
+    });
+  </script>
+</body>
 </html>
