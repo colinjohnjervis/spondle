@@ -1,49 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Generate Event Plugin</title>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generate Your Event Plugin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: system-ui, sans-serif;
+      background: #fff;
+      color: #111;
       padding: 2rem;
-      background: #f9f9f9;
+      max-width: 600px;
+      margin: auto;
     }
     h1 {
-      font-size: 1.75rem;
+      font-size: 1.8rem;
       margin-bottom: 0.5rem;
+    }
+    p {
+      margin-bottom: 1.5rem;
+      color: #444;
     }
     button {
       background: #111;
-      color: #fff;
-      padding: 0.75rem 1rem;
+      color: white;
+      padding: 10px 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      margin-top: 1rem;
+      margin-bottom: 1rem;
     }
     textarea {
       width: 100%;
-      height: 300px;
-      margin-top: 1rem;
-      padding: 1rem;
+      height: 280px;
       font-family: monospace;
+      padding: 1rem;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      white-space: pre;
+      border-radius: 8px;
     }
     #errorLog {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #fee;
-      color: #900;
-      border: 1px solid #f99;
-      border-radius: 6px;
-      font-family: monospace;
-      white-space: pre-wrap;
       display: none;
+      color: red;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -51,10 +49,8 @@
   <h1>Generate Your Event Plugin</h1>
   <p>This creates an embeddable HTML snippet showing your events with title, date, and venue name.</p>
   <button onclick="generatePlugin()">Generate Plugin Code</button>
-  <textarea id="pluginCode" placeholder="Your plugin code will appear here..."></textarea>
-  <div id="errorLog"></div>
-
-  <script>
+  <textarea id="pluginCode" readonly placeholder="Your plugin code will appear here..."></textarea>
+  <div id="errorLog"></div>  <script>
     const supabase = supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
@@ -90,29 +86,28 @@
       const venueName = event.venues?.name || "Unknown venue";
       const dateStr = new Date(event.date).toLocaleDateString();
       const item = document.createElement("li");
-      item.innerHTML = \`<strong>\${event.title}</strong> – \${dateStr} @ \${venueName}\`;
+      item.innerHTML = `<strong>${event.title}</strong> – ${dateStr} @ ${venueName}`;
       list.appendChild(item);
     });
     container.appendChild(list);
   })();
-</script>
-<!-- End Plugin -->
-`.trim();
+</script><!-- End Plugin -->`.trim();
 
-        const escaped = pluginCode
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
+const escaped = pluginCode
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
 
-        document.getElementById("pluginCode").value = escaped;
-        document.getElementById("errorLog").style.display = "none";
+    document.getElementById("pluginCode").value = escaped;
+    document.getElementById("errorLog").style.display = "none";
 
-      } catch (err) {
-        const errorBox = document.getElementById("errorLog");
-        errorBox.textContent = err.message || err.toString();
-        errorBox.style.display = "block";
-      }
-    }
+  } catch (err) {
+    const errorBox = document.getElementById("errorLog");
+    errorBox.textContent = err.message || err.toString();
+    errorBox.style.display = "block";
+  }
+}
+
   </script>
 </body>
 </html>
