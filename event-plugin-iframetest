@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Plugin</title>
+</head>
+<body>
+  <h2>Plugin Preview:</h2>
+
+  <iframe src="https://spondle-uk.vercel.app/events-miniview01.html?organiser_id=05c1463f-510d-4e40-a5fc-f5aa6138a716"
+          width="100%"
+          height="400"
+          frameborder="0"></iframe>
+
+</body>
+</html>
