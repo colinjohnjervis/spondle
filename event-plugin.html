@@ -4,98 +4,95 @@
   <meta charset="UTF-8" />
   <title>Generate Your Event Plugin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: sans-serif;
       padding: 2rem;
       background: #f9f9f9;
       color: #111;
     }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      margin-bottom: 1rem;
+    }
     button {
       background: #1e293b;
       color: white;
+      padding: 0.6rem 1.2rem;
       border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 6px;
+      border-radius: 0.4rem;
       cursor: pointer;
+      margin-bottom: 1rem;
     }
     textarea {
       width: 100%;
       height: 300px;
-      margin-top: 1rem;
       padding: 1rem;
       font-family: monospace;
       font-size: 0.95rem;
+      border-radius: 0.4rem;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
-
   <h1>Generate Your Event Plugin</h1>
   <p>This will create an HTML snippet you can paste into your website to display your events.</p>
-
   <button onclick="generatePlugin()">Generate Plugin Code</button>
-
   <textarea id="pluginCode" readonly placeholder="Your plugin code will appear here..."></textarea>
 
   <script>
-    const supabase = supabase.createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-    );
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function generatePlugin() {
-      const {
-        data: { session },
-        error
-      } = await supabase.auth.getSession();
-
-      if (error || !session || !session.user) {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
         alert("You must be logged in to generate your plugin.");
         return;
       }
 
-      const userId = session.user.id;
+      const organiserId = user.id;
 
       const pluginHTML = `
+<!-- Spondle Event Plugin -->
 <div id="spondle-events"></div>
 <script>
   (function() {
+    const organiserId = "${organiserId}";
     const container = document.getElementById("spondle-events");
-
-    fetch("https://jvuunvnbpdfrttusgelz.supabase.co/rest/v1/events?select=title,date,venue&organiser_id=eq.${userId}", {
+    fetch("https://jvuunvnbpdfrttusgelz.supabase.co/rest/v1/events?organiser_id=eq." + organiserId, {
       headers: {
-        apikey: "${supabase.supabaseKey}",
-        Authorization: "Bearer ${supabase.supabaseKey}"
+        apikey: "${supabaseKey}",
+        Authorization: "Bearer ${supabaseKey}"
       }
     })
     .then(res => res.json())
     .then(events => {
-      if (!Array.isArray(events) || events.length === 0) {
+      if (!Array.isArray(events)) {
         container.innerHTML = "<p>No events found.</p>";
         return;
       }
-
-      const list = document.createElement("ul");
-      events.forEach(event => {
-        const item = document.createElement("li");
-        item.textContent = event.title + " – " + event.date + " @ " + event.venue;
-        list.appendChild(item);
-      });
-
-      container.appendChild(list);
+      container.innerHTML = "<ul>" + events.map(e => 
+        "<li><strong>" + e.title + "</strong> – " + e.date + " @ " + e.venue_name + "</li>"
+      ).join("") + "</ul>";
     })
     .catch(err => {
       container.innerHTML = "<p>Error loading events.</p>";
+      console.error(err);
     });
   })();
 </script>
+<!-- End Spondle Event Plugin -->
       `.trim();
 
       document.getElementById("pluginCode").value = pluginHTML;
     }
   </script>
-
 </body>
 </html>
