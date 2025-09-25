@@ -32,7 +32,7 @@
     }
     textarea {
       width: 100%;
-      height: 280px;
+      height: 120px;
       font-family: monospace;
       padding: 1rem;
       border: 1px solid #ccc;
@@ -47,7 +47,7 @@
 </head>
 <body>
   <h1>Generate Your Event Plugin</h1>
-  <p>This creates an embeddable HTML snippet showing your events with title, date, and venue name.</p>
+  <p>This will generate an iframe snippet you can paste into your own website to show your events.</p>
   <button onclick="generatePlugin()">Generate Plugin Code</button>
   <textarea id="pluginCode" readonly placeholder="Your plugin code will appear here..."></textarea>
   <div id="errorLog"></div>  <script>
@@ -66,48 +66,23 @@
         const userId = user.id;
 
         const pluginCode = `
-<!-- Spondle Events Plugin -->
-<div id="spondle-events"></div>
-<script>
-  (async () => {
-    const res = await fetch('https://jvuunvnbpdfrttusgelz.supabase.co/rest/v1/events?organiser_id=eq.${userId}&select=title,date,venues(name)&order=date.asc', {
-      headers: {
-        apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+<iframe 
+  src="https://spondle-uk.vercel.app/embed-events.html?organiser_id=${userId}" 
+  width="100%" 
+  height="400" 
+  frameborder="0"
+  style="border: none; overflow: hidden;">
+</iframe>
+`.trim();
+
+        document.getElementById("pluginCode").value = pluginCode;
+        document.getElementById("errorLog").style.display = "none";
+
+      } catch (err) {
+        const errorBox = document.getElementById("errorLog");
+        errorBox.textContent = err.message || err.toString();
+        errorBox.style.display = "block";
       }
-    });
-    const events = await res.json();
-    const container = document.getElementById("spondle-events");
-    if (!Array.isArray(events) || events.length === 0) {
-      container.innerHTML = "<p>No events found.</p>";
-      return;
     }
-    const list = document.createElement("ul");
-    events.forEach(event => {
-      const venueName = event.venues?.name || "Unknown venue";
-      const dateStr = new Date(event.date).toLocaleDateString();
-      const item = document.createElement("li");
-      item.innerHTML = `<strong>${event.title}</strong> – ${dateStr} @ ${venueName}`;
-      list.appendChild(item);
-    });
-    container.appendChild(list);
-  })();
-</script><!-- End Plugin -->`.trim();
-
-const escaped = pluginCode
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    document.getElementById("pluginCode").value = escaped;
-    document.getElementById("errorLog").style.display = "none";
-
-  } catch (err) {
-    const errorBox = document.getElementById("errorLog");
-    errorBox.textContent = err.message || err.toString();
-    errorBox.style.display = "block";
-  }
-}
-
-  </script>
-</body>
+  </script></body>
 </html>
