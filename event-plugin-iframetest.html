@@ -1,99 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Event Plugin Preview</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 20px;
-      background: #f8f8f8;
-    }
-    h1 {
-      margin-bottom: 1rem;
-    }
-    .event {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 10px;
-    }
-    .event-title {
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
-    .event-detail {
-      color: #555;
-      margin-top: 4px;
-    }
-  </style>
-</head>
-<body>
-  <h1>My Events (Plugin Preview)</h1>
-  <div id="eventList">Loading...</div>
+<script>
+  const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  <script>
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+  async function loadEvents() {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-    async function loadEvents() {
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        document.getElementById("eventList").innerText = "Please log in to view your events.";
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('events')
-        .select(`
-          id,
-          title,
-          date,
-          time,
-          venue_id,
-          venues (
-            name
-          )
-        `)
-        .eq('organiser_id', user.id)
-        .order('date', { ascending: true });
-
-      if (error) {
-        document.getElementById("eventList").innerText = "Error loading events.";
-        console.error(error);
-        return;
-      }
-
-      if (data.length === 0) {
-        document.getElementById("eventList").innerText = "No events found.";
-        return;
-      }
-
-      const eventList = document.getElementById("eventList");
-      eventList.innerHTML = "";
-
-      data.forEach(event => {
-        const el = document.createElement("div");
-        el.className = "event";
-
-        const venueName = event.venues?.name || "Venue not found";
-
-        el.innerHTML = `
-          <div class="event-title">${event.title}</div>
-          <div class="event-detail">${event.date} at ${event.time}</div>
-          <div class="event-detail">${venueName}</div>
-        `;
-
-        eventList.appendChild(el);
-      });
+    if (sessionError) {
+      document.getElementById("eventList").innerText = "Error getting session.";
+      console.error(sessionError);
+      return;
     }
 
-    loadEvents();
-  </script>
-</body>
-</html>
+    const user = sessionData.session?.user;
+
+    if (!user) {
+      document.getElementById("eventList").innerText = "Not logged in.";
+      return;
+    }
+
+    // Show logged-in user ID for debugging
+    const eventList = document.getElementById("eventList");
+    eventList.innerHTML = `<div style="margin-bottom: 10px; color: green;">Logged in as: ${user.id}</div>Loading your events...`;
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        id,
+        title,
+        date,
+        time,
+        venue_id,
+        venues (
+          name
+        )
+      `)
+      .eq('organiser_id', user.id)
+      .order('date', { ascending: true });
+
+    if (error) {
+      eventList.innerText = "Error loading events.";
+      console.error(error);
+      return;
+    }
+
+    if (data.length === 0) {
+      eventList.innerText = "No events found.";
+      return;
+    }
+
+    eventList.innerHTML = ""; // clear again after header
+
+    data.forEach(event => {
+      const el = document.createElement("div");
+      el.className = "event";
+
+      const venueName = event.venues?.name || "Venue not found";
+
+      el.innerHTML = `
+        <div class="event-title">${event.title}</div>
+        <div class="event-detail">${event.date} at ${event.time}</div>
+        <div class="event-detail">${venueName}</div>
+      `;
+
+      eventList.appendChild(el);
+    });
+  }
+
+  loadEvents();
+                    </script>
