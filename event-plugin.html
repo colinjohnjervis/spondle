@@ -1,168 +1,98 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Event Plugin Tool</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Plugin</title>
   <style>
     body {
       font-family: sans-serif;
-      padding: 2rem;
-      max-width: 720px;
-      margin: auto;
+      background: #f9f9f9;
+      padding: 20px;
+      color: #111;
     }
-
-    textarea {
-      width: 100%;
-      height: 180px;
-      font-family: monospace;
-      font-size: 14px;
-      margin-top: 1rem;
-    }
-
-    #errorLog {
-      color: red;
-      margin-top: 1rem;
-      display: none;
-    }
-
-    button {
-      padding: 0.6rem 1.2rem;
-      background: black;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-      margin-top: 1rem;
-    }
-
-    .event-card {
-      border: 1px solid #ddd;
-      padding: 1rem;
-      margin-bottom: 1rem;
+    .plugin-container {
+      background: #fff;
       border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-
-    .event-card h3 {
-      margin: 0 0 4px 0;
-      font-size: 1.1rem;
+    .event {
+      margin-bottom: 10px;
     }
-
-    .event-card p {
-      margin: 0;
-      font-size: 0.9rem;
-    }
-
-    #eventList {
-      margin-top: 2rem;
-    }
-
-    #userStatus {
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-      background: #f4f4f4;
-      border-left: 4px solid #444;
-      font-size: 14px;
+    .error {
+      color: red;
     }
   </style>
 </head>
 <body>
-  <h1>Event Plugin</h1>
+  <div class="plugin-container">
+    <h2>Event Plugin</h2>
+    <div id="error" class="error"></div>
+    <div id="events">Loading events...</div>
+  </div>  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  <div id="errorLog"></div>
-  <div id="userStatus" style="display: none;"></div>
-  <div id="pluginTool" style="display: none;">
-    <p>This will generate an iframe snippet you can paste into your website.</p>
-    <button id="generateBtn">Generate Plugin Code</button>
-    <textarea id="pluginCode" placeholder="Your plugin code will appear here..." readonly></textarea>
-  </div>
-
-  <div id="eventList" style="display: none;"></div>
-
-  <!-- Supabase JS -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const supabase = window.supabase.createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-    );
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const urlParams = new URLSearchParams(window.location.search);
     const organiserId = urlParams.get('organiser_id');
-    const errorBox = document.getElementById("errorLog");
-    const eventList = document.getElementById("eventList");
 
-    async function showLiveEvents(id) {
-      try {
-        errorBox.style.display = "none";
-        eventList.innerHTML = "<p>Loading events...</p>";
-        eventList.style.display = "block";
+    const eventsDiv = document.getElementById('events');
+    const errorDiv = document.getElementById('error');
 
-        const { data, error } = await supabase
-          .from('events')
-          .select('title, date, venue:venue_id(name)')
-          .eq('organiser_id', id)
-          .order('date', { ascending: true });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-          eventList.innerHTML = "<p>No events found.</p>";
-          return;
-        }
-
-        eventList.innerHTML = data.map(evt => `
-          <div class="event-card">
-            <h3>${evt.title}</h3>
-            <p>${new Date(evt.date).toLocaleDateString()}</p>
-            <p>📍 ${evt.venue?.name || 'Unknown venue'}</p>
-          </div>
-        `).join('');
-      } catch (err) {
-        errorBox.textContent = "Error loading events: " + (err.message || err);
-        errorBox.style.display = "block";
+    async function loadEvents() {
+      if (!organiserId) {
+        errorDiv.textContent = 'Error: organiser_id missing in URL';
+        eventsDiv.textContent = '';
+        return;
       }
-    }
 
-    async function showPluginTool() {
-      const pluginTool = document.getElementById("pluginTool");
-      const pluginCode = document.getElementById("pluginCode");
-      const generateBtn = document.getElementById("generateBtn");
-      const userStatus = document.getElementById("userStatus");
+      // Step 1: Get all events for this organiser
+      const { data: events, error: eventsError } = await supabase
+        .from('events')
+        .select('*')
+        .eq('organiser_id', organiserId);
 
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error) throw error;
-
-        if (!user) {
-          userStatus.textContent = "❌ You are not signed in.";
-          userStatus.style.display = "block";
-          return;
-        }
-
-        const uid = user.id;
-        userStatus.textContent = `✅ Logged in as: ${uid}`;
-        userStatus.style.display = "block";
-        pluginTool.style.display = "block";
-
-        generateBtn.addEventListener("click", () => {
-          const iframeCode = `<iframe src="https://spondle-uk.vercel.app/event-plugin.html?organiser_id=${uid}" width="100%" height="400" frameborder="0"></iframe>`;
-          pluginCode.value = iframeCode;
-        });
-      } catch (err) {
-        errorBox.textContent = "Error: " + (err.message || err);
-        errorBox.style.display = "block";
+      if (eventsError) {
+        errorDiv.textContent = 'Error loading events: ' + eventsError.message;
+        eventsDiv.textContent = '';
+        return;
       }
+
+      if (!events || events.length === 0) {
+        eventsDiv.textContent = 'No events found.';
+        return;
+      }
+
+      // Step 2: Get venue names in one batch
+      const venueIds = [...new Set(events.map(event => event.venue_id).filter(Boolean))];
+
+      const { data: venues, error: venuesError } = await supabase
+        .from('venues')
+        .select('id, name')
+        .in('id', venueIds);
+
+      if (venuesError) {
+        errorDiv.textContent = 'Error loading venues: ' + venuesError.message;
+        return;
+      }
+
+      const venueMap = {};
+      venues.forEach(v => venueMap[v.id] = v.name);
+
+      // Step 3: Display events
+      eventsDiv.innerHTML = '';
+      events.forEach(event => {
+        const venueName = venueMap[event.venue_id] || 'Unknown Venue';
+        const eventEl = document.createElement('div');
+        eventEl.className = 'event';
+        eventEl.textContent = `${event.date} – ${event.title} @ ${venueName}`;
+        eventsDiv.appendChild(eventEl);
+      });
     }
 
-    // Determine mode
-    if (organiserId) {
-      // iframe mode (public view)
-      showLiveEvents(organiserId);
-    } else {
-      // plugin generation mode (private user)
-      showPluginTool();
-    }
-  </script>
-</body>
+    loadEvents();
+  </script></body>
 </html>
