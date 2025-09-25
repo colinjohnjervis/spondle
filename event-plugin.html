@@ -10,7 +10,6 @@
       padding: 2rem;
       max-width: 600px;
       margin: auto;
-      background: #f8f8f8;
     }
 
     textarea {
@@ -93,7 +92,7 @@
         if (!user) throw new Error("You are not logged in. Please sign in first.");
 
         const organiserId = user.id;
-        const iframeCode = `<iframe src="https://spondle-uk.vercel.app/embed-events.html?organiser_id=${organiserId}" width="100%" height="400" frameborder="0"></iframe>`;
+        const iframeCode = `<iframe src="https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}" width="100%" height="400" frameborder="0"></iframe>`;
         output.value = iframeCode;
 
       } catch (err) {
