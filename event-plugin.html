@@ -34,13 +34,22 @@
       cursor: pointer;
       border-radius: 4px;
     }
+
+    #userStatus {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: #f4f4f4;
+      border-left: 4px solid #444;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <h1>Generate Your Event Plugin</h1>
   <p>This will generate an iframe snippet you can paste into your own website to show your events.</p>
-  <button id="generateBtn">Generate Plugin Code</button>
 
+  <div id="userStatus">Checking login status...</div>
+  <button id="generateBtn">Generate Plugin Code</button>
   <textarea id="pluginCode" placeholder="Your plugin code will appear here..." readonly></textarea>
   <div id="errorLog"></div>
 
@@ -48,11 +57,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    // Initialize Supabase
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
+
+    const userStatus = document.getElementById("userStatus");
+
+    // Show user ID when page loads
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (!user) {
+          userStatus.textContent = "❌ You are not signed in.";
+        } else {
+          userStatus.textContent = `✅ Logged in as user: ${user.id}`;
+        }
+      } catch (err) {
+        userStatus.textContent = `❌ Error getting user: ${err.message || err}`;
+      }
+    });
 
     document.getElementById("generateBtn").addEventListener("click", async () => {
       const output = document.getElementById("pluginCode");
@@ -64,12 +89,10 @@
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) throw error;
-        if (!user) throw new Error("You are not logged in. Please sign in to generate your plugin code.");
+        if (!user) throw new Error("You are not logged in. Please sign in first.");
 
         const organiserId = user.id;
-
         const iframeCode = `<iframe src="https://spondle-uk.vercel.app/events-miniview01.html?organiser_id=${organiserId}" width="100%" height="400" frameborder="0"></iframe>`;
-
         output.value = iframeCode;
 
       } catch (err) {
