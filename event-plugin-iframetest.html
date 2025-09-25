@@ -1,34 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Test Page for Spondle Plugin</title>
+  <meta charset="UTF-8" />
+  <title>Event Plugin Preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       font-family: sans-serif;
-      padding: 40px;
-      background: #f7f7f7;
+      padding: 20px;
+      background: #f8f8f8;
     }
     h1 {
+      margin-bottom: 1rem;
+    }
+    .event {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
       margin-bottom: 10px;
     }
-    iframe {
-      border: 1px solid #ccc;
-      border-radius: 8px;
+    .event-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .event-detail {
+      color: #555;
+      margin-top: 4px;
     }
   </style>
 </head>
 <body>
+  <h1>My Events (Plugin Preview)</h1>
+  <div id="eventList">Loading...</div>
 
-  <h1>Embedded Spondle Events Plugin</h1>
-  <p>The iframe below should show the live events for the logged-in organiser.</p>
+  <script>
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  <iframe
-    src="https://spondle-uk.vercel.app/event-plugin.html?organiser_id=05c1463f-510d-4e40-a5fc-f5aa6138a716"
-    width="100%"
-    height="400"
-    frameborder="0">
-  </iframe>
+    async function loadEvents() {
+      const { data: { user } } = await supabase.auth.getUser();
 
+      if (!user) {
+        document.getElementById("eventList").innerText = "Please log in to view your events.";
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          id,
+          title,
+          date,
+          time,
+          venue_id,
+          venues (
+            name
+          )
+        `)
+        .eq('organiser_id', user.id)
+        .order('date', { ascending: true });
+
+      if (error) {
+        document.getElementById("eventList").innerText = "Error loading events.";
+        console.error(error);
+        return;
+      }
+
+      if (data.length === 0) {
+        document.getElementById("eventList").innerText = "No events found.";
+        return;
+      }
+
+      const eventList = document.getElementById("eventList");
+      eventList.innerHTML = "";
+
+      data.forEach(event => {
+        const el = document.createElement("div");
+        el.className = "event";
+
+        const venueName = event.venues?.name || "Venue not found";
+
+        el.innerHTML = `
+          <div class="event-title">${event.title}</div>
+          <div class="event-detail">${event.date} at ${event.time}</div>
+          <div class="event-detail">${venueName}</div>
+        `;
+
+        eventList.appendChild(el);
+      });
+    }
+
+    loadEvents();
+  </script>
 </body>
 </html>
