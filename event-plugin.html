@@ -1,98 +1,88 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>Embedded Spondle Events Plugin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Event Plugin</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f9f9f9;
+      font-family: system-ui, sans-serif;
+      background: #f6f6f6;
+      margin: 0;
       padding: 20px;
-      color: #111;
     }
     .plugin-container {
-      background: #fff;
+      background: white;
       border-radius: 8px;
       padding: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      margin-top: 0;
     }
     .event {
-      margin-bottom: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
     }
     .error {
       color: red;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
+  <h1>Embedded Spondle Events Plugin</h1>
+  <p>The iframe below should show the live events for the logged-in organiser.</p>
   <div class="plugin-container">
     <h2>Event Plugin</h2>
     <div id="error" class="error"></div>
     <div id="events">Loading events...</div>
-  </div>  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
     const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const organiserId = urlParams.get('organiser_id');
+    const organiserId = new URLSearchParams(window.location.search).get('organiser_id');
 
-    const eventsDiv = document.getElementById('events');
-    const errorDiv = document.getElementById('error');
+    if (!organiserId) {
+      document.getElementById('error').textContent = 'Missing organiser_id in iframe URL';
+    } else {
+      loadEvents(organiserId);
+    }
 
-    async function loadEvents() {
-      if (!organiserId) {
-        errorDiv.textContent = 'Error: organiser_id missing in URL';
-        eventsDiv.textContent = '';
-        return;
-      }
-
-      // Step 1: Get all events for this organiser
-      const { data: events, error: eventsError } = await supabase
+    async function loadEvents(organiserId) {
+      const { data, error } = await supabase
         .from('events')
-        .select('*')
-        .eq('organiser_id', organiserId);
+        .select('title, date, venue:venues(venue_name)')
+        .eq('organiser_id', organiserId)
+        .order('date', { ascending: true });
 
-      if (eventsError) {
-        errorDiv.textContent = 'Error loading events: ' + eventsError.message;
+      const eventsDiv = document.getElementById('events');
+      const errorDiv = document.getElementById('error');
+
+      if (error) {
+        errorDiv.textContent = `Error loading venues: ${error.message}`;
         eventsDiv.textContent = '';
         return;
       }
 
-      if (!events || events.length === 0) {
+      if (!data || data.length === 0) {
         eventsDiv.textContent = 'No events found.';
         return;
       }
 
-      // Step 2: Get venue names in one batch
-      const venueIds = [...new Set(events.map(event => event.venue_id).filter(Boolean))];
-
-      const { data: venues, error: venuesError } = await supabase
-        .from('venues')
-        .select('id, name')
-        .in('id', venueIds);
-
-      if (venuesError) {
-        errorDiv.textContent = 'Error loading venues: ' + venuesError.message;
-        return;
-      }
-
-      const venueMap = {};
-      venues.forEach(v => venueMap[v.id] = v.name);
-
-      // Step 3: Display events
       eventsDiv.innerHTML = '';
-      events.forEach(event => {
-        const venueName = venueMap[event.venue_id] || 'Unknown Venue';
-        const eventEl = document.createElement('div');
-        eventEl.className = 'event';
-        eventEl.textContent = `${event.date} – ${event.title} @ ${venueName}`;
-        eventsDiv.appendChild(eventEl);
+      data.forEach(event => {
+        const div = document.createElement('div');
+        div.className = 'event';
+        div.textContent = `${event.date} — ${event.title} @ ${event.venue?.venue_name || 'Unknown venue'}`;
+        eventsDiv.appendChild(div);
       });
     }
-
-    loadEvents();
-  </script></body>
+  </script>
+</body>
 </html>
