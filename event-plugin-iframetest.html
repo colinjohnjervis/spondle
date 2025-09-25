@@ -116,7 +116,8 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', loadEvents);
+    // Try running immediately without waiting for DOMContentLoaded
+    loadEvents();
   </script>
 </body>
 </html>
