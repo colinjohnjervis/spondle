@@ -43,6 +43,7 @@
       border-radius: 6px;
       font-family: monospace;
       white-space: pre-wrap;
+      display: none;
     }
   </style>
 </head>
@@ -51,7 +52,7 @@
   <p>This creates an embeddable HTML snippet showing your events with title, date, and venue name.</p>
   <button onclick="generatePlugin()">Generate Plugin Code</button>
   <textarea id="pluginCode" placeholder="Your plugin code will appear here..."></textarea>
-  <div id="errorLog" style="display: none;"></div>
+  <div id="errorLog"></div>
 
   <script>
     const supabase = supabase.createClient(
@@ -98,7 +99,6 @@
 <!-- End Plugin -->
 `.trim();
 
-        // Escape HTML for textarea display
         const escaped = pluginCode
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
@@ -106,10 +106,11 @@
 
         document.getElementById("pluginCode").value = escaped;
         document.getElementById("errorLog").style.display = "none";
+
       } catch (err) {
         const errorBox = document.getElementById("errorLog");
-        errorBox.style.display = "block";
         errorBox.textContent = err.message || err.toString();
+        errorBox.style.display = "block";
       }
     }
   </script>
