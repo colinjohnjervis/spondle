@@ -4,54 +4,52 @@
   <meta charset="UTF-8" />
   <title>Generate My Event Plugin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       font-family: sans-serif;
       background: #f9f9f9;
-      margin: 0;
       padding: 2rem;
       color: #333;
     }
     h1 {
+      font-size: 1.8rem;
       margin-bottom: 1rem;
     }
     button {
-      background: #2c3e50;
+      background: #111827;
       color: white;
-      padding: 0.6rem 1.2rem;
       border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      padding: 0.75rem 1.5rem;
       font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
     }
     textarea {
+      margin-top: 1.5rem;
       width: 100%;
       height: 400px;
-      margin-top: 1rem;
       font-family: monospace;
       font-size: 0.9rem;
       padding: 1rem;
-      border-radius: 8px;
+      border-radius: 6px;
       border: 1px solid #ccc;
       white-space: pre;
+      resize: vertical;
     }
   </style>
 </head>
 <body>
 
   <h1>Generate Your Event Plugin</h1>
-  <p>Click below to generate the HTML snippet you can copy into your website:</p>
-
+  <p>This will create an HTML snippet you can paste into your website to display your events.</p>
   <button onclick="generatePlugin()">Generate Plugin Code</button>
-
   <textarea id="pluginCode" readonly placeholder="Your plugin code will appear here..."></textarea>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
   <script>
     const supabase = supabase.createClient(
-      'https://spondle-uk.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwb25kbGUtdWsiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY5NTM2ODg5NSwiZXhwIjoxOTExOTQ0ODk1fQ.9u-V4VG0GhAvZljR3AslCjV4vbfBni3XDglwhtYGtnY'
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
     async function generatePlugin() {
@@ -61,114 +59,60 @@
       } = await supabase.auth.getUser();
 
       if (error || !user) {
-        alert("You must be logged in to generate your plugin code.");
+        alert("You must be logged in to generate your plugin.");
         return;
       }
 
       const userId = user.id;
 
-      const pluginHTML = String.raw`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Events</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      margin: 0;
-      padding: 1rem;
-      color: #333;
-    }
-    h2 {
-      margin-bottom: 1rem;
-      font-size: 1.5rem;
-      border-bottom: 2px solid #ddd;
-      padding-bottom: 0.25rem;
-    }
-    ul.event-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .event-item {
-      background: #fff;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-    }
-    .event-date {
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 0.25rem;
-    }
-    .event-title {
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
-    }
-    .event-venue {
-      font-style: italic;
-      color: #7f8c8d;
-    }
-  </style>
-</head>
-<body>
+      const pluginHTML = `
+<div id="spondle-events"></div>
+<script>
+  const supabase = supabase.createClient(
+    'https://jvuunvnbpdfrttusgelz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+  );
 
-  <h2>Upcoming Events</h2>
-  <ul id="eventList" class="event-list">
-    <!-- Events will be injected here -->
-  </ul>
+  const organiserId = '${userId}';
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
-  <script>
-    const supabase = supabase.createClient(
-      'https://spondle-uk.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwb25kbGUtdWsiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY5NTM2ODg5NSwiZXhwIjoxOTExOTQ0ODk1fQ.9u-V4VG0GhAvZljR3AslCjV4vbfBni3XDglwhtYGtnY'
-    );
+  async function loadEvents() {
+    const { data, error } = await supabase
+      .from('events')
+      .select('title, date, venue_name')
+      .eq('organiser_id', organiserId)
+      .order('date', { ascending: true });
 
-    const organiserId = '${userId}';
+    const container = document.getElementById('spondle-events');
 
-    async function fetchEvents() {
-      const { data, error } = await supabase
-        .from('events')
-        .select('id, title, date, venue_name')
-        .eq('organiser_id', organiserId)
-        .order('date', { ascending: true });
-
-      const list = document.getElementById('eventList');
-
-      if (error || !data || data.length === 0) {
-        list.innerHTML = '<li class="event-item">No events found.</li>';
-        return;
-      }
-
-      data.forEach(event => {
-        const li = document.createElement('li');
-        li.className = 'event-item';
-        li.innerHTML = \`
-          <div class="event-date">\${formatDate(event.date)}</div>
-          <div class="event-title">\${event.title}</div>
-          <div class="event-venue">\${event.venue_name || ''}</div>
-        \`;
-        list.appendChild(li);
-      });
+    if (error || !data || data.length === 0) {
+      container.innerHTML = '<p>No events found.</p>';
+      return;
     }
 
-    function formatDate(dateString) {
-      const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
-      return new Date(dateString).toLocaleDateString(undefined, options);
-    }
+    const list = document.createElement('ul');
+    list.style.listStyle = 'none';
+    list.style.padding = '0';
 
-    fetchEvents();
-  <\/script>
+    data.forEach(event => {
+      const item = document.createElement('li');
+      item.style.marginBottom = '1rem';
+      item.innerHTML = \`
+        <strong>\${event.title}</strong><br>
+        \${new Date(event.date).toLocaleDateString()}<br>
+        \${event.venue_name || ''}
+      \`;
+      list.appendChild(item);
+    });
 
-</body>
-</html>`;
+    container.appendChild(list);
+  }
+
+  loadEvents();
+<\/script>`.trim();
 
       document.getElementById("pluginCode").value = pluginHTML;
     }
   </script>
+
 </body>
 </html>
