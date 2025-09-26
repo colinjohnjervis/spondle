@@ -2,127 +2,117 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Upcoming Events – Embedded View</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
-      background: #f8f9fa;
-      color: #212529;
+      background: #f6f8fa;
+      color: #111;
     }
 
     .container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 1.5rem;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
     }
 
     h1 {
-      font-size: 1.75rem;
-      margin-bottom: 1.25rem;
-      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      color: #222;
     }
 
-    .event {
-      border-bottom: 1px solid #eee;
-      padding: 1rem 0;
+    .event-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: box-shadow 0.2s ease;
     }
 
-    .event:last-child {
-      border-bottom: none;
+    .event-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
 
     .event-title {
+      font-size: 1.2rem;
       font-weight: 600;
-      font-size: 1.1rem;
-      margin-bottom: 0.2rem;
+      margin-bottom: 0.4rem;
     }
 
     .event-meta {
-      color: #555;
       font-size: 0.95rem;
+      color: #444;
+      margin-bottom: 0.2rem;
     }
 
     .error {
       color: red;
       font-weight: bold;
       padding: 1rem;
-      text-align: center;
-    }
-
-    .loading {
-      text-align: center;
-      color: #777;
-      padding: 1rem;
+      background: #fff0f0;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Upcoming Events – Embedded View</h1>
-    <div id="event-list">
-      <div class="loading">Loading events...</div>
-    </div>
+    <div id="events-container"></div>
   </div>
 
-  <script>
-    const { createClient } = supabase;
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
     const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const params = new URLSearchParams(window.location.search);
-    const organiserId = params.get('organiser_id');
+    const urlParams = new URLSearchParams(window.location.search);
+    const organiserId = urlParams.get('organiser_id');
 
-    async function fetchEvents() {
-      const eventList = document.getElementById('event-list');
-      eventList.innerHTML = '';
-
-      const { data, error } = await supabaseClient
+    async function loadEvents() {
+      const { data, error } = await supabase
         .from('events')
         .select(`
-          id,
-          title,
+          event_title,
           event_date,
           event_time,
-          venues (
-            venue_name,
-            street_name
-          )
+          venues ( venue_name )
         `)
         .eq('organiser_id', organiserId)
         .order('event_date', { ascending: true });
 
+      const container = document.getElementById('events-container');
+
       if (error) {
-        eventList.innerHTML = `<div class="error">Error fetching events: ${error.message}</div>`;
+        container.innerHTML = `<div class="error">Error fetching events: ${error.message}</div>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        eventList.innerHTML = `<div class="loading">No events found.</div>`;
+        container.innerHTML = `<p>No events found for this organiser.</p>`;
         return;
       }
 
       data.forEach(event => {
-        const el = document.createElement('div');
-        el.className = 'event';
+        const card = document.createElement('div');
+        card.className = 'event-card';
 
-        el.innerHTML = `
-          <div class="event-title">${event.title}</div>
+        card.innerHTML = `
+          <div class="event-title">${event.event_title}</div>
           <div class="event-meta">${event.event_date} at ${event.event_time}</div>
-          <div class="event-meta">${event.venues?.venue_name || ''}</div>
+          <div class="event-meta">${event.venues?.venue_name || 'Unknown Venue'}</div>
         `;
 
-        eventList.appendChild(el);
+        container.appendChild(card);
       });
     }
 
-    fetchEvents();
+    loadEvents();
   </script>
 </body>
 </html>
