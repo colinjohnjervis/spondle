@@ -1,137 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Embedded Events</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upcoming Events – Embedded View</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
-    :root {
-      --bg-light: #ffffff;
-      --fg-light: #111111;
-      --muted-light: #666666;
-      --card-bg-light: #f9f9f9;
-
-      --bg-dark: #121212;
-      --fg-dark: #ffffff;
-      --muted-dark: #cccccc;
-      --card-bg-dark: #1e1e1e;
-    }
-
     body {
       margin: 0;
-      padding: 1rem;
       font-family: system-ui, sans-serif;
-      font-size: 16px;
-      background-color: var(--bg);
-      color: var(--fg);
+      background: #f8f9fa;
+      color: #212529;
     }
 
-    .event-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
+    .container {
       max-width: 600px;
-      margin: auto;
+      margin: 40px auto;
+      padding: 1.5rem;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
 
-    .event-card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+      text-align: center;
+    }
+
+    .event {
+      border-bottom: 1px solid #eee;
+      padding: 1rem 0;
+    }
+
+    .event:last-child {
+      border-bottom: none;
     }
 
     .event-title {
-      font-size: 1.125rem;
       font-weight: 600;
-      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+      margin-bottom: 0.2rem;
     }
 
-    .event-date {
-      color: var(--muted);
-      margin-bottom: 0.25rem;
+    .event-meta {
+      color: #555;
+      font-size: 0.95rem;
     }
 
-    .event-venue,
-    .event-town {
-      margin: 0;
-      color: var(--fg);
+    .error {
+      color: red;
+      font-weight: bold;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      color: #777;
+      padding: 1rem;
     }
   </style>
 </head>
 <body>
-
-  <div class="event-list" id="events">
-    <p>Loading events...</p>
+  <div class="container">
+    <h1>Upcoming Events – Embedded View</h1>
+    <div id="event-list">
+      <div class="loading">Loading events...</div>
+    </div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <script>
+    const { createClient } = supabase;
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    const supabaseUrl = "https://jvuunvnbpdfrttusgelz.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const organiserId = urlParams.get("organiser_id");
-    const theme = urlParams.get("theme") || "light";
-
-    // Apply theme colors
-    if (theme === "dark") {
-      document.documentElement.style.setProperty('--bg', getComputedStyle(document.documentElement).getPropertyValue('--bg-dark'));
-      document.documentElement.style.setProperty('--fg', getComputedStyle(document.documentElement).getPropertyValue('--fg-dark'));
-      document.documentElement.style.setProperty('--muted', getComputedStyle(document.documentElement).getPropertyValue('--muted-dark'));
-      document.documentElement.style.setProperty('--card-bg', getComputedStyle(document.documentElement).getPropertyValue('--card-bg-dark'));
-    } else {
-      document.documentElement.style.setProperty('--bg', getComputedStyle(document.documentElement).getPropertyValue('--bg-light'));
-      document.documentElement.style.setProperty('--fg', getComputedStyle(document.documentElement).getPropertyValue('--fg-light'));
-      document.documentElement.style.setProperty('--muted', getComputedStyle(document.documentElement).getPropertyValue('--muted-light'));
-      document.documentElement.style.setProperty('--card-bg', getComputedStyle(document.documentElement).getPropertyValue('--card-bg-light'));
-    }
+    const params = new URLSearchParams(window.location.search);
+    const organiserId = params.get('organiser_id');
 
     async function fetchEvents() {
-      const container = document.getElementById("events");
+      const eventList = document.getElementById('event-list');
+      eventList.innerHTML = '';
 
-      if (!organiserId) {
-        container.innerHTML = "<p style='color:red;'>Error: organiser_id is required</p>";
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("events")
+      const { data, error } = await supabaseClient
+        .from('events')
         .select(`
+          id,
           title,
           event_date,
           event_time,
-          venues ( venue_name, street_name, towns ( town_name ) )
+          venues (
+            venue_name,
+            street_name
+          )
         `)
-        .eq("organiser_id", organiserId)
-        .order("event_date", { ascending: true });
+        .eq('organiser_id', organiserId)
+        .order('event_date', { ascending: true });
 
       if (error) {
-        container.innerHTML = `<p style="color: red;">Error fetching events: ${error.message}</p>`;
+        eventList.innerHTML = `<div class="error">Error fetching events: ${error.message}</div>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        container.innerHTML = "<p>No upcoming events found.</p>";
+        eventList.innerHTML = `<div class="loading">No events found.</div>`;
         return;
       }
 
-      container.innerHTML = ""; // Clear loading
+      data.forEach(event => {
+        const el = document.createElement('div');
+        el.className = 'event';
 
-      data.forEach((event) => {
-        const card = document.createElement("div");
-        card.className = "event-card";
-
-        card.innerHTML = `
+        el.innerHTML = `
           <div class="event-title">${event.title}</div>
-          <div class="event-date">${event.event_date} at ${event.event_time}</div>
-          <p class="event-venue">${event.venues?.venue_name || "Unknown Venue"}</p>
-          <p class="event-town">${event.venues?.towns?.town_name || ""}</p>
+          <div class="event-meta">${event.event_date} at ${event.event_time}</div>
+          <div class="event-meta">${event.venues?.venue_name || ''}</div>
         `;
 
-        container.appendChild(card);
+        eventList.appendChild(el);
       });
     }
 
