@@ -1,37 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Plugin iFrame Test – d5de3908</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Styled Event Plugin Embed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: sans-serif;
       margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #f3f4f6;
       padding: 2rem;
-      background: #f9f9f9;
+      color: #111827;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+    .page-wrapper {
+      max-width: 768px;
+      margin: 0 auto;
+    }
+
+    .header {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .plugin-card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
     }
 
     iframe {
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      width: 100%;
+      height: 450px;
+      border: none;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      iframe {
+        height: 500px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Plugin iFrame Test Page</h1>
+  <div class="page-wrapper">
+    <div class="header">Upcoming Events – Embedded View</div>
 
-  <iframe 
-    src="https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=d5de3908-95f1-47c7-a20e-3498c3a2de23" 
-    width="100%" 
-    height="400" 
-    frameborder="0">
-  </iframe>
-
+    <div class="plugin-card">
+      <iframe 
+        src="https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=d5de3908-95f1-47c7-a20e-3498c3a2de23">
+      </iframe>
+    </div>
+  </div>
 </body>
 </html>
