@@ -2,15 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Upcoming Events – Embedded View</title>
+  <title>Embedded Events</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    :root {
-      color-scheme: dark;
-    }
-
     body {
       margin: 0;
+      padding: 0;
       font-family: system-ui, sans-serif;
       background-color: #0f172a;
       color: #e2e8f0;
@@ -23,126 +20,113 @@
       margin: 0;
       color: #f1f5f9;
       border-bottom: 1px solid #1e293b;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .event-list {
       display: flex;
       flex-direction: column;
+      width: 100%;
     }
 
     .event-tile {
-      background-color: #1e293b;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem;
-      border-bottom: 1px solid #0f172a;
+      background-color: #1e293b;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #334155;
+      font-size: 0.95rem;
     }
 
-    .event-info {
+    .event-left {
       display: flex;
       flex-direction: column;
     }
 
-    .event-name {
+    .event-title {
       font-weight: 600;
-      font-size: 1rem;
-      color: #f8fafc;
+      color: #f1f5f9;
     }
 
-    .event-meta {
-      font-size: 0.875rem;
+    .event-venue {
+      font-size: 0.85rem;
       color: #cbd5e1;
     }
 
-    .event-datetime {
+    .event-right {
       text-align: right;
-      font-size: 0.875rem;
+      font-size: 0.85rem;
       color: #94a3b8;
       white-space: nowrap;
-    }
-
-    .error {
-      color: #f87171;
-      font-weight: bold;
-      padding: 1rem;
-      text-align: center;
     }
   </style>
 </head>
 <body>
   <h2>Upcoming Events – Embedded View</h2>
-  <div id="events" class="event-list">Loading events...</div>
+  <div class="event-list" id="eventList"></div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
 
-    const organiserId = new URLSearchParams(window.location.search).get('organiser_id');
-    const container = document.getElementById('events');
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    if (!organiserId) {
-      container.innerHTML = '<p class="error">Error: organiser_id missing in URL</p>';
-    } else {
-      loadEvents();
-    }
+    const urlParams = new URLSearchParams(window.location.search)
+    const organiserId = urlParams.get('organiser_id')
 
-    async function loadEvents() {
-      try {
-        const { data, error } = await supabase
-          .from('events')
-          .select(`
-            id,
-            event_name,
-            event_date,
-            event_time,
-            venues:venue_id (
-              venue_name,
-              street_name
-            )
-          `)
-          .eq('organiser_id', organiserId)
-          .eq('publish_status', 'published')
-          .order('event_date', { ascending: true });
+    async function fetchEvents() {
+      if (!organiserId) return
 
-        if (error) {
-          container.innerHTML = `<p class="error">Supabase error: ${error.message}</p>`;
-          return;
-        }
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          event_name,
+          event_date,
+          event_time,
+          venue_id,
+          venues ( venue_name, street_name )
+        `)
+        .eq('organiser_id', organiserId)
+        .order('event_date', { ascending: true })
 
-        if (!data || data.length === 0) {
-          container.innerHTML = '<p class="error">No events found for this organiser.</p>';
-          return;
-        }
-
-        container.innerHTML = '';
-        data.forEach(event => {
-          const div = document.createElement('div');
-          div.className = 'event-tile';
-
-          const date = event.event_date?.split('T')[0] || '';
-          const time = event.event_time?.split(':').slice(0, 2).join(':') || '';
-
-          div.innerHTML = `
-            <div class="event-info">
-              <div class="event-name">${event.event_name || 'Untitled Event'}</div>
-              <div class="event-meta">${event.venues?.venue_name || 'Unknown Venue'}</div>
-              <div class="event-meta">${event.venues?.street_name || ''}</div>
-            </div>
-            <div class="event-datetime">
-              ${date}<br>${time}
-            </div>
-          `;
-
-          container.appendChild(div);
-        });
-      } catch (err) {
-        container.innerHTML = `<p class="error">Unexpected error: ${err.message}</p>`;
+      if (error) {
+        console.error('Error fetching events:', error)
+        return
       }
+
+      const eventList = document.getElementById('eventList')
+      eventList.innerHTML = ''
+
+      data.forEach(event => {
+        const tile = document.createElement('div')
+        tile.className = 'event-tile'
+
+        const left = document.createElement('div')
+        left.className = 'event-left'
+        left.innerHTML = `
+          <div class="event-title">${event.event_name}</div>
+          <div class="event-venue">${event.venues?.venue_name || ''}</div>
+          <div class="event-venue">${event.venues?.street_name || ''}</div>
+        `
+
+        const right = document.createElement('div')
+        right.className = 'event-right'
+        right.innerHTML = `
+          ${event.event_date || ''}<br>
+          ${event.event_time?.slice(0,5) || ''}
+        `
+
+        tile.appendChild(left)
+        tile.appendChild(right)
+        eventList.appendChild(tile)
+      })
     }
+
+    fetchEvents()
   </script>
 </body>
 </html>
