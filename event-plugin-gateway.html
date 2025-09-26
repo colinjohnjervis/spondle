@@ -2,90 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Plugin iFrame Gateway</title>
+  <title>Plugin Gateway</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: sans-serif;
-      background: #f9f9f9;
       margin: 0;
-      padding: 2rem;
+      padding: 1rem;
+      background: #f8f8f8;
     }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+    .wrapper {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: 0 auto;
     }
+
     h1 {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       margin-bottom: 1rem;
     }
-    ul {
-      padding-left: 1rem;
+
+    .event {
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #ddd;
     }
-    li {
-      margin-bottom: 0.75rem;
+
+    .event h2 {
+      font-size: 1.1rem;
+      margin: 0 0 0.25rem;
     }
+
+    .event .meta {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
     .error {
       color: red;
       font-weight: bold;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="container">
+  <div class="wrapper">
     <h1>Plugin iFrame Test Page</h1>
-    <div id="eventList">Loading...</div>
+    <div id="eventList">Loading events...</div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+  <script>
+    const organiserId = new URLSearchParams(window.location.search).get('organiser_id');
 
-    const supabase = createClient(
-      "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-    );
+    const supabaseUrl = "https://jvuunvnbpdfrttusgelz.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-    const params = new URLSearchParams(window.location.search);
-    const organiserId = params.get("organiser_id");
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    async function fetchEvents() {
-      if (!organiserId) {
-        document.getElementById("eventList").innerHTML = `<p class="error">Missing organiser_id in query string</p>`;
-        return;
-      }
-
+    async function loadEvents() {
       const { data, error } = await supabase
         .from("events")
-        .select("id, title, date, time, venue_id, venues:venue_id(name)")
+        .select(`
+          id,
+          title,
+          event_date,
+          event_time,
+          ticket_url,
+          venues (
+            venue_name,
+            street_name
+          )
+        `)
         .eq("organiser_id", organiserId)
-        .order("date", { ascending: true });
+        .order("event_date", { ascending: true });
+
+      const eventList = document.getElementById("eventList");
 
       if (error) {
-        document.getElementById("eventList").innerHTML = `<p class="error">Error fetching events: ${error.message}</p>`;
+        console.error(error);
+        eventList.innerHTML = `<p class="error">Error fetching events: ${error.message}</p>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        document.getElementById("eventList").innerHTML = `<p>No events found.</p>`;
+        eventList.innerHTML = `<p>No events found for this organiser.</p>`;
         return;
       }
 
-      const list = document.createElement("ul");
-      data.forEach((event) => {
-        const li = document.createElement("li");
-        li.textContent = `${event.title} – ${event.date} ${event.time} @ ${event.venues?.name || "Unknown venue"}`;
-        list.appendChild(li);
-      });
-
-      document.getElementById("eventList").innerHTML = "";
-      document.getElementById("eventList").appendChild(list);
+      eventList.innerHTML = data.map(event => `
+        <div class="event">
+          <h2>${event.title}</h2>
+          <div class="meta">
+            ${event.event_date || 'TBC'} @ ${event.event_time || 'TBC'}<br>
+            ${event.venues?.venue_name || 'Unknown Venue'}, ${event.venues?.street_name || ''}
+          </div>
+          ${event.ticket_url ? `<div><a href="${event.ticket_url}" target="_blank">Tickets</a></div>` : ''}
+        </div>
+      `).join('');
     }
 
-    fetchEvents();
+    loadEvents();
   </script>
 </body>
 </html>
