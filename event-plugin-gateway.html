@@ -5,66 +5,78 @@
   <title>Upcoming Events – Embedded View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      color-scheme: dark;
+    }
+
     body {
       font-family: system-ui, sans-serif;
-      background: #f4f4f4;
       margin: 0;
-      padding: 2rem;
-      color: #111;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: #fff;
+      background-color: #0f172a;
+      color: #e2e8f0;
       padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
-    h2 {
-      margin-top: 0;
-      font-size: 1.4rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      color: #222;
-    }
-
-    .event {
-      border: 1px solid #e5e5e5;
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      background: #fafafa;
-    }
-
-    .event-title {
+    .title {
+      font-size: 1.5rem;
       font-weight: 600;
-      font-size: 1.05rem;
-      margin-bottom: 0.4rem;
+      margin-bottom: 1.5rem;
+      color: #f1f5f9;
+    }
+
+    .event-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .event-tile {
+      background-color: #1e293b;
+      padding: 1rem 1.25rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .event-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .event-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #f8fafc;
     }
 
     .event-meta {
-      font-size: 0.92rem;
-      color: #555;
-      line-height: 1.4;
+      font-size: 0.875rem;
+      color: #cbd5e1;
+    }
+
+    .event-datetime {
+      text-align: right;
+      font-size: 0.875rem;
+      color: #94a3b8;
+      white-space: nowrap;
     }
 
     .error {
-      color: red;
-      text-align: center;
+      color: #f87171;
       font-weight: bold;
-      background: #ffeaea;
+      background: #1e293b;
       padding: 1rem;
-      border-radius: 8px;
+      border-radius: 0.5rem;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Upcoming Events – Embedded View</h2>
-    <div id="events">Loading events...</div>
-  </div>
+  <h2 class="title">Upcoming Events – Embedded View</h2>
+  <div id="events" class="event-list">Loading events...</div>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -79,57 +91,61 @@
     if (!organiserId) {
       container.innerHTML = '<p class="error">Error: organiser_id missing in URL</p>';
     } else {
-      loadEvents().catch(err => {
-        container.innerHTML = `<p class="error">Unexpected error: ${err.message}</p>`;
-      });
+      loadEvents();
     }
 
     async function loadEvents() {
-      const { data, error } = await supabase
-        .from('events')
-        .select(`
-          id,
-          event_name,
-          event_date,
-          event_time,
-          venues:venue_id (
-            venue_name,
-            street_name
-          )
-        `)
-        .eq('organiser_id', organiserId)
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select(`
+            id,
+            event_name,
+            event_date,
+            event_time,
+            venues:venue_id (
+              venue_name,
+              street_name
+            )
+          `)
+          .eq('organiser_id', organiserId)
+          .eq('publish_status', 'published')
+          .order('event_date', { ascending: true });
 
-      if (error) {
-        container.innerHTML = `<p class="error">Supabase error: ${error.message}</p>`;
-        return;
+        if (error) {
+          container.innerHTML = `<p class="error">Supabase error: ${error.message}</p>`;
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p class="error">No events found for this organiser.</p>';
+          return;
+        }
+
+        container.innerHTML = '';
+        data.forEach(event => {
+          const div = document.createElement('div');
+          div.className = 'event-tile';
+
+          const date = event.event_date?.split('T')[0] || '';
+          const time = event.event_time?.split(':').slice(0, 2).join(':') || '';
+
+          div.innerHTML = `
+            <div class="event-info">
+              <div class="event-name">${event.event_name || 'Untitled Event'}</div>
+              <div class="event-meta">${event.venues?.venue_name || 'Unknown Venue'}</div>
+              <div class="event-meta">${event.venues?.street_name || ''}</div>
+            </div>
+            <div class="event-datetime">
+              ${date}<br>${time}
+            </div>
+          `;
+
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = `<p class="error">Unexpected error: ${err.message}</p>`;
       }
-
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p style="text-align:center;">No upcoming events found.</p>';
-        return;
-      }
-
-      container.innerHTML = '';
-      data.forEach(event => {
-        const eventCard = document.createElement('div');
-        eventCard.className = 'event';
-
-        const formattedTime = event.event_time?.substring(0, 5) || ''; // HH:MM
-        const formattedDate = event.event_date || '';
-
-        eventCard.innerHTML = `
-          <div class="event-title">${event.event_name || 'Untitled Event'}</div>
-          <div class="event-meta">
-            ${formattedDate} at ${formattedTime}<br>
-            ${event.venues?.venue_name || 'Unknown Venue'}<br>
-            ${event.venues?.street_name || ''}
-          </div>
-        `;
-
-        container.appendChild(eventCard);
-      });
     }
   </script>
 </body>
