@@ -55,28 +55,35 @@
   </div>
 
   <script type="module">
-    const organiserId = new URLSearchParams(window.location.search).get('organiser_id');
-
-    if (!organiserId) {
-      document.getElementById('events').innerHTML = '<p class="error">Error: organiser_id missing in URL</p>';
-      throw new Error('organiser_id not provided');
-    }
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const client = supabase.createClient(supabaseUrl, supabaseKey);
+    const organiserId = new URLSearchParams(window.location.search).get('organiser_id');
+
+    const container = document.getElementById('events');
+
+    if (!organiserId) {
+      container.innerHTML = '<p class="error">Error: organiser_id missing in URL</p>';
+    } else {
+      try {
+        loadEvents();
+      } catch (err) {
+        container.innerHTML = `<p class="error">Unexpected error: ${err.message}</p>`;
+      }
+    }
 
     async function loadEvents() {
       try {
-        const { data, error } = await client
+        const { data, error } = await supabase
           .from('events')
           .select(`
             id,
             event_name,
             event_date,
             event_time,
-            venue_id,
             venues:venue_id (
               venue_name,
               street_name
@@ -86,22 +93,23 @@
           .eq('publish_status', 'published')
           .order('event_date', { ascending: true });
 
-        if (error) throw error;
-
-        const container = document.getElementById('events');
-        container.innerHTML = '';
+        if (error) {
+          container.innerHTML = `<p class="error">Supabase error: ${error.message}</p>`;
+          return;
+        }
 
         if (!data || data.length === 0) {
           container.innerHTML = '<p>No events found for this organiser.</p>';
           return;
         }
 
+        container.innerHTML = '';
         data.forEach(event => {
           const div = document.createElement('div');
           div.className = 'event';
 
           div.innerHTML = `
-            <div class="event-title">${event.event_name}</div>
+            <div class="event-title">${event.event_name || 'Untitled Event'}</div>
             <div class="event-meta">
               ${event.event_date || ''} at ${event.event_time || ''}<br/>
               ${event.venues?.venue_name || 'Unknown Venue'}<br/>
@@ -112,15 +120,9 @@
           container.appendChild(div);
         });
       } catch (err) {
-        document.getElementById('events').innerHTML = `<p class="error">Error fetching events: ${err.message}</p>`;
-        console.error('Fetch error:', err);
+        container.innerHTML = `<p class="error">Error loading events: ${err.message}</p>`;
       }
     }
-
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    loadEvents();
   </script>
 </body>
 </html>
