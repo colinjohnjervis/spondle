@@ -2,110 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Plugin Gateway</title>
+  <title>Plugin iFrame Test Page</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: sans-serif;
+      background: #f9f9f9;
       margin: 0;
-      padding: 1rem;
-      background: #f8f8f8;
+      padding: 2rem;
     }
 
-    .wrapper {
-      background: #fff;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      max-width: 800px;
+    .container {
+      max-width: 600px;
       margin: 0 auto;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.06);
     }
 
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+    h2 {
+      margin-top: 0;
     }
 
-    .event {
-      margin-bottom: 1rem;
-      padding-bottom: 0.75rem;
-      border-bottom: 1px solid #ddd;
-    }
-
-    .event h2 {
-      font-size: 1.1rem;
-      margin: 0 0 0.25rem;
-    }
-
-    .event .meta {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .error {
-      color: red;
-      font-weight: bold;
+    pre {
+      background: #eee;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="wrapper">
-    <h1>Plugin iFrame Test Page</h1>
-    <div id="eventList">Loading events...</div>
+  <div class="container">
+    <h2>Plugin iFrame Test Page</h2>
+    <div id="event-list">
+      <p>Loading events...</p>
+    </div>
   </div>
 
-  <script>
-    const organiserId = new URLSearchParams(window.location.search).get('organiser_id');
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = "https://jvuunvnbpdfrttusgelz.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
 
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    async function loadEvents() {
-      const { data, error } = await supabase
-        .from("events")
+    const urlParams = new URLSearchParams(window.location.search);
+    const organiser_id = urlParams.get('organiser_id');
+
+    const eventList = document.getElementById('event-list');
+
+    if (!organiser_id) {
+      eventList.innerHTML = `<p style="color: red;">Error: organiser_id missing in query string</p>`;
+    } else {
+      supabase
+        .from('events')
         .select(`
           id,
-          title,
-          event_date,
-          event_time,
-          ticket_url,
+          event_name,
+          description,
+          image_url,
+          start_date,
+          start_time,
+          venue_id,
           venues (
             venue_name,
             street_name
           )
         `)
-        .eq("organiser_id", organiserId)
-        .order("event_date", { ascending: true });
-
-      const eventList = document.getElementById("eventList");
-
-      if (error) {
-        console.error(error);
-        eventList.innerHTML = `<p class="error">Error fetching events: ${error.message}</p>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        eventList.innerHTML = `<p>No events found for this organiser.</p>`;
-        return;
-      }
-
-      eventList.innerHTML = data.map(event => `
-        <div class="event">
-          <h2>${event.title}</h2>
-          <div class="meta">
-            ${event.event_date || 'TBC'} @ ${event.event_time || 'TBC'}<br>
-            ${event.venues?.venue_name || 'Unknown Venue'}, ${event.venues?.street_name || ''}
-          </div>
-          ${event.ticket_url ? `<div><a href="${event.ticket_url}" target="_blank">Tickets</a></div>` : ''}
-        </div>
-      `).join('');
+        .eq('organiser_id', organiser_id)
+        .eq('publish_status', 'published')
+        .then(({ data, error }) => {
+          if (error) {
+            eventList.innerHTML = `<p style="color: red;">Error fetching events: ${error.message}</p>`;
+          } else if (!data || data.length === 0) {
+            eventList.innerHTML = `<p style="color: orange;">No events found for this organiser_id</p>`;
+          } else {
+            eventList.innerHTML = `
+              <p style="color: green;">Events loaded successfully!</p>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+          }
+        });
     }
-
-    loadEvents();
   </script>
 </body>
 </html>
