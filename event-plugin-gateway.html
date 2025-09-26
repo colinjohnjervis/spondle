@@ -2,66 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Upcoming Events – Embedded View</title>
+  <title>Plugin Gateway</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      margin: 0;
       font-family: system-ui, sans-serif;
-      background: #f6f8fa;
-      color: #111;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 2rem;
     }
 
     .container {
       max-width: 700px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
 
-    h1 {
+    h2 {
       font-size: 1.8rem;
       margin-bottom: 1.5rem;
-      color: #222;
+      text-align: center;
+      color: #333;
     }
 
-    .event-card {
-      background: white;
+    .event {
+      background: #fafafa;
+      border: 1px solid #e2e2e2;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 1.5rem;
-      transition: box-shadow 0.2s ease;
-    }
-
-    .event-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
     }
 
     .event-title {
-      font-size: 1.2rem;
       font-weight: 600;
-      margin-bottom: 0.4rem;
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+      color: #222;
     }
 
     .event-meta {
+      color: #555;
       font-size: 0.95rem;
-      color: #444;
-      margin-bottom: 0.2rem;
+      line-height: 1.4;
     }
 
     .error {
-      color: red;
+      color: #d32f2f;
       font-weight: bold;
+      text-align: center;
+      background: #ffecec;
       padding: 1rem;
-      background: #fff0f0;
-      border-radius: 8px;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Upcoming Events – Embedded View</h1>
-    <div id="events-container"></div>
+    <h2>Upcoming Events – Embedded View</h2>
+    <div id="events">Loading events...</div>
   </div>
 
   <script type="module">
@@ -71,48 +72,67 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const organiserId = urlParams.get('organiser_id');
+    const organiserId = new URLSearchParams(window.location.search).get('organiser_id');
+    const container = document.getElementById('events');
 
-    async function loadEvents() {
-      const { data, error } = await supabase
-        .from('events')
-        .select(`
-          event_title,
-          event_date,
-          event_time,
-          venues ( venue_name )
-        `)
-        .eq('organiser_id', organiserId)
-        .order('event_date', { ascending: true });
-
-      const container = document.getElementById('events-container');
-
-      if (error) {
-        container.innerHTML = `<div class="error">Error fetching events: ${error.message}</div>`;
-        return;
+    if (!organiserId) {
+      container.innerHTML = '<p class="error">Error: organiser_id missing in URL</p>';
+    } else {
+      try {
+        loadEvents();
+      } catch (err) {
+        container.innerHTML = `<p class="error">Unexpected error: ${err.message}</p>`;
       }
-
-      if (!data || data.length === 0) {
-        container.innerHTML = `<p>No events found for this organiser.</p>`;
-        return;
-      }
-
-      data.forEach(event => {
-        const card = document.createElement('div');
-        card.className = 'event-card';
-
-        card.innerHTML = `
-          <div class="event-title">${event.event_title}</div>
-          <div class="event-meta">${event.event_date} at ${event.event_time}</div>
-          <div class="event-meta">${event.venues?.venue_name || 'Unknown Venue'}</div>
-        `;
-
-        container.appendChild(card);
-      });
     }
 
-    loadEvents();
+    async function loadEvents() {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select(`
+            id,
+            event_name,
+            event_date,
+            event_time,
+            venues:venue_id (
+              venue_name,
+              street_name
+            )
+          `)
+          .eq('organiser_id', organiserId)
+          .eq('publish_status', 'published')
+          .order('event_date', { ascending: true });
+
+        if (error) {
+          container.innerHTML = `<p class="error">Supabase error: ${error.message}</p>`;
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p>No events found for this organiser.</p>';
+          return;
+        }
+
+        container.innerHTML = '';
+        data.forEach(event => {
+          const div = document.createElement('div');
+          div.className = 'event';
+
+          div.innerHTML = `
+            <div class="event-title">${event.event_name || 'Untitled Event'}</div>
+            <div class="event-meta">
+              ${event.event_date || ''} at ${event.event_time || ''}<br/>
+              ${event.venues?.venue_name || 'Unknown Venue'}<br/>
+              ${event.venues?.street_name || ''}
+            </div>
+          `;
+
+          container.appendChild(div);
+        });
+      } catch (err) {
+        container.innerHTML = `<p class="error">Error loading events: ${err.message}</p>`;
+      }
+    }
   </script>
 </body>
 </html>
