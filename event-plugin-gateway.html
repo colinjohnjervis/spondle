@@ -6,82 +6,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-family: sans-serif;
       background: #f9f9f9;
-      color: #111;
       margin: 0;
-      padding: 20px;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       margin-bottom: 1rem;
     }
-    .event {
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: white;
+    ul {
+      padding-left: 1rem;
+    }
+    li {
+      margin-bottom: 0.75rem;
     }
     .error {
       color: red;
       font-weight: bold;
-      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>Plugin iFrame Test Page</h1>
-  <div id="events">Loading...</div>
+  <div class="container">
+    <h1>Plugin iFrame Test Page</h1>
+    <div id="eventList">Loading...</div>
+  </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabase = createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const organiserId = urlParams.get('organiser_id');
-
-    const container = document.getElementById('events');
+    const params = new URLSearchParams(window.location.search);
+    const organiserId = params.get("organiser_id");
 
     async function fetchEvents() {
+      if (!organiserId) {
+        document.getElementById("eventList").innerHTML = `<p class="error">Missing organiser_id in query string</p>`;
+        return;
+      }
+
       const { data, error } = await supabase
-        .from('events')
-        .select(`
-          id,
-          title,
-          date,
-          time,
-          venue_id,
-          venues:venue_id(name)
-        `)
-        .eq('organiser_id', organiserId)
-        .order('date', { ascending: true });
+        .from("events")
+        .select("id, title, date, time, venue_id, venues:venue_id(name)")
+        .eq("organiser_id", organiserId)
+        .order("date", { ascending: true });
 
       if (error) {
-        container.innerHTML = `<div class="error">Error fetching events: ${error.message}</div>`;
+        document.getElementById("eventList").innerHTML = `<p class="error">Error fetching events: ${error.message}</p>`;
         return;
       }
 
       if (!data || data.length === 0) {
-        container.innerHTML = '<p>No events found for this organiser.</p>';
+        document.getElementById("eventList").innerHTML = `<p>No events found.</p>`;
         return;
       }
 
-      container.innerHTML = '';
-      data.forEach(event => {
-        const div = document.createElement('div');
-        div.className = 'event';
-        div.innerHTML = `
-          <strong>${event.title}</strong><br>
-          ${event.date} @ ${event.time}<br>
-          Venue: ${event.venues?.name || 'N/A'}
-        `;
-        container.appendChild(div);
+      const list = document.createElement("ul");
+      data.forEach((event) => {
+        const li = document.createElement("li");
+        li.textContent = `${event.title} – ${event.date} ${event.time} @ ${event.venues?.name || "Unknown venue"}`;
+        list.appendChild(li);
       });
+
+      document.getElementById("eventList").innerHTML = "";
+      document.getElementById("eventList").appendChild(list);
     }
 
     fetchEvents();
