@@ -2,44 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Embedded Events</title>
+  <title>Upcoming Events – Embedded View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
+      margin: 0;
       font-family: system-ui, sans-serif;
       background-color: #0f172a;
-      color: #e2e8f0;
+      color: #f1f5f9;
+      padding: 1rem;
     }
 
     h2 {
       font-size: 1.25rem;
-      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .event-card {
+      background-color: #1e293b;
+      border-radius: 0.75rem;
       padding: 1rem;
-      color: #f1f5f9;
-      border-bottom: 1px solid #1e293b;
-    }
-
-    .event-list {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-    }
-
-    .event-tile {
+      margin-bottom: 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: #1e293b;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #334155;
-      font-size: 0.95rem;
-      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .event-left {
@@ -47,88 +34,102 @@
       flex-direction: column;
     }
 
-    .event-title {
-      font-weight: 600;
-      color: #f1f5f9;
+    .event-name {
+      font-weight: bold;
+      margin-bottom: 0.25rem;
     }
 
     .event-venue {
-      font-size: 0.85rem;
+      font-size: 0.875rem;
       color: #cbd5e1;
     }
 
-    .event-right {
+    .event-date-time {
       text-align: right;
-      font-size: 0.85rem;
+      font-size: 0.875rem;
       color: #94a3b8;
       white-space: nowrap;
+    }
+
+    @media (max-width: 480px) {
+      .event-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .event-date-time {
+        margin-top: 0.5rem;
+        text-align: left;
+      }
     }
   </style>
 </head>
 <body>
   <h2>Upcoming Events – Embedded View</h2>
-  <div class="event-list" id="eventList"></div>
+  <div id="events-container">Loading events...</div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const urlParams = new URLSearchParams(window.location.search);
+    const organiserId = urlParams.get('organiser_id');
 
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co'
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    if (!organiserId) {
+      document.getElementById('events-container').innerText = 'No organiser ID provided.';
+    } else {
+      const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
 
-    const supabase = createClient(supabaseUrl, supabaseKey)
+      const fetchEvents = async () => {
+        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const urlParams = new URLSearchParams(window.location.search)
-    const organiserId = urlParams.get('organiser_id')
+        const { data, error } = await supabase
+          .from('events')
+          .select(`
+            event_name,
+            event_date,
+            event_time,
+            venues (
+              venue_name,
+              street_name
+            )
+          `)
+          .eq('organiser_id', organiserId)
+          .order('event_date', { ascending: true });
 
-    async function fetchEvents() {
-      if (!organiserId) return
+        const container = document.getElementById('events-container');
+        container.innerHTML = '';
 
-      const { data, error } = await supabase
-        .from('events')
-        .select(`
-          event_name,
-          event_date,
-          event_time,
-          venue_id,
-          venues ( venue_name, street_name )
-        `)
-        .eq('organiser_id', organiserId)
-        .order('event_date', { ascending: true })
+        if (error) {
+          container.innerText = 'Error loading events.';
+          console.error(error);
+          return;
+        }
 
-      if (error) {
-        console.error('Error fetching events:', error)
-        return
-      }
+        if (!data || data.length === 0) {
+          container.innerText = 'No upcoming events.';
+          return;
+        }
 
-      const eventList = document.getElementById('eventList')
-      eventList.innerHTML = ''
+        data.forEach(event => {
+          const eventCard = document.createElement('div');
+          eventCard.className = 'event-card';
 
-      data.forEach(event => {
-        const tile = document.createElement('div')
-        tile.className = 'event-tile'
+          eventCard.innerHTML = `
+            <div class="event-left">
+              <div class="event-name">${event.event_name}</div>
+              <div class="event-venue">${event.venues?.venue_name || ''}</div>
+              <div class="event-venue">${event.venues?.street_name || ''}</div>
+            </div>
+            <div class="event-date-time">
+              ${event.event_date || ''}<br>${event.event_time || ''}
+            </div>
+          `;
 
-        const left = document.createElement('div')
-        left.className = 'event-left'
-        left.innerHTML = `
-          <div class="event-title">${event.event_name}</div>
-          <div class="event-venue">${event.venues?.venue_name || ''}</div>
-          <div class="event-venue">${event.venues?.street_name || ''}</div>
-        `
+          container.appendChild(eventCard);
+        });
+      };
 
-        const right = document.createElement('div')
-        right.className = 'event-right'
-        right.innerHTML = `
-          ${event.event_date || ''}<br>
-          ${event.event_time?.slice(0,5) || ''}
-        `
-
-        tile.appendChild(left)
-        tile.appendChild(right)
-        eventList.appendChild(tile)
-      })
+      fetchEvents();
     }
-
-    fetchEvents()
   </script>
 </body>
 </html>
