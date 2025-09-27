@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8" />
   <title>Upcoming Events – Embedded View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,132 +9,152 @@
       --bg: #ffffff;
       --text: #000000;
     }
+
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
       background-color: var(--bg);
       color: var(--text);
       padding: 1rem;
-    }h2 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-}
+    }
 
-.event-card {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 1rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  width: 100%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+    .wrapper {
+      max-width: 640px;
+      margin: 0 auto;
+    }
 
-.event-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
 
-.event-venue {
-  font-size: 0.95rem;
-  margin-bottom: 0.15rem;
-}
+    .event-card {
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-.event-date-time {
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  color: inherit;
-}
+    .event-left {
+      display: flex;
+      flex-direction: column;
+    }
 
-@media (min-width: 481px) {
-  .event-card {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 1rem;
-    align-items: center;
-  }
-  .event-date-time {
-    text-align: right;
-  }
-}
+    .event-name {
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
 
+    .event-venue {
+      font-size: 0.875rem;
+      color: inherit;
+    }
+
+    .event-date-time {
+      text-align: right;
+      font-size: 0.875rem;
+      color: inherit;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 480px) {
+      .event-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .event-date-time {
+        margin-top: 0.5rem;
+        text-align: left;
+      }
+    }
   </style>
 </head>
 <body>
-  <h2>Upcoming Events – Embedded View</h2>
-  <div id="events-container">Loading events...</div>
+  <div class="wrapper">
+    <h2>Upcoming Events – Embedded View</h2>
+    <div id="events-container">Loading events...</div>
+  </div>
+
   <script type="module">
     const urlParams = new URLSearchParams(window.location.search);
     const organiserId = urlParams.get('organiser_id');
     const bgColor = urlParams.get('bg') || 'ffffff';
-    const textColor = urlParams.get('text') || '000000';document.documentElement.style.setProperty('--bg', `#${bgColor}`);
-document.documentElement.style.setProperty('--text', `#${textColor}`);
+    const textColor = urlParams.get('text') || '000000';
 
-if (!organiserId) {
-  document.getElementById('events-container').innerText = 'No organiser ID provided.';
-} else {
-  const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    // Apply background and text colours dynamically
+    document.documentElement.style.setProperty('--bg', `#${bgColor}`);
+    document.documentElement.style.setProperty('--text', `#${textColor}`);
 
-  const fetchEvents = async () => {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    if (!organiserId) {
+      document.getElementById('events-container').innerText = 'No organiser ID provided.';
+    } else {
+      const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
 
-    const { data, error } = await supabase
-      .from('events')
-      .select(`
-        event_name,
-        event_date,
-        event_time,
-        venues (
-          venue_name,
-          street_name
-        )
-      `)
-      .eq('organiser_id', organiserId)
-      .order('event_date', { ascending: true });
+      const fetchEvents = async () => {
+        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
+        const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const container = document.getElementById('events-container');
-    container.innerHTML = '';
+        const { data, error } = await supabase
+          .from('events')
+          .select(`
+            event_name,
+            event_date,
+            event_time,
+            venues (
+              venue_name,
+              street_name
+            )
+          `)
+          .eq('organiser_id', organiserId)
+          .order('event_date', { ascending: true });
 
-    if (error) {
-      container.innerText = 'Error loading events.';
-      console.error(error);
-      return;
+        const container = document.getElementById('events-container');
+        container.innerHTML = '';
+
+        if (error) {
+          container.innerText = 'Error loading events.';
+          console.error(error);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          container.innerText = 'No upcoming events.';
+          return;
+        }
+
+        data.forEach(event => {
+          const eventCard = document.createElement('div');
+          eventCard.className = 'event-card';
+
+          eventCard.innerHTML = `
+            <div class="event-left">
+              <div class="event-name">${event.event_name}</div>
+              <div class="event-venue">${event.venues?.venue_name || ''}</div>
+              <div class="event-venue">${event.venues?.street_name || ''}</div>
+            </div>
+            <div class="event-date-time">
+              ${event.event_date || ''}<br>${event.event_time || ''}
+            </div>
+          `;
+
+          container.appendChild(eventCard);
+        });
+
+        // Send the iframe height to the parent
+        setTimeout(() => {
+          const height = document.documentElement.scrollHeight;
+          parent.postMessage({ type: 'SPONDLE_IFRAME_HEIGHT', height }, '*');
+        }, 100);
+      };
+
+      fetchEvents();
     }
-
-    if (!data || data.length === 0) {
-      container.innerText = 'No upcoming events.';
-      return;
-    }
-
-    data.forEach(event => {
-      const eventCard = document.createElement('div');
-      eventCard.className = 'event-card';
-
-      eventCard.innerHTML = `
-        <div>
-          <div class="event-name">${event.event_name}</div>
-          <div class="event-venue">${event.venues?.venue_name || ''}</div>
-          <div class="event-venue">${event.venues?.street_name || ''}</div>
-        </div>
-        <div class="event-date-time">
-          ${event.event_date || ''}<br>${event.event_time || ''}
-        </div>
-      `;
-
-      container.appendChild(eventCard);
-    });
-
-    setTimeout(() => {
-      const height = document.documentElement.scrollHeight;
-      parent.postMessage({ type: 'SPONDLE_IFRAME_HEIGHT', height }, '*');
-    }, 100);
-  };
-
-  fetchEvents();
-}
-
   </script>
 </body>
 </html>
