@@ -2,56 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Event Plugin Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: ui-sans-serif, system-ui, sans-serif;
       padding: 20px;
-      background: #fafafa;
+      max-width: 600px;
+      margin: auto;
+      background-color: #f9f9f9;
     }
 
     h1 {
-      font-size: 24px;
+      font-size: 1.75rem;
       font-weight: bold;
       margin-bottom: 20px;
     }
 
     label {
-      font-weight: bold;
+      font-weight: 600;
       display: block;
-      margin-top: 20px;
-      margin-bottom: 5px;
+      margin: 15px 0 5px;
     }
 
     input, select, textarea, button {
       width: 100%;
       padding: 10px;
-      font-size: 16px;
-      margin-bottom: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
-      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    textarea {
+      height: 180px;
+      font-family: monospace;
+      white-space: pre;
+      margin-top: 10px;
     }
 
     button {
-      background-color: black;
+      margin-top: 20px;
+      background-color: #111;
       color: white;
-      border: none;
+      font-weight: bold;
       cursor: pointer;
     }
 
     button:hover {
-      background-color: #333;
+      background-color: #000;
     }
 
-    textarea {
-      height: 160px;
-      font-family: monospace;
+    .section-title {
+      margin-top: 30px;
+      font-weight: bold;
+      font-size: 1.1rem;
     }
   </style>
 </head>
 <body>
+
   <h1>Event Plugin Generator</h1>
 
   <label for="organiserId">Your Organiser ID</label>
@@ -71,7 +80,7 @@
 
   <button id="generateBtn">Generate Plugin Code</button>
 
-  <label for="pluginCode">Your Copyable Plugin Code</label>
+  <div class="section-title">Your Copyable Plugin Code</div>
   <textarea id="pluginCode" readonly placeholder="Please enter your organiser ID."></textarea>
 
   <script>
@@ -105,28 +114,17 @@
       }
     }
   });
-</script>`;
+<\/script>`;
 
       codeOutput.value = pluginCode;
     }
 
-    organiserInput.addEventListener('input', () => {
-      codeOutput.value = '';
-    });
-
-    bgInput.addEventListener('input', () => {
-      codeOutput.value = '';
-    });
-
-    textInput.addEventListener('input', () => {
-      codeOutput.value = '';
-    });
-
-    styleSelect.addEventListener('change', () => {
-      codeOutput.value = '';
-    });
-
+    organiserInput.addEventListener('input', () => { codeOutput.value = ''; });
+    bgInput.addEventListener('input', () => { codeOutput.value = ''; });
+    textInput.addEventListener('input', () => { codeOutput.value = ''; });
+    styleSelect.addEventListener('change', () => { codeOutput.value = ''; });
     generateBtn.addEventListener('click', updateCode);
   </script>
+
 </body>
 </html>
