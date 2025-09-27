@@ -1,75 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Upcoming Events – Embedded View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
+  <style id="dynamicStyles">
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
-      background-color: #0f172a;
-      color: #f1f5f9;
       padding: 1rem;
-    }
+    }h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
 
-    h2 {
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
-    }
+.event-card {
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-    .event-card {
-      background-color: #1e293b;
-      border-radius: 0.75rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+.event-left {
+  display: flex;
+  flex-direction: column;
+}
 
-    .event-left {
-      display: flex;
-      flex-direction: column;
-    }
+.event-name {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
 
-    .event-name {
-      font-weight: bold;
-      margin-bottom: 0.25rem;
-    }
+.event-venue {
+  font-size: 0.875rem;
+}
 
-    .event-venue {
-      font-size: 0.875rem;
-      color: #cbd5e1;
-    }
+.event-date-time {
+  text-align: right;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
 
-    .event-date-time {
-      text-align: right;
-      font-size: 0.875rem;
-      color: #94a3b8;
-      white-space: nowrap;
-    }
+@media (max-width: 480px) {
+  .event-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .event-date-time {
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+}
 
-    @media (max-width: 480px) {
-      .event-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .event-date-time {
-        margin-top: 0.5rem;
-        text-align: left;
-      }
-    }
   </style>
 </head>
 <body>
   <h2>Upcoming Events – Embedded View</h2>
-  <div id="events-container">Loading events...</div>
-
-  <script type="module">
+  <div id="events-container">Loading events...</div>  <script type="module">
     const urlParams = new URLSearchParams(window.location.search);
     const organiserId = urlParams.get('organiser_id');
+    const bgColor = urlParams.get('bg') || '#0f172a';
+    const textColor = urlParams.get('text') || '#f1f5f9';
+
+    document.body.style.backgroundColor = `#${bgColor}`;
+    document.body.style.color = `#${textColor}`;
+
+    const styleTag = document.getElementById("dynamicStyles");
+    styleTag.innerHTML += `
+      .event-card {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: #${textColor};
+      }
+      .event-venue, .event-date-time {
+        color: #${textColor}99;
+      }
+    `;
 
     if (!organiserId) {
       document.getElementById('events-container').innerText = 'No organiser ID provided.';
@@ -130,6 +137,5 @@
 
       fetchEvents();
     }
-  </script>
-</body>
+  </script></body>
 </html>
