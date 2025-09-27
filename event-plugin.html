@@ -102,7 +102,14 @@
         return;
       }
 
-      const iframeSrc = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}&style=${style}&bg=${bg}&text=${text}`;
+      // Construct query string safely
+      const queryParams = new URLSearchParams();
+      queryParams.set('organiser_id', organiserId);
+      if (style) queryParams.set('style', style);
+      if (bg) queryParams.set('bg', bg);
+      if (text) queryParams.set('text', text);
+
+      const iframeSrc = `https://spondle-uk.vercel.app/event-plugin-gateway.html?${queryParams.toString()}`;
 
       const pluginCode = `<iframe src="${iframeSrc}" width="100%" frameborder="0" style="border:none;overflow:hidden;" onload="this.contentWindow.postMessage({type: 'SPONDLE_REQUEST_HEIGHT'}, '*');"></iframe>
 <script>
@@ -119,10 +126,11 @@
       codeOutput.value = pluginCode;
     }
 
-    organiserInput.addEventListener('input', () => { codeOutput.value = ''; });
-    bgInput.addEventListener('input', () => { codeOutput.value = ''; });
-    textInput.addEventListener('input', () => { codeOutput.value = ''; });
-    styleSelect.addEventListener('change', () => { codeOutput.value = ''; });
+    // Clear output on edits
+    organiserInput.addEventListener('input', () => codeOutput.value = '');
+    bgInput.addEventListener('input', () => codeOutput.value = '');
+    textInput.addEventListener('input', () => codeOutput.value = '');
+    styleSelect.addEventListener('change', () => codeOutput.value = '');
     generateBtn.addEventListener('click', updateCode);
   </script>
 
