@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Upcoming Events – Embedded View</title>
@@ -8,72 +7,69 @@
     :root {
       --bg: #ffffff;
       --text: #000000;
-    }
+    }body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  padding: 1rem;
+}
 
-    body {
-      margin: 0;
-      font-family: system-ui, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 1rem;
-    }
+h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
 
-    h2 {
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
-    }
+.event-card {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    .event-card {
-      background-color: rgba(0, 0, 0, 0.05);
-      border-radius: 0.75rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+.event-left {
+  display: flex;
+  flex-direction: column;
+}
 
-    .event-left {
-      display: flex;
-      flex-direction: column;
-    }
+.event-name {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
 
-    .event-name {
-      font-weight: bold;
-      margin-bottom: 0.25rem;
-    }
+.event-venue {
+  font-size: 0.875rem;
+  color: inherit;
+}
 
-    .event-venue {
-      font-size: 0.875rem;
-      color: inherit;
-    }
+.event-date-time {
+  text-align: right;
+  font-size: 0.875rem;
+  color: inherit;
+  white-space: nowrap;
+}
 
-    .event-date-time {
-      text-align: right;
-      font-size: 0.875rem;
-      color: inherit;
-      white-space: nowrap;
-    }
+@media (max-width: 480px) {
+  .event-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .event-date-time {
+    margin-top: 0.5rem;
+    text-align: left;
+  }
+}
 
-    @media (max-width: 480px) {
-      .event-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .event-date-time {
-        margin-top: 0.5rem;
-        text-align: left;
-      }
-    }
   </style>
 </head>
 <body>
   <h2>Upcoming Events – Embedded View</h2>
-  <div id="events-container">Loading events...</div>
-
-  <script type="module">
+  <div id="events-container">Loading events...</div>  <script type="module">
     const urlParams = new URLSearchParams(window.location.search);
     const organiserId = urlParams.get('organiser_id');
     const bgColor = urlParams.get('bg') || 'ffffff';
@@ -138,10 +134,15 @@
 
           container.appendChild(eventCard);
         });
+
+        // Send the iframe height to the parent
+        setTimeout(() => {
+          const height = document.documentElement.scrollHeight;
+          parent.postMessage({ type: 'SPONDLE_IFRAME_HEIGHT', height }, '*');
+        }, 100);
       };
 
       fetchEvents();
     }
-  </script>
-</body>
+  </script></body>
 </html>
