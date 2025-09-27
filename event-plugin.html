@@ -18,6 +18,7 @@
       font-family: monospace;
       font-size: 14px;
       margin-top: 1rem;
+      white-space: pre;
     }
 
     #errorLog {
@@ -78,6 +79,7 @@
   <textarea id="pluginCode" placeholder="Your plugin code will appear here..." readonly></textarea>
   <div id="errorLog"></div>
 
+  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
@@ -133,10 +135,9 @@
       }
     }
   });
-</script>`;
+<\/script>`;
 
         output.value = iframeCode;
-
       } catch (err) {
         errorBox.textContent = err.message || err.toString();
         errorBox.style.display = "block";
