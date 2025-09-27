@@ -26,7 +26,7 @@
       margin-bottom: 0.3rem;
     }
 
-    input, select, textarea {
+    input, select, textarea, button {
       width: 100%;
       padding: 10px;
       font-size: 1rem;
@@ -39,13 +39,19 @@
       min-height: 200px;
       font-family: monospace;
     }
+
+    button {
+      background-color: #111;
+      color: #fff;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h1>Event Plugin Generator</h1>
 
   <label for="organiser">Your Organiser ID</label>
-  <input type="text" id="organiser" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
+  <input type="text" id="organiser" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" value="05c1463f-510d-4e40-a5fc-f5aa6138a716" />
 
   <label for="bg">Background Colour (Hex)</label>
   <input type="text" id="bg" placeholder="e.g. ffffff" />
@@ -59,6 +65,8 @@
     <option value="fixture">Fixture</option>
   </select>
 
+  <button id="generateBtn">Generate Plugin Code</button>
+
   <label for="output">Your Copyable Plugin Code</label>
   <textarea id="output" readonly></textarea>
 
@@ -68,6 +76,7 @@
     const textInput = document.getElementById('text');
     const styleSelect = document.getElementById('style');
     const output = document.getElementById('output');
+    const generateBtn = document.getElementById('generateBtn');
 
     function updateCode() {
       const organiser = organiserInput.value.trim();
@@ -98,14 +107,23 @@ window.addEventListener('message', function(event) {
   }
 });
 <\/script>`;
+
+      // Optional: auto-select textarea content
+      output.focus();
+      output.select();
     }
 
+    // Auto-generate on field change
     organiserInput.addEventListener('input', updateCode);
     bgInput.addEventListener('input', updateCode);
     textInput.addEventListener('input', updateCode);
     styleSelect.addEventListener('change', updateCode);
 
-    updateCode(); // Trigger on load
+    // Manual generate on button click
+    generateBtn.addEventListener('click', updateCode);
+
+    // Initial output
+    updateCode();
   </script>
 </body>
 </html>
