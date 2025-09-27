@@ -6,124 +6,127 @@
   <title>Event Plugin Generator</title>
   <style>
     body {
-      font-family: system-ui, sans-serif;
-      padding: 2rem;
-      background: #fff;
-      color: #000;
-      max-width: 600px;
-      margin: auto;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fafafa;
     }
 
     h1 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
 
     label {
-      display: block;
       font-weight: bold;
-      margin-top: 1.5rem;
-      margin-bottom: 0.3rem;
+      display: block;
+      margin-top: 20px;
+      margin-bottom: 5px;
     }
 
     input, select, textarea, button {
       width: 100%;
       padding: 10px;
-      font-size: 1rem;
-      margin-bottom: 1rem;
+      font-size: 16px;
+      margin-bottom: 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    textarea {
-      min-height: 200px;
-      font-family: monospace;
+      box-sizing: border-box;
     }
 
     button {
-      background-color: #111;
-      color: #fff;
+      background-color: black;
+      color: white;
+      border: none;
       cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #333;
+    }
+
+    textarea {
+      height: 160px;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
   <h1>Event Plugin Generator</h1>
 
-  <label for="organiser">Your Organiser ID</label>
-  <input type="text" id="organiser" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" value="05c1463f-510d-4e40-a5fc-f5aa6138a716" />
+  <label for="organiserId">Your Organiser ID</label>
+  <input type="text" id="organiserId" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
 
-  <label for="bg">Background Colour (Hex)</label>
-  <input type="text" id="bg" placeholder="e.g. ffffff" />
+  <label for="bgColor">Background Colour (Hex)</label>
+  <input type="text" id="bgColor" placeholder="e.g. ffffff" />
 
-  <label for="text">Text Colour (Hex)</label>
-  <input type="text" id="text" placeholder="e.g. 000000" />
+  <label for="textColor">Text Colour (Hex)</label>
+  <input type="text" id="textColor" placeholder="e.g. 000000" />
 
-  <label for="style">Plugin Style</label>
-  <select id="style">
+  <label for="styleSelect">Plugin Style</label>
+  <select id="styleSelect">
     <option value="default">Default</option>
     <option value="fixture">Fixture</option>
   </select>
 
   <button id="generateBtn">Generate Plugin Code</button>
 
-  <label for="output">Your Copyable Plugin Code</label>
-  <textarea id="output" readonly></textarea>
+  <label for="pluginCode">Your Copyable Plugin Code</label>
+  <textarea id="pluginCode" readonly placeholder="Please enter your organiser ID."></textarea>
 
   <script>
-    const organiserInput = document.getElementById('organiser');
-    const bgInput = document.getElementById('bg');
-    const textInput = document.getElementById('text');
-    const styleSelect = document.getElementById('style');
-    const output = document.getElementById('output');
+    const organiserInput = document.getElementById('organiserId');
+    const bgInput = document.getElementById('bgColor');
+    const textInput = document.getElementById('textColor');
+    const styleSelect = document.getElementById('styleSelect');
     const generateBtn = document.getElementById('generateBtn');
+    const codeOutput = document.getElementById('pluginCode');
 
     function updateCode() {
-      const organiser = organiserInput.value.trim();
+      const organiserId = organiserInput.value.trim();
       const bg = bgInput.value.trim();
       const text = textInput.value.trim();
       const style = styleSelect.value;
 
-      if (!organiser) {
-        output.value = 'Please enter your organiser ID.';
+      if (!organiserId) {
+        codeOutput.value = 'Please enter your organiser ID.';
         return;
       }
 
-      let src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiser}`;
-      if (bg) src += `&bg=${bg}`;
-      if (text) src += `&text=${text}`;
-      if (style) src += `&style=${style}`;
+      const iframeSrc = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}&style=${style}&bg=${bg}&text=${text}`;
 
-      output.value =
-`<iframe src="${src}" style="border: none; width: 100%; min-height: 400px;" loading="lazy"></iframe>
-
+      const pluginCode = `<iframe src="${iframeSrc}" width="100%" frameborder="0" style="border:none;overflow:hidden;" onload="this.contentWindow.postMessage({type: 'SPONDLE_REQUEST_HEIGHT'}, '*');"></iframe>
 <script>
-window.addEventListener('message', function(event) {
-  if (event.data && event.data.type === 'SPONDLE_IFRAME_HEIGHT') {
-    var iframe = document.querySelector('iframe[src*="event-plugin-gateway.html"]');
-    if (iframe) {
-      iframe.style.height = event.data.height + 'px';
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'SPONDLE_IFRAME_HEIGHT') {
+      var iframe = document.querySelector('iframe[src*="event-plugin-gateway.html"]');
+      if (iframe) {
+        iframe.style.height = event.data.height + 'px';
+      }
     }
-  }
-});
-<\/script>`;
+  });
+</script>`;
 
-      // Optional: auto-select textarea content
-      output.focus();
-      output.select();
+      codeOutput.value = pluginCode;
     }
 
-    // Auto-generate on field change
-    organiserInput.addEventListener('input', updateCode);
-    bgInput.addEventListener('input', updateCode);
-    textInput.addEventListener('input', updateCode);
-    styleSelect.addEventListener('change', updateCode);
+    organiserInput.addEventListener('input', () => {
+      codeOutput.value = '';
+    });
 
-    // Manual generate on button click
+    bgInput.addEventListener('input', () => {
+      codeOutput.value = '';
+    });
+
+    textInput.addEventListener('input', () => {
+      codeOutput.value = '';
+    });
+
+    styleSelect.addEventListener('change', () => {
+      codeOutput.value = '';
+    });
+
     generateBtn.addEventListener('click', updateCode);
-
-    // Initial output
-    updateCode();
   </script>
 </body>
 </html>
