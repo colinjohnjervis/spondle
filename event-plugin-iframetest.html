@@ -5,10 +5,18 @@
   <title>Embedded Event Plugin (Custom Colours)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      width: 100%;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      background-color: white;
+      text-align: center;
+    }
+
+    .header {
+      padding: 20px 10px 10px;
+      font-size: 1.25rem;
+      font-weight: bold;
     }
 
     iframe {
@@ -17,12 +25,23 @@
       width: 100vw;   /* Full width */
       height: 400px;  /* Fixed height */
     }
+
+    .spacer {
+      height: 40px;
+    }
   </style>
 </head>
 <body>
+
+  <div class="header">
+    Welcome to My Events Plugin Demo
+  </div>
+
   <iframe
     src="https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=05c1463f-510d-4e40-a5fc-f5aa6138a716&bg=81b2d9&text=000000"
-    frameborder="0"
   ></iframe>
+
+  <div class="spacer"></div>
+
 </body>
 </html>
