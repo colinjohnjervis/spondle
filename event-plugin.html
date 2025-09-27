@@ -2,46 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Plugin Generator Tool</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Event Plugin Generator</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
       padding: 2rem;
+      background: #fff;
+      color: #000;
       max-width: 600px;
       margin: auto;
     }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
     label {
       display: block;
-      margin: 1rem 0 0.25rem;
       font-weight: bold;
+      margin-top: 1.5rem;
+      margin-bottom: 0.3rem;
     }
+
     input, select, textarea {
       width: 100%;
-      padding: 0.5rem;
+      padding: 10px;
       font-size: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
+
     textarea {
-      height: 200px;
-      margin-top: 1rem;
+      min-height: 200px;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
+  <h1>Event Plugin Generator</h1>
 
-  <h2>Event Plugin Generator</h2>
+  <label for="organiser">Your Organiser ID</label>
+  <input type="text" id="organiser" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
 
-  <label for="organiserId">Your Organiser ID</label>
-  <input type="text" id="organiserId" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
+  <label for="bg">Background Colour (Hex)</label>
+  <input type="text" id="bg" placeholder="e.g. ffffff" />
 
-  <label for="bgColor">Background Colour (Hex)</label>
-  <input type="text" id="bgColor" placeholder="e.g. ffffff" />
+  <label for="text">Text Colour (Hex)</label>
+  <input type="text" id="text" placeholder="e.g. 000000" />
 
-  <label for="textColor">Text Colour (Hex)</label>
-  <input type="text" id="textColor" placeholder="e.g. 000000" />
-
-  <label for="styleSelect">Plugin Style</label>
-  <select id="styleSelect">
+  <label for="style">Plugin Style</label>
+  <select id="style">
     <option value="default">Default</option>
     <option value="fixture">Fixture</option>
   </select>
@@ -50,34 +63,41 @@
   <textarea id="output" readonly></textarea>
 
   <script>
-    const organiserInput = document.getElementById('organiserId');
-    const bgInput = document.getElementById('bgColor');
-    const textInput = document.getElementById('textColor');
-    const styleSelect = document.getElementById('styleSelect');
+    const organiserInput = document.getElementById('organiser');
+    const bgInput = document.getElementById('bg');
+    const textInput = document.getElementById('text');
+    const styleSelect = document.getElementById('style');
     const output = document.getElementById('output');
 
     function updateCode() {
-      const organiserId = organiserInput.value.trim();
+      const organiser = organiserInput.value.trim();
       const bg = bgInput.value.trim();
       const text = textInput.value.trim();
       const style = styleSelect.value;
 
-      if (!organiserId) {
+      if (!organiser) {
         output.value = 'Please enter your organiser ID.';
         return;
       }
 
-      const src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}&bg=${bg}&text=${text}&style=${style}`;
-      output.value = `<iframe src="${src}" style="border: none; width: 100%; min-height: 400px;" loading="lazy"></iframe>\n\n<script>
-  window.addEventListener('message', (event) => {
-    if (event.data?.type === 'SPONDLE_IFRAME_HEIGHT') {
-      const iframe = document.querySelector('iframe[src*="event-plugin-gateway.html"]');
-      if (iframe) {
-        iframe.style.height = event.data.height + 'px';
-      }
+      let src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiser}`;
+      if (bg) src += `&bg=${bg}`;
+      if (text) src += `&text=${text}`;
+      if (style) src += `&style=${style}`;
+
+      output.value =
+`<iframe src="${src}" style="border: none; width: 100%; min-height: 400px;" loading="lazy"></iframe>
+
+<script>
+window.addEventListener('message', function(event) {
+  if (event.data && event.data.type === 'SPONDLE_IFRAME_HEIGHT') {
+    var iframe = document.querySelector('iframe[src*="event-plugin-gateway.html"]');
+    if (iframe) {
+      iframe.style.height = event.data.height + 'px';
     }
-  });
-</script>`;
+  }
+});
+<\/script>`;
     }
 
     organiserInput.addEventListener('input', updateCode);
@@ -85,9 +105,7 @@
     textInput.addEventListener('input', updateCode);
     styleSelect.addEventListener('change', updateCode);
 
-    // Trigger initial output
-    updateCode();
+    updateCode(); // Trigger on load
   </script>
-
 </body>
 </html>
