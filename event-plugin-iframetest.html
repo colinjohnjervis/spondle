@@ -23,7 +23,7 @@
       display: block;
       border: none;
       width: 100vw;   /* Full width */
-      height: 400px;  /* Fixed height */
+      height: 400px;  /* Default height, will be overridden by script */
     }
 
     .spacer {
@@ -38,10 +38,22 @@
   </div>
 
   <iframe
+    id="spondle-plugin"
     src="https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=05c1463f-510d-4e40-a5fc-f5aa6138a716&bg=81b2d9&text=000000"
   ></iframe>
 
   <div class="spacer"></div>
+
+  <script>
+    window.addEventListener("message", function(event) {
+      if (event.data && event.data.type === "SPONDLE_IFRAME_HEIGHT") {
+        const iframe = document.getElementById("spondle-plugin");
+        if (iframe && event.data.height) {
+          iframe.style.height = event.data.height + "px";
+        }
+      }
+    });
+  </script>
 
 </body>
 </html>
