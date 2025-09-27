@@ -4,92 +4,90 @@
   <meta charset="UTF-8" />
   <title>Event Plugin Generator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, sans-serif;
-      padding: 20px;
+      padding: 2rem;
+      background: #f9f9f9;
+      color: #111;
       max-width: 600px;
       margin: auto;
-      background-color: #f9f9f9;
     }
-
-    h1 {
-      font-size: 1.75rem;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
     label {
-      font-weight: 600;
       display: block;
-      margin: 15px 0 5px;
+      margin-top: 1rem;
+      font-weight: bold;
     }
-
-    input, select, textarea, button {
+    input, select, textarea {
       width: 100%;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      border-radius: 0.5rem;
       border: 1px solid #ccc;
       font-size: 1rem;
     }
-
+    button {
+      margin-top: 1.5rem;
+      background: #000;
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      width: 100%;
+    }
     textarea {
-      height: 180px;
+      margin-top: 1rem;
+      height: 220px;
       font-family: monospace;
       white-space: pre;
-      margin-top: 10px;
-    }
-
-    button {
-      margin-top: 20px;
-      background-color: #111;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #000;
-    }
-
-    .section-title {
-      margin-top: 30px;
-      font-weight: bold;
-      font-size: 1.1rem;
     }
   </style>
 </head>
 <body>
-
   <h1>Event Plugin Generator</h1>
 
-  <label for="organiserId">Your Organiser ID</label>
-  <input type="text" id="organiserId" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
+  <label for="organiser-id">Your Organiser ID</label>
+  <input type="text" id="organiser-id" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
 
-  <label for="bgColor">Background Colour (Hex)</label>
-  <input type="text" id="bgColor" placeholder="e.g. ffffff" />
+  <label for="bg-color">Background Colour (Hex)</label>
+  <input type="text" id="bg-color" placeholder="e.g. ffffff" />
 
-  <label for="textColor">Text Colour (Hex)</label>
-  <input type="text" id="textColor" placeholder="e.g. 000000" />
+  <label for="text-color">Text Colour (Hex)</label>
+  <input type="text" id="text-color" placeholder="e.g. 000000" />
 
-  <label for="styleSelect">Plugin Style</label>
-  <select id="styleSelect">
+  <label for="style">Plugin Style</label>
+  <select id="style">
     <option value="default">Default</option>
     <option value="fixture">Fixture</option>
   </select>
 
-  <button id="generateBtn">Generate Plugin Code</button>
+  <button id="generate-btn">Generate Plugin Code</button>
 
-  <div class="section-title">Your Copyable Plugin Code</div>
-  <textarea id="pluginCode" readonly placeholder="Please enter your organiser ID."></textarea>
+  <label for="code-output">Your Copyable Plugin Code</label>
+  <textarea id="code-output" readonly>Please enter your organiser ID.</textarea>
 
   <script>
-    const organiserInput = document.getElementById('organiserId');
-    const bgInput = document.getElementById('bgColor');
-    const textInput = document.getElementById('textColor');
-    const styleSelect = document.getElementById('styleSelect');
-    const generateBtn = document.getElementById('generateBtn');
-    const codeOutput = document.getElementById('pluginCode');
+    const supabase = supabase.createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
+
+    const organiserInput = document.getElementById('organiser-id');
+    const bgInput = document.getElementById('bg-color');
+    const textInput = document.getElementById('text-color');
+    const styleSelect = document.getElementById('style');
+    const codeOutput = document.getElementById('code-output');
+    const generateBtn = document.getElementById('generate-btn');
+
+    // Auto-fill organiser ID
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user && user.id) {
+        organiserInput.value = user.id;
+      }
+    });
 
     function updateCode() {
       const organiserId = organiserInput.value.trim();
@@ -98,20 +96,18 @@
       const style = styleSelect.value;
 
       if (!organiserId) {
-        codeOutput.value = 'Please enter your organiser ID.';
+        codeOutput.value = "Please enter your organiser ID.";
         return;
       }
 
-      // Construct query string safely
       const queryParams = new URLSearchParams();
       queryParams.set('organiser_id', organiserId);
-      if (style) queryParams.set('style', style);
       if (bg) queryParams.set('bg', bg);
       if (text) queryParams.set('text', text);
+      if (style) queryParams.set('style', style);
 
-      const iframeSrc = `https://spondle-uk.vercel.app/event-plugin-gateway.html?${queryParams.toString()}`;
+      const pluginCode = `<iframe src="https://spondle-uk.vercel.app/event-plugin-gateway.html?${queryParams.toString()}" width="100%" style="border:none;" scrolling="no" id="spondle-iframe"></iframe>
 
-      const pluginCode = `<iframe src="${iframeSrc}" width="100%" frameborder="0" style="border:none;overflow:hidden;" onload="this.contentWindow.postMessage({type: 'SPONDLE_REQUEST_HEIGHT'}, '*');"></iframe>
 <script>
   window.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'SPONDLE_IFRAME_HEIGHT') {
@@ -121,18 +117,17 @@
       }
     }
   });
-<\/script>`;
+</script>`;
 
       codeOutput.value = pluginCode;
     }
 
-    // Clear output on edits
+    generateBtn.addEventListener('click', updateCode);
+
     organiserInput.addEventListener('input', () => codeOutput.value = '');
     bgInput.addEventListener('input', () => codeOutput.value = '');
     textInput.addEventListener('input', () => codeOutput.value = '');
     styleSelect.addEventListener('change', () => codeOutput.value = '');
-    generateBtn.addEventListener('click', updateCode);
   </script>
-
 </body>
 </html>
