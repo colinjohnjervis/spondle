@@ -2,188 +2,109 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Upcoming Events – Embedded View</title>
+  <title>Event Plugin Gateway</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    :root {
-      --bg: #ffffff;
-      --text: #000000;
-    }
-
     body {
       margin: 0;
-      font-family: system-ui, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 1rem;
+      padding: 0;
+      font-family: ui-sans-serif, system-ui, sans-serif;
     }
 
-    .wrapper {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-
-    h2 {
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
+    .container {
+      padding: 20px;
     }
 
     .event-card {
-      background-color: rgba(0, 0, 0, 0.05);
-      border-radius: 0.75rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    .event-left {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .event-name {
+    .event-title {
+      font-size: 1.1rem;
       font-weight: bold;
-      margin-bottom: 0.25rem;
+      margin-bottom: 4px;
     }
 
-    .event-venue {
-      font-size: 0.875rem;
-      color: inherit;
-    }
-
-    .event-date-time {
-      text-align: right;
-      font-size: 0.875rem;
-      color: inherit;
-      white-space: nowrap;
-    }
-
-    /* Fixture style override */
-    .fixture-wrapper h2 {
-      font-size: 1.2rem;
-      color: var(--text);
-      margin-bottom: 1rem;
-    }
-
-    .fixture-style .event-card {
-      background-color: #5e7e57;
-      color: #ffffff;
-      border-radius: 1rem;
-    }
-
-    .fixture-style .event-name {
-      font-weight: bold;
-    }
-
-    .fixture-style .event-venue,
-    .fixture-style .event-date-time {
-      font-size: 0.9rem;
-      color: #ffffff;
-    }
-
-    @media (max-width: 480px) {
-      .event-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .event-date-time {
-        margin-top: 0.5rem;
-        text-align: left;
-      }
+    .event-meta {
+      font-size: 0.95rem;
+      line-height: 1.4;
     }
   </style>
 </head>
 <body>
-  <div id="wrapper" class="wrapper">
-    <h2>Upcoming Events – Embedded View</h2>
-    <div id="events-container">Loading events...</div>
+  <div id="container" class="container">
+    <h2 style="font-size: 1.25rem; font-weight: bold;">Upcoming Events – Embedded View</h2>
+    <div id="eventList">Loading...</div>
   </div>
 
   <script type="module">
-    const urlParams = new URLSearchParams(window.location.search);
-    const organiserId = urlParams.get('organiser_id');
-    const bgColor = urlParams.get('bg') || 'ffffff';
-    const textColor = urlParams.get('text') || '000000';
-    const style = urlParams.get('style') || 'default';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    document.documentElement.style.setProperty('--bg', `#${bgColor}`);
-    document.documentElement.style.setProperty('--text', `#${textColor}`);
+    const urlParams = new URLSearchParams(window.location.search)
+    const organiserId = urlParams.get('organiser_id')
+    const bgColour = `#${urlParams.get('bg') || 'ffffff'}`
+    const textColour = `#${urlParams.get('text') || '000000'}`
 
-    // Style handling
-    const wrapper = document.getElementById('wrapper');
-    if (style === 'fixture') {
-      wrapper.classList.add('fixture-wrapper', 'fixture-style');
-    }
+    // Apply colours
+    const container = document.getElementById('container')
+    container.style.backgroundColor = bgColour
+    container.style.color = textColour
 
-    if (!organiserId) {
-      document.getElementById('events-container').innerText = 'No organiser ID provided.';
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    const eventList = document.getElementById('eventList')
+
+    const { data: events, error } = await supabase
+      .from('events')
+      .select(`
+        event_name,
+        event_date,
+        event_time,
+        venues (
+          venue_name,
+          street_name
+        )
+      `)
+      .eq('organiser_id', organiserId)
+      .order('event_date', { ascending: true })
+
+    if (error) {
+      eventList.innerHTML = 'Error loading events.'
+      console.error(error)
+    } else if (!events || events.length === 0) {
+      eventList.innerHTML = 'No events found.'
     } else {
-      const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+      eventList.innerHTML = ''
+      events.forEach(event => {
+        const card = document.createElement('div')
+        card.className = 'event-card'
+        card.style.backgroundColor = `${bgColour}CC` // slightly transparent
+        card.style.color = textColour
 
-      const fetchEvents = async () => {
-        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
-        const supabase = createClient(supabaseUrl, supabaseKey);
-
-        const { data, error } = await supabase
-          .from('events')
-          .select(`
-            event_name,
-            event_date,
-            event_time,
-            venues (
-              venue_name,
-              street_name
-            )
-          `)
-          .eq('organiser_id', organiserId)
-          .order('event_date', { ascending: true });
-
-        const container = document.getElementById('events-container');
-        container.innerHTML = '';
-
-        if (error) {
-          container.innerText = 'Error loading events.';
-          console.error(error);
-          return;
-        }
-
-        if (!data || data.length === 0) {
-          container.innerText = 'No upcoming events.';
-          return;
-        }
-
-        data.forEach(event => {
-          const eventCard = document.createElement('div');
-          eventCard.className = 'event-card';
-
-          eventCard.innerHTML = `
-            <div class="event-left">
-              <div class="event-name">${event.event_name}</div>
-              <div class="event-venue">${event.venues?.venue_name || ''}</div>
-              <div class="event-venue">${event.venues?.street_name || ''}</div>
-            </div>
-            <div class="event-date-time">
-              ${event.event_date || ''}<br>${event.event_time || ''}
-            </div>
-          `;
-
-          container.appendChild(eventCard);
-        });
-
-        // Send height to parent
-        setTimeout(() => {
-          const height = document.documentElement.scrollHeight;
-          parent.postMessage({ type: 'SPONDLE_IFRAME_HEIGHT', height }, '*');
-        }, 100);
-      };
-
-      fetchEvents();
+        card.innerHTML = `
+          <div class="event-title">${event.event_name}</div>
+          <div class="event-meta">
+            ${event.venues?.venue_name || ''}<br>
+            ${event.venues?.street_name || ''}<br>
+            ${event.event_date} ${event.event_time}
+          </div>
+        `
+        eventList.appendChild(card)
+      })
     }
+
+    // Post height back to parent
+    setTimeout(() => {
+      window.parent.postMessage(
+        { height: document.documentElement.scrollHeight },
+        '*'
+      )
+    }, 100)
   </script>
 </body>
 </html>
