@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Generate Your Event Plugin</title>
@@ -41,36 +42,33 @@
       display: block;
       font-weight: bold;
     }
-    pre {
-      background: #f4f4f4;
-      padding: 1rem;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
   </style>
 </head>
 <body>
   <h1>Generate Your Event Plugin</h1>
   <p>This will generate an iframe snippet you can paste into your own website to show your events.</p>
-  <div id="userStatus">Checking login status...</div><label for="bgColour">Background Colour (Hex)</label> <input type="text" id="bgColour" placeholder="e.g. ffffff" />
+  <div id="userStatus">Checking login status...</div>
 
-<label for="textColour">Text Colour (Hex)</label> <input type="text" id="textColour" placeholder="e.g. 000000" />
+  <label for="bgColour">Background Colour (Hex)</label>
+  <input type="text" id="bgColour" placeholder="e.g. ffffff" />
 
-<button id="generateBtn">Generate Plugin Code</button>
+  <label for="textColour">Text Colour (Hex)</label>
+  <input type="text" id="textColour" placeholder="e.g. 000000" />
 
-  <h2>Your iframe code</h2>
-  <pre id="iframeCode"></pre>  <h2>Your resizing script</h2>
-  <pre id="scriptCode"></pre>  <div id="errorLog"></div>  <!-- Supabase JS -->  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <script>
+  <button id="generateBtn">Generate Plugin Code</button>
+
+  <textarea id="pluginCode" placeholder="Your combined plugin code will appear here..." rows="10" readonly></textarea>
+  <div id="errorLog"></div>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
     const userStatus = document.getElementById("userStatus");
-    const iframeOutput = document.getElementById("iframeCode");
-    const scriptOutput = document.getElementById("scriptCode");
-    const errorBox = document.getElementById("errorLog");
 
     window.addEventListener("DOMContentLoaded", async () => {
       try {
@@ -87,13 +85,13 @@
     });
 
     document.getElementById("generateBtn").addEventListener("click", async () => {
-      iframeOutput.textContent = "";
-      scriptOutput.textContent = "";
-      errorBox.style.display = "none";
-      errorBox.textContent = "";
-
+      const output = document.getElementById("pluginCode");
+      const errorBox = document.getElementById("errorLog");
       const bgColour = document.getElementById("bgColour").value.trim();
       const textColour = document.getElementById("textColour").value.trim();
+      output.value = "";
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
 
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
@@ -105,22 +103,14 @@
         if (bgColour) src += `&bg=${encodeURIComponent(bgColour)}`;
         if (textColour) src += `&text=${encodeURIComponent(textColour)}`;
 
-        const iframe = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>`;
-        const script = `<script>
-  window.addEventListener("message", function(e) {
-    if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {
-      const iframe = document.getElementById("spondle-plugin");
-      if (iframe) iframe.style.height = e.data.height + "px";
-    }
-  });
-<\/script>`;
+        const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>\n\n<script>\n  window.addEventListener("message", function(e) {\n    if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {\n      const iframe = document.getElementById("spondle-plugin");\n      if (iframe) iframe.style.height = e.data.height + "px";\n    }\n  });\n</script>`;
 
-        iframeOutput.textContent = iframe;
-        scriptOutput.textContent = script;
+        output.value = fullCode;
       } catch (err) {
         errorBox.textContent = err.message || err.toString();
         errorBox.style.display = "block";
       }
     });
-  </script></body>
+  </script>
+</body>
 </html>
