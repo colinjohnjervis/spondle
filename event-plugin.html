@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Generate Your Event Plugin</title>
@@ -46,13 +47,22 @@
 <body>
   <h1>Generate Your Event Plugin</h1>
   <p>This will generate an iframe snippet you can paste into your own website to show your events.</p>
-  <div id="userStatus">Checking login status...</div><label for="bgColour">Background Colour (Hex)</label> <input type="text" id="bgColour" placeholder="e.g. ffffff" />
+  <div id="userStatus">Checking login status...</div>
 
-<label for="textColour">Text Colour (Hex)</label> <input type="text" id="textColour" placeholder="e.g. 000000" />
+  <label for="bgColour">Background Colour (Hex)</label>
+  <input type="text" id="bgColour" placeholder="e.g. ffffff" />
 
-<button id="generateBtn">Generate Plugin Code</button>
+  <label for="textColour">Text Colour (Hex)</label>
+  <input type="text" id="textColour" placeholder="e.g. 000000" />
 
-  <textarea id="pluginCode" placeholder="Your plugin code will appear here..." rows="8" readonly></textarea>  <div id="errorLog"></div>  <!-- Supabase JS -->  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <script>
+  <button id="generateBtn">Generate Plugin Code</button>
+
+  <textarea id="pluginCode" placeholder="Your plugin code will appear here..." rows="8" readonly></textarea>
+  <div id="errorLog"></div>
+
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
@@ -93,13 +103,14 @@
         if (bgColour) src += `&bg=${encodeURIComponent(bgColour)}`;
         if (textColour) src += `&text=${encodeURIComponent(textColour)}`;
 
-        const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0" scrolling="no"></iframe>\n<script>\nwindow.addEventListener(\"message\", function(e) {\n  if (e.origin === \"https://spondle-uk.vercel.app\" && e.data.height) {\n    var iframe = document.getElementById(\"spondle-plugin\");\n    if (iframe) iframe.style.height = e.data.height + \"px\";\n  }\n});\n</script>`;output.value = fullCode;
-  } catch (err) {
-    errorBox.textContent = err.message || err.toString();
-    errorBox.style.display = "block";
-  }
-});
+        const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>\n<script>\nwindow.addEventListener("message", function(e) {\n  if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {\n    var iframe = document.getElementById("spondle-plugin");\n    if (iframe) iframe.style.height = e.data.height + "px";\n  }\n});\n</script>`;
 
+        output.value = fullCode;
+      } catch (err) {
+        errorBox.textContent = err.message || err.toString();
+        errorBox.style.display = "block";
+      }
+    });
   </script>
 </body>
 </html>
