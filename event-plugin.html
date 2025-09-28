@@ -2,93 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Event Plugin Generator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
-      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-family: system-ui, sans-serif;
       padding: 2rem;
       background: #f9f9f9;
       color: #111;
       max-width: 600px;
       margin: auto;
     }
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-    input, select, textarea {
+    input, select, textarea, button {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.25rem;
-      border-radius: 0.5rem;
-      border: 1px solid #ccc;
+      margin-bottom: 1rem;
+      padding: 0.6rem;
       font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
     button {
-      margin-top: 1.5rem;
       background: #000;
       color: #fff;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 0.5rem;
       cursor: pointer;
-      width: 100%;
+      font-weight: bold;
     }
     textarea {
-      margin-top: 1rem;
-      height: 220px;
+      height: 180px;
       font-family: monospace;
-      white-space: pre;
     }
   </style>
 </head>
 <body>
-  <h1>Event Plugin Generator</h1>
+  <h1><strong>Event Plugin Generator</strong></h1>
 
-  <label for="organiser-id">Your Organiser ID</label>
-  <input type="text" id="organiser-id" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
+  <label for="organiserId">Your Organiser ID</label>
+  <input type="text" id="organiserId" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
 
-  <label for="bg-color">Background Colour (Hex)</label>
-  <input type="text" id="bg-color" placeholder="e.g. ffffff" />
+  <label for="bgColor">Background Colour (Hex)</label>
+  <input type="text" id="bgColor" placeholder="e.g. ffffff" />
 
-  <label for="text-color">Text Colour (Hex)</label>
-  <input type="text" id="text-color" placeholder="e.g. 000000" />
+  <label for="textColor">Text Colour (Hex)</label>
+  <input type="text" id="textColor" placeholder="e.g. 000000" />
 
-  <label for="style">Plugin Style</label>
-  <select id="style">
+  <label for="pluginStyle">Plugin Style</label>
+  <select id="pluginStyle">
     <option value="default">Default</option>
     <option value="fixture">Fixture</option>
   </select>
 
-  <button id="generate-btn">Generate Plugin Code</button>
+  <button id="generateBtn">Generate Plugin Code</button>
 
-  <label for="code-output">Your Copyable Plugin Code</label>
-  <textarea id="code-output" readonly>Please enter your organiser ID.</textarea>
+  <h2>Your Copyable Plugin Code</h2>
+  <textarea id="codeOutput" readonly>Please enter your organiser ID.</textarea>
 
-  <!-- ✅ THIS SCRIPT MUST BE INTACT AND CLOSED PROPERLY -->
   <script>
     const supabase = supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    const organiserInput = document.getElementById('organiser-id');
-    const bgInput = document.getElementById('bg-color');
-    const textInput = document.getElementById('text-color');
-    const styleSelect = document.getElementById('style');
-    const codeOutput = document.getElementById('code-output');
-    const generateBtn = document.getElementById('generate-btn');
+    const organiserInput = document.getElementById('organiserId');
+    const bgInput = document.getElementById('bgColor');
+    const textInput = document.getElementById('textColor');
+    const styleSelect = document.getElementById('pluginStyle');
+    const generateBtn = document.getElementById('generateBtn');
+    const codeOutput = document.getElementById('codeOutput');
 
-    // Auto-fill organiser ID if user is logged in
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user && user.id) {
+    async function getUserId() {
+      await supabase.auth.getSession(); // Restore session
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
         organiserInput.value = user.id;
+        updateCode();
+      } else {
+        organiserInput.placeholder = "Not signed in";
       }
-    });
+    }
 
     function updateCode() {
       const organiserId = organiserInput.value.trim();
@@ -101,24 +92,14 @@
         return;
       }
 
-      const queryParams = new URLSearchParams();
-      queryParams.set('organiser_id', organiserId);
-      if (bg) queryParams.set('bg', bg);
-      if (text) queryParams.set('text', text);
-      if (style) queryParams.set('style', style);
+      const src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}&style=${style}&bg=${bg}&text=${text}`;
 
-      const pluginCode = `<iframe src="https://spondle-uk.vercel.app/event-plugin-gateway.html?${queryParams.toString()}" width="100%" style="border:none;" scrolling="no" id="spondle-iframe"></iframe>
-
-<script>
-  window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'SPONDLE_IFRAME_HEIGHT') {
-      var iframe = document.querySelector('iframe[src*="event-plugin-gateway.html"]');
-      if (iframe) {
-        iframe.style.height = event.data.height + 'px';
-      }
-    }
-  });
-</script>`;
+      const pluginCode = `
+<iframe 
+  src="${src}" 
+  style="width:100%;border:none;" 
+  onload="window.addEventListener('message',function(e){if(e.data.height){document.querySelector('iframe').style.height=e.data.height+'px';}})">
+</iframe>`.trim();
 
       codeOutput.value = pluginCode;
     }
@@ -128,6 +109,8 @@
     bgInput.addEventListener('input', () => codeOutput.value = '');
     textInput.addEventListener('input', () => codeOutput.value = '');
     styleSelect.addEventListener('change', () => codeOutput.value = '');
+
+    getUserId(); // On page load
   </script>
 </body>
 </html>
