@@ -12,6 +12,7 @@
 </head>
 <body>
   <div id="layout-root"></div>
+
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
@@ -52,7 +53,7 @@
     async function loadEvents() {
       const { data, error } = await supabase
         .from('events')
-        .select('*')
+        .select('*, venues(venue_name)')
         .eq('publish_status', 'published')
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
@@ -82,10 +83,11 @@
           ${imageContent}
           <div class="p-4">
             <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-            <p class="text-sm text-gray-400 mb-2">${event.event_date} at ${event.event_time || 'TBA'}</p>
-            <p class="text-sm text-gray-300">${event.description?.slice(0, 100) || ''}...</p>
+            <p class="text-sm text-gray-400">${event.venues?.venue_name || 'Venue TBA'}</p>
+            <p class="text-sm text-gray-400">${event.event_date}</p>
           </div>
         `;
+
         eventsGrid.appendChild(card);
       });
 
