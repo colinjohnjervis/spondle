@@ -1,5 +1,3 @@
-With embedded code as best practice 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +11,7 @@ With embedded code as best practice
       max-width: 600px;
       margin: auto;
     }
-    input, textarea, button {
+    input, textarea, button, select {
       width: 100%;
       padding: 0.6rem;
       margin-top: 1rem;
@@ -57,6 +55,12 @@ With embedded code as best practice
   <label for="textColour">Text Colour (Hex)</label>
   <input type="text" id="textColour" placeholder="e.g. 000000" />
 
+  <label for="styleSelect">Style</label>
+  <select id="styleSelect">
+    <option value="default">Default</option>
+    <option value="fixture">Fixture</option>
+  </select>
+
   <button id="generateBtn">Generate Plugin Code</button>
 
   <textarea id="pluginCode" placeholder="Your combined plugin code will appear here..." rows="10" readonly></textarea>
@@ -91,6 +95,7 @@ With embedded code as best practice
       const errorBox = document.getElementById("errorLog");
       const bgColour = document.getElementById("bgColour").value.trim();
       const textColour = document.getElementById("textColour").value.trim();
+      const styleChoice = document.getElementById("styleSelect").value;
       output.value = "";
       errorBox.style.display = "none";
       errorBox.textContent = "";
@@ -104,8 +109,8 @@ With embedded code as best practice
         let src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}`;
         if (bgColour) src += `&bg=${encodeURIComponent(bgColour)}`;
         if (textColour) src += `&text=${encodeURIComponent(textColour)}`;
+        if (styleChoice) src += `&style=${encodeURIComponent(styleChoice)}`;
 
-        // Build single block with <iframe> + <script> properly escaped
         const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>\n` +
 `<script>
 window.addEventListener("message", function(e) {
