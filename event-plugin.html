@@ -57,7 +57,7 @@
 
   <button id="generateBtn">Generate Plugin Code</button>
 
-  <textarea id="pluginCode" placeholder="Your combined plugin code will appear here..." rows="12" readonly></textarea>
+  <textarea id="pluginCode" placeholder="Your combined plugin code will appear here..." rows="10" readonly></textarea>
   <div id="errorLog"></div>
 
   <!-- Supabase JS -->
@@ -77,10 +77,10 @@
         if (user) {
           userStatus.textContent = `✅ Logged in as user: ${user.id}`;
         } else {
-          userStatus.textContent = "❌ You are not signed in.";
+          userStatus.textContent = "❌ You are not signed in.`;
         }
       } catch (err) {
-        userStatus.textContent = `❌ Error: ${err.message || err}`;
+        userStatus.textContent = `❌ Error getting user: ${err.message || err}`;
       }
     });
 
@@ -96,7 +96,7 @@
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) throw error;
-        if (!user) throw new Error("You are not logged in.");
+        if (!user) throw new Error("You are not logged in. Please sign in first.");
 
         const organiserId = user.id;
         let src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}`;
