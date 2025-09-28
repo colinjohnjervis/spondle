@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Upcoming Events – Embedded View</title>
@@ -7,84 +8,116 @@
     :root {
       --bg: #ffffff;
       --text: #000000;
-    }body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background-color: var(--bg);
-  color: var(--text);
-  padding: 1rem;
-}
+    }
 
-.wrapper {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 1rem;
+    }
 
-h2 {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-}
+    .wrapper {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
 
-.event-card {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
 
-.event-left {
-  display: flex;
-  flex-direction: column;
-}
+    .event-card {
+      background-color: rgba(0, 0, 0, 0.05);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
 
-.event-name {
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-}
+    .event-left {
+      display: flex;
+      flex-direction: column;
+    }
 
-.event-venue {
-  font-size: 0.875rem;
-  color: inherit;
-}
+    .event-name {
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
 
-.event-date-time {
-  text-align: right;
-  font-size: 0.875rem;
-  color: inherit;
-  white-space: nowrap;
-}
+    .event-venue {
+      font-size: 0.875rem;
+      color: inherit;
+    }
 
-@media (max-width: 480px) {
-  .event-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .event-date-time {
-    margin-top: 0.5rem;
-    text-align: left;
-  }
-}
+    .event-date-time {
+      text-align: right;
+      font-size: 0.875rem;
+      color: inherit;
+      white-space: nowrap;
+    }
 
+    /* Fixture style override */
+    .fixture-wrapper h2 {
+      font-size: 1.2rem;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .fixture-style .event-card {
+      background-color: #5e7e57;
+      color: #ffffff;
+      border-radius: 1rem;
+    }
+
+    .fixture-style .event-name {
+      font-weight: bold;
+    }
+
+    .fixture-style .event-venue,
+    .fixture-style .event-date-time {
+      font-size: 0.9rem;
+      color: #ffffff;
+    }
+
+    @media (max-width: 480px) {
+      .event-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .event-date-time {
+        margin-top: 0.5rem;
+        text-align: left;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="wrapper">
+  <div id="wrapper" class="wrapper">
     <h2>Upcoming Events – Embedded View</h2>
     <div id="events-container">Loading events...</div>
-  </div>  <script type="module">
+  </div>
+
+  <script type="module">
     const urlParams = new URLSearchParams(window.location.search);
     const organiserId = urlParams.get('organiser_id');
     const bgColor = urlParams.get('bg') || 'ffffff';
     const textColor = urlParams.get('text') || '000000';
+    const style = urlParams.get('style') || 'default';
 
-    // Apply background and text colours dynamically
     document.documentElement.style.setProperty('--bg', `#${bgColor}`);
     document.documentElement.style.setProperty('--text', `#${textColor}`);
+
+    // Style handling
+    const wrapper = document.getElementById('wrapper');
+    if (style === 'fixture') {
+      wrapper.classList.add('fixture-wrapper', 'fixture-style');
+    }
 
     if (!organiserId) {
       document.getElementById('events-container').innerText = 'No organiser ID provided.';
@@ -142,7 +175,7 @@ h2 {
           container.appendChild(eventCard);
         });
 
-        // Send the iframe height to the parent
+        // Send height to parent
         setTimeout(() => {
           const height = document.documentElement.scrollHeight;
           parent.postMessage({ type: 'SPONDLE_IFRAME_HEIGHT', height }, '*');
@@ -151,5 +184,6 @@ h2 {
 
       fetchEvents();
     }
-  </script></body>
+  </script>
+</body>
 </html>
