@@ -36,7 +36,7 @@
 </head>
 <body>
   <div id="container" class="container">
-    <h2 style="font-size: 1.25rem; font-weight: bold;">Upcoming Events – Embedded View</h2>
+    <h2 id="plugin-heading" style="font-size: 1.25rem; font-weight: bold;">Upcoming Events – Embedded View</h2>
     <div id="eventList">Loading...</div>
   </div>
 
@@ -48,10 +48,14 @@
     const bgColour = `#${urlParams.get('bg') || 'ffffff'}`
     const textColour = `#${urlParams.get('text') || '000000'}`
 
-    // Apply colours
+    // Apply colours to background and all text
     const container = document.getElementById('container')
+    const heading = document.getElementById('plugin-heading')
+    document.body.style.backgroundColor = bgColour
+    document.body.style.color = textColour
     container.style.backgroundColor = bgColour
     container.style.color = textColour
+    heading.style.color = textColour
 
     const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co'
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
@@ -83,7 +87,7 @@
       events.forEach(event => {
         const card = document.createElement('div')
         card.className = 'event-card'
-        card.style.backgroundColor = `${bgColour}CC` // slightly transparent
+        card.style.backgroundColor = `${bgColour}CC` // Transparent card
         card.style.color = textColour
 
         card.innerHTML = `
