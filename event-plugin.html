@@ -2,115 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Event Plugin Generator</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <title>Generate Your Event Plugin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: system-ui, sans-serif;
+      font-family: sans-serif;
       padding: 2rem;
-      background: #f9f9f9;
-      color: #111;
       max-width: 600px;
       margin: auto;
     }
-    input, select, textarea, button {
-      width: 100%;
-      margin-bottom: 1rem;
-      padding: 0.6rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background: #000;
-      color: #fff;
-      cursor: pointer;
-      font-weight: bold;
-    }
+
     textarea {
-      height: 180px;
+      width: 100%;
+      height: 200px;
       font-family: monospace;
+      font-size: 14px;
+      margin-top: 1rem;
+    }
+
+    #errorLog {
+      color: red;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      background: black;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    #userStatus {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: #f4f4f4;
+      border-left: 4px solid #444;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
-  <h1><strong>Event Plugin Generator</strong></h1>
+  <h1>Generate Your Event Plugin</h1>
+  <p>This will generate an iframe snippet you can paste into your own website to show your events.</p>
 
-  <label for="organiserId">Your Organiser ID</label>
-  <input type="text" id="organiserId" placeholder="e.g. 05c1463f-510d-4e40-a5fc-f5aa6138a716" />
-
-  <label for="bgColor">Background Colour (Hex)</label>
-  <input type="text" id="bgColor" placeholder="e.g. ffffff" />
-
-  <label for="textColor">Text Colour (Hex)</label>
-  <input type="text" id="textColor" placeholder="e.g. 000000" />
-
-  <label for="pluginStyle">Plugin Style</label>
-  <select id="pluginStyle">
-    <option value="default">Default</option>
-    <option value="fixture">Fixture</option>
-  </select>
-
+  <div id="userStatus">Checking login status...</div>
   <button id="generateBtn">Generate Plugin Code</button>
+  <textarea id="pluginCode" placeholder="Your plugin code will appear here..." readonly></textarea>
+  <div id="errorLog"></div>
 
-  <h2>Your Copyable Plugin Code</h2>
-  <textarea id="codeOutput" readonly>Please enter your organiser ID.</textarea>
+  <!-- Supabase JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    const supabase = supabase.createClient(
+    const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    const organiserInput = document.getElementById('organiserId');
-    const bgInput = document.getElementById('bgColor');
-    const textInput = document.getElementById('textColor');
-    const styleSelect = document.getElementById('pluginStyle');
-    const generateBtn = document.getElementById('generateBtn');
-    const codeOutput = document.getElementById('codeOutput');
+    const userStatus = document.getElementById("userStatus");
 
-    async function getUserId() {
-      await supabase.auth.getSession(); // Restore session
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        organiserInput.value = user.id;
-        updateCode();
-      } else {
-        organiserInput.placeholder = "Not signed in";
+    // Show user ID when page loads
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (!user) {
+          userStatus.textContent = "❌ You are not signed in.";
+        } else {
+          userStatus.textContent = `✅ Logged in as user: ${user.id}`;
+        }
+      } catch (err) {
+        userStatus.textContent = `❌ Error getting user: ${err.message || err}`;
       }
-    }
+    });
 
-    function updateCode() {
-      const organiserId = organiserInput.value.trim();
-      const bg = bgInput.value.trim();
-      const text = textInput.value.trim();
-      const style = styleSelect.value;
+    document.getElementById("generateBtn").addEventListener("click", async () => {
+      const output = document.getElementById("pluginCode");
+      const errorBox = document.getElementById("errorLog");
+      output.value = "";
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
 
-      if (!organiserId) {
-        codeOutput.value = "Please enter your organiser ID.";
-        return;
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (!user) throw new Error("You are not logged in. Please sign in first.");
+
+        const organiserId = user.id;
+        const iframeCode = `<iframe src="https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}" width="100%" height="400" frameborder="0"></iframe>`;
+        output.value = iframeCode;
+
+      } catch (err) {
+        errorBox.textContent = err.message || err.toString();
+        errorBox.style.display = "block";
       }
-
-      const src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}&style=${style}&bg=${bg}&text=${text}`;
-
-      const pluginCode = `
-<iframe 
-  src="${src}" 
-  style="width:100%;border:none;" 
-  onload="window.addEventListener('message',function(e){if(e.data.height){document.querySelector('iframe').style.height=e.data.height+'px';}})">
-</iframe>`.trim();
-
-      codeOutput.value = pluginCode;
-    }
-
-    generateBtn.addEventListener('click', updateCode);
-    organiserInput.addEventListener('input', () => codeOutput.value = '');
-    bgInput.addEventListener('input', () => codeOutput.value = '');
-    textInput.addEventListener('input', () => codeOutput.value = '');
-    styleSelect.addEventListener('change', () => codeOutput.value = '');
-
-    getUserId(); // On page load
+    });
   </script>
 </body>
 </html>
