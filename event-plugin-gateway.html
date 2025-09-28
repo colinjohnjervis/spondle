@@ -59,24 +59,6 @@ h2 {
   white-space: nowrap;
 }
 
-/* FIXTURE STYLE */
-.fixture-tile {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid #ccc;
-}
-
-.fixture-title {
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.fixture-meta {
-  font-size: 0.85rem;
-}
-
 @media (max-width: 480px) {
   .event-card {
     flex-direction: column;
@@ -99,18 +81,16 @@ h2 {
     const organiserId = urlParams.get('organiser_id');
     const bgColor = urlParams.get('bg') || 'ffffff';
     const textColor = urlParams.get('text') || '000000';
-    const style = urlParams.get('style') || 'default';
 
+    // Apply background and text colours dynamically
     document.documentElement.style.setProperty('--bg', `#${bgColor}`);
     document.documentElement.style.setProperty('--text', `#${textColor}`);
 
-    const container = document.getElementById('events-container');
-
     if (!organiserId) {
-      container.innerText = 'No organiser ID provided.';
+      document.getElementById('events-container').innerText = 'No organiser ID provided.';
     } else {
       const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Truncated for safety
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
 
       const fetchEvents = async () => {
         const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
@@ -118,10 +98,19 @@ h2 {
 
         const { data, error } = await supabase
           .from('events')
-          .select(`event_name, event_date, event_time, venues (venue_name, street_name)`)
+          .select(`
+            event_name,
+            event_date,
+            event_time,
+            venues (
+              venue_name,
+              street_name
+            )
+          `)
           .eq('organiser_id', organiserId)
           .order('event_date', { ascending: true });
 
+        const container = document.getElementById('events-container');
         container.innerHTML = '';
 
         if (error) {
@@ -136,34 +125,24 @@ h2 {
         }
 
         data.forEach(event => {
-          const el = document.createElement('div');
+          const eventCard = document.createElement('div');
+          eventCard.className = 'event-card';
 
-          if (style === 'fixture') {
-            el.className = 'fixture-tile';
-            el.innerHTML = `
-              <div>
-                <div class="fixture-title">${event.event_name}</div>
-                <div class="fixture-meta">${event.venues?.venue_name || ''}, ${event.venues?.street_name || ''}</div>
-              </div>
-              <div class="fixture-meta">${event.event_date}<br>${event.event_time}</div>
-            `;
-          } else {
-            el.className = 'event-card';
-            el.innerHTML = `
-              <div class="event-left">
-                <div class="event-name">${event.event_name}</div>
-                <div class="event-venue">${event.venues?.venue_name || ''}</div>
-                <div class="event-venue">${event.venues?.street_name || ''}</div>
-              </div>
-              <div class="event-date-time">
-                ${event.event_date}<br>${event.event_time}
-              </div>
-            `;
-          }
+          eventCard.innerHTML = `
+            <div class="event-left">
+              <div class="event-name">${event.event_name}</div>
+              <div class="event-venue">${event.venues?.venue_name || ''}</div>
+              <div class="event-venue">${event.venues?.street_name || ''}</div>
+            </div>
+            <div class="event-date-time">
+              ${event.event_date || ''}<br>${event.event_time || ''}
+            </div>
+          `;
 
-          container.appendChild(el);
+          container.appendChild(eventCard);
         });
 
+        // Send the iframe height to the parent
         setTimeout(() => {
           const height = document.documentElement.scrollHeight;
           parent.postMessage({ type: 'SPONDLE_IFRAME_HEIGHT', height }, '*');
