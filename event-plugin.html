@@ -57,7 +57,7 @@
 
   <button id="generateBtn">Generate Plugin Code</button>
 
-  <textarea id="pluginCode" placeholder="Your plugin code will appear here..." rows="8" readonly></textarea>
+  <textarea id="pluginCode" placeholder="Your combined plugin code will appear here..." rows="10" readonly></textarea>
   <div id="errorLog"></div>
 
   <!-- Supabase JS -->
@@ -103,9 +103,18 @@
         if (bgColour) src += `&bg=${encodeURIComponent(bgColour)}`;
         if (textColour) src += `&text=${encodeURIComponent(textColour)}`;
 
-        const iframeCode = `<iframe src="${src}" width="100%" style="border:none;" onload="window.addEventListener('message', function(e) { if (e.origin === 'https://spondle-uk.vercel.app' && e.data.height) { document.querySelector('iframe').style.height = e.data.height + 'px'; } });"></iframe>`;
+        // Build single block with <iframe> + <script> properly escaped
+        const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>\n` +
+`<script>
+window.addEventListener("message", function(e) {
+  if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {
+    var iframe = document.getElementById("spondle-plugin");
+    if (iframe) iframe.style.height = e.data.height + "px";
+  }
+});
+</scr` + `ipt>`;
 
-        output.value = iframeCode;
+        output.value = fullCode;
       } catch (err) {
         errorBox.textContent = err.message || err.toString();
         errorBox.style.display = "block";
