@@ -103,7 +103,10 @@
         if (bgColour) src += `&bg=${encodeURIComponent(bgColour)}`;
         if (textColour) src += `&text=${encodeURIComponent(textColour)}`;
 
-        const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>\n<script>\nwindow.addEventListener("message", function(e) {\n  if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {\n    var iframe = document.getElementById("spondle-plugin");\n    if (iframe) iframe.style.height = e.data.height + "px";\n  }\n});\n</script>`;
+        let fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>\n<script>\nwindow.addEventListener("message", function(e) {\n  if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {\n    var iframe = document.getElementById("spondle-plugin");\n    if (iframe) iframe.style.height = e.data.height + "px";\n  }\n});\n</script>`;
+
+        // Escape </script> to prevent breaking the real <script> tag in the HTML page
+        fullCode = fullCode.replace(/<\/script>/gi, "<\\/script>");
 
         output.value = fullCode;
       } catch (err) {
