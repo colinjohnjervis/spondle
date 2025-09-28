@@ -12,32 +12,20 @@
       margin: auto;
     }
 
-    input, textarea {
-      display: block;
+    input, textarea, button {
       width: 100%;
-      padding: 0.5rem;
+      padding: 0.6rem;
       margin-top: 1rem;
-      font-size: 1rem;
-    }
-
-    textarea {
-      height: 300px;
-      font-family: monospace;
       font-size: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      resize: vertical;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
 
     button {
-      padding: 0.6rem 1.2rem;
       background: black;
       color: white;
       border: none;
       cursor: pointer;
-      border-radius: 4px;
-      margin-top: 1rem;
     }
 
     #userStatus {
@@ -53,6 +41,12 @@
       margin-top: 1rem;
       display: none;
     }
+
+    label {
+      margin-top: 1rem;
+      display: block;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -61,13 +55,14 @@
 
   <div id="userStatus">Checking login status...</div>
 
-  <label for="bgColor">Background Colour (Hex)</label>
-  <input type="text" id="bgColor" placeholder="e.g. ffffff" />
+  <label for="bgColour">Background Colour (Hex)</label>
+  <input type="text" id="bgColour" placeholder="e.g. ffffff" />
 
-  <label for="textColor">Text Colour (Hex)</label>
-  <input type="text" id="textColor" placeholder="e.g. 000000" />
+  <label for="textColour">Text Colour (Hex)</label>
+  <input type="text" id="textColour" placeholder="e.g. 000000" />
 
   <button id="generateBtn">Generate Plugin Code</button>
+
   <textarea id="pluginCode" placeholder="Your plugin code will appear here..." readonly></textarea>
   <div id="errorLog"></div>
 
@@ -81,65 +76,50 @@
     );
 
     const userStatus = document.getElementById("userStatus");
-    const pluginCode = document.getElementById("pluginCode");
-    const errorLog = document.getElementById("errorLog");
-    const generateBtn = document.getElementById("generateBtn");
-    const bgColorInput = document.getElementById("bgColor");
-    const textColorInput = document.getElementById("textColor");
 
-    let organiserId = null;
-
-    async function checkUser() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data.session || !data.session.user) {
-        userStatus.textContent = "❌ You are not signed in.";
-        return;
+    // Check login
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        userStatus.textContent = user
+          ? `✅ Logged in as user: ${user.id}`
+          : "❌ You are not signed in.";
+      } catch (err) {
+        userStatus.textContent = `❌ Error getting user: ${err.message || err}`;
       }
-
-      organiserId = data.session.user.id;
-      userStatus.textContent = `✅ Logged in as user: ${organiserId}`;
-    }
-
-    async function generatePlugin() {
-      pluginCode.value = "";
-      errorLog.style.display = "none";
-
-      if (!organiserId) {
-        errorLog.textContent = "❌ You must be logged in to generate your plugin.";
-        errorLog.style.display = "block";
-        return;
-      }
-
-      const bg = bgColorInput.value.trim();
-      const text = textColorInput.value.trim();
-
-      const url = new URL("https://spondle-uk.vercel.app/event-plugin-gateway.html");
-      url.searchParams.set("organiser_id", organiserId);
-      if (bg) url.searchParams.set("bg", bg);
-      if (text) url.searchParams.set("text", text);
-
-      const iframeCode = `<iframe src="${url.toString()}" width="100%" height="400" frameborder="0" onload="this.contentWindow.postMessage({ type: 'getHeight' }, '*')"></iframe>
-<script>
-  window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'setHeight') {
-      const iframes = document.querySelectorAll('iframe');
-      for (const iframe of iframes) {
-        if (iframe.contentWindow === event.source) {
-          iframe.style.height = event.data.height + 'px';
-        }
-      }
-    }
-  });
-</script>`;
-
-      pluginCode.value = iframeCode;
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      checkUser();
     });
 
-    generateBtn.addEventListener("click", generatePlugin);
+    document.getElementById("generateBtn").addEventListener("click", async () => {
+      const output = document.getElementById("pluginCode");
+      const errorBox = document.getElementById("errorLog");
+      const bgColour = document.getElementById("bgColour").value.trim();
+      const textColour = document.getElementById("textColour").value.trim();
+
+      output.value = "";
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
+
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (!user) throw new Error("You are not logged in. Please sign in first.");
+
+        const organiserId = user.id;
+
+        let src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}`;
+
+        if (bgColour) src += `&bg=${encodeURIComponent(bgColour)}`;
+        if (textColour) src += `&text=${encodeURIComponent(textColour)}`;
+
+        const iframeCode = `<iframe src="${src}" width="100%" frameborder="0" onload="this.style.height=this.contentWindow.document.body.scrollHeight + 'px';"></iframe>`;
+
+        output.value = iframeCode;
+      } catch (err) {
+        errorBox.textContent = err.message || err.toString();
+        errorBox.style.display = "block";
+      }
+    });
   </script>
 </body>
 </html>
