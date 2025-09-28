@@ -57,7 +57,7 @@
 
   <button id="generateBtn">Generate Plugin Code</button>
 
-  <textarea id="pluginCode" placeholder="Your combined plugin code will appear here..." rows="10" readonly></textarea>
+  <textarea id="pluginCode" placeholder="Your combined plugin code will appear here..." rows="12" readonly></textarea>
   <div id="errorLog"></div>
 
   <!-- Supabase JS -->
@@ -80,7 +80,7 @@
           userStatus.textContent = "❌ You are not signed in.";
         }
       } catch (err) {
-        userStatus.textContent = `❌ Error getting user: ${err.message || err}`;
+        userStatus.textContent = `❌ Error: ${err.message || err}`;
       }
     });
 
@@ -96,14 +96,23 @@
       try {
         const { data: { user }, error } = await supabase.auth.getUser();
         if (error) throw error;
-        if (!user) throw new Error("You are not logged in. Please sign in first.");
+        if (!user) throw new Error("You are not logged in.");
 
         const organiserId = user.id;
         let src = `https://spondle-uk.vercel.app/event-plugin-gateway.html?organiser_id=${organiserId}`;
         if (bgColour) src += `&bg=${encodeURIComponent(bgColour)}`;
         if (textColour) src += `&text=${encodeURIComponent(textColour)}`;
 
-        const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>\n\n<script>\n  window.addEventListener("message", function(e) {\n    if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {\n      const iframe = document.getElementById("spondle-plugin");\n      if (iframe) iframe.style.height = e.data.height + "px";\n    }\n  });\n</script>`;
+        const fullCode = `<iframe id="spondle-plugin" src="${src}" width="100%" style="border:none;" frameborder="0"></iframe>
+
+<script>
+  window.addEventListener("message", function(e) {
+    if (e.origin === "https://spondle-uk.vercel.app" && e.data.height) {
+      const iframe = document.getElementById("spondle-plugin");
+      if (iframe) iframe.style.height = e.data.height + "px";
+    }
+  });
+</script>`;
 
         output.value = fullCode;
       } catch (err) {
