@@ -53,7 +53,14 @@
     async function loadEvents() {
       const { data, error } = await supabase
         .from('events')
-        .select('*, venues(venue_name, locations(town_city))')
+        .select(`
+          *,
+          venues (
+            venue_name,
+            location_id,
+            locations ( town_city )
+          )
+        `)
         .eq('publish_status', 'published')
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
@@ -79,7 +86,7 @@
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
-        // Format event_date as "Monday 29 September 2025"
+        // Format event_date as "Thursday 30 October 2025"
         const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
           weekday: 'long',
           day: 'numeric',
@@ -87,10 +94,10 @@
           year: 'numeric'
         });
 
-        // Combine venue + town/city
-        const venueDisplay = event.venues?.venue_name
-          ? `${event.venues.venue_name}${event.venues.locations?.town_city ? ', ' + event.venues.locations.town_city : ''}`
-          : 'Venue TBA';
+        // Venue + Town
+        const venueName = event.venues?.venue_name || 'Venue TBA';
+        const townCity = event.venues?.locations?.town_city || '';
+        const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
 
         card.innerHTML = `
           ${imageContent}
