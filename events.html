@@ -32,7 +32,9 @@
   </main>
 
   <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'events' });</script>
+  <script>
+    Layout.init({ active: 'events' });
+  </script>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -47,25 +49,6 @@
 
     let page = 0;
     const PAGE_SIZE = 12;
-
-    // cache the signed-in user & their favourite event ids
-    let currentUser = null;
-    let favSet = new Set();
-
-    async function initUserAndFavs() {
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user || null;
-      favSet = new Set();
-
-      if (!currentUser) return; // not signed in
-
-      const { data, error } = await supabase
-        .from('event_favourites')
-        .select('event_id')
-        .eq('user_id', currentUser.id);
-
-      if (!error && data) favSet = new Set(data.map(r => r.event_id));
-    }
 
     async function loadEvents() {
       const { data, error } = await supabase
@@ -90,33 +73,34 @@
 
       data.forEach(event => {
         const card = document.createElement('div');
-        card.className = 'relative rounded-xl overflow-hidden shadow bg-gray-900';
+        card.className = 'rounded-xl overflow-hidden shadow bg-gray-900 relative';
 
         const imageContent = event.image_url
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
-        // "Tuesday 30 September 2025"
+        // Format event_date
         const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
-          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
         });
 
+        // Venue display
         const venueName = event.venues?.venue_name || 'Venue TBA';
-        const townCity  = event.venues?.location?.town_city || '';
+        const townCity = event.venues?.location?.town_city || '';
         const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
 
         card.innerHTML = `
           ${imageContent}
-
-          <!-- Heart button (matches demo) -->
-          <button class="heart-btn${favSet.has(event.id) ? ' fav-on' : ''}" data-event-id="${event.id}" aria-label="Save to favourites">
+          <button class="heart-btn" data-event-id="${event.id}">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="1.5" class="w-6 h-6">
+                 stroke="currentColor" stroke-width="1.5" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.81 0-3.402 1.06-4.312 2.625-.91-1.565-2.502-2.625-4.313-2.625C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/>
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
             </svg>
           </button>
-
           <div class="p-4">
             <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
             <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
@@ -124,62 +108,44 @@
           </div>
         `;
 
-        // Wire up click handling
-        const btn = card.querySelector('.heart-btn');
-        btn.addEventListener('click', () => toggleFavourite(btn, event.id));
-
         eventsGrid.appendChild(card);
       });
 
+      attachHeartListeners();
       page++;
-      if (data.length < PAGE_SIZE) loadMoreBtn.style.display = 'none';
+
+      if (data.length < PAGE_SIZE) {
+        loadMoreBtn.style.display = 'none';
+      }
     }
 
-    async function toggleFavourite(btn, eventId) {
-      // require sign-in for server-backed favourites
-      if (!currentUser) {
-        alert('Please sign in to save favourites.');
-        return;
-      }
+    function attachHeartListeners() {
+      document.querySelectorAll('.heart-btn').forEach(btn => {
+        btn.onclick = async () => {
+          const eventId = btn.getAttribute('data-event-id');
+          const user = (await supabase.auth.getUser()).data.user;
+          if (!user) {
+            alert('Please sign in to save favourites.');
+            return;
+          }
 
-      const isOn = btn.classList.contains('fav-on');
-
-      if (isOn) {
-        // remove favourite
-        const { error } = await supabase
-          .from('event_favourites')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('event_id', eventId);
-
-        if (!error) {
-          btn.classList.remove('fav-on');
-          favSet.delete(eventId);
-        } else {
-          console.error('Remove favourite failed:', error);
-        }
-      } else {
-        // add favourite
-        const { error } = await supabase
-          .from('event_favourites')
-          .insert([{ user_id: currentUser.id, event_id: eventId }]);
-
-        if (!error) {
-          btn.classList.add('fav-on');
-          favSet.add(eventId);
-        } else {
-          console.error('Add favourite failed:', error);
-        }
-      }
+          if (btn.classList.contains('fav-on')) {
+            await supabase.from('event_favourites')
+              .delete()
+              .eq('user_id', user.id)
+              .eq('event_id', eventId);
+            btn.classList.remove('fav-on');
+          } else {
+            await supabase.from('event_favourites')
+              .insert([{ user_id: user.id, event_id: eventId }]);
+            btn.classList.add('fav-on');
+          }
+        };
+      });
     }
 
     loadMoreBtn.addEventListener('click', loadEvents);
-
-    // Initial load: get user + favs, then load first page
-    (async () => {
-      await initUserAndFavs();
-      await loadEvents();
-    })();
+    loadEvents();
   </script>
 </body>
 </html>
