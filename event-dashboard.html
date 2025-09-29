@@ -106,8 +106,19 @@
 
       const { data: events, error } = await supabase
         .from("events")
-        .select("*")
-        .eq("organiser_id", user.id);
+        .select(`
+          id,
+          event_name,
+          event_date,
+          event_time,
+          publish_status,
+          venues (
+            venue_name,
+            location:location_id (town_city)
+          )
+        `)
+        .eq("organiser_id", user.id)
+        .order("event_date", { ascending: true });
 
       if (error) {
         console.error(error);
@@ -117,7 +128,7 @@
       // Categorize
       const drafts = events.filter(e => e.publish_status === "draft");
       const published = events.filter(e => e.publish_status === "published");
-      const past = events.filter(e => new Date(e.date) < new Date());
+      const past = events.filter(e => new Date(e.event_date) < new Date());
 
       // Update counts
       document.getElementById("count-drafts").textContent = drafts.length;
@@ -127,11 +138,23 @@
 
       // Render helper
       function renderEventCard(event) {
+        const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        });
+
+        const venueName = event.venues?.venue_name || "Venue TBA";
+        const townCity = event.venues?.location?.town_city || "";
+        const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+
         return `
           <div class="p-4 bg-gray-800 rounded shadow">
-            <h3 class="font-semibold">${event.title}</h3>
-            <p class="text-sm">${event.date} @ Venue ${event.venue_id}</p>
-            <p class="text-xs text-gray-400">${event.publish_status}</p>
+            <h3 class="font-semibold text-lg">${event.event_name}</h3>
+            <p class="text-sm text-gray-300">${formattedDate}</p>
+            <p class="text-sm text-gray-400">${venueDisplay}</p>
+            <p class="text-xs text-gray-500 mt-1">${event.publish_status}</p>
           </div>
         `;
       }
