@@ -288,7 +288,7 @@
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
-    // ✅ Updated submit handler
+    // ✅ Updated submit handler with recurring fix
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const { data: { user } } = await supabase.auth.getUser();
@@ -304,7 +304,7 @@
         publish_status: formData.get('publish_status'),
         image_url: formData.get('image_url'),
         description: formData.get('description'),
-        organiser_id: user.id   // always take from logged-in user
+        organiser_id: user.id
       };
       const venueIds = formData.getAll('venue_id[]');
       const dates = formData.getAll('event_date[]');
@@ -313,16 +313,32 @@
 
       let hadError = false;
 
-      for (let i = 0; i < venueIds.length; i++) {
-        const event = {
-          ...baseData,
-          venue_id: venueIds[i],
-          event_date: dates[i],
-          event_time: times[i],
-          ticket_url: ticketLinks[i] || null
-        };
-        const { error } = await supabase.from('events').insert([event]);
-        if (error) hadError = true;
+      if (eventTypeInput.value === 'recurring') {
+        // One venue, one time, multiple dates
+        for (let i = 0; i < dates.length; i++) {
+          const event = {
+            ...baseData,
+            venue_id: venueIds[0],
+            event_date: dates[i],
+            event_time: times[0],
+            ticket_url: ticketLinks[0] || null
+          };
+          const { error } = await supabase.from('events').insert([event]);
+          if (error) hadError = true;
+        }
+      } else {
+        // Single or Tour (loop over all venue/date/time combos)
+        for (let i = 0; i < venueIds.length; i++) {
+          const event = {
+            ...baseData,
+            venue_id: venueIds[i],
+            event_date: dates[i],
+            event_time: times[i],
+            ticket_url: ticketLinks[i] || null
+          };
+          const { error } = await supabase.from('events').insert([event]);
+          if (error) hadError = true;
+        }
       }
 
       if (hadError) {
