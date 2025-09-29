@@ -29,7 +29,138 @@
   <script src="./spondle-layout.js?v=layout-fixed1"></script>
   <script>Layout.init({ active: 'favourites' });</script>
 
-  <script src="./events-data.js?v=2"></script>
-  <script src="./scripts.js?v=heart4"></script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const eventsGrid = document.getElementById('eventsGrid');
+    const eventsError = document.getElementById('eventsError');
+
+    let user = null;
+    let favouriteEventIds = new Set();
+
+    // Load current user and favourites
+    async function loadUserAndFavourites() {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      user = currentUser;
+
+      if (!user) {
+        eventsGrid.innerHTML = '<p class="text-gray-400">Please log in to view your favourites.</p>';
+        return false;
+      }
+
+      const { data, error } = await supabase
+        .from('event_favourites')
+        .select('event_id')
+        .eq('user_id', user.id);
+
+      if (!error && data) {
+        favouriteEventIds = new Set(data.map(f => f.event_id));
+      }
+
+      return true;
+    }
+
+    // Toggle favourite
+    async function toggleFavourite(eventId, btn) {
+      if (!user) return;
+
+      if (favouriteEventIds.has(eventId)) {
+        await supabase
+          .from('event_favourites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('event_id', eventId);
+
+        favouriteEventIds.delete(eventId);
+        btn.classList.remove('fav-on');
+
+        // Remove card from favourites view
+        btn.closest('.event-card')?.remove();
+
+        if (favouriteEventIds.size === 0) {
+          eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
+        }
+      } else {
+        await supabase
+          .from('event_favourites')
+          .insert([{ user_id: user.id, event_id: eventId }]);
+
+        favouriteEventIds.add(eventId);
+        btn.classList.add('fav-on');
+      }
+    }
+
+    async function loadFavouriteEvents() {
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('events')
+        .select('*, venues(venue_name, location:location_id(town_city))')
+        .in('id', [...favouriteEventIds])
+        .order('event_date', { ascending: true });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        eventsError.classList.remove('hidden');
+        return;
+      }
+
+      if (!data || !data.length) {
+        eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
+        return;
+      }
+
+      eventsGrid.innerHTML = '';
+
+      data.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'event-card relative rounded-xl overflow-hidden shadow bg-gray-900';
+
+        const imageContent = event.image_url
+          ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
+          : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
+
+        const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+
+        const venueName = event.venues?.venue_name || 'Venue TBA';
+        const townCity = event.venues?.location?.town_city || '';
+        const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+
+        card.innerHTML = `
+          ${imageContent}
+          <button class="heart-btn fav-on" aria-label="Favourite">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+          </button>
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
+            <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
+            <p class="text-sm text-gray-400">${venueDisplay}</p>
+          </div>
+        `;
+
+        const heartBtn = card.querySelector('.heart-btn');
+        heartBtn.addEventListener('click', () => toggleFavourite(event.id, heartBtn));
+
+        eventsGrid.appendChild(card);
+      });
+    }
+
+    (async () => {
+      const ok = await loadUserAndFavourites();
+      if (ok) await loadFavouriteEvents();
+    })();
+  </script>
 </body>
 </html>
