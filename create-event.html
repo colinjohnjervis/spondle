@@ -112,7 +112,7 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    // Auto-fill organiser_id from current user
+    // Auto-fill organiser_id from current user (for debugging only)
     supabase.auth.getUser().then(({ data: { user } }) => {
       const organiserInput = document.getElementById('organiser_id');
       if (user && organiserInput) {
@@ -288,8 +288,15 @@
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
+    // ✅ Updated submit handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showBanner('You must be logged in to create events.', false);
+        return;
+      }
+
       const formData = new FormData(form);
       const baseData = {
         event_name: formData.get('event_name'),
@@ -297,7 +304,7 @@
         publish_status: formData.get('publish_status'),
         image_url: formData.get('image_url'),
         description: formData.get('description'),
-        organiser_id: formData.get('organiser_id')
+        organiser_id: user.id   // always take from logged-in user
       };
       const venueIds = formData.getAll('venue_id[]');
       const dates = formData.getAll('event_date[]');
@@ -330,4 +337,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
