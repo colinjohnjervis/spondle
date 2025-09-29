@@ -51,23 +51,16 @@
     const PAGE_SIZE = 12;
 
     async function loadEvents() {
-      // 1) Get events + venue (including location_id)
       const { data, error } = await supabase
         .from('events')
-        .select(`
-          *,
-          venues (
-            venue_name,
-            location_id
-          )
-        `)
+        .select('*, venues(venue_name, location:location_id(town_city))')
         .eq('publish_status', 'published')
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
       if (error) {
-        console.error('Supabase error (events):', error);
+        console.error('Supabase error:', error);
         eventsError.classList.remove('hidden');
         return;
       }
@@ -78,28 +71,6 @@
         return;
       }
 
-      // 2) Fetch locations in one batch and map id -> town_city
-      const locationIds = [...new Set(
-        data.map(ev => ev.venues?.location_id).filter(Boolean)
-      )];
-
-      let locationsById = {};
-      if (locationIds.length) {
-        const { data: locations, error: locErr } = await supabase
-          .from('locations')
-          .select('id, town_city')
-          .in('id', locationIds);
-
-        if (locErr) {
-          console.warn('Supabase warning (locations):', locErr);
-        } else if (locations) {
-          locationsById = Object.fromEntries(
-            locations.map(l => [l.id, l])
-          );
-        }
-      }
-
-      // 3) Render cards
       data.forEach(event => {
         const card = document.createElement('div');
         card.className = 'rounded-xl overflow-hidden shadow bg-gray-900';
@@ -108,7 +79,7 @@
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
-        // "Thursday 30 October 2025"
+        // Format event_date as "Monday 29 September 2025"
         const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
           weekday: 'long',
           day: 'numeric',
@@ -116,16 +87,16 @@
           year: 'numeric'
         });
 
+        // Build venue string: "The Fleece, Bristol"
         const venueName = event.venues?.venue_name || 'Venue TBA';
-        const locId = event.venues?.location_id;
-        const townCity = (locId && locationsById[locId]?.town_city) || '';
+        const townCity = event.venues?.location?.town_city || '';
         const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
 
         card.innerHTML = `
           ${imageContent}
           <div class="p-4">
             <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-            <p class="text-sm text-gray-400">${formattedDate}</p>
+            <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
             <p class="text-sm text-gray-400">${venueDisplay}</p>
           </div>
         `;
@@ -134,6 +105,7 @@
       });
 
       page++;
+
       if (data.length < PAGE_SIZE) {
         loadMoreBtn.style.display = 'none';
       }
