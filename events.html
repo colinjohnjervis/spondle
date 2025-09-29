@@ -49,66 +49,11 @@
 
     let page = 0;
     const PAGE_SIZE = 12;
-    let currentUser = null;
-    let userFavourites = new Set();
-
-    // Fetch logged-in user
-    async function getUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user;
-      if (currentUser) {
-        await loadUserFavourites();
-      }
-    }
-
-    // Load user favourites from Supabase
-    async function loadUserFavourites() {
-      const { data, error } = await supabase
-        .from('event_favourites')
-        .select('event_id')
-        .eq('user_id', currentUser.id);
-
-      if (!error && data) {
-        userFavourites = new Set(data.map(row => row.event_id));
-      }
-    }
-
-    // Toggle favourite in Supabase
-    async function toggleFavourite(eventId, heartBtn) {
-      if (!currentUser) {
-        alert('Please sign in to save favourites.');
-        return;
-      }
-
-      if (userFavourites.has(eventId)) {
-        // Remove favourite
-        const { error } = await supabase
-          .from('event_favourites')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('event_id', eventId);
-
-        if (!error) {
-          userFavourites.delete(eventId);
-          heartBtn.classList.remove('fav-on');
-        }
-      } else {
-        // Add favourite
-        const { error } = await supabase
-          .from('event_favourites')
-          .insert([{ user_id: currentUser.id, event_id: eventId }]);
-
-        if (!error) {
-          userFavourites.add(eventId);
-          heartBtn.classList.add('fav-on');
-        }
-      }
-    }
 
     async function loadEvents() {
       const { data, error } = await supabase
         .from('events')
-        .select('id, event_name, event_date, image_url, venues(venue_name, location:location_id(town_city))')
+        .select('*, venues(venue_name, location:location_id(town_city))')
         .eq('publish_status', 'published')
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
@@ -134,6 +79,7 @@
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
+        // Format event_date as "Monday 29 September 2025"
         const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
           weekday: 'long',
           day: 'numeric',
@@ -141,17 +87,18 @@
           year: 'numeric'
         });
 
+        // Build venue string: "The Fleece, Bristol"
         const venueName = event.venues?.venue_name || 'Venue TBA';
         const townCity = event.venues?.location?.town_city || '';
         const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
 
-        const favClass = userFavourites.has(event.id) ? 'fav-on' : '';
-
         card.innerHTML = `
           ${imageContent}
-          <button class="heart-btn ${favClass}" data-event-id="${event.id}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
-              <path d="M12 21C12 21 5 14.5 5 9.5C5 6.42 7.42 4 10.5 4C12.24 4 13.91 4.81 15 6.08C16.09 4.81 17.76 4 19.5 4C22.58 4 25 6.42 25 9.5C25 14.5 18 21 18 21H12Z"/>
+          <button class="heart-btn" data-event-id="${event.id}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 21c-4.35-3.42-7-6.48-7-10a5 5 0 0110 0 5 5 0 0110 0c0 3.52-2.65 6.58-7 10z" />
             </svg>
           </button>
           <div class="p-4">
@@ -162,10 +109,6 @@
         `;
 
         eventsGrid.appendChild(card);
-
-        // Wire up heart toggle
-        const heartBtn = card.querySelector('.heart-btn');
-        heartBtn.addEventListener('click', () => toggleFavourite(event.id, heartBtn));
       });
 
       page++;
@@ -176,12 +119,7 @@
     }
 
     loadMoreBtn.addEventListener('click', loadEvents);
-
-    // Initialise: get user, then load events
-    (async () => {
-      await getUser();
-      loadEvents();
-    })();
+    loadEvents(); // Initial load
   </script>
 </body>
 </html>
