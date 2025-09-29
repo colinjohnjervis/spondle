@@ -53,7 +53,7 @@
     async function loadEvents() {
       const { data, error } = await supabase
         .from('events')
-        .select('*, venues(venue_name)')
+        .select('*, venues(venue_name, locations(town_city))')
         .eq('publish_status', 'published')
         .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
@@ -87,12 +87,17 @@
           year: 'numeric'
         });
 
+        // Combine venue + town/city
+        const venueDisplay = event.venues?.venue_name
+          ? `${event.venues.venue_name}${event.venues.locations?.town_city ? ', ' + event.venues.locations.town_city : ''}`
+          : 'Venue TBA';
+
         card.innerHTML = `
           ${imageContent}
           <div class="p-4">
+            <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
             <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-            <p class="text-sm text-gray-400">${event.venues?.venue_name || 'Venue TBA'}</p>
-            <p class="text-sm text-gray-400">${formattedDate}</p>
+            <p class="text-sm text-gray-400">${venueDisplay}</p>
           </div>
         `;
 
