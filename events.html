@@ -18,18 +18,29 @@
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
       <p class="text-[color:var(--muted)] mt-3">Browse the latest listings from all organisers.</p>
 
-      <!-- 🔍 Search + Date Filters -->
-      <form id="searchForm" class="mt-6 grid gap-4 sm:grid-cols-4">
-        <input type="text" id="searchInput" placeholder="Search by event or venue..." 
-               class="col-span-2 p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        <input type="date" id="startDate" 
-               class="p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        <input type="date" id="endDate" 
-               class="p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        <button type="submit" 
-                class="sm:col-span-4 px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
-          Apply Filters
-        </button>
+      <!-- Filters -->
+      <form id="searchForm" class="mt-6 grid grid-cols-1 md:grid-cols-4 items-end gap-3">
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-400 mb-1">Search</label>
+          <input id="searchInput" type="text" placeholder="Search by event or venue..."
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">From</label>
+          <input id="startDate" type="date"
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">To</label>
+          <input id="endDate" type="date"
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div class="md:col-span-4">
+          <button type="submit"
+                  class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
+            Apply Filters
+          </button>
+        </div>
       </form>
     </section>
 
@@ -46,16 +57,15 @@
   </main>
 
   <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>
-    Layout.init({ active: 'events' });
-  </script>
+  <script>Layout.init({ active: 'events' });</script>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
 
     const eventsGrid = document.getElementById('eventsGrid');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
@@ -65,94 +75,51 @@
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
 
-    let page = 0;
     const PAGE_SIZE = 12;
+    let page = 0;
+
     let user = null;
     let favouriteEventIds = new Set();
-    let currentFilters = { query: '', start: '', end: '' };
 
-    // Load current user and favourites
+    // When searching, we buffer all matching rows and page client-side.
+    let usingClientBuffer = false;
+    let buffer = [];
+
+    // ---- Auth + favourites
     async function loadUserAndFavourites() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       user = currentUser;
-
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('event_favourites')
         .select('event_id')
         .eq('user_id', user.id);
 
-      if (!error && data) {
-        favouriteEventIds = new Set(data.map(f => f.event_id));
-      }
+      if (data) favouriteEventIds = new Set(data.map(r => r.event_id));
     }
 
-    // Toggle favourite in Supabase
     async function toggleFavourite(eventId, btn) {
-      if (!user) {
-        alert("Please log in to save favourites.");
-        return;
-      }
+      if (!user) return alert('Please log in to save favourites.');
 
       if (favouriteEventIds.has(eventId)) {
-        await supabase
-          .from('event_favourites')
+        await supabase.from('event_favourites')
           .delete()
           .eq('user_id', user.id)
           .eq('event_id', eventId);
         favouriteEventIds.delete(eventId);
         btn.classList.remove('fav-on');
       } else {
-        await supabase
-          .from('event_favourites')
+        await supabase.from('event_favourites')
           .insert([{ user_id: user.id, event_id: eventId }]);
         favouriteEventIds.add(eventId);
         btn.classList.add('fav-on');
       }
     }
 
-    // Load events with filters
-    async function loadEvents() {
-      let query = supabase
-        .from('events')
-        .select('*, venues(venue_name, location:location_id(town_city))')
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-
-      // Date filters
-      if (currentFilters.start) {
-        query = query.gte('event_date', currentFilters.start);
-      } else {
-        query = query.gte('event_date', new Date().toISOString().split('T')[0]);
-      }
-      if (currentFilters.end) {
-        query = query.lte('event_date', currentFilters.end);
-      }
-
-      // Text search (event name OR venue name)
-      if (currentFilters.query) {
-        query = query.or(
-          `event_name.ilike.%${currentFilters.query}%,venues.venue_name.ilike.%${currentFilters.query}%`
-        );
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Supabase error:', error);
-        eventsError.classList.remove('hidden');
-        return;
-      }
-
-      if (!data.length && page === 0) {
-        eventsGrid.innerHTML = '<p class="text-gray-400">No events found.</p>';
-        loadMoreBtn.style.display = 'none';
-        return;
-      }
-
-      data.forEach(event => {
+    // ---- Render
+    function renderCards(rows) {
+      for (const event of rows) {
         const card = document.createElement('div');
         card.className = 'relative rounded-xl overflow-hidden shadow bg-gray-900';
 
@@ -161,10 +128,7 @@
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
         const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         });
 
         const venueName = event.venues?.venue_name || 'Venue TBA';
@@ -192,35 +156,127 @@
         heartBtn.addEventListener('click', () => toggleFavourite(event.id, heartBtn));
 
         eventsGrid.appendChild(card);
-      });
+      }
+    }
 
+    // ---- Base server-paged loader (no text search)
+    async function loadEventsServerPaged({ startDate, endDate }) {
+      let q = supabase
+        .from('events')
+        .select('*, venues(venue_name, location:location_id(town_city))')
+        .eq('publish_status', 'published')
+        .order('event_date', { ascending: true })
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+
+      const today = new Date().toISOString().split('T')[0];
+      q = q.gte('event_date', startDate || today);
+      if (endDate) q = q.lte('event_date', endDate);
+
+      const { data, error } = await q;
+      if (error) throw error;
+
+      renderCards(data);
       page++;
-      if (data.length < PAGE_SIZE) {
+
+      if (data.length < PAGE_SIZE) loadMoreBtn.style.display = 'none';
+    }
+
+    // ---- Text search (safe cross-table): build a client buffer then page it
+    async function buildClientBuffer({ text, startDate, endDate }) {
+      // shared select fields
+      const selectCols = 'id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))';
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // A) by event name
+      let q1 = supabase.from('events')
+        .select(selectCols)
+        .eq('publish_status', 'published')
+        .order('event_date', { ascending: true })
+        .ilike('event_name', `%${text}%`)
+        .limit(500);
+
+      q1 = q1.gte('event_date', startDate || today);
+      if (endDate) q1 = q1.lte('event_date', endDate);
+
+      // B) by venue name (inner join to filter on related table)
+      let q2 = supabase.from('events')
+        .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
+        .eq('publish_status', 'published')
+        .order('event_date', { ascending: true })
+        .ilike('venues.venue_name', `%${text}%`)
+        .limit(500);
+
+      q2 = q2.gte('event_date', startDate || today);
+      if (endDate) q2 = q2.lte('event_date', endDate);
+
+      const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
+
+      const dedup = new Map();
+      [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
+      buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
+      usingClientBuffer = true;
+    }
+
+    function loadFromClientBuffer() {
+      const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+      renderCards(slice);
+      page++;
+
+      if (page * PAGE_SIZE >= buffer.length) loadMoreBtn.style.display = 'none';
+    }
+
+    // ---- Orchestrator
+    async function initialLoad(filters) {
+      eventsGrid.innerHTML = '';
+      eventsError.classList.add('hidden');
+      loadMoreBtn.style.display = 'block';
+      page = 0;
+
+      const { text, startDate, endDate } = filters;
+
+      try {
+        if (text) {
+          await buildClientBuffer({ text, startDate, endDate });
+          loadFromClientBuffer();
+        } else {
+          usingClientBuffer = false;
+          await loadEventsServerPaged({ startDate, endDate });
+        }
+      } catch (err) {
+        console.error(err);
+        eventsError.classList.remove('hidden');
         loadMoreBtn.style.display = 'none';
       }
     }
 
-    // Handle search form
-    searchForm.addEventListener('submit', e => {
-      e.preventDefault();
-      currentFilters.query = searchInput.value.trim();
-      currentFilters.start = startDateInput.value;
-      currentFilters.end = endDateInput.value;
-
-      // reset
-      page = 0;
-      eventsGrid.innerHTML = '';
-      loadMoreBtn.style.display = 'block';
-
-      loadEvents();
+    // ---- Events
+    loadMoreBtn.addEventListener('click', () => {
+      if (usingClientBuffer) {
+        loadFromClientBuffer();
+      } else {
+        initialLoad({
+          text: '',                       // keep no text; server paged mode
+          startDate: startDateInput.value,
+          endDate: endDateInput.value
+        });
+      }
     });
 
-    loadMoreBtn.addEventListener('click', loadEvents);
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const filters = {
+        text: searchInput.value.trim(),
+        startDate: startDateInput.value,
+        endDate: endDateInput.value
+      };
+      initialLoad(filters);
+    });
 
-    // Initial load
+    // First load
     (async () => {
       await loadUserAndFavourites();
-      await loadEvents();
+      await initialLoad({ text: '', startDate: '', endDate: '' });
     })();
   </script>
 </body>
