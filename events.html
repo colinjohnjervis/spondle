@@ -14,11 +14,42 @@
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+
+    <!-- 🔎 Search & Date Filters -->
+    <section class="panel p-6 md:p-8">
+      <form id="searchForm" class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1">
+          <label class="block text-sm text-gray-400 mb-1">Search events</label>
+          <input type="text" id="searchQuery"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-600"
+            placeholder="Search by name, category, or venue...">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">From</label>
+          <input type="date" id="startDate"
+            class="p-2 rounded bg-gray-800 border border-gray-600">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">To</label>
+          <input type="date" id="endDate"
+            class="p-2 rounded bg-gray-800 border border-gray-600">
+        </div>
+        <div>
+          <button type="submit"
+            class="px-4 py-2 bg-[color:var(--brand)] text-black font-semibold rounded hover:opacity-90 transition">
+            Apply
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Events header -->
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
       <p class="text-[color:var(--muted)] mt-3">Browse the latest listings from all organisers.</p>
     </section>
 
+    <!-- Events grid -->
     <section>
       <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
       <div class="flex justify-center mt-6">
@@ -39,81 +70,99 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
 
     const eventsGrid = document.getElementById('eventsGrid');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const eventsError = document.getElementById('eventsError');
+
+    const searchForm = document.getElementById('searchForm');
+    const searchQuery = document.getElementById('searchQuery');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
 
     let page = 0;
     const PAGE_SIZE = 12;
     let user = null;
     let favouriteEventIds = new Set();
 
-    // Load current user and favourites
+    let currentFilters = {
+      query: '',
+      start: '',
+      end: ''
+    };
+
+    // Load current user + favourites
     async function loadUserAndFavourites() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       user = currentUser;
-
       if (!user) return;
-
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('event_favourites')
         .select('event_id')
         .eq('user_id', user.id);
-
-      if (!error && data) {
-        favouriteEventIds = new Set(data.map(f => f.event_id));
-      }
+      if (data) favouriteEventIds = new Set(data.map(f => f.event_id));
     }
 
-    // Toggle favourite in Supabase
     async function toggleFavourite(eventId, btn) {
       if (!user) {
         alert("Please log in to save favourites.");
         return;
       }
-
       if (favouriteEventIds.has(eventId)) {
-        // Remove from favourites
-        await supabase
-          .from('event_favourites')
+        await supabase.from('event_favourites')
           .delete()
           .eq('user_id', user.id)
           .eq('event_id', eventId);
-
         favouriteEventIds.delete(eventId);
         btn.classList.remove('fav-on');
       } else {
-        // Add to favourites
-        await supabase
-          .from('event_favourites')
+        await supabase.from('event_favourites')
           .insert([{ user_id: user.id, event_id: eventId }]);
-
         favouriteEventIds.add(eventId);
         btn.classList.add('fav-on');
       }
     }
 
-    async function loadEvents() {
-      const { data, error } = await supabase
+    async function loadEvents(reset = false) {
+      if (reset) {
+        page = 0;
+        eventsGrid.innerHTML = '';
+        loadMoreBtn.style.display = 'block';
+      }
+
+      let query = supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
         .eq('publish_status', 'published')
-        .gte('event_date', new Date().toISOString().split('T')[0])
         .order('event_date', { ascending: true })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
+      // Apply filters
+      if (currentFilters.query) {
+        query = query.ilike('event_name', `%${currentFilters.query}%`);
+      }
+      if (currentFilters.start) {
+        query = query.gte('event_date', currentFilters.start);
+      } else {
+        // default: only future events
+        query = query.gte('event_date', new Date().toISOString().split('T')[0]);
+      }
+      if (currentFilters.end) {
+        query = query.lte('event_date', currentFilters.end);
+      }
+
+      const { data, error } = await query;
       if (error) {
-        console.error('Supabase error:', error);
+        console.error(error);
         eventsError.classList.remove('hidden');
         return;
       }
-
       if (!data.length && page === 0) {
-        eventsGrid.innerHTML = '<p class="text-gray-400">No upcoming events found.</p>';
+        eventsGrid.innerHTML = '<p class="text-gray-400">No matching events found.</p>';
         loadMoreBtn.style.display = 'none';
         return;
       }
@@ -126,7 +175,6 @@
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
-        // Format event_date
         const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
           weekday: 'long',
           day: 'numeric',
@@ -134,12 +182,10 @@
           year: 'numeric'
         });
 
-        // Venue string
         const venueName = event.venues?.venue_name || 'Venue TBA';
         const townCity = event.venues?.location?.town_city || '';
         const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
 
-        // Check if this event is already favourited
         const isFavourited = favouriteEventIds.has(event.id);
 
         card.innerHTML = `
@@ -164,18 +210,25 @@
       });
 
       page++;
-
       if (data.length < PAGE_SIZE) {
         loadMoreBtn.style.display = 'none';
       }
     }
 
-    loadMoreBtn.addEventListener('click', loadEvents);
+    loadMoreBtn.addEventListener('click', () => loadEvents());
 
-    // First load user + favourites, then events
+    // Search form submit
+    searchForm.addEventListener('submit', e => {
+      e.preventDefault();
+      currentFilters.query = searchQuery.value.trim();
+      currentFilters.start = startDate.value;
+      currentFilters.end = endDate.value;
+      loadEvents(true);
+    });
+
     (async () => {
       await loadUserAndFavourites();
-      await loadEvents();
+      await loadEvents(true);
     })();
   </script>
 </body>
