@@ -14,42 +14,25 @@
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
-
-    <!-- 🔎 Search & Date Filters -->
-    <section class="panel p-6 md:p-8">
-      <form id="searchForm" class="flex flex-wrap gap-4 items-end">
-        <div class="flex-1">
-          <label class="block text-sm text-gray-400 mb-1">Search events</label>
-          <input type="text" id="searchQuery"
-            class="w-full p-2 rounded bg-gray-800 border border-gray-600"
-            placeholder="Search by name, category, or venue...">
-        </div>
-        <div>
-          <label class="block text-sm text-gray-400 mb-1">From</label>
-          <input type="date" id="startDate"
-            class="p-2 rounded bg-gray-800 border border-gray-600">
-        </div>
-        <div>
-          <label class="block text-sm text-gray-400 mb-1">To</label>
-          <input type="date" id="endDate"
-            class="p-2 rounded bg-gray-800 border border-gray-600">
-        </div>
-        <div>
-          <button type="submit"
-            class="px-4 py-2 bg-[color:var(--brand)] text-black font-semibold rounded hover:opacity-90 transition">
-            Apply
-          </button>
-        </div>
-      </form>
-    </section>
-
-    <!-- Events header -->
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
       <p class="text-[color:var(--muted)] mt-3">Browse the latest listings from all organisers.</p>
+
+      <!-- 🔍 Search + Date Filters -->
+      <form id="searchForm" class="mt-6 grid gap-4 sm:grid-cols-4">
+        <input type="text" id="searchInput" placeholder="Search by event or venue..." 
+               class="col-span-2 p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <input type="date" id="startDate" 
+               class="p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <input type="date" id="endDate" 
+               class="p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <button type="submit" 
+                class="sm:col-span-4 px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
+          Apply Filters
+        </button>
+      </form>
     </section>
 
-    <!-- Events grid -->
     <section>
       <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
       <div class="flex justify-center mt-6">
@@ -70,70 +53,67 @@
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-    );
+    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const eventsGrid = document.getElementById('eventsGrid');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const eventsError = document.getElementById('eventsError');
-
     const searchForm = document.getElementById('searchForm');
-    const searchQuery = document.getElementById('searchQuery');
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
+    const searchInput = document.getElementById('searchInput');
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
 
     let page = 0;
     const PAGE_SIZE = 12;
     let user = null;
     let favouriteEventIds = new Set();
+    let currentFilters = { query: '', start: '', end: '' };
 
-    let currentFilters = {
-      query: '',
-      start: '',
-      end: ''
-    };
-
-    // Load current user + favourites
+    // Load current user and favourites
     async function loadUserAndFavourites() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       user = currentUser;
+
       if (!user) return;
-      const { data } = await supabase
+
+      const { data, error } = await supabase
         .from('event_favourites')
         .select('event_id')
         .eq('user_id', user.id);
-      if (data) favouriteEventIds = new Set(data.map(f => f.event_id));
+
+      if (!error && data) {
+        favouriteEventIds = new Set(data.map(f => f.event_id));
+      }
     }
 
+    // Toggle favourite in Supabase
     async function toggleFavourite(eventId, btn) {
       if (!user) {
         alert("Please log in to save favourites.");
         return;
       }
+
       if (favouriteEventIds.has(eventId)) {
-        await supabase.from('event_favourites')
+        await supabase
+          .from('event_favourites')
           .delete()
           .eq('user_id', user.id)
           .eq('event_id', eventId);
         favouriteEventIds.delete(eventId);
         btn.classList.remove('fav-on');
       } else {
-        await supabase.from('event_favourites')
+        await supabase
+          .from('event_favourites')
           .insert([{ user_id: user.id, event_id: eventId }]);
         favouriteEventIds.add(eventId);
         btn.classList.add('fav-on');
       }
     }
 
-    async function loadEvents(reset = false) {
-      if (reset) {
-        page = 0;
-        eventsGrid.innerHTML = '';
-        loadMoreBtn.style.display = 'block';
-      }
-
+    // Load events with filters
+    async function loadEvents() {
       let query = supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
@@ -141,28 +121,33 @@
         .order('event_date', { ascending: true })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
-      // Apply filters
-      if (currentFilters.query) {
-        query = query.ilike('event_name', `%${currentFilters.query}%`);
-      }
+      // Date filters
       if (currentFilters.start) {
         query = query.gte('event_date', currentFilters.start);
       } else {
-        // default: only future events
         query = query.gte('event_date', new Date().toISOString().split('T')[0]);
       }
       if (currentFilters.end) {
         query = query.lte('event_date', currentFilters.end);
       }
 
+      // Text search (event name OR venue name)
+      if (currentFilters.query) {
+        query = query.or(
+          `event_name.ilike.%${currentFilters.query}%,venues.venue_name.ilike.%${currentFilters.query}%`
+        );
+      }
+
       const { data, error } = await query;
+
       if (error) {
-        console.error(error);
+        console.error('Supabase error:', error);
         eventsError.classList.remove('hidden');
         return;
       }
+
       if (!data.length && page === 0) {
-        eventsGrid.innerHTML = '<p class="text-gray-400">No matching events found.</p>';
+        eventsGrid.innerHTML = '<p class="text-gray-400">No events found.</p>';
         loadMoreBtn.style.display = 'none';
         return;
       }
@@ -215,20 +200,27 @@
       }
     }
 
-    loadMoreBtn.addEventListener('click', () => loadEvents());
-
-    // Search form submit
+    // Handle search form
     searchForm.addEventListener('submit', e => {
       e.preventDefault();
-      currentFilters.query = searchQuery.value.trim();
-      currentFilters.start = startDate.value;
-      currentFilters.end = endDate.value;
-      loadEvents(true);
+      currentFilters.query = searchInput.value.trim();
+      currentFilters.start = startDateInput.value;
+      currentFilters.end = endDateInput.value;
+
+      // reset
+      page = 0;
+      eventsGrid.innerHTML = '';
+      loadMoreBtn.style.display = 'block';
+
+      loadEvents();
     });
 
+    loadMoreBtn.addEventListener('click', loadEvents);
+
+    // Initial load
     (async () => {
       await loadUserAndFavourites();
-      await loadEvents(true);
+      await loadEvents();
     })();
   </script>
 </body>
