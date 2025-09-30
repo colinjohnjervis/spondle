@@ -6,7 +6,7 @@
   <title>Events – Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./spondle-layout.css?v=1005">
   <link rel="stylesheet" href="./styles.css?v=3">
   <link rel="stylesheet" href="./hearts.css?v=2">
 </head>
@@ -14,8 +14,6 @@
   <!-- Layout (sidebar + sticky header) gets injected here -->
   <div id="layout-root"></div>
 
-  <!-- Your page content lives directly under the injected layout.
-       No extra .content wrapper, no extra header. -->
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
@@ -60,12 +58,14 @@
   </main>
 
   <!-- Layout script (injects sidebar + sticky header) -->
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script src="./spondle-layout.js?v=1005" type="module"></script>
   <script>
-    window.Layout?.init({ active: 'events' });
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "events" });
+    });
   </script>
 
-  <!-- Page logic (unchanged from your working version) -->
+  <!-- Page logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -87,7 +87,6 @@
 
     let user = null;
     let favouriteEventIds = new Set();
-
     let usingClientBuffer = false;
     let buffer = [];
 
