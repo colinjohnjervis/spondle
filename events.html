@@ -11,38 +11,13 @@
   <link rel="stylesheet" href="./hearts.css?v=2">
 </head>
 <body>
-  <!-- Layout (sidebar + sticky header) gets injected here -->
+  <!-- Layout (sidebar + sticky header + global search) gets injected here -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold">All Events</h1>
       <p class="text-[color:var(--muted)] mt-3">Browse the latest listings from all organisers.</p>
-
-      <!-- Filters -->
-      <form id="searchForm" class="mt-6 grid grid-cols-1 md:grid-cols-4 items-end gap-3">
-        <div class="md:col-span-2">
-          <label class="block text-xs text-gray-400 mb-1">Search</label>
-          <input id="searchInput" type="text" placeholder="Search by event or venue..."
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">From</label>
-          <input id="startDate" type="date"
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">To</label>
-          <input id="endDate" type="date"
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div class="md:col-span-4">
-          <button type="submit"
-                  class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
-            Apply Filters
-          </button>
-        </div>
-      </form>
     </section>
 
     <section>
@@ -57,7 +32,7 @@
     </section>
   </main>
 
-  <!-- Layout script (injects sidebar + sticky header) -->
+  <!-- Layout script (injects sidebar + sticky header + global search) -->
   <script src="./spondle-layout.js?v=layout-fixed1" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
@@ -77,10 +52,28 @@
     const eventsGrid = document.getElementById('eventsGrid');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const eventsError = document.getElementById('eventsError');
-    const searchForm = document.getElementById('searchForm');
-    const searchInput = document.getElementById('searchInput');
-    const startDateInput = document.getElementById('startDate');
-    const endDateInput = document.getElementById('endDate');
+
+    // Grab global search inputs injected by layout
+    let searchForm, searchInput, startDateInput, endDateInput;
+    window.addEventListener("DOMContentLoaded", () => {
+      searchForm = document.getElementById('globalSearchForm');
+      searchInput = document.getElementById('globalSearchInput');
+      startDateInput = document.getElementById('globalStartDate');
+      endDateInput = document.getElementById('globalEndDate');
+
+      if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const filters = {
+            text: searchInput.value.trim(),
+            startDate: startDateInput.value,
+            endDate: endDateInput.value
+          };
+          initialLoad(filters);
+          document.body.classList.remove('search-open'); // close panel after search
+        });
+      }
+    });
 
     const PAGE_SIZE = 12;
     let page = 0;
@@ -247,43 +240,21 @@
       }
     }
 
-    // Load More
+    // ---- Load More ----
     loadMoreBtn.addEventListener('click', () => {
       if (usingClientBuffer) {
         loadFromClientBuffer();
       } else {
         loadEventsServerPaged({
-          startDate: startDateInput.value,
-          endDate: endDateInput.value
+          startDate: startDateInput?.value || '',
+          endDate: endDateInput?.value || ''
         });
       }
     });
 
-    searchForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const filters = {
-        text: searchInput.value.trim(),
-        startDate: startDateInput.value,
-        endDate: endDateInput.value
-      };
-      initialLoad(filters);
-    });
-
     (async () => {
       await loadUserAndFavourites();
-
-      // 🔎 Read query params for global search
-      const params = new URLSearchParams(window.location.search);
-      const q = params.get("q") || "";
-      const from = params.get("from") || "";
-      const to = params.get("to") || "";
-
-      // Prefill the form
-      if (q) searchInput.value = q;
-      if (from) startDateInput.value = from;
-      if (to) endDateInput.value = to;
-
-      await initialLoad({ text: q, startDate: from, endDate: to });
+      await initialLoad({ text: '', startDate: '', endDate: '' });
     })();
   </script>
 </body>
