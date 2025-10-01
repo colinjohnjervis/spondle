@@ -10,7 +10,7 @@ window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Header
+    // --- Header ---
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -25,12 +25,12 @@ window.Layout = {
 
     const actions = nav.querySelector(".sp-actions");
 
-    // --- Search button ---
+    // --- Search button (magnifying glass) ---
     const searchButton = document.createElement("button");
     searchButton.className = "sp-icon-btn";
     searchButton.setAttribute("aria-label", "Toggle search");
     searchButton.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none"
            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -64,37 +64,41 @@ window.Layout = {
         : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
+    // Append both buttons (search left, burger right)
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // --- Search panel (overlay style) ---
+    // --- Global search panel (hidden by default) ---
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
     searchPanel.className = "sp-search-panel hidden";
     searchPanel.innerHTML = `
-      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-900 shadow-lg">
-        <div class="md:col-span-2">
-          <label class="block text-xs text-gray-400 mb-1">Search</label>
-          <input name="text" type="text" placeholder="Search by event or venue..."
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">From</label>
-          <input name="startDate" type="date"
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">To</label>
-          <input name="endDate" type="date"
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div class="md:col-span-4">
-          <button type="submit"
-                  class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
-            Apply Filters
-          </button>
-        </div>
-      </form>
+      <div class="sp-search-overlay"></div>
+      <div class="sp-search-inner bg-gray-900 shadow-lg">
+        <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs text-gray-400 mb-1">Search</label>
+            <input name="text" type="text" placeholder="Search by event or venue..."
+                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">From</label>
+            <input name="startDate" type="date"
+                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">To</label>
+            <input name="endDate" type="date"
+                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          </div>
+          <div class="md:col-span-4">
+            <button type="submit"
+                    class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
+              Apply Filters
+            </button>
+          </div>
+        </form>
+      </div>
     `;
 
     // Toggle search panel
@@ -103,11 +107,7 @@ window.Layout = {
       document.body.classList.toggle("sp-search-open");
     };
 
-    // Inject header + search panel
-    document.body.prepend(searchPanel);
-    document.body.prepend(nav);
-
-    // --- Overlay + Sidebar ---
+    // --- Overlay for sidebar ---
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     overlay.onclick = () => {
@@ -119,6 +119,7 @@ window.Layout = {
       `;
     };
 
+    // --- Sidebar ---
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
@@ -141,6 +142,9 @@ window.Layout = {
       `;
     };
 
+    // Inject all layout parts
+    document.body.prepend(searchPanel);
+    document.body.prepend(nav);
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
 
