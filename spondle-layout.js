@@ -6,7 +6,7 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
 );
 
-// ---------- helpers ----------
+// Helpers
 function getFiltersFromURL() {
   const sp = new URL(window.location.href).searchParams;
   return {
@@ -28,7 +28,7 @@ window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // ---------- header ----------
+    // ---------- Header ----------
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -40,13 +40,12 @@ window.Layout = {
         <div class="sp-actions flex items-center gap-2"></div>
       </div>
     `;
-    // keep header above panel/overlay just in case
+    // Highest
     nav.style.position = "relative";
-    nav.style.zIndex = "10010";
-
+    nav.style.zIndex = "10050";
     const actions = nav.querySelector(".sp-actions");
 
-    // search button (magnifying glass)
+    // Search button
     const searchButton = document.createElement("button");
     searchButton.className = "sp-icon-btn";
     searchButton.setAttribute("aria-label", "Toggle search");
@@ -58,11 +57,10 @@ window.Layout = {
       </svg>
     `;
 
-    // burger button
+    // Burger button
     const burgerButton = document.createElement("button");
     burgerButton.className = "sp-burger";
     burgerButton.setAttribute("aria-label", "Toggle menu");
-
     const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     icon.setAttribute("width", "24");
     icon.setAttribute("height", "24");
@@ -78,32 +76,21 @@ window.Layout = {
     `;
     burgerButton.appendChild(icon);
 
-    burgerButton.onclick = () => {
-      const isOpen = document.body.classList.toggle("sp-drawer-open");
-      icon.innerHTML = isOpen
-        ? `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`
-        : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
-    };
-
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // ---------- search panel (overlay) ----------
+    // ---------- Search panel ----------
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
     searchPanel.className = "sp-search-panel";
-    // FORCE it to be clickable & above overlays regardless of external CSS:
     Object.assign(searchPanel.style, {
       position: "fixed",
-      left: "0",
-      right: "0",
-      top: "64px",         // just below sticky header
-      display: "none",     // we’ll toggle this inline
+      left: "0", right: "0", top: "64px",
+      display: "none",
       background: "#0b0b0b",
       borderBottom: "1px solid rgba(255,255,255,0.08)",
-      zIndex: "10000",     // above overlay
+      zIndex: "10040", // below header, above sidebar/overlay
     });
-
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3" style="pointer-events:auto;">
         <div class="md:col-span-2">
@@ -129,30 +116,34 @@ window.Layout = {
         </div>
       </form>
     `;
+    searchPanel.addEventListener("click", e => e.stopPropagation());
 
-    // make sure clicks inside panel don’t bubble to anything behind
-    searchPanel.addEventListener("click", (e) => e.stopPropagation());
-
-    // explicit open/close not relying on external CSS classes
     let searchOpen = false;
-    function toggleSearch(force = null) {
+    const toggleSearch = (force = null) => {
       searchOpen = force !== null ? force : !searchOpen;
       searchPanel.style.display = searchOpen ? "block" : "none";
-      document.body.classList.toggle("sp-search-open", searchOpen); // keep class for your CSS if any
-    }
+      document.body.classList.toggle("sp-search-open", searchOpen);
+    };
     searchButton.addEventListener("click", () => toggleSearch());
 
-    // inject header + search panel
+    // Inject header + search
     document.body.prepend(searchPanel);
     document.body.prepend(nav);
 
-    // ---------- overlay + sidebar ----------
+    // ---------- Overlay + Sidebar ----------
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
-    // keep overlay below the search panel, still clickable
-    overlay.style.zIndex = "9000";
+    // default hidden & non-interactive
+    Object.assign(overlay.style, {
+      zIndex: "10020",       // under sidebar
+      display: "none",
+      pointerEvents: "none",
+    });
     overlay.onclick = () => {
+      // close drawer
       document.body.classList.remove("sp-drawer-open");
+      overlay.style.display = "none";
+      overlay.style.pointerEvents = "none";
       icon.innerHTML = `
         <line x1="3" y1="12" x2="21" y2="12"/>
         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -162,6 +153,8 @@ window.Layout = {
 
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
+    // keep above overlay
+    sidebar.style.zIndex = "10030";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
@@ -175,6 +168,8 @@ window.Layout = {
     `;
     sidebar.querySelector(".sp-close").onclick = () => {
       document.body.classList.remove("sp-drawer-open");
+      overlay.style.display = "none";
+      overlay.style.pointerEvents = "none";
       icon.innerHTML = `
         <line x1="3" y1="12" x2="21" y2="12"/>
         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -185,7 +180,17 @@ window.Layout = {
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
 
-    // ---------- auth links ----------
+    // Open/close drawer: show overlay beneath sidebar
+    burgerButton.onclick = () => {
+      const isOpen = document.body.classList.toggle("sp-drawer-open");
+      overlay.style.display = isOpen ? "block" : "none";
+      overlay.style.pointerEvents = isOpen ? "auto" : "none";
+      icon.innerHTML = isOpen
+        ? `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`
+        : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
+    };
+
+    // ---------- Auth links ----------
     const navContainer = document.getElementById("sidebar-links");
     if (navContainer) {
       if (user) {
@@ -201,13 +206,13 @@ window.Layout = {
       }
     }
 
-    // ---------- prefill from URL so redirects populate panel ----------
+    // ---------- Prefill search fields ----------
     const urlFilters = getFiltersFromURL();
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
     document.getElementById("globalStartDate").value = urlFilters.startDate || "";
     document.getElementById("globalEndDate").value = urlFilters.endDate || "";
 
-    // ---------- search submit (global) ----------
+    // ---------- Submit (global) ----------
     const searchForm = document.getElementById("globalSearchForm");
     const eventsGrid = document.getElementById("eventsGrid");
     const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -220,17 +225,15 @@ window.Layout = {
         startDate: document.getElementById("globalStartDate").value,
         endDate: document.getElementById("globalEndDate").value,
       };
-
       if (eventsGrid) {
-        initialLoad(filters);     // render on events pages
+        initialLoad(filters);
         toggleSearch(false);
       } else {
-        // redirect to events page with filters
         window.location.href = `/events.html${toQueryString(filters)}`;
       }
     });
 
-    // ---------- events rendering logic (runs ONLY if #eventsGrid exists) ----------
+    // ---------- Events logic only on pages with #eventsGrid ----------
     if (eventsGrid) {
       const PAGE_SIZE = 12;
       let page = 0, buffer = [], usingClientBuffer = false;
@@ -278,7 +281,6 @@ window.Layout = {
 
         const { data, error } = await q;
         if (error) throw error;
-
         renderCards(data);
         page++;
         if (data.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.style.display = "none";
@@ -310,7 +312,6 @@ window.Layout = {
         }
 
         const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
-
         const dedup = new Map();
         [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
         buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
@@ -345,10 +346,10 @@ window.Layout = {
         }
       }
 
-      // expose for submit handler above
+      // Expose for submit handler
       window.initialLoad = initialLoad;
 
-      // Load More
+      // Load more
       loadMoreBtn?.addEventListener("click", () => {
         if (usingClientBuffer) {
           loadFromClientBuffer();
@@ -360,7 +361,7 @@ window.Layout = {
         }
       });
 
-      // initial load on events page (URL-driven)
+      // Initial load on events page
       await initialLoad(getFiltersFromURL());
     }
   }
