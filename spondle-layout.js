@@ -10,7 +10,7 @@ window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Create header
+    // --- Header ---
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -29,7 +29,6 @@ window.Layout = {
     const searchButton = document.createElement("button");
     searchButton.className = "sp-icon-btn";
     searchButton.setAttribute("aria-label", "Toggle search");
-
     searchButton.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -68,10 +67,11 @@ window.Layout = {
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // --- Search panel (hidden initially) ---
+    // --- Search panel (collapsible) ---
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
-    searchPanel.className = "sp-search-panel hidden";
+    searchPanel.className =
+      "sp-search-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-in-out";
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-900 shadow-lg">
         <div class="md:col-span-2">
@@ -98,13 +98,19 @@ window.Layout = {
       </form>
     `;
 
-    // Toggle search panel
+    // Toggle with animation
     searchButton.onclick = () => {
-      searchPanel.classList.toggle("hidden");
-      searchPanel.classList.toggle("animate-slide");
+      const isOpen = searchPanel.classList.contains("max-h-96");
+      if (isOpen) {
+        searchPanel.classList.remove("max-h-96", "opacity-100");
+        searchPanel.classList.add("max-h-0", "opacity-0");
+      } else {
+        searchPanel.classList.remove("max-h-0", "opacity-0");
+        searchPanel.classList.add("max-h-96", "opacity-100");
+      }
     };
 
-    // Inject into DOM
+    // Inject header + search
     document.body.prepend(searchPanel);
     document.body.prepend(nav);
 
