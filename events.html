@@ -247,7 +247,7 @@
       }
     }
 
-    // ---- FIXED Load More ----
+    // Load More
     loadMoreBtn.addEventListener('click', () => {
       if (usingClientBuffer) {
         loadFromClientBuffer();
@@ -271,7 +271,19 @@
 
     (async () => {
       await loadUserAndFavourites();
-      await initialLoad({ text: '', startDate: '', endDate: '' });
+
+      // 🔎 Read query params for global search
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q") || "";
+      const from = params.get("from") || "";
+      const to = params.get("to") || "";
+
+      // Prefill the form
+      if (q) searchInput.value = q;
+      if (from) startDateInput.value = from;
+      if (to) endDateInput.value = to;
+
+      await initialLoad({ text: q, startDate: from, endDate: to });
     })();
   </script>
 </body>
