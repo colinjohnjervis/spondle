@@ -22,14 +22,15 @@ window.Layout = {
         <div class="sp-actions"></div>
       </div>
     `;
+
     const actions = nav.querySelector(".sp-actions");
 
-    // --- Search button ---
+    // --- Search button (plain icon) ---
     const searchButton = document.createElement("button");
-    searchButton.className = "sp-icon-btn";
+    searchButton.className = "sp-search-btn";
     searchButton.setAttribute("aria-label", "Toggle search");
     searchButton.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -66,57 +67,43 @@ window.Layout = {
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // --- Search panel (overlay style) ---
+    // --- Search panel ---
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
-    searchPanel.className = "sp-search-panel";
+    searchPanel.className = "sp-search-panel hidden";
     searchPanel.innerHTML = `
-      <div class="sp-search-overlay"></div>
-      <div class="sp-search-inner bg-gray-900 p-4 shadow-lg">
-        <form id="globalSearchForm" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div class="md:col-span-2">
-            <label class="block text-xs text-gray-400 mb-1">Search</label>
-            <input name="text" type="text" placeholder="Search by event or venue..."
-                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">From</label>
-            <input name="startDate" type="date"
-                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1">To</label>
-            <input name="endDate" type="date"
-                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-          </div>
-          <div class="md:col-span-4">
-            <button type="submit"
-                    class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
-              Apply Filters
-            </button>
-          </div>
-        </form>
-      </div>
+      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-900 shadow-lg">
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-400 mb-1">Search</label>
+          <input name="text" type="text" placeholder="Search by event or venue..."
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">From</label>
+          <input name="startDate" type="date"
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">To</label>
+          <input name="endDate" type="date"
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div class="md:col-span-4">
+          <button type="submit"
+                  class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
+            Apply Filters
+          </button>
+        </div>
+      </form>
     `;
 
-    // --- Search toggle ---
+    // Toggle search overlay (no auto-focus)
     searchButton.onclick = () => {
+      searchPanel.classList.toggle("hidden");
       document.body.classList.toggle("sp-search-open");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      if (document.body.classList.contains("sp-search-open")) {
-        const inp = searchPanel.querySelector('input[name="text"]');
-        setTimeout(() => inp && inp.focus(), 220);
-      }
     };
 
-    // Close search with overlay or Esc
-    const closeSearch = () => document.body.classList.remove("sp-search-open");
-    searchPanel.querySelector(".sp-search-overlay").onclick = closeSearch;
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeSearch();
-    });
-
-    // Inject header + search panel
+    // Inject header + search
     document.body.prepend(searchPanel);
     document.body.prepend(nav);
 
