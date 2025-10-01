@@ -19,15 +19,15 @@ window.Layout = {
           <span class="sp-logo__dot"></span>
           <span class="sp-logo__text">Spondle</span>
         </a>
-        <div class="sp-actions"></div>
+        <div class="sp-actions flex items-center gap-2"></div>
       </div>
     `;
 
     const actions = nav.querySelector(".sp-actions");
 
-    // --- Search button (plain icon) ---
+    // --- Search button ---
     const searchButton = document.createElement("button");
-    searchButton.className = "sp-search-btn";
+    searchButton.className = "sp-icon-btn";
     searchButton.setAttribute("aria-label", "Toggle search");
     searchButton.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
@@ -67,12 +67,12 @@ window.Layout = {
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // --- Search panel ---
+    // --- Search panel (overlay style) ---
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
-    searchPanel.className = "sp-search-panel hidden";
+    searchPanel.className = "sp-search-panel";
     searchPanel.innerHTML = `
-      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-900 shadow-lg">
+      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div class="md:col-span-2">
           <label class="block text-xs text-gray-400 mb-1">Search</label>
           <input name="text" type="text" placeholder="Search by event or venue..."
@@ -97,13 +97,12 @@ window.Layout = {
       </form>
     `;
 
-    // Toggle search overlay (no auto-focus)
+    // Toggle search panel
     searchButton.onclick = () => {
-      searchPanel.classList.toggle("hidden");
       document.body.classList.toggle("sp-search-open");
     };
 
-    // Inject header + search
+    // Inject header + search panel
     document.body.prepend(searchPanel);
     document.body.prepend(nav);
 
