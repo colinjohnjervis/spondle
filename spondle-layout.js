@@ -40,7 +40,6 @@ window.Layout = {
         <div class="sp-actions flex items-center gap-2"></div>
       </div>
     `;
-    // Highest
     nav.style.position = "relative";
     nav.style.zIndex = "10050";
     const actions = nav.querySelector(".sp-actions");
@@ -89,7 +88,7 @@ window.Layout = {
       display: "none",
       background: "#0b0b0b",
       borderBottom: "1px solid rgba(255,255,255,0.08)",
-      zIndex: "10040", // below header, above sidebar/overlay
+      zIndex: "10040",
     });
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3" style="pointer-events:auto;">
@@ -126,21 +125,18 @@ window.Layout = {
     };
     searchButton.addEventListener("click", () => toggleSearch());
 
-    // Inject header + search
     document.body.prepend(searchPanel);
     document.body.prepend(nav);
 
     // ---------- Overlay + Sidebar ----------
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
-    // default hidden & non-interactive
     Object.assign(overlay.style, {
-      zIndex: "10020",       // under sidebar
+      zIndex: "10020",
       display: "none",
       pointerEvents: "none",
     });
     overlay.onclick = () => {
-      // close drawer
       document.body.classList.remove("sp-drawer-open");
       overlay.style.display = "none";
       overlay.style.pointerEvents = "none";
@@ -153,7 +149,6 @@ window.Layout = {
 
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
-    // keep above overlay
     sidebar.style.zIndex = "10030";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
@@ -180,7 +175,6 @@ window.Layout = {
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
 
-    // Open/close drawer: show overlay beneath sidebar
     burgerButton.onclick = () => {
       const isOpen = document.body.classList.toggle("sp-drawer-open");
       overlay.style.display = isOpen ? "block" : "none";
@@ -361,8 +355,14 @@ window.Layout = {
         }
       });
 
-      // Initial load on events page
-      await initialLoad(getFiltersFromURL());
+      // Prefill search fields from URL params
+      const filtersFromURL = getFiltersFromURL();
+      document.getElementById("globalSearchInput").value = filtersFromURL.text || "";
+      document.getElementById("globalStartDate").value = filtersFromURL.startDate || "";
+      document.getElementById("globalEndDate").value = filtersFromURL.endDate || "";
+
+      // Initial load with URL filters
+      await initialLoad(filtersFromURL);
     }
   }
 };
