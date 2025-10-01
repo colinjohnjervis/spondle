@@ -158,5 +158,57 @@ window.Layout = {
         `;
       }
     }
+
+    // --- Global search handler ---
+    const globalSearchForm = searchPanel.querySelector("#globalSearchForm");
+    globalSearchForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(globalSearchForm);
+      const text = formData.get("text").trim();
+      const startDate = formData.get("startDate");
+      const endDate = formData.get("endDate");
+
+      let query = supabase.from("events").select(`
+        id,
+        event_name,
+        event_date,
+        event_time,
+        venues (
+          venue_name,
+          street_name
+        )
+      `);
+
+      if (text) {
+        query = query.or(`event_name.ilike.%${text}%,venues.venue_name.ilike.%${text}%`);
+      }
+      if (startDate) {
+        query = query.gte("event_date", startDate);
+      }
+      if (endDate) {
+        query = query.lte("event_date", endDate);
+      }
+
+      const { data, error } = await query.order("event_date", { ascending: true });
+
+      if (error) {
+        console.error("Search error:", error);
+        return;
+      }
+
+      const container = document.getElementById("eventsContainer");
+      if (container) {
+        container.innerHTML = data.map(ev => `
+          <div class="event-card p-4 mb-4 rounded bg-gray-800">
+            <h3 class="event-title text-lg font-bold mb-1">${ev.event_name}</h3>
+            <p class="event-meta text-sm">${ev.event_date} ${ev.event_time || ""}</p>
+            <p class="event-meta text-sm">${ev.venues?.venue_name || ""}, ${ev.venues?.street_name || ""}</p>
+          </div>
+        `).join("");
+      }
+
+      document.body.classList.remove("sp-search-open");
+    });
   }
 };
