@@ -75,17 +75,17 @@ window.Layout = {
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div class="md:col-span-2">
           <label class="block text-xs text-gray-400 mb-1">Search</label>
-          <input name="text" type="text" placeholder="Search by event or venue..."
+          <input id="globalSearchInput" name="text" type="text" placeholder="Search by event or venue..."
                  class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">From</label>
-          <input name="startDate" type="date"
+          <input id="globalStartDate" name="startDate" type="date"
                  class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">To</label>
-          <input name="endDate" type="date"
+          <input id="globalEndDate" name="endDate" type="date"
                  class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
         </div>
         <div class="md:col-span-4">
@@ -157,60 +157,6 @@ window.Layout = {
           <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>
         `;
       }
-    }
-
-    // --- Global search handler ---
-    const globalSearchForm = searchPanel.querySelector("#globalSearchForm");
-    if (globalSearchForm) {
-      globalSearchForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const formData = new FormData(globalSearchForm);
-        const text = formData.get("text").trim();
-        const startDate = formData.get("startDate");
-        const endDate = formData.get("endDate");
-
-        let query = supabase.from("events").select(`
-          id,
-          event_name,
-          event_date,
-          event_time,
-          venues (
-            venue_name,
-            street_name
-          )
-        `);
-
-        if (text) {
-          query = query.or(`event_name.ilike.%${text}%,venues.venue_name.ilike.%${text}%`);
-        }
-        if (startDate) {
-          query = query.gte("event_date", startDate);
-        }
-        if (endDate) {
-          query = query.lte("event_date", endDate);
-        }
-
-        const { data, error } = await query.order("event_date", { ascending: true });
-
-        if (error) {
-          console.error("Search error:", error);
-          return;
-        }
-
-        const container = document.getElementById("eventsContainer");
-        if (container) {
-          container.innerHTML = data.map(ev => `
-            <div class="event-card p-4 mb-4 rounded bg-gray-800">
-              <h3 class="event-title text-lg font-bold mb-1">${ev.event_name}</h3>
-              <p class="event-meta text-sm">${ev.event_date} ${ev.event_time || ""}</p>
-              <p class="event-meta text-sm">${ev.venues?.venue_name || ""}, ${ev.venues?.street_name || ""}</p>
-            </div>
-          `).join("");
-        }
-
-        document.body.classList.remove("sp-search-open");
-      });
     }
   }
 };
