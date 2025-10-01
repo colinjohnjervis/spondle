@@ -160,163 +160,163 @@ window.Layout = {
     }
 
     // -----------------------------------------------------
-    // GLOBAL SEARCH LOGIC (moved out of events.html)
+    // GLOBAL SEARCH LOGIC (only if #eventsGrid exists)
     // -----------------------------------------------------
 
-    const PAGE_SIZE = 12;
-    let page = 0;
-    let buffer = [];
-    let usingClientBuffer = false;
-
     const eventsGrid = document.getElementById("eventsGrid");
-    const loadMoreBtn = document.getElementById("loadMoreBtn");
-    const eventsError = document.getElementById("eventsError");
+    if (eventsGrid) {
+      const PAGE_SIZE = 12;
+      let page = 0;
+      let buffer = [];
+      let usingClientBuffer = false;
 
-    function renderCards(rows) {
-      for (const event of rows) {
-        const card = document.createElement("div");
-        card.className = "relative rounded-xl overflow-hidden shadow bg-gray-900";
+      const loadMoreBtn = document.getElementById("loadMoreBtn");
+      const eventsError = document.getElementById("eventsError");
 
-        const imageContent = event.image_url
-          ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
-          : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
+      function renderCards(rows) {
+        for (const event of rows) {
+          const card = document.createElement("div");
+          card.className = "relative rounded-xl overflow-hidden shadow bg-gray-900";
 
-        const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
-          weekday: "long", day: "numeric", month: "long", year: "numeric"
-        });
+          const imageContent = event.image_url
+            ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
+            : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
-        const venueName = event.venues?.venue_name || "Venue TBA";
-        const townCity = event.venues?.location?.town_city || "";
-        const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
-
-        card.innerHTML = `
-          ${imageContent}
-          <div class="p-4">
-            <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-            <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
-            <p class="text-sm text-gray-400">${venueDisplay}</p>
-          </div>
-        `;
-
-        eventsGrid.appendChild(card);
-      }
-    }
-
-    async function loadEventsServerPaged({ startDate, endDate }) {
-      let q = supabase
-        .from("events")
-        .select("*, venues(venue_name, location:location_id(town_city))")
-        .eq("publish_status", "published")
-        .order("event_date", { ascending: true })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-
-      const today = new Date().toISOString().split("T")[0];
-      q = q.gte("event_date", startDate || today);
-      if (endDate) q = q.lte("event_date", endDate);
-
-      const { data, error } = await q;
-      if (error) throw error;
-
-      renderCards(data);
-      page++;
-
-      if (data.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.style.display = "none";
-    }
-
-    async function buildClientBuffer({ text, startDate, endDate }) {
-      const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))";
-      const today = new Date().toISOString().split("T")[0];
-
-      let q1 = supabase.from("events")
-        .select(selectCols)
-        .eq("publish_status", "published")
-        .order("event_date", { ascending: true })
-        .ilike("event_name", `%${text}%`)
-        .limit(500);
-
-      q1 = q1.gte("event_date", startDate || today);
-      if (endDate) q1 = q1.lte("event_date", endDate);
-
-      let q2 = supabase.from("events")
-        .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
-        .eq("publish_status", "published")
-        .order("event_date", { ascending: true })
-        .ilike("venues.venue_name", `%${text}%`)
-        .limit(500);
-
-      q2 = q2.gte("event_date", startDate || today);
-      if (endDate) q2 = q2.lte("event_date", endDate);
-
-      const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
-
-      const dedup = new Map();
-      [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
-      buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
-      usingClientBuffer = true;
-    }
-
-    function loadFromClientBuffer() {
-      const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-      renderCards(slice);
-      page++;
-      if (page * PAGE_SIZE >= buffer.length && loadMoreBtn) loadMoreBtn.style.display = "none";
-    }
-
-    async function initialLoad(filters) {
-      if (!eventsGrid) return;
-
-      eventsGrid.innerHTML = "";
-      if (eventsError) eventsError.classList.add("hidden");
-      if (loadMoreBtn) loadMoreBtn.style.display = "block";
-      page = 0;
-
-      const { text, startDate, endDate } = filters;
-
-      try {
-        if (text) {
-          await buildClientBuffer({ text, startDate, endDate });
-          loadFromClientBuffer();
-        } else {
-          usingClientBuffer = false;
-          await loadEventsServerPaged({ startDate, endDate });
-        }
-      } catch (err) {
-        console.error(err);
-        if (eventsError) eventsError.classList.remove("hidden");
-        if (loadMoreBtn) loadMoreBtn.style.display = "none";
-      }
-    }
-
-    // Hook search form
-    const searchForm = document.getElementById("globalSearchForm");
-    if (searchForm) {
-      searchForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const filters = {
-          text: document.getElementById("globalSearchInput").value.trim(),
-          startDate: document.getElementById("globalStartDate").value,
-          endDate: document.getElementById("globalEndDate").value
-        };
-        initialLoad(filters);
-        document.body.classList.remove("sp-search-open");
-      });
-    }
-
-    // Load more button
-    if (loadMoreBtn) {
-      loadMoreBtn.addEventListener("click", () => {
-        if (usingClientBuffer) {
-          loadFromClientBuffer();
-        } else {
-          loadEventsServerPaged({
-            startDate: document.getElementById("globalStartDate")?.value || "",
-            endDate: document.getElementById("globalEndDate")?.value || ""
+          const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
           });
-        }
-      });
-    }
 
-    // Initial load
-    await initialLoad({ text: "", startDate: "", endDate: "" });
+          const venueName = event.venues?.venue_name || "Venue TBA";
+          const townCity = event.venues?.location?.town_city || "";
+          const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+
+          card.innerHTML = `
+            ${imageContent}
+            <div class="p-4">
+              <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
+              <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
+              <p class="text-sm text-gray-400">${venueDisplay}</p>
+            </div>
+          `;
+
+          eventsGrid.appendChild(card);
+        }
+      }
+
+      async function loadEventsServerPaged({ startDate, endDate }) {
+        let q = supabase
+          .from("events")
+          .select("*, venues(venue_name, location:location_id(town_city))")
+          .eq("publish_status", "published")
+          .order("event_date", { ascending: true })
+          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+
+        const today = new Date().toISOString().split("T")[0];
+        q = q.gte("event_date", startDate || today);
+        if (endDate) q = q.lte("event_date", endDate);
+
+        const { data, error } = await q;
+        if (error) throw error;
+
+        renderCards(data);
+        page++;
+
+        if (data.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.style.display = "none";
+      }
+
+      async function buildClientBuffer({ text, startDate, endDate }) {
+        const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))";
+        const today = new Date().toISOString().split("T")[0];
+
+        let q1 = supabase.from("events")
+          .select(selectCols)
+          .eq("publish_status", "published")
+          .order("event_date", { ascending: true })
+          .ilike("event_name", `%${text}%`)
+          .limit(500);
+
+        q1 = q1.gte("event_date", startDate || today);
+        if (endDate) q1 = q1.lte("event_date", endDate);
+
+        let q2 = supabase.from("events")
+          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
+          .eq("publish_status", "published")
+          .order("event_date", { ascending: true })
+          .ilike("venues.venue_name", `%${text}%`)
+          .limit(500);
+
+        q2 = q2.gte("event_date", startDate || today);
+        if (endDate) q2 = q2.lte("event_date", endDate);
+
+        const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
+
+        const dedup = new Map();
+        [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
+        buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
+        usingClientBuffer = true;
+      }
+
+      function loadFromClientBuffer() {
+        const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+        renderCards(slice);
+        page++;
+        if (page * PAGE_SIZE >= buffer.length && loadMoreBtn) loadMoreBtn.style.display = "none";
+      }
+
+      async function initialLoad(filters) {
+        eventsGrid.innerHTML = "";
+        if (eventsError) eventsError.classList.add("hidden");
+        if (loadMoreBtn) loadMoreBtn.style.display = "block";
+        page = 0;
+
+        const { text, startDate, endDate } = filters;
+
+        try {
+          if (text) {
+            await buildClientBuffer({ text, startDate, endDate });
+            loadFromClientBuffer();
+          } else {
+            usingClientBuffer = false;
+            await loadEventsServerPaged({ startDate, endDate });
+          }
+        } catch (err) {
+          console.error(err);
+          if (eventsError) eventsError.classList.remove("hidden");
+          if (loadMoreBtn) loadMoreBtn.style.display = "none";
+        }
+      }
+
+      // Hook search form
+      const searchForm = document.getElementById("globalSearchForm");
+      if (searchForm) {
+        searchForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const filters = {
+            text: document.getElementById("globalSearchInput").value.trim(),
+            startDate: document.getElementById("globalStartDate").value,
+            endDate: document.getElementById("globalEndDate").value
+          };
+          initialLoad(filters);
+          document.body.classList.remove("sp-search-open");
+        });
+      }
+
+      // Load more button
+      if (loadMoreBtn) {
+        loadMoreBtn.addEventListener("click", () => {
+          if (usingClientBuffer) {
+            loadFromClientBuffer();
+          } else {
+            loadEventsServerPaged({
+              startDate: document.getElementById("globalStartDate")?.value || "",
+              endDate: document.getElementById("globalEndDate")?.value || ""
+            });
+          }
+        });
+      }
+
+      // Initial load (only on events pages)
+      await initialLoad({ text: "", startDate: "", endDate: "" });
+    }
   }
 };
