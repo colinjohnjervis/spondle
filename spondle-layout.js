@@ -1,150 +1,164 @@
-/* --- Header --- */
-.sp-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: #111;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+// spondle-layout.js
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-.sp-header__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-}
+const supabase = createClient(
+  "https://jvuunvnbpdfrttusgelz.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+);
 
-.sp-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: bold;
-  color: #fff;
-  text-decoration: none;
-}
+window.Layout = {
+  async init({ active } = {}) {
+    const { data: { user } } = await supabase.auth.getUser();
 
-.sp-logo__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: limegreen;
-}
+    // --- Header ---
+    const nav = document.createElement("nav");
+    nav.className = "sp-header";
+    nav.innerHTML = `
+      <div class="sp-header__inner">
+        <a href="/index.html" class="sp-logo">
+          <span class="sp-logo__dot"></span>
+          <span class="sp-logo__text">Spondle</span>
+        </a>
+        <div class="sp-actions"></div> <!-- ✅ Needed container -->
+      </div>
+    `;
 
-.sp-logo__text {
-  font-size: 1.1rem;
-}
+    const actions = nav.querySelector(".sp-actions");
 
-/* --- Sidebar (drawer) --- */
-.sp-sidebar {
-  position: fixed;
-  top: 0;
-  left: -260px;
-  width: 260px;
-  height: 100%;
-  background: #111;
-  color: #fff;
-  z-index: 60;
-  display: flex;
-  flex-direction: column;
-  transition: left 0.3s ease;
-  padding: 1rem;
-}
-.sp-drawer-open .sp-sidebar {
-  left: 0;
-}
+    // --- Search button ---
+    const searchButton = document.createElement("button");
+    searchButton.className = "sp-icon-btn";
+    searchButton.setAttribute("aria-label", "Toggle search");
+    searchButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    `;
 
-.sp-sidebar__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
+    // --- Burger button ---
+    const burgerButton = document.createElement("button");
+    burgerButton.className = "sp-burger";
+    burgerButton.setAttribute("aria-label", "Toggle menu");
 
-.sp-sidebar .sp-close {
-  background: transparent;
-  border: none;
-  font-size: 1.2rem;
-  color: #fff;
-  cursor: pointer;
-}
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("width", "24");
+    icon.setAttribute("height", "24");
+    icon.setAttribute("fill", "none");
+    icon.setAttribute("stroke", "currentColor");
+    icon.setAttribute("stroke-width", "2");
+    icon.setAttribute("stroke-linecap", "round");
+    icon.setAttribute("stroke-linejoin", "round");
+    icon.innerHTML = `
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    `;
+    burgerButton.appendChild(icon);
 
-.sp-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+    burgerButton.onclick = () => {
+      const isOpen = document.body.classList.toggle("sp-drawer-open");
+      icon.innerHTML = isOpen
+        ? `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`
+        : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
+    };
 
-.sp-nav a {
-  color: #aaa;
-  text-decoration: none;
-  font-size: 1rem;
-}
-.sp-nav a:hover {
-  color: #fff;
-}
-.sp-nav a.is-active {
-  color: limegreen;
-  font-weight: 600;
-}
+    // Append buttons
+    actions.appendChild(searchButton);
+    actions.appendChild(burgerButton);
 
-/* --- Overlay --- */
-.sp-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 55;
-  display: none;
-}
-.sp-drawer-open .sp-overlay {
-  display: block;
-}
+    // --- Search panel (hidden initially) ---
+    const searchPanel = document.createElement("div");
+    searchPanel.id = "globalSearchPanel";
+    searchPanel.className = "sp-search-panel hidden";
+    searchPanel.innerHTML = `
+      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-900 shadow-lg">
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-400 mb-1">Search</label>
+          <input name="text" type="text" placeholder="Search by event or venue..."
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">From</label>
+          <input name="startDate" type="date"
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">To</label>
+          <input name="endDate" type="date"
+                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div class="md:col-span-4">
+          <button type="submit"
+                  class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
+            Apply Filters
+          </button>
+        </div>
+      </form>
+    `;
 
-/* --- Search panel --- */
-.sp-search-panel {
-  position: absolute;
-  top: 56px; /* below header */
-  left: 0;
-  right: 0;
-  background: #1a1a1a;
-  z-index: 49;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-.sp-search-panel.hidden {
-  display: none;
-}
+    // Toggle search panel
+    searchButton.onclick = () => {
+      searchPanel.classList.toggle("hidden");
+      searchPanel.classList.toggle("animate-slide");
+    };
 
-/* Optional animation */
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-slide {
-  animation: slideDown 0.25s ease forwards;
-}
+    // Inject into DOM
+    document.body.prepend(searchPanel);
+    document.body.prepend(nav);
 
-/* --- Actions (search + burger) --- */
-.sp-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem; /* space between magnifying glass + burger */
-}
+    // --- Overlay + Sidebar ---
+    const overlay = document.createElement("div");
+    overlay.className = "sp-overlay";
+    overlay.onclick = () => {
+      document.body.classList.remove("sp-drawer-open");
+      icon.innerHTML = `
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      `;
+    };
 
-.sp-icon-btn,
-.sp-burger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: transparent;
-  color: white;
-  cursor: pointer;
-}
-.sp-icon-btn:hover,
-.sp-burger:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
+    const sidebar = document.createElement("div");
+    sidebar.className = "sp-sidebar";
+    sidebar.innerHTML = `
+      <div class="sp-sidebar__head">
+        <strong>Spondle</strong>
+        <button class="sp-close" aria-label="Close sidebar">✕</button>
+      </div>
+      <nav class="sp-nav" id="sidebar-links">
+        <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
+        <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
+        <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
+      </nav>
+    `;
+    sidebar.querySelector(".sp-close").onclick = () => {
+      document.body.classList.remove("sp-drawer-open");
+      icon.innerHTML = `
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      `;
+    };
+
+    document.body.prepend(overlay);
+    document.body.prepend(sidebar);
+
+    // --- Auth-specific links ---
+    const navContainer = document.getElementById("sidebar-links");
+    if (navContainer) {
+      if (user) {
+        navContainer.innerHTML += `
+          <a href="/event-dashboard.html">Event Dashboard</a>
+          <a href="/profile.html">My Profile</a>
+          <a href="/logout.html">Sign out</a>
+        `;
+      } else {
+        navContainer.innerHTML += `
+          <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>
+        `;
+      }
+    }
+  }
+};
