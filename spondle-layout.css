@@ -10,22 +10,18 @@
 
 /* Base */
 html,body{background:var(--bg); color:#fff; margin:0; padding:0}
-
-/* Reserve space so content isn't hidden under fixed header */
 body{ padding-top: var(--header-h); }
 
-/* Fixed header (was sticky) */
+/* Fixed header */
 .sp-header{
-  position: fixed !important; /* force pin */
+  position: fixed;
   top: 0; left: 0; right: 0;
-  z-index: 1000;
+  z-index: 1200;
   height: var(--header-h);
   backdrop-filter: blur(12px);
   background: rgba(18,18,26,0.80);
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
-
-/* Header inner */
 .sp-header__inner{
   height: 100%;
   display: flex; align-items: center; justify-content: space-between;
@@ -33,33 +29,24 @@ body{ padding-top: var(--header-h); }
 }
 
 /* Logo */
-.sp-logo{
-  display:flex; align-items:center; gap:10px;
-  text-decoration:none; color:inherit;
-}
-.sp-logo__dot{
-  width:20px; height:20px; border-radius:50%;
-  background:var(--brand); box-shadow:0 0 16px rgba(158,248,125,.6);
-}
+.sp-logo{ display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit; }
+.sp-logo__dot{ width:20px; height:20px; border-radius:50%; background:var(--brand); box-shadow:0 0 16px rgba(158,248,125,.6); }
 .sp-logo__text{ font-weight:800; letter-spacing:.2px }
 
-/* Actions (search + burger buttons area) */
-.sp-actions{
-  display: flex;
-  align-items: center;
-  gap: 8px; /* small space between icons */
-}
+/* Actions cluster */
+.sp-actions{ display:flex; align-items:center; gap:10px }
 
-/* Search button */
+/* Search icon */
 .sp-icon-btn{
   width:42px; height:42px; border-radius:12px;
   display:grid; place-items:center;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.1);
+  cursor:pointer;
 }
-.sp-icon-btn svg{ display:block }
+.sp-icon-btn svg{ display:block; pointer-events:none }
 
-/* Hamburger */
+/* Burger */
 .sp-burger{
   width:42px; height:42px; border-radius:12px;
   display:grid; place-items:center;
@@ -68,80 +55,30 @@ body{ padding-top: var(--header-h); }
 }
 .sp-burger svg{ display:block }
 
-/* Overlay for sidebar */
-.sp-overlay{
-  position:fixed; inset:0; background:rgba(0,0,0,.35);
-  opacity:0; pointer-events:none; transition:opacity .2s ease;
-  z-index: 998;
-}
-
-/* Sidebar */
+/* Sidebar + overlay */
+.sp-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index: 998; }
 .sp-sidebar{
-  position:fixed; top:0; left:0; height:100vh; width:88%;
-  max-width: 360px;
-  background:rgba(18,18,26,.98);
-  border-right:1px solid rgba(255,255,255,.08);
+  position:fixed; top:0; left:0; height:100vh; width:88%; max-width:360px;
+  background:rgba(18,18,26,.98); border-right:1px solid rgba(255,255,255,.08);
   transform: translateX(-100%);
   transition: transform .28s cubic-bezier(.22,.61,.36,1);
-  z-index: 999;
-  display:flex; flex-direction:column;
+  z-index: 999; display:flex; flex-direction:column;
 }
-
-/* Sidebar header */
-.sp-sidebar__head{
-  height: var(--header-h);
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 14px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.sp-close{
-  width:40px; height:40px; border-radius:12px;
-  display:grid; place-items:center;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.1);
-}
-
-/* Sidebar nav */
+.sp-sidebar__head{ height: var(--header-h); display:flex; align-items:center; justify-content:space-between; padding:0 14px; border-bottom:1px solid rgba(255,255,255,.08); }
+.sp-close{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); }
 .sp-nav{ padding: 12px }
-.sp-nav a{
-  display:flex; align-items:center; gap:12px;
-  padding:12px 14px; border-radius:12px;
-  color:#fff; text-decoration:none;
-  border:1px solid transparent;
-}
+.sp-nav a{ display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:12px; color:#fff; text-decoration:none; border:1px solid transparent; }
 .sp-nav a:hover{ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.08) }
-.sp-nav a.is-active{
-  background:rgba(158,248,125,.12);
-  border-color:rgba(158,248,125,.45);
-  color:#d9ffd0;
-}
-
-/* Open state */
+.sp-nav a.is-active{ background:rgba(158,248,125,.12); border-color:rgba(158,248,125,.45); color:#d9ffd0; }
 body.sp-drawer-open .sp-sidebar{ transform: translateX(0) }
 body.sp-drawer-open .sp-overlay{ opacity:1; pointer-events:auto }
 
-/* Panels used by pages */
-.panel{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:20px;
-}
+/* --- Global search panel --- */
+.sp-search-panel{ position:fixed; top:var(--header-h); left:0; right:0; z-index:1190; display:none; }
+.sp-search-panel .sp-search-overlay{ position:fixed; left:0; right:0; bottom:0; top:var(--header-h); background:rgba(0,0,0,.45); }
+.sp-search-panel .sp-search-inner{ position:relative; border-bottom:1px solid rgba(255,255,255,.08); transform:translateY(-10px); opacity:0; transition:transform .22s ease, opacity .22s ease; }
+body.sp-search-open #globalSearchPanel{ display:block }
+body.sp-search-open #globalSearchPanel .sp-search-inner{ transform:translateY(0); opacity:1 }
 
-/* Search panel (slide down) */
-.sp-search-panel{
-  position: fixed;
-  top: var(--header-h);
-  left: 0; right: 0;
-  background: var(--card);
-  z-index: 999;
-  transform: translateY(-100%);
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  opacity: 0;
-}
-.sp-search-panel.animate-slide{
-  transform: translateY(0);
-  opacity: 1;
-}
-.sp-search-panel.hidden{
-  display: none;
-}
+/* Page panels */
+.panel{ background:var(--card); border:1px solid var(--border); border-radius:20px; }
