@@ -43,6 +43,22 @@ body{ padding-top: var(--header-h); }
 }
 .sp-logo__text{ font-weight:800; letter-spacing:.2px }
 
+/* Actions (search + burger buttons area) */
+.sp-actions{
+  display: flex;
+  align-items: center;
+  gap: 8px; /* small space between icons */
+}
+
+/* Search button */
+.sp-icon-btn{
+  width:42px; height:42px; border-radius:12px;
+  display:grid; place-items:center;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+}
+.sp-icon-btn svg{ display:block }
+
 /* Hamburger */
 .sp-burger{
   width:42px; height:42px; border-radius:12px;
@@ -109,4 +125,23 @@ body.sp-drawer-open .sp-overlay{ opacity:1; pointer-events:auto }
   background:var(--card);
   border:1px solid var(--border);
   border-radius:20px;
+}
+
+/* Search panel (slide down) */
+.sp-search-panel{
+  position: fixed;
+  top: var(--header-h);
+  left: 0; right: 0;
+  background: var(--card);
+  z-index: 999;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+.sp-search-panel.animate-slide{
+  transform: translateY(0);
+  opacity: 1;
+}
+.sp-search-panel.hidden{
+  display: none;
 }
