@@ -10,7 +10,7 @@ window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Create header
+    // Header
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -22,11 +22,22 @@ window.Layout = {
       </div>
     `;
 
-    // Create burger button with toggle
+    // 🔍 Search button
+    const searchBtn = document.createElement("button");
+    searchBtn.className = "sp-search-btn";
+    searchBtn.setAttribute("aria-label", "Search");
+    searchBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        stroke="currentColor" stroke-width="2" class="w-6 h-6">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    `;
+
+    // 🍔 Burger button
     const burgerButton = document.createElement("button");
     burgerButton.className = "sp-burger";
     burgerButton.setAttribute("aria-label", "Toggle menu");
-
     const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     icon.setAttribute("width", "24");
     icon.setAttribute("height", "24");
@@ -40,26 +51,21 @@ window.Layout = {
       <line x1="3" y1="6" x2="21" y2="6"/>
       <line x1="3" y1="18" x2="21" y2="18"/>
     `;
-
     burgerButton.appendChild(icon);
 
     burgerButton.onclick = () => {
       const isOpen = document.body.classList.toggle("sp-drawer-open");
       icon.innerHTML = isOpen
-        ? `
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        `
-        : `
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        `;
+        ? `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`
+        : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
-    nav.querySelector(".sp-header__inner").appendChild(burgerButton);
+    // Inject buttons into header
+    const headerInner = nav.querySelector(".sp-header__inner");
+    headerInner.appendChild(searchBtn);
+    headerInner.appendChild(burgerButton);
 
-    // Create overlay
+    // Overlay
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     overlay.onclick = () => {
@@ -71,7 +77,7 @@ window.Layout = {
       `;
     };
 
-    // Create sidebar
+    // Sidebar
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
     sidebar.innerHTML = `
@@ -85,8 +91,6 @@ window.Layout = {
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
       </nav>
     `;
-
-    // Add close button logic
     sidebar.querySelector(".sp-close").onclick = () => {
       document.body.classList.remove("sp-drawer-open");
       icon.innerHTML = `
@@ -96,38 +100,69 @@ window.Layout = {
       `;
     };
 
-    // Inject layout
+    // 🔽 Search panel
+    const searchPanel = document.createElement("div");
+    searchPanel.className = "sp-search-panel";
+    searchPanel.innerHTML = `
+      <form id="globalSearchForm" class="p-4 bg-gray-900 border-b border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div class="md:col-span-2">
+          <input name="q" type="text" placeholder="Search by event or venue..."
+            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <input name="from" type="date"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div>
+          <input name="to" type="date"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        </div>
+        <div class="md:col-span-4">
+          <button type="submit"
+            class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
+            Apply Filters
+          </button>
+        </div>
+      </form>
+    `;
+    searchPanel.style.maxHeight = "0";
+    searchPanel.style.overflow = "hidden";
+    searchPanel.style.transition = "max-height 0.3s ease";
+
+    searchBtn.onclick = () => {
+      if (searchPanel.style.maxHeight === "0px" || !searchPanel.style.maxHeight) {
+        searchPanel.style.maxHeight = "200px";
+      } else {
+        searchPanel.style.maxHeight = "0";
+      }
+    };
+
+    // Inject into DOM
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
     document.body.prepend(nav);
+    document.body.insertBefore(searchPanel, document.body.children[1]);
 
-    // Inject auth-specific links
+    // Auth links
     const navContainer = document.getElementById("sidebar-links");
-    if (!navContainer) return;
-
     if (user) {
-      const dashboardLink = document.createElement("a");
-      dashboardLink.href = "/event-dashboard.html";
-      dashboardLink.textContent = "Event Dashboard";
-
-      const profileLink = document.createElement("a");
-      profileLink.href = "/profile.html";
-      profileLink.textContent = "My Profile";
-
-      const logoutLink = document.createElement("a");
-      logoutLink.href = "/logout.html";
-      logoutLink.textContent = "Sign out";
-
-      navContainer.appendChild(dashboardLink);
-      navContainer.appendChild(profileLink);
-      navContainer.appendChild(logoutLink);
+      navContainer.insertAdjacentHTML("beforeend", `
+        <a href="/event-dashboard.html">Event Dashboard</a>
+        <a href="/profile.html">My Profile</a>
+        <a href="/logout.html">Sign out</a>
+      `);
     } else {
-      const loginLink = document.createElement("a");
-      loginLink.href = "/login.html";
-      loginLink.className = active === "login" ? "is-active" : "";
-      loginLink.textContent = "Sign in";
-
-      navContainer.appendChild(loginLink);
+      navContainer.insertAdjacentHTML("beforeend", `
+        <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>
+      `);
     }
+
+    // Handle global search submit → redirect with params
+    const globalSearchForm = document.getElementById("globalSearchForm");
+    globalSearchForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const params = new URLSearchParams(new FormData(globalSearchForm));
+      window.location.href = "/events.html?" + params.toString();
+    });
   }
 };
