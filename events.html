@@ -60,7 +60,9 @@
   <!-- Layout script (injects sidebar + sticky header) -->
   <script src="./spondle-layout.js?v=layout-fixed1" type="module"></script>
   <script>
-    window.Layout?.init({ active: 'events' });
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "events" });
+    });
   </script>
 
   <!-- Page logic -->
@@ -245,14 +247,12 @@
       }
     }
 
-    // ---- Load More handler with debug
+    // ---- FIXED Load More ----
     loadMoreBtn.addEventListener('click', () => {
-      alert("Load More clicked"); // DEBUG ONLY
       if (usingClientBuffer) {
         loadFromClientBuffer();
       } else {
-        initialLoad({
-          text: '',
+        loadEventsServerPaged({
           startDate: startDateInput.value,
           endDate: endDateInput.value
         });
