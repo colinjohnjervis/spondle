@@ -10,7 +10,7 @@ window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // --- Header ---
+    // Create header
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -24,11 +24,18 @@ window.Layout = {
     `;
 
     const actions = nav.querySelector(".sp-actions");
+    actions.style.display = "flex";
+    actions.style.alignItems = "center";
+    actions.style.gap = "0.5rem";
 
     // --- Search button ---
     const searchButton = document.createElement("button");
-    searchButton.className = "sp-icon-btn";
+    searchButton.className = "sp-burger sp-search-btn";
     searchButton.setAttribute("aria-label", "Toggle search");
+    searchButton.style.display = "flex";
+    searchButton.style.alignItems = "center";
+    searchButton.style.justifyContent = "center";
+
     searchButton.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -64,14 +71,14 @@ window.Layout = {
         : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
+    // Order: search button first, burger second
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // --- Search panel (collapsible) ---
+    // --- Search panel (hidden initially) ---
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
-    searchPanel.className =
-      "sp-search-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-in-out";
+    searchPanel.className = "sp-search-panel hidden";
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-900 shadow-lg">
         <div class="md:col-span-2">
@@ -98,16 +105,10 @@ window.Layout = {
       </form>
     `;
 
-    // Toggle with animation
+    // Toggle search panel
     searchButton.onclick = () => {
-      const isOpen = searchPanel.classList.contains("max-h-96");
-      if (isOpen) {
-        searchPanel.classList.remove("max-h-96", "opacity-100");
-        searchPanel.classList.add("max-h-0", "opacity-0");
-      } else {
-        searchPanel.classList.remove("max-h-0", "opacity-0");
-        searchPanel.classList.add("max-h-96", "opacity-100");
-      }
+      searchPanel.classList.toggle("hidden");
+      searchPanel.classList.toggle("animate-slide");
     };
 
     // Inject header + search
