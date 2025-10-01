@@ -10,7 +10,7 @@ window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Create header
+    // --- Header ---
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -24,17 +24,11 @@ window.Layout = {
     `;
 
     const actions = nav.querySelector(".sp-actions");
-    actions.style.display = "flex";
-    actions.style.alignItems = "center";
-    actions.style.gap = "0.5rem";
 
     // --- Search button ---
     const searchButton = document.createElement("button");
-    searchButton.className = "sp-burger sp-search-btn";
-    searchButton.setAttribute("aria-label", "Toggle search");
-    searchButton.style.display = "flex";
-    searchButton.style.alignItems = "center";
-    searchButton.style.justifyContent = "center";
+    searchButton.className = "sp-icon-btn";
+    searchButton.setAttribute("aria-label", "Open search");
 
     searchButton.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
@@ -71,51 +65,80 @@ window.Layout = {
         : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
-    // Order: search button first, burger second
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // --- Search panel (hidden initially) ---
-    const searchPanel = document.createElement("div");
-    searchPanel.id = "globalSearchPanel";
-    searchPanel.className = "sp-search-panel hidden";
-    searchPanel.innerHTML = `
-      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3 bg-gray-900 shadow-lg">
-        <div class="md:col-span-2">
-          <label class="block text-xs text-gray-400 mb-1">Search</label>
-          <input name="text" type="text" placeholder="Search by event or venue..."
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">From</label>
-          <input name="startDate" type="date"
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">To</label>
-          <input name="endDate" type="date"
-                 class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
-        <div class="md:col-span-4">
-          <button type="submit"
-                  class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
-            Apply Filters
-          </button>
-        </div>
-      </form>
+    // --- Overlay search panel ---
+    const searchOverlay = document.createElement("div");
+    searchOverlay.id = "globalSearchOverlay";
+    searchOverlay.className = "fixed inset-0 bg-black/70 hidden flex items-start justify-center z-50";
+    searchOverlay.innerHTML = `
+      <div class="bg-gray-900 w-full max-w-4xl mt-20 rounded-lg shadow-lg p-6 animate-slide">
+        <form id="globalSearchForm" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-xs text-gray-400 mb-1">Search</label>
+            <input name="text" type="text" placeholder="Search by event or venue..."
+                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">From</label>
+            <input name="startDate" type="date"
+                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          </div>
+          <div>
+            <label class="block text-xs text-gray-400 mb-1">To</label>
+            <input name="endDate" type="date"
+                   class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          </div>
+          <div class="md:col-span-4 flex justify-end gap-2">
+            <button type="button" id="closeSearchOverlay"
+                    class="px-4 py-2 bg-gray-700 text-white rounded hover:opacity-80">Cancel</button>
+            <button type="submit"
+                    class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90">Apply Filters</button>
+          </div>
+        </form>
+      </div>
     `;
 
-    // Toggle search panel
+    document.body.prepend(searchOverlay);
+
+    // Open search overlay
     searchButton.onclick = () => {
-      searchPanel.classList.toggle("hidden");
-      searchPanel.classList.toggle("animate-slide");
+      searchOverlay.classList.remove("hidden");
     };
 
-    // Inject header + search
-    document.body.prepend(searchPanel);
-    document.body.prepend(nav);
+    // Close search overlay
+    searchOverlay.querySelector("#closeSearchOverlay").onclick = () => {
+      searchOverlay.classList.add("hidden");
+    };
 
-    // --- Overlay + Sidebar ---
+    // Submit search overlay
+    const globalSearchForm = searchOverlay.querySelector("#globalSearchForm");
+    globalSearchForm.onsubmit = (e) => {
+      e.preventDefault();
+      const formData = new FormData(globalSearchForm);
+      const q = formData.get("text").trim();
+      const startDate = formData.get("startDate");
+      const endDate = formData.get("endDate");
+
+      // If we’re already on /events.html, dispatch a custom event
+      if (window.location.pathname.endsWith("events.html")) {
+        window.dispatchEvent(new CustomEvent("applyGlobalSearch", {
+          detail: { text: q, startDate, endDate }
+        }));
+      } else {
+        // Otherwise redirect to events page with query params
+        const params = new URLSearchParams();
+        if (q) params.set("q", q);
+        if (startDate) params.set("startDate", startDate);
+        if (endDate) params.set("endDate", endDate);
+        window.location.href = "/events.html?" + params.toString();
+      }
+
+      searchOverlay.classList.add("hidden");
+    };
+
+    // --- Sidebar + overlay ---
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     overlay.onclick = () => {
@@ -140,6 +163,7 @@ window.Layout = {
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
       </nav>
     `;
+
     sidebar.querySelector(".sp-close").onclick = () => {
       document.body.classList.remove("sp-drawer-open");
       icon.innerHTML = `
@@ -151,6 +175,7 @@ window.Layout = {
 
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
+    document.body.prepend(nav);
 
     // --- Auth-specific links ---
     const navContainer = document.getElementById("sidebar-links");
