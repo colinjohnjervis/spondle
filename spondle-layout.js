@@ -6,7 +6,7 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
 );
 
-// --- Helpers ---
+// Helpers
 function getFiltersFromURL() {
   const sp = new URL(window.location.href).searchParams;
   return {
@@ -28,7 +28,7 @@ window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // --- Header ---
+    // ---------- Header ----------
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -78,7 +78,7 @@ window.Layout = {
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // --- Search panel ---
+    // ---------- Search panel ----------
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
     searchPanel.className = "sp-search-panel";
@@ -128,7 +128,7 @@ window.Layout = {
     document.body.prepend(searchPanel);
     document.body.prepend(nav);
 
-    // --- Overlay + Sidebar ---
+    // ---------- Overlay + Sidebar ----------
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     Object.assign(overlay.style, {
@@ -184,7 +184,7 @@ window.Layout = {
         : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
-    // --- Auth links ---
+    // ---------- Auth links ----------
     const navContainer = document.getElementById("sidebar-links");
     if (navContainer) {
       if (user) {
@@ -200,18 +200,14 @@ window.Layout = {
       }
     }
 
-    // --- Prefill search fields ---
+    // ---------- Prefill search fields ----------
     const urlFilters = getFiltersFromURL();
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
     document.getElementById("globalStartDate").value = urlFilters.startDate || "";
     document.getElementById("globalEndDate").value = urlFilters.endDate || "";
 
-    // --- Global search submit ---
+    // ---------- Submit (global) ----------
     const searchForm = document.getElementById("globalSearchForm");
-    const eventsGrid = document.getElementById("eventsGrid");
-    const loadMoreBtn = document.getElementById("loadMoreBtn");
-    const eventsError = document.getElementById("eventsError");
-
     searchForm.addEventListener("submit", (e) => {
       e.preventDefault();
       const filters = {
@@ -219,144 +215,8 @@ window.Layout = {
         startDate: document.getElementById("globalStartDate").value,
         endDate: document.getElementById("globalEndDate").value,
       };
-      if (eventsGrid) {
-        initialLoad(filters);
-        toggleSearch(false);
-      } else {
-        window.location.href = `/events.html${toQueryString(filters)}`;
-      }
+      // Always redirect to events.html – let events.html handle rendering
+      window.location.href = `/events.html${toQueryString(filters)}`;
     });
-
-    // --- Events logic only on events.html ---
-    if (eventsGrid) {
-      const PAGE_SIZE = 12;
-      let page = 0, buffer = [], usingClientBuffer = false;
-
-      function renderCards(rows) {
-        for (const event of rows) {
-          const card = document.createElement("div");
-          card.className = "relative rounded-xl overflow-hidden shadow bg-gray-900";
-
-          const imageContent = event.image_url
-            ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
-            : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
-
-          const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
-            weekday: "long", day: "numeric", month: "long", year: "numeric"
-          });
-
-          const venueName = event.venues?.venue_name || "Venue TBA";
-          const townCity = event.venues?.location?.town_city || "";
-          const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
-
-          card.innerHTML = `
-            ${imageContent}
-            <div class="p-4">
-              <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-              <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
-              <p class="text-sm text-gray-400">${venueDisplay}</p>
-            </div>
-          `;
-          eventsGrid.appendChild(card);
-        }
-      }
-
-      async function loadEventsServerPaged({ startDate, endDate }) {
-        let q = supabase
-          .from("events")
-          .select("id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))")
-          .eq("publish_status", "published")
-          .order("event_date", { ascending: true })
-          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
-
-        const today = new Date().toISOString().split("T")[0];
-        q = q.gte("event_date", startDate || today);
-        if (endDate) q = q.lte("event_date", endDate);
-
-        const { data, error } = await q;
-        if (error) throw error;
-        renderCards(data);
-        page++;
-        if (data.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.style.display = "none";
-      }
-
-      async function buildClientBuffer({ text, startDate, endDate }) {
-        const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))";
-        const today = new Date().toISOString().split("T")[0];
-
-        let q1 = supabase.from("events")
-          .select(selectCols)
-          .eq("publish_status", "published")
-          .order("event_date", { ascending: true })
-          .ilike("event_name", `%${text}%`)
-          .gte("event_date", startDate || today)
-          .limit(500);
-
-        let q2 = supabase.from("events")
-          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
-          .eq("publish_status", "published")
-          .order("event_date", { ascending: true })
-          .ilike("venues.venue_name", `%${text}%`)
-          .gte("event_date", startDate || today)
-          .limit(500);
-
-        if (endDate) {
-          q1 = q1.lte("event_date", endDate);
-          q2 = q2.lte("event_date", endDate);
-        }
-
-        const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
-        const dedup = new Map();
-        [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
-        buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
-        usingClientBuffer = true;
-      }
-
-      function loadFromClientBuffer() {
-        const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
-        renderCards(slice);
-        page++;
-        if (page * PAGE_SIZE >= buffer.length && loadMoreBtn) loadMoreBtn.style.display = "none";
-      }
-
-      async function initialLoad(filters) {
-        eventsGrid.innerHTML = "";
-        eventsError?.classList.add("hidden");
-        if (loadMoreBtn) loadMoreBtn.style.display = "block";
-        page = 0;
-
-        try {
-          if (filters.text) {
-            await buildClientBuffer(filters);
-            loadFromClientBuffer();
-          } else {
-            usingClientBuffer = false;
-            await loadEventsServerPaged(filters);
-          }
-        } catch (err) {
-          console.error(err);
-          eventsError?.classList.remove("hidden");
-          if (loadMoreBtn) loadMoreBtn.style.display = "none";
-        }
-      }
-
-      // Expose for global use
-      window.initialLoad = initialLoad;
-
-      // Load more
-      loadMoreBtn?.addEventListener("click", () => {
-        if (usingClientBuffer) {
-          loadFromClientBuffer();
-        } else {
-          loadEventsServerPaged({
-            startDate: document.getElementById("globalStartDate")?.value || "",
-            endDate: document.getElementById("globalEndDate")?.value || "",
-          });
-        }
-      });
-
-      // --- Always start with URL filters (so homepage search works) ---
-      await initialLoad(getFiltersFromURL());
-    }
   }
 };
