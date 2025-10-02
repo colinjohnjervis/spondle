@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Event – Spondle</title>
+  <meta name="color-scheme" content="dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Shared layout + styles -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=1006">
+  <link rel="stylesheet" href="./styles.css?v=1000">
+</head>
+<body>
+  <!-- Fixed header + sidebar -->
+  <div id="layout-root"></div>
+
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <section class="panel p-0 overflow-hidden border border-[color:var(--border)] rounded-2xl shadow-lg">
+      <!-- Hero image -->
+      <div class="relative h-40 sm:h-60 md:h-80">
+        <img
+          id="event-hero"
+          src="https://via.placeholder.com/1200x600?text=Event+Image"
+          alt="Event image"
+          class="w-full h-full object-cover"
+        >
+      </div>
+
+      <!-- Event info -->
+      <div class="p-6 md:p-8 space-y-4">
+        <h1 id="event-title" class="text-3xl md:text-4xl font-extrabold">Loading…</h1>
+        <p id="event-venue" class="text-[color:var(--muted)]">Venue info</p>
+        <p id="event-date" class="text-[color:var(--muted)]">Date info</p>
+
+        <!-- Description -->
+        <p id="event-description" class="text-white/90">
+          Event description will load here.
+        </p>
+
+        <!-- Buttons -->
+        <div class="flex flex-wrap gap-3 mt-4">
+          <a id="event-ticket" href="#" target="_blank"
+             class="px-4 py-2 bg-[color:var(--brand)] text-black rounded-md font-medium hidden">
+            Buy Tickets
+          </a>
+          <button id="calendar-btn"
+                  class="px-4 py-2 bg-gray-800 text-white rounded-md font-medium hidden">
+            Add to Calendar
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Layout -->
+  <script src="./spondle-layout.js?v=1006" type="module"></script>
+  <script>
+    window.Layout.init();
+  </script>
+
+  <!-- Page logic -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
+
+    function getEventId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("id");
+    }
+
+    async function loadEvent() {
+      const id = getEventId();
+      if (!id) {
+        document.querySelector("#event-title").textContent = "Event not found";
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("events")
+        .select("*, venues(venue_name, location:location_id(town_city))")
+        .eq("id", id)
+        .single();
+
+      if (error || !data) {
+        document.querySelector("#event-title").textContent = "Event not found";
+        return;
+      }
+
+      // Fill in values
+      document.querySelector("#event-hero").src =
+        data.image_url || "https://via.placeholder.com/1200x600?text=Event+Image";
+
+      document.querySelector("#event-title").textContent = data.event_name;
+
+      const venueName = data.venues?.venue_name || "Venue TBA";
+      const townCity = data.venues?.location?.town_city || "";
+      document.querySelector("#event-venue").textContent =
+        townCity ? `${venueName}, ${townCity}` : venueName;
+
+      const formattedDate = new Date(data.event_date).toLocaleDateString("en-GB", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+      document.querySelector("#event-date").textContent = formattedDate;
+
+      document.querySelector("#event-description").textContent =
+        data.description || "No description available.";
+
+      // Ticket link (if available)
+      if (data.ticket_url) {
+        const ticketBtn = document.querySelector("#event-ticket");
+        ticketBtn.href = data.ticket_url;
+        ticketBtn.classList.remove("hidden");
+      }
+
+      // Calendar button (for later expansion)
+      document.querySelector("#calendar-btn").classList.remove("hidden");
+    }
+
+    loadEvent();
+  </script>
+</body>
+</html>
