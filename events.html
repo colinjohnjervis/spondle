@@ -6,9 +6,11 @@
   <title>Events – Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
-  <link rel="stylesheet" href="./styles.css?v=3">
-  <link rel="stylesheet" href="./hearts.css?v=2">
+
+  <!-- Styles (use same version token across all pages) -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-8">
+  <link rel="stylesheet" href="./styles.css?v=global-8">
+  <link rel="stylesheet" href="./hearts.css?v=global-8">
 </head>
 <body>
   <!-- Layout (sidebar + sticky header + global search) gets injected here -->
@@ -32,8 +34,8 @@
     </section>
   </main>
 
-  <!-- Layout script (injects sidebar + sticky header + global search) -->
-  <script src="./spondle-layout.js?v=layout-fixed1" type="module"></script>
+  <!-- Layout script -->
+  <script src="./spondle-layout.js?v=global-8" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       window.Layout.init({ active: "events" });
@@ -70,17 +72,15 @@
             endDate: endDateInput.value
           };
           initialLoad(filters);
-          document.body.classList.remove('search-open'); // close panel after search
+          document.body.classList.remove('search-open');
         });
       }
     });
 
     const PAGE_SIZE = 12;
     let page = 0;
-
     let user = null;
     let favouriteEventIds = new Set();
-
     let usingClientBuffer = false;
     let buffer = [];
 
@@ -252,9 +252,20 @@
       }
     });
 
+    // ---- Get filters from URL ----
+    function getFiltersFromURL() {
+      const sp = new URL(window.location.href).searchParams;
+      return {
+        text: (sp.get("text") || "").trim(),
+        startDate: (sp.get("startDate") || "").trim(),
+        endDate: (sp.get("endDate") || "").trim(),
+      };
+    }
+
     (async () => {
       await loadUserAndFavourites();
-      await initialLoad({ text: '', startDate: '', endDate: '' });
+      const filtersFromURL = getFiltersFromURL();
+      await initialLoad(filtersFromURL);
     })();
   </script>
 </body>
