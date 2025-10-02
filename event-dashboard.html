@@ -6,8 +6,8 @@
   <title>Event Dashboard — Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./spondle-layout.css?v=1000">
-  <link rel="stylesheet" href="./styles.css?v=1000">
+  <link rel="stylesheet" href="./spondle-layout.css?v=1001">
+  <link rel="stylesheet" href="./styles.css?v=1001">
 </head>
 <body>
   <!-- Header + Sidebar injected -->
@@ -84,7 +84,7 @@
   </main>
 
   <!-- JS -->
-  <script src="./spondle-layout.js?v=1005" type="module"></script>
+  <script src="./spondle-layout.js?v=1001" type="module"></script>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -119,10 +119,14 @@
     }
 
     function renderEventCard(event) {
+      const venueName = event.venues?.venue_name || "Venue TBA";
+      const townCity = event.venues?.location?.town_city || "";
+      const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+
       return `
         <div class="p-4 bg-gray-800 rounded shadow">
           <h3 class="font-semibold text-lg">${event.event_name}</h3>
-          <p class="text-sm text-gray-300">${formatDate(event.event_date)} @ Venue ${event.venue_id || "TBA"}</p>
+          <p class="text-sm text-gray-300">${formatDate(event.event_date)} @ ${venueDisplay}</p>
           <p class="text-xs text-gray-400 uppercase">${event.publish_status}</p>
         </div>
       `;
@@ -184,7 +188,16 @@
 
       const { data: events, error } = await supabase
         .from("events")
-        .select("*")
+        .select(`
+          id,
+          event_name,
+          event_date,
+          publish_status,
+          venues (
+            venue_name,
+            location:location_id (town_city)
+          )
+        `)
         .eq("organiser_id", user.id);
 
       if (error) {
