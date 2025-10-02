@@ -1,4 +1,4 @@
-// spondle-layout.js (with debug panel merged into events page)
+// spondle-layout.js
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -24,7 +24,7 @@ function toQueryString(filters) {
   return qs ? `?${qs}` : "";
 }
 
-// Debug helper → write into page
+// Debug helper → write into page (below header)
 function debugLog(message, data) {
   let panel = document.getElementById("debugPanel");
   if (!panel) {
@@ -36,7 +36,15 @@ function debugLog(message, data) {
     panel.style.fontSize = "12px";
     panel.style.whiteSpace = "pre-wrap";
     panel.style.borderBottom = "2px solid #0f0";
-    document.body.prepend(panel);
+    panel.style.display = "none";
+
+    // Insert panel *after* the header if it exists
+    const header = document.querySelector(".sp-header");
+    if (header && header.parentNode) {
+      header.parentNode.insertBefore(panel, header.nextSibling);
+    } else {
+      document.body.insertBefore(panel, document.body.firstChild);
+    }
   }
   const line = document.createElement("div");
   line.textContent = `[DEBUG] ${message}: ${JSON.stringify(data)}`;
@@ -239,8 +247,8 @@ window.Layout = {
         startDate: document.getElementById("globalStartDate").value,
         endDate: document.getElementById("globalEndDate").value,
       };
+      debugLog("Search submitted", filters);
       if (eventsGrid) {
-        debugLog("Search submitted", filters);
         initialLoad(filters);
         toggleSearch(false);
       } else {
@@ -298,7 +306,7 @@ window.Layout = {
 
         const { data, error } = await q;
         if (error) debugLog("Supabase error", error.message);
-        debugLog("Server query returned", data?.length || 0);
+        debugLog("Supabase server data", data?.length || 0);
         renderCards(data || []);
         page++;
         if (data.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.style.display = "none";
@@ -366,17 +374,13 @@ window.Layout = {
           }
         } catch (err) {
           debugLog("initialLoad error", err.message);
+          eventsError?.classList.remove("hidden");
+          if (loadMoreBtn) loadMoreBtn.style.display = "none";
         }
       }
 
+      // Expose for submit handler
       window.initialLoad = initialLoad;
 
-      // Prefill search fields from URL params
-      const filtersFromURL = getFiltersFromURL();
-      document.getElementById("globalSearchInput").value = filtersFromURL.text || "";
-      document.getElementById("globalStartDate").value = filtersFromURL.startDate || "";
-      document.getElementById("globalEndDate").value = filtersFromURL.endDate || "";
-
-      debugLog("Filters from URL", filtersFromURL);
-
-      await initialLoad(filtersFrom
+      // Load more
+      loadMoreBtn?.addEventListener("
