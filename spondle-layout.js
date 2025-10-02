@@ -1,4 +1,4 @@
-// spondle-layout.js
+// spondle-layout.js (debug version)
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const supabase = createClient(
@@ -9,11 +9,13 @@ const supabase = createClient(
 // Helpers
 function getFiltersFromURL() {
   const sp = new URL(window.location.href).searchParams;
-  return {
+  const filters = {
     text: (sp.get("text") || "").trim(),
     startDate: (sp.get("startDate") || "").trim(),
     endDate: (sp.get("endDate") || "").trim(),
   };
+  console.log("[DEBUG] getFiltersFromURL ->", filters);
+  return filters;
 }
 function toQueryString(filters) {
   const p = new URLSearchParams();
@@ -21,6 +23,7 @@ function toQueryString(filters) {
   if (filters.startDate) p.set("startDate", filters.startDate);
   if (filters.endDate) p.set("endDate", filters.endDate);
   const qs = p.toString();
+  console.log("[DEBUG] toQueryString ->", qs);
   return qs ? `?${qs}` : "";
 }
 
@@ -200,13 +203,7 @@ window.Layout = {
       }
     }
 
-    // ---------- Prefill search fields ----------
-    const urlFilters = getFiltersFromURL();
-    document.getElementById("globalSearchInput").value = urlFilters.text || "";
-    document.getElementById("globalStartDate").value = urlFilters.startDate || "";
-    document.getElementById("globalEndDate").value = urlFilters.endDate || "";
-
-    // ---------- Submit (global) ----------
+    // ---------- Submit (global search) ----------
     const searchForm = document.getElementById("globalSearchForm");
     const eventsGrid = document.getElementById("eventsGrid");
     const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -219,42 +216,34 @@ window.Layout = {
         startDate: document.getElementById("globalStartDate").value,
         endDate: document.getElementById("globalEndDate").value,
       };
+      console.log("[DEBUG] Search submitted -> filters:", filters);
+
       if (eventsGrid) {
+        console.log("[DEBUG] Running initialLoad directly on events page");
         initialLoad(filters);
         toggleSearch(false);
       } else {
-        window.location.href = `/events.html${toQueryString(filters)}`;
+        const qs = toQueryString(filters);
+        console.log("[DEBUG] Redirecting to /events.html" + qs);
+        window.location.href = `/events.html${qs}`;
       }
     });
 
-    // ---------- Events logic only on pages with #eventsGrid ----------
+    // ---------- Events logic only on events.html ----------
     if (eventsGrid) {
       const PAGE_SIZE = 12;
       let page = 0, buffer = [], usingClientBuffer = false;
 
       function renderCards(rows) {
+        console.log(`[DEBUG] Rendering ${rows.length} events`);
         for (const event of rows) {
           const card = document.createElement("div");
           card.className = "relative rounded-xl overflow-hidden shadow bg-gray-900";
-
-          const imageContent = event.image_url
-            ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
-            : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
-
-          const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
-            weekday: "long", day: "numeric", month: "long", year: "numeric"
-          });
-
-          const venueName = event.venues?.venue_name || "Venue TBA";
-          const townCity = event.venues?.location?.town_city || "";
-          const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
-
           card.innerHTML = `
-            ${imageContent}
             <div class="p-4">
               <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-              <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
-              <p class="text-sm text-gray-400">${venueDisplay}</p>
+              <p class="text-sm text-gray-400 mb-1">${event.event_date}</p>
+              <p class="text-sm text-gray-400">${event.venues?.venue_name || "Venue TBA"}</p>
             </div>
           `;
           eventsGrid.appendChild(card);
@@ -262,9 +251,10 @@ window.Layout = {
       }
 
       async function loadEventsServerPaged({ startDate, endDate }) {
+        console.log("[DEBUG] loadEventsServerPaged with:", { startDate, endDate });
         let q = supabase
           .from("events")
-          .select("id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))")
+          .select("id,event_name,event_date,venues(venue_name)")
           .eq("publish_status", "published")
           .order("event_date", { ascending: true })
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
@@ -274,14 +264,15 @@ window.Layout = {
         if (endDate) q = q.lte("event_date", endDate);
 
         const { data, error } = await q;
-        if (error) throw error;
-        renderCards(data);
+        if (error) console.error("[DEBUG] Supabase error:", error);
+        console.log("[DEBUG] Supabase data:", data);
+        renderCards(data || []);
         page++;
-        if (data.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.style.display = "none";
       }
 
       async function buildClientBuffer({ text, startDate, endDate }) {
-        const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))";
+        console.log("[DEBUG] buildClientBuffer with:", { text, startDate, endDate });
+        const selectCols = "id,event_name,event_date,venues(venue_name)";
         const today = new Date().toISOString().split("T")[0];
 
         let q1 = supabase.from("events")
@@ -293,7 +284,7 @@ window.Layout = {
           .limit(500);
 
         let q2 = supabase.from("events")
-          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
+          .select(`id,event_name,event_date,venues!inner(venue_name)`)
           .eq("publish_status", "published")
           .order("event_date", { ascending: true })
           .ilike("venues.venue_name", `%${text}%`)
@@ -306,25 +297,28 @@ window.Layout = {
         }
 
         const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
+        console.log("[DEBUG] Raw results A:", a);
+        console.log("[DEBUG] Raw results B:", b);
+
         const dedup = new Map();
         [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
         buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
         usingClientBuffer = true;
+        console.log("[DEBUG] Deduped buffer length:", buffer.length);
       }
 
       function loadFromClientBuffer() {
+        console.log("[DEBUG] loadFromClientBuffer page", page);
         const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
         renderCards(slice);
         page++;
-        if (page * PAGE_SIZE >= buffer.length && loadMoreBtn) loadMoreBtn.style.display = "none";
       }
 
       async function initialLoad(filters) {
+        console.log("[DEBUG] initialLoad with filters:", filters);
         eventsGrid.innerHTML = "";
         eventsError?.classList.add("hidden");
-        if (loadMoreBtn) loadMoreBtn.style.display = "block";
         page = 0;
-
         try {
           if (filters.text) {
             await buildClientBuffer(filters);
@@ -334,34 +328,19 @@ window.Layout = {
             await loadEventsServerPaged(filters);
           }
         } catch (err) {
-          console.error(err);
-          eventsError?.classList.remove("hidden");
-          if (loadMoreBtn) loadMoreBtn.style.display = "none";
+          console.error("[DEBUG] initialLoad error:", err);
         }
       }
 
       // Expose for submit handler
       window.initialLoad = initialLoad;
 
-      // Load more
-      loadMoreBtn?.addEventListener("click", () => {
-        if (usingClientBuffer) {
-          loadFromClientBuffer();
-        } else {
-          loadEventsServerPaged({
-            startDate: document.getElementById("globalStartDate")?.value || "",
-            endDate: document.getElementById("globalEndDate")?.value || "",
-          });
-        }
-      });
-
-      // Prefill search fields from URL params
+      // Prefill + run
       const filtersFromURL = getFiltersFromURL();
       document.getElementById("globalSearchInput").value = filtersFromURL.text || "";
       document.getElementById("globalStartDate").value = filtersFromURL.startDate || "";
       document.getElementById("globalEndDate").value = filtersFromURL.endDate || "";
 
-      // Initial load with URL filters
       await initialLoad(filtersFromURL);
     }
   }
