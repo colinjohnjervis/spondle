@@ -36,7 +36,6 @@ function debugLog(message, data) {
     panel.style.whiteSpace = "pre-wrap";
     panel.style.borderBottom = "2px solid #0f0";
     panel.style.display = "none";
-
     const header = document.querySelector(".sp-header");
     if (header && header.parentNode) {
       header.parentNode.insertBefore(panel, header.nextSibling);
@@ -67,8 +66,6 @@ window.Layout = {
         <div class="sp-actions flex items-center gap-2"></div>
       </div>
     `;
-    nav.style.position = "relative";
-    nav.style.zIndex = "10050";
     document.body.prepend(nav);
 
     const actions = nav.querySelector(".sp-actions");
@@ -76,47 +73,28 @@ window.Layout = {
     // Search button
     const searchButton = document.createElement("button");
     searchButton.className = "sp-icon-btn";
-    searchButton.setAttribute("aria-label", "Toggle search");
-    searchButton.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
-        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>`;
+    searchButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
+      viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
     actions.appendChild(searchButton);
 
     // Burger button
     const burgerButton = document.createElement("button");
     burgerButton.className = "sp-burger";
-    burgerButton.setAttribute("aria-label", "Toggle menu");
-    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    icon.setAttribute("width", "24");
-    icon.setAttribute("height", "24");
-    icon.setAttribute("fill", "none");
-    icon.setAttribute("stroke", "currentColor");
-    icon.setAttribute("stroke-width", "2");
-    icon.setAttribute("stroke-linecap", "round");
-    icon.setAttribute("stroke-linejoin", "round");
-    icon.innerHTML = `
+    burgerButton.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
       <line x1="3" y1="12" x2="21" y2="12"/>
       <line x1="3" y1="6" x2="21" y2="6"/>
       <line x1="3" y1="18" x2="21" y2="18"/>
-    `;
-    burgerButton.appendChild(icon);
+    </svg>`;
     actions.appendChild(burgerButton);
 
     // ----- Search panel -----
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
     searchPanel.className = "sp-search-panel";
-    Object.assign(searchPanel.style, {
-      position: "fixed",
-      left: "0", right: "0", top: "64px",
-      display: "none",
-      background: "#0b0b0b",
-      borderBottom: "1px solid rgba(255,255,255,0.08)",
-      zIndex: "10040",
-    });
+    searchPanel.style.display = "none";
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div class="md:col-span-2">
@@ -136,13 +114,12 @@ window.Layout = {
             class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
         </div>
         <div class="md:col-span-4">
-          <button type="submit"
-            class="px-4 py-2 bg-[color:var(--brand)] text-black rounded">Apply Filters</button>
+          <button type="submit" class="px-4 py-2 bg-[color:var(--brand)] text-black rounded">Apply Filters</button>
         </div>
       </form>`;
     document.body.insertBefore(searchPanel, nav.nextSibling);
 
-    // ---- Search toggle (restored) ----
+    // Search toggle
     let searchOpen = false;
     const toggleSearch = (force = null) => {
       searchOpen = force !== null ? force : !searchOpen;
@@ -151,27 +128,12 @@ window.Layout = {
     };
     searchButton.addEventListener("click", () => toggleSearch());
 
-    // ----- Overlay + Sidebar -----
+    // ----- Sidebar + Overlay -----
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
-    Object.assign(overlay.style, {
-      zIndex: "10020",
-      display: "none",
-      pointerEvents: "none",
-    });
-    overlay.onclick = () => {
-      document.body.classList.remove("sp-drawer-open");
-      overlay.style.display = "none";
-      overlay.style.pointerEvents = "none";
-      icon.innerHTML = `
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>`;
-    };
-
+    overlay.style.display = "none";
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
-    sidebar.style.zIndex = "10030";
     sidebar.innerHTML = `
       <div class="sp-sidebar__head">
         <strong>Spondle</strong>
@@ -181,23 +143,18 @@ window.Layout = {
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
         <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
-      </nav>`;
-    sidebar.querySelector(".sp-close").onclick = () => {
-      document.body.classList.remove("sp-drawer-open");
-      overlay.style.display = "none";
-      overlay.style.pointerEvents = "none";
-    };
-
+      </nav>
+    `;
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
 
+    sidebar.querySelector(".sp-close").onclick = () => {
+      document.body.classList.remove("sp-drawer-open");
+      overlay.style.display = "none";
+    };
     burgerButton.onclick = () => {
       const isOpen = document.body.classList.toggle("sp-drawer-open");
       overlay.style.display = isOpen ? "block" : "none";
-      overlay.style.pointerEvents = isOpen ? "auto" : "none";
-      icon.innerHTML = isOpen
-        ? `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`
-        : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
     // ----- Auth links -----
@@ -207,20 +164,16 @@ window.Layout = {
         navContainer.innerHTML += `
           <a href="/event-dashboard.html">Event Dashboard</a>
           <a href="/profile.html">My Profile</a>
-          <a href="/logout.html">Sign out</a>`;
+          <a href="/logout.html">Sign out</a>
+        `;
       } else {
         navContainer.innerHTML += `
-          <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>`;
+          <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>
+        `;
       }
     }
 
-    // ----- Prefill search -----
-    const urlFilters = getFiltersFromURL();
-    document.getElementById("globalSearchInput").value = urlFilters.text || "";
-    document.getElementById("globalStartDate").value = urlFilters.startDate || "";
-    document.getElementById("globalEndDate").value = urlFilters.endDate || "";
-
-    // ----- Submit -----
+    // ----- Search form behaviour -----
     const searchForm = document.getElementById("globalSearchForm");
     const eventsGrid = document.getElementById("eventsGrid");
     const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -242,7 +195,7 @@ window.Layout = {
       }
     });
 
-    // ----- Events logic only on events.html -----
+    // ----- Events page logic -----
     if (eventsGrid) {
       const PAGE_SIZE = 12;
       let page = 0, buffer = [], usingClientBuffer = false;
@@ -252,21 +205,30 @@ window.Layout = {
         for (const event of rows) {
           const card = document.createElement("div");
           card.className = "relative rounded-xl overflow-hidden shadow bg-gray-900";
+          const imageContent = event.image_url
+            ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
+            : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
+          const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
+            weekday: "long", day: "numeric", month: "long", year: "numeric"
+          });
+          const venueName = event.venues?.venue_name || "Venue TBA";
+          const townCity = event.venues?.location?.town_city || "";
+          const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
           card.innerHTML = `
+            ${imageContent}
             <div class="p-4">
               <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-              <p class="text-sm text-gray-400 mb-1">${event.event_date}</p>
-              <p class="text-sm text-gray-400">${event.venues?.venue_name || "Venue TBA"}</p>
+              <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
+              <p class="text-sm text-gray-400">${venueDisplay}</p>
             </div>`;
           eventsGrid.appendChild(card);
         }
       }
 
       async function loadEventsServerPaged({ startDate, endDate }) {
-        debugLog("loadEventsServerPaged", { startDate, endDate });
         let q = supabase
           .from("events")
-          .select("id,event_name,event_date,event_time,image_url,venues(venue_name)")
+          .select("id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))")
           .eq("publish_status", "published")
           .order("event_date", { ascending: true })
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
@@ -276,16 +238,15 @@ window.Layout = {
         if (endDate) q = q.lte("event_date", endDate);
 
         const { data, error } = await q;
-        if (error) debugLog("Supabase error", error.message);
-        debugLog("Supabase server data", data?.length || 0);
-        renderCards(data || []);
+        if (error) throw error;
+        renderCards(data);
         page++;
         if (data.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.style.display = "none";
       }
 
       async function buildClientBuffer({ text, startDate, endDate }) {
         debugLog("buildClientBuffer", { text, startDate, endDate });
-        const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name)";
+        const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))";
         const today = new Date().toISOString().split("T")[0];
 
         let q1 = supabase.from("events")
@@ -297,7 +258,7 @@ window.Layout = {
           .limit(500);
 
         let q2 = supabase.from("events")
-          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name)`)
+          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
           .eq("publish_status", "published")
           .order("event_date", { ascending: true })
           .ilike("venues.venue_name", `%${text}%`)
@@ -316,13 +277,13 @@ window.Layout = {
         const dedup = new Map();
         [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
         buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
-        usingClientBuffer = true;
         debugLog("Deduped buffer length", buffer.length);
+        usingClientBuffer = true;
       }
 
       function loadFromClientBuffer() {
-        debugLog("loadFromClientBuffer page", page);
         const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+        debugLog("loadFromClientBuffer page", page);
         renderCards(slice);
         page++;
         if (page * PAGE_SIZE >= buffer.length && loadMoreBtn) loadMoreBtn.style.display = "none";
@@ -344,13 +305,13 @@ window.Layout = {
             await loadEventsServerPaged(filters);
           }
         } catch (err) {
-          debugLog("initialLoad error", err.message);
+          console.error(err);
           eventsError?.classList.remove("hidden");
           if (loadMoreBtn) loadMoreBtn.style.display = "none";
         }
       }
 
-      // Expose globally
+      // Expose
       window.initialLoad = initialLoad;
 
       // Load more
@@ -365,8 +326,13 @@ window.Layout = {
         }
       });
 
-      // Initial load
-      await initialLoad(getFiltersFromURL());
+      // ---- Initial load ----
+      const filtersFromURL = getFiltersFromURL();
+      if (filtersFromURL.text || filtersFromURL.startDate || filtersFromURL.endDate) {
+        await initialLoad(filtersFromURL);
+      } else {
+        await initialLoad({ text: "", startDate: "", endDate: "" });
+      }
     }
   }
 };
