@@ -8,120 +8,137 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared layout + styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=1006">
-  <link rel="stylesheet" href="./styles.css?v=1000">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
+  <link rel="stylesheet" href="./styles.css?v=global-9">
+  <link rel="stylesheet" href="./hearts.css?v=global-9">
 </head>
 <body>
-  <!-- Fixed header + sidebar -->
+  <!-- Layout (sticky header + sidebar) -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
-    <section class="panel p-0 overflow-hidden border border-[color:var(--border)] rounded-2xl shadow-lg">
-      <!-- Hero image -->
-      <div class="relative h-40 sm:h-60 md:h-80">
-        <img
-          id="event-hero"
-          src="https://via.placeholder.com/1200x600?text=Event+Image"
-          alt="Event image"
-          class="w-full h-full object-cover"
-        >
-      </div>
-
-      <!-- Event info -->
-      <div class="p-6 md:p-8 space-y-4">
-        <h1 id="event-title" class="text-3xl md:text-4xl font-extrabold">Loading…</h1>
-        <p id="event-venue" class="text-[color:var(--muted)]">Venue info</p>
-        <p id="event-date" class="text-[color:var(--muted)]">Date info</p>
-
-        <!-- Description -->
-        <p id="event-description" class="text-white/90">
-          Event description will load here.
-        </p>
-
-        <!-- Buttons -->
-        <div class="flex flex-wrap gap-3 mt-4">
-          <a id="event-ticket" href="#" target="_blank"
-             class="px-4 py-2 bg-[color:var(--brand)] text-black rounded-md font-medium hidden">
-            Buy Tickets
-          </a>
-          <button id="calendar-btn"
-                  class="px-4 py-2 bg-gray-800 text-white rounded-md font-medium hidden">
-            Add to Calendar
-          </button>
-        </div>
-      </div>
+    <section id="eventContainer"
+      class="panel p-0 overflow-hidden border border-[color:var(--border)] rounded-2xl shadow-lg">
+      <!-- Content populated by JS -->
     </section>
   </main>
 
-  <!-- Layout -->
-  <script src="./spondle-layout.js?v=1006" type="module"></script>
-  <script>
-    window.Layout.init();
-  </script>
-
-  <!-- Page logic -->
+  <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
-      "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    function getEventId() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("id");
+    const container = document.getElementById("eventContainer");
+
+    // --- Get event id from query string ---
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("id");
+
+    let user = null;
+    let favouriteEventIds = new Set();
+
+    async function loadUserAndFavourites() {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      user = currentUser;
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("event_favourites")
+        .select("event_id")
+        .eq("user_id", user.id);
+
+      if (data) favouriteEventIds = new Set(data.map(r => r.event_id));
+    }
+
+    async function toggleFavourite(eventId, btn) {
+      if (!user) return alert("Please log in to save favourites.");
+
+      if (favouriteEventIds.has(eventId)) {
+        await supabase.from("event_favourites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("event_id", eventId);
+        favouriteEventIds.delete(eventId);
+        btn.classList.remove("fav-on");
+      } else {
+        await supabase.from("event_favourites")
+          .insert([{ user_id: user.id, event_id: eventId }]);
+        favouriteEventIds.add(eventId);
+        btn.classList.add("fav-on");
+      }
+    }
+
+    function renderEvent(event) {
+      const isFavourited = favouriteEventIds.has(event.id);
+
+      const imageContent = event.image_url
+        ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-60 md:h-80 object-cover">`
+        : `<div class="w-full h-60 md:h-80 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
+
+      const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+
+      const venueName = event.venues?.venue_name || "Venue TBA";
+      const townCity = event.venues?.location?.town_city || "";
+      const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+
+      container.innerHTML = `
+        <div class="relative">
+          ${imageContent}
+          <button id="favBtn" class="heart-btn absolute top-3 right-3 ${isFavourited ? "fav-on" : ""}" aria-label="Favourite">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+          </button>
+        </div>
+        <div class="p-6 md:p-8 space-y-4">
+          <h1 class="text-3xl md:text-4xl font-extrabold">${event.event_name}</h1>
+          <p class="text-[color:var(--muted)]">📍 ${venueDisplay}</p>
+          <p class="text-[color:var(--muted)]">📅 ${formattedDate}</p>
+          <p class="text-white/90">${event.description || ""}</p>
+
+          <div class="flex flex-wrap gap-3 mt-4">
+            <button class="px-4 py-2 bg-[color:var(--brand)] text-black rounded-md font-medium">
+              Buy Tickets
+            </button>
+            <button class="px-4 py-2 bg-gray-800 text-white rounded-md font-medium">
+              Add to Calendar
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("favBtn").addEventListener("click", () => toggleFavourite(event.id, document.getElementById("favBtn")));
     }
 
     async function loadEvent() {
-      const id = getEventId();
-      if (!id) {
-        document.querySelector("#event-title").textContent = "Event not found";
-        return;
-      }
-
       const { data, error } = await supabase
         .from("events")
         .select("*, venues(venue_name, location:location_id(town_city))")
-        .eq("id", id)
+        .eq("id", eventId)
         .single();
 
       if (error || !data) {
-        document.querySelector("#event-title").textContent = "Event not found";
+        container.innerHTML = `<div class="p-6 text-red-400">Event not found.</div>`;
         return;
       }
-
-      // Fill in values
-      document.querySelector("#event-hero").src =
-        data.image_url || "https://via.placeholder.com/1200x600?text=Event+Image";
-
-      document.querySelector("#event-title").textContent = data.event_name;
-
-      const venueName = data.venues?.venue_name || "Venue TBA";
-      const townCity = data.venues?.location?.town_city || "";
-      document.querySelector("#event-venue").textContent =
-        townCity ? `${venueName}, ${townCity}` : venueName;
-
-      const formattedDate = new Date(data.event_date).toLocaleDateString("en-GB", {
-        weekday: "long", day: "numeric", month: "long", year: "numeric"
-      });
-      document.querySelector("#event-date").textContent = formattedDate;
-
-      document.querySelector("#event-description").textContent =
-        data.description || "No description available.";
-
-      // Ticket link (if available)
-      if (data.ticket_url) {
-        const ticketBtn = document.querySelector("#event-ticket");
-        ticketBtn.href = data.ticket_url;
-        ticketBtn.classList.remove("hidden");
-      }
-
-      // Calendar button (for later expansion)
-      document.querySelector("#calendar-btn").classList.remove("hidden");
+      renderEvent(data);
     }
 
-    loadEvent();
+    (async () => {
+      await loadUserAndFavourites();
+      await loadEvent();
+    })();
+
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "events" });
+    });
   </script>
 </body>
 </html>
