@@ -49,6 +49,21 @@ function debugLog(message, data) {
   panel.style.display = "block";
 }
 
+// Update page heading
+function updateHeading(filters) {
+  const heading = document.querySelector("h1");
+  const subheading = heading?.nextElementSibling;
+  if (!heading || !subheading) return;
+
+  if (filters.text || filters.startDate || filters.endDate) {
+    heading.textContent = "Filtered Events";
+    subheading.textContent = "Showing results based on your search.";
+  } else {
+    heading.textContent = "All Events";
+    subheading.textContent = "Browse the latest listings from all organisers.";
+  }
+}
+
 // ---------- Layout ----------
 window.Layout = {
   async init({ active } = {}) {
@@ -295,6 +310,8 @@ window.Layout = {
         eventsError?.classList.add("hidden");
         if (loadMoreBtn) loadMoreBtn.style.display = "block";
         page = 0;
+
+        updateHeading(filters);
 
         try {
           if (filters.text) {
