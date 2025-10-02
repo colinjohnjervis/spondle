@@ -142,6 +142,15 @@ window.Layout = {
       </form>`;
     document.body.insertBefore(searchPanel, nav.nextSibling);
 
+    // ---- Search toggle (restored) ----
+    let searchOpen = false;
+    const toggleSearch = (force = null) => {
+      searchOpen = force !== null ? force : !searchOpen;
+      searchPanel.style.display = searchOpen ? "block" : "none";
+      document.body.classList.toggle("sp-search-open", searchOpen);
+    };
+    searchButton.addEventListener("click", () => toggleSearch());
+
     // ----- Overlay + Sidebar -----
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
@@ -227,6 +236,7 @@ window.Layout = {
       debugLog("Search submitted", filters);
       if (eventsGrid) {
         initialLoad(filters);
+        toggleSearch(false);
       } else {
         window.location.href = `/events.html${toQueryString(filters)}`;
       }
