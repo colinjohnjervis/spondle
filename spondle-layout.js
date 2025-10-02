@@ -6,7 +6,7 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
 );
 
-// Helpers
+// ---------- Helpers ----------
 function getFiltersFromURL() {
   const sp = new URL(window.location.href).searchParams;
   return {
@@ -20,11 +20,10 @@ function toQueryString(filters) {
   if (filters.text) p.set("text", filters.text);
   if (filters.startDate) p.set("startDate", filters.startDate);
   if (filters.endDate) p.set("endDate", filters.endDate);
-  const qs = p.toString();
-  return qs ? `?${qs}` : "";
+  return p.toString() ? `?${p.toString()}` : "";
 }
 
-// Debug helper → write into page (below header)
+// Debug helper → append panel below header
 function debugLog(message, data) {
   let panel = document.getElementById("debugPanel");
   if (!panel) {
@@ -38,12 +37,11 @@ function debugLog(message, data) {
     panel.style.borderBottom = "2px solid #0f0";
     panel.style.display = "none";
 
-    // Insert panel *after* the header if it exists
     const header = document.querySelector(".sp-header");
     if (header && header.parentNode) {
       header.parentNode.insertBefore(panel, header.nextSibling);
     } else {
-      document.body.insertBefore(panel, document.body.firstChild);
+      document.body.prepend(panel);
     }
   }
   const line = document.createElement("div");
@@ -52,11 +50,12 @@ function debugLog(message, data) {
   panel.style.display = "block";
 }
 
+// ---------- Layout ----------
 window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // ---------- Header ----------
+    // ----- Header -----
     const nav = document.createElement("nav");
     nav.className = "sp-header";
     nav.innerHTML = `
@@ -70,6 +69,8 @@ window.Layout = {
     `;
     nav.style.position = "relative";
     nav.style.zIndex = "10050";
+    document.body.prepend(nav);
+
     const actions = nav.querySelector(".sp-actions");
 
     // Search button
@@ -81,8 +82,8 @@ window.Layout = {
         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"></circle>
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-    `;
+      </svg>`;
+    actions.appendChild(searchButton);
 
     // Burger button
     const burgerButton = document.createElement("button");
@@ -102,11 +103,9 @@ window.Layout = {
       <line x1="3" y1="18" x2="21" y2="18"/>
     `;
     burgerButton.appendChild(icon);
-
-    actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
-    // ---------- Search panel ----------
+    // ----- Search panel -----
     const searchPanel = document.createElement("div");
     searchPanel.id = "globalSearchPanel";
     searchPanel.className = "sp-search-panel";
@@ -119,44 +118,31 @@ window.Layout = {
       zIndex: "10040",
     });
     searchPanel.innerHTML = `
-      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3" style="pointer-events:auto;">
+      <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div class="md:col-span-2">
           <label class="block text-xs text-gray-400 mb-1">Search</label>
-          <input id="globalSearchInput" name="text" type="text" placeholder="Search by event or venue..."
-            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          <input id="globalSearchInput" type="text"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
+            placeholder="Search by event or venue...">
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">From</label>
-          <input id="globalStartDate" name="startDate" type="date"
-            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          <input id="globalStartDate" type="date"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
         </div>
         <div>
           <label class="block text-xs text-gray-400 mb-1">To</label>
-          <input id="globalEndDate" name="endDate" type="date"
-            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+          <input id="globalEndDate" type="date"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
         </div>
         <div class="md:col-span-4">
           <button type="submit"
-            class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
-            Apply Filters
-          </button>
+            class="px-4 py-2 bg-[color:var(--brand)] text-black rounded">Apply Filters</button>
         </div>
-      </form>
-    `;
-    searchPanel.addEventListener("click", e => e.stopPropagation());
+      </form>`;
+    document.body.insertBefore(searchPanel, nav.nextSibling);
 
-    let searchOpen = false;
-    const toggleSearch = (force = null) => {
-      searchOpen = force !== null ? force : !searchOpen;
-      searchPanel.style.display = searchOpen ? "block" : "none";
-      document.body.classList.toggle("sp-search-open", searchOpen);
-    };
-    searchButton.addEventListener("click", () => toggleSearch());
-
-    document.body.prepend(searchPanel);
-    document.body.prepend(nav);
-
-    // ---------- Overlay + Sidebar ----------
+    // ----- Overlay + Sidebar -----
     const overlay = document.createElement("div");
     overlay.className = "sp-overlay";
     Object.assign(overlay.style, {
@@ -171,8 +157,7 @@ window.Layout = {
       icon.innerHTML = `
         <line x1="3" y1="12" x2="21" y2="12"/>
         <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      `;
+        <line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
     const sidebar = document.createElement("div");
@@ -187,17 +172,11 @@ window.Layout = {
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
         <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
-      </nav>
-    `;
+      </nav>`;
     sidebar.querySelector(".sp-close").onclick = () => {
       document.body.classList.remove("sp-drawer-open");
       overlay.style.display = "none";
       overlay.style.pointerEvents = "none";
-      icon.innerHTML = `
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      `;
     };
 
     document.body.prepend(overlay);
@@ -212,29 +191,27 @@ window.Layout = {
         : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
     };
 
-    // ---------- Auth links ----------
+    // ----- Auth links -----
     const navContainer = document.getElementById("sidebar-links");
     if (navContainer) {
       if (user) {
         navContainer.innerHTML += `
           <a href="/event-dashboard.html">Event Dashboard</a>
           <a href="/profile.html">My Profile</a>
-          <a href="/logout.html">Sign out</a>
-        `;
+          <a href="/logout.html">Sign out</a>`;
       } else {
         navContainer.innerHTML += `
-          <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>
-        `;
+          <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>`;
       }
     }
 
-    // ---------- Prefill search fields ----------
+    // ----- Prefill search -----
     const urlFilters = getFiltersFromURL();
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
     document.getElementById("globalStartDate").value = urlFilters.startDate || "";
     document.getElementById("globalEndDate").value = urlFilters.endDate || "";
 
-    // ---------- Submit (global) ----------
+    // ----- Submit -----
     const searchForm = document.getElementById("globalSearchForm");
     const eventsGrid = document.getElementById("eventsGrid");
     const loadMoreBtn = document.getElementById("loadMoreBtn");
@@ -250,13 +227,12 @@ window.Layout = {
       debugLog("Search submitted", filters);
       if (eventsGrid) {
         initialLoad(filters);
-        toggleSearch(false);
       } else {
         window.location.href = `/events.html${toQueryString(filters)}`;
       }
     });
 
-    // ---------- Events logic only on pages with #eventsGrid ----------
+    // ----- Events logic only on events.html -----
     if (eventsGrid) {
       const PAGE_SIZE = 12;
       let page = 0, buffer = [], usingClientBuffer = false;
@@ -266,27 +242,12 @@ window.Layout = {
         for (const event of rows) {
           const card = document.createElement("div");
           card.className = "relative rounded-xl overflow-hidden shadow bg-gray-900";
-
-          const imageContent = event.image_url
-            ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
-            : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
-
-          const formattedDate = new Date(event.event_date).toLocaleDateString("en-GB", {
-            weekday: "long", day: "numeric", month: "long", year: "numeric"
-          });
-
-          const venueName = event.venues?.venue_name || "Venue TBA";
-          const townCity = event.venues?.location?.town_city || "";
-          const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
-
           card.innerHTML = `
-            ${imageContent}
             <div class="p-4">
               <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-              <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
-              <p class="text-sm text-gray-400">${venueDisplay}</p>
-            </div>
-          `;
+              <p class="text-sm text-gray-400 mb-1">${event.event_date}</p>
+              <p class="text-sm text-gray-400">${event.venues?.venue_name || "Venue TBA"}</p>
+            </div>`;
           eventsGrid.appendChild(card);
         }
       }
@@ -295,7 +256,7 @@ window.Layout = {
         debugLog("loadEventsServerPaged", { startDate, endDate });
         let q = supabase
           .from("events")
-          .select("id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))")
+          .select("id,event_name,event_date,event_time,image_url,venues(venue_name)")
           .eq("publish_status", "published")
           .order("event_date", { ascending: true })
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
@@ -314,7 +275,7 @@ window.Layout = {
 
       async function buildClientBuffer({ text, startDate, endDate }) {
         debugLog("buildClientBuffer", { text, startDate, endDate });
-        const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))";
+        const selectCols = "id,event_name,event_date,event_time,image_url,venues(venue_name)";
         const today = new Date().toISOString().split("T")[0];
 
         let q1 = supabase.from("events")
@@ -326,7 +287,7 @@ window.Layout = {
           .limit(500);
 
         let q2 = supabase.from("events")
-          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
+          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name)`)
           .eq("publish_status", "published")
           .order("event_date", { ascending: true })
           .ilike("venues.venue_name", `%${text}%`)
@@ -379,8 +340,23 @@ window.Layout = {
         }
       }
 
-      // Expose for submit handler
+      // Expose globally
       window.initialLoad = initialLoad;
 
       // Load more
-      loadMoreBtn?.addEventListener("
+      loadMoreBtn?.addEventListener("click", () => {
+        if (usingClientBuffer) {
+          loadFromClientBuffer();
+        } else {
+          loadEventsServerPaged({
+            startDate: document.getElementById("globalStartDate")?.value || "",
+            endDate: document.getElementById("globalEndDate")?.value || "",
+          });
+        }
+      });
+
+      // Initial load
+      await initialLoad(getFiltersFromURL());
+    }
+  }
+};
