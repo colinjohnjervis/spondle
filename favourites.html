@@ -26,8 +26,12 @@
     </section>
   </main>
 
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
-  <script>Layout.init({ active: 'favourites' });</script>
+  <script src="./spondle-layout.js?v=layout-fixed1" type="module"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      Layout.init({ active: 'favourites' });
+    });
+  </script>
 
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -65,7 +69,8 @@
     }
 
     // Toggle favourite
-    async function toggleFavourite(eventId, btn) {
+    async function toggleFavourite(eventId, btn, e) {
+      e.stopPropagation(); // prevent card click navigation
       if (!user) return;
 
       if (favouriteEventIds.has(eventId)) {
@@ -117,8 +122,9 @@
       eventsGrid.innerHTML = '';
 
       data.forEach(event => {
-        const card = document.createElement('div');
-        card.className = 'event-card relative rounded-xl overflow-hidden shadow bg-gray-900';
+        const cardLink = document.createElement('a');
+        cardLink.href = `/event-page.html?id=${event.id}`;
+        cardLink.className = 'event-card block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90 transition';
 
         const imageContent = event.image_url
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
@@ -135,10 +141,10 @@
         const townCity = event.venues?.location?.town_city || '';
         const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
 
-        card.innerHTML = `
+        cardLink.innerHTML = `
           ${imageContent}
-          <button class="heart-btn fav-on" aria-label="Favourite">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <button class="heart-btn fav-on absolute top-2 right-2 z-10" aria-label="Favourite">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
             </svg>
@@ -150,10 +156,10 @@
           </div>
         `;
 
-        const heartBtn = card.querySelector('.heart-btn');
-        heartBtn.addEventListener('click', () => toggleFavourite(event.id, heartBtn));
+        const heartBtn = cardLink.querySelector('.heart-btn');
+        heartBtn.addEventListener('click', (e) => toggleFavourite(event.id, heartBtn, e));
 
-        eventsGrid.appendChild(card);
+        eventsGrid.appendChild(cardLink);
       });
     }
 
