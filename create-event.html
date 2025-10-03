@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Create Event – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Shared layout + styles -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <link rel="stylesheet" href="./hearts.css?v=2">
+
   <style>
     .venue-card {
       border: 1px solid #444;
@@ -40,13 +46,13 @@
   </style>
 </head>
 <body class="bg-black text-white">
-  <!-- Layout (sidebar + sticky header + global search) gets injected here -->
+  <!-- Header + Sidebar injected -->
   <div id="layout-root"></div>
 
-  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+  <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
     <h1 class="text-3xl font-bold mb-6">Create Event</h1>
-    <form id="eventForm" class="space-y-6">
 
+    <form id="eventForm" class="space-y-6">
       <!-- Basic Info -->
       <div>
         <label class="block mb-2">Event Name</label>
@@ -111,9 +117,11 @@
   </main>
 
   <!-- Layout script -->
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <script src="./spondle-layout.js?v=layout-fixed1" type="module"></script>
   <script>
-    Layout.init({ active: 'events' });
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "dashboard" });
+    });
   </script>
 
   <!-- Page logic -->
@@ -124,7 +132,7 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    // Auto-fill organiser_id from current user (for debugging only)
+    // Auto-fill organiser_id
     supabase.auth.getUser().then(({ data: { user } }) => {
       const organiserInput = document.getElementById('organiser_id');
       if (user && organiserInput) {
@@ -169,7 +177,6 @@
         </div>
         <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
       </div>`,
-
       recurring: () => `<div class="space-y-2">
         ${venueSearchBlock()}
         <div class="flex gap-4">
@@ -177,16 +184,9 @@
           <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
         <label class="block text-sm">Recurring Dates:</label>
-        <select name="recurring_pattern" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <option value="">Choose pattern (optional)</option>
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
         <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
         <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
       </div>`,
-
       tour: () => `<div id="scheduleSection" class="space-y-4">
         ${venueSearchBlock()}
         <div class="flex gap-4">
@@ -300,6 +300,7 @@
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
+    // Submit
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const { data: { user } } = await supabase.auth.getUser();
