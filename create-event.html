@@ -40,13 +40,13 @@
   </style>
 </head>
 <body class="bg-black text-white">
-  <!-- Sidebar + sticky header injected -->
+  <!-- Layout (sidebar + sticky header + global search) gets injected here -->
   <div id="layout-root"></div>
 
-  <main class="p-6">
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <h1 class="text-3xl font-bold mb-6">Create Event</h1>
-
     <form id="eventForm" class="space-y-6">
+
       <!-- Basic Info -->
       <div>
         <label class="block mb-2">Event Name</label>
@@ -111,14 +111,12 @@
   </main>
 
   <!-- Layout script -->
-  <script src="./spondle-layout.js?v=global-8" type="module"></script>
+  <script src="./spondle-layout.js?v=layout-fixed1"></script>
   <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      window.Layout.init({ active: "events" });
-    });
+    Layout.init({ active: 'events' });
   </script>
 
-  <!-- Page JS -->
+  <!-- Page logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
@@ -302,7 +300,6 @@
     loadTab('single');
     tabBtns[0].classList.add('bg-blue-500');
 
-    // ✅ Updated submit handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const { data: { user } } = await supabase.auth.getUser();
@@ -328,7 +325,6 @@
       let hadError = false;
 
       if (eventTypeInput.value === 'recurring') {
-        // One venue, one time, multiple dates
         for (let i = 0; i < dates.length; i++) {
           const event = {
             ...baseData,
@@ -341,7 +337,6 @@
           if (error) hadError = true;
         }
       } else {
-        // Single or Tour (loop over all venue/date/time combos)
         for (let i = 0; i < venueIds.length; i++) {
           const event = {
             ...baseData,
