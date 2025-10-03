@@ -7,40 +7,17 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared layout + styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
-  <link rel="stylesheet" href="./styles.css?v=3">
-  <link rel="stylesheet" href="./hearts.css?v=2">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
+  <link rel="stylesheet" href="./styles.css?v=global-9">
+  <link rel="stylesheet" href="./hearts.css?v=global-9">
 
   <style>
-    .venue-card {
-      border: 1px solid #444;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 12px;
-      background: #111;
-      cursor: pointer;
-    }
-    .venue-card strong { display: block; margin-bottom: 4px; }
-    .no-results { text-align: center; color: #888; margin-top: 10px; }
-    .venue-form input, .venue-form button {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 12px;
-      box-sizing: border-box;
-    }
-    .input-wrapper { position: relative; }
-    .clear-btn {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
-      border: none;
-      color: #aaa;
-      font-size: 18px;
-      cursor: pointer;
-    }
+    .venue-card{border:1px solid #444;border-radius:12px;padding:12px;margin-bottom:12px;background:#111;cursor:pointer}
+    .venue-card strong{display:block;margin-bottom:4px}
+    .no-results{text-align:center;color:#888;margin-top:10px}
+    .venue-form input,.venue-form button{width:100%;padding:10px;margin-bottom:10px;border-radius:12px;box-sizing:border-box}
+    .input-wrapper{position:relative}
+    .clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer}
   </style>
 </head>
 <body class="bg-black text-white">
@@ -48,9 +25,9 @@
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
-    <h1 class="text-3xl font-bold mb-6">Create Event</h1>
+    <h1 class="text-3xl font-bold">Create Event</h1>
 
-    <form id="eventForm" class="space-y-6">
+    <form id="eventForm" class="space-y-6 mt-6">
       <!-- Basic Info -->
       <div>
         <label class="block mb-2">Event Name</label>
@@ -76,7 +53,7 @@
 
       <div>
         <label class="block mb-2">Image URL</label>
-        <input type="url" name="image_url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="https://example.com/image.jpg">
+        <input id="imageUrlInput" type="url" name="image_url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="https://example.com/image.jpg">
       </div>
 
       <div>
@@ -102,7 +79,7 @@
       <!-- Schedule Tabs -->
       <div>
         <label class="block mb-2 font-medium">Schedule</label>
-        <div class="flex space-x-2 justify-between mb-4">
+        <div class="flex gap-2 mb-4">
           <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
           <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
           <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
@@ -127,10 +104,10 @@
   </main>
 
   <!-- Layout script -->
-  <script src="./spondle-layout.js?v=layout-fixed1" type="module"></script>
+  <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      window.Layout.init({ active: "dashboard" });
+      window.Layout?.init({ active: "dashboard" });
     });
   </script>
 
@@ -142,20 +119,13 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    // Auto-fill organiser_id
+    // Autofill organiser_id
     supabase.auth.getUser().then(({ data: { user } }) => {
       const organiserInput = document.getElementById('organiser_id');
-      if (user && organiserInput) organiserInput.value = user.id;
-      else organiserInput.value = 'Not logged in';
+      organiserInput.value = user ? user.id : 'Not logged in';
     });
 
-    const form = document.getElementById('eventForm');
-    const banner = document.getElementById('banner');
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContent = document.getElementById('tabContent');
-    const eventTypeInput = document.getElementById('eventType');
-
-    // Stock images map
+    // ---------- Image stock picker ----------
     const stockImages = {
       music: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
       comedy: "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
@@ -163,18 +133,20 @@
       sports: "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
       festival: "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
     };
-
-    const stockImageSelect = document.getElementById('stockImageSelect');
-    const imageUrlInput = document.querySelector('input[name="image_url"]');
-
-    stockImageSelect.addEventListener('change', () => {
-      const choice = stockImageSelect.value;
-      if (choice && stockImages[choice]) {
-        imageUrlInput.value = stockImages[choice];
-      }
+    const stockSelect = document.getElementById('stockImageSelect');
+    const imageUrlInput = document.getElementById('imageUrlInput');
+    stockSelect.addEventListener('change', () => {
+      const v = stockSelect.value;
+      if (v && stockImages[v]) imageUrlInput.value = stockImages[v];
     });
 
-    // ---- Venue Search block
+    // ---------- Tabs / schedule views ----------
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContent = document.getElementById('tabContent');
+    const eventTypeInput = document.getElementById('eventType');
+    const banner = document.getElementById('banner');
+    const form = document.getElementById('eventForm');
+
     const venueSearchBlock = () => `
       <div>
         <div class="input-wrapper">
@@ -183,7 +155,7 @@
         </div>
         <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="venue-id w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
         <div class="venue-list mt-2"></div>
-        <div class="no-results" style="display: none;">
+        <div class="no-results" style="display:none;">
           No results — <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
         </div>
         <div class="venue-form mt-4" style="display:none;">
@@ -195,106 +167,78 @@
       </div>
     `;
 
-    // ---- Views for tabs
     const views = {
-      single: () => `<div class="space-y-2">
-        ${venueSearchBlock()}
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+      single: () => `
+        <div class="space-y-2">
+          ${venueSearchBlock()}
+          <div class="flex gap-4">
+            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          </div>
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
-        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>`,
-      recurring: () => `<div class="space-y-2">
-        ${venueSearchBlock()}
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+      `,
+      recurring: () => `
+        <div class="space-y-2">
+          ${venueSearchBlock()}
+          <div class="flex gap-4">
+            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          </div>
+          <label class="block text-sm">Recurring Dates:</label>
+          <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
         </div>
-        <label class="block text-sm">Recurring Dates:</label>
-        <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>`,
-      tour: () => `<div id="scheduleSection" class="space-y-4">
-        ${venueSearchBlock()}
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+      `,
+      tour: () => `
+        <div id="scheduleSection" class="space-y-4">
+          ${venueSearchBlock()}
+          <div class="flex gap-4">
+            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          </div>
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
         </div>
-        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
-      </div>`
+      `
     };
 
-    // ---- Banner helper
-    function showBanner(message, success = true) {
-      banner.textContent = message;
-      banner.className = `mt-4 text-center px-4 py-2 rounded text-sm ${success ? 'bg-green-600 text-black' : 'bg-red-600 text-white'}`;
-      banner.style.display = 'block';
-    }
-
-    // ---- Tab loader
-    function loadTab(type) {
-      tabContent.innerHTML = views[type]();
-      eventTypeInput.value = type;
-      if (type === 'tour') {
-        document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
-      }
-      if (type === 'recurring') {
-        document.getElementById('addRecurringDate').addEventListener('click', () => {
-          const newInput = document.createElement('input');
-          newInput.type = 'date';
-          newInput.name = 'event_date[]';
-          newInput.required = true;
-          newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
-          document.getElementById('addRecurringDate').before(newInput);
-        });
-      }
-      wireVenueSearch();
-    }
-
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
-        btn.classList.add('bg-blue-500');
-        loadTab(btn.dataset.type);
-      });
-    });
-
-    function createScheduleInput() {
-      const section = document.getElementById('scheduleSection');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
-      wrapper.innerHTML = views.single();
-      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
-      wireVenueSearch();
-    }
-
-    // ---- Venue Search wiring
-    function wireVenueSearch() {
-      document.querySelectorAll('.input-wrapper').forEach(wrapper => {
+    function wireVenueSearch(scope=document){
+      scope.querySelectorAll('.input-wrapper').forEach(wrapper => {
         const searchInput = wrapper.querySelector('.search');
-        const venueIdInput = wrapper.parentElement.querySelector('.venue-id');
-        const venueList = wrapper.parentElement.querySelector('.venue-list');
-        const noResults = wrapper.parentElement.querySelector('.no-results');
-        const venueForm = wrapper.parentElement.querySelector('.venue-form');
+        const parent = wrapper.closest('div'); // scope for this block
+        const venueIdInput = parent.parentElement.querySelector('.venue-id');
+        const venueList = parent.parentElement.querySelector('.venue-list');
+        const noResults = parent.parentElement.querySelector('.no-results');
+        const venueForm = parent.parentElement.querySelector('.venue-form');
         const clearBtn = wrapper.querySelector('.clear-btn');
 
         searchInput.addEventListener('input', async () => {
           const q = searchInput.value.trim();
-          if (!q) return venueList.innerHTML = '';
-          const { data: venues } = await supabase.from('venues').select('id,venue_name,street_name,postcode').ilike('venue_name', `%${q}%`).limit(5);
           venueList.innerHTML = '';
-          if (!venues.length) return noResults.style.display = 'block';
           noResults.style.display = 'none';
+          if (!q) return;
+
+          const { data: venues, error } = await supabase
+            .from('venues')
+            .select('id,venue_name,street_name,postcode')
+            .ilike('venue_name', `%${q}%`)
+            .limit(5);
+
+          if (error) return;
+          if (!venues || venues.length === 0) {
+            noResults.style.display = 'block';
+            return;
+          }
           venues.forEach(v => {
             const card = document.createElement('div');
             card.className = 'venue-card';
-            card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name}, ${v.postcode}`;
+            card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name || ''}${v.postcode ? ', '+v.postcode : ''}`;
             card.addEventListener('click', () => {
               searchInput.value = v.venue_name;
               venueIdInput.value = v.id;
               venueList.innerHTML = '';
+              noResults.style.display = 'none';
             });
             venueList.appendChild(card);
           });
@@ -308,15 +252,15 @@
           noResults.style.display = 'none';
         });
 
-        wrapper.parentElement.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
+        parent.parentElement.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
           e.preventDefault();
           venueForm.style.display = 'block';
         });
 
-        wrapper.parentElement.querySelector('.venue-submit')?.addEventListener('click', async () => {
-          const name = wrapper.parentElement.querySelector('.venue-name').value.trim();
-          const street = wrapper.parentElement.querySelector('.venue-street').value.trim();
-          const postcode = wrapper.parentElement.querySelector('.venue-postcode').value.trim();
+        parent.parentElement.querySelector('.venue-submit')?.addEventListener('click', async () => {
+          const name = parent.parentElement.querySelector('.venue-name').value.trim();
+          const street = parent.parentElement.querySelector('.venue-street').value.trim();
+          const postcode = parent.parentElement.querySelector('.venue-postcode').value.trim();
           if (!name) return alert('Enter a venue name');
           const { data, error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]).select('id');
           if (error) return alert('Error creating venue');
@@ -324,28 +268,116 @@
           venueIdInput.value = data[0].id;
           venueForm.style.display = 'none';
           venueList.innerHTML = '';
+          noResults.style.display = 'none';
         });
       });
     }
 
-    // ---- Submit
+    function createScheduleInput(){
+      const section = document.getElementById('scheduleSection');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
+      wrapper.innerHTML = views.single();
+      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
+      wireVenueSearch(wrapper);
+    }
+
+    function loadTab(type){
+      tabContent.innerHTML = views[type]();
+      eventTypeInput.value = type;
+
+      if (type === 'tour') {
+        document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
+      }
+      if (type === 'recurring') {
+        document.getElementById('addRecurringDate').addEventListener('click', () => {
+          const newInput = document.createElement('input');
+          newInput.type = 'date';
+          newInput.name = 'event_date[]';
+          newInput.required = true;
+          newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
+          document.getElementById('addRecurringDate').before(newInput);
+        });
+      }
+      wireVenueSearch(tabContent);
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+        btn.classList.add('bg-blue-500');
+        loadTab(btn.dataset.type);
+      });
+    });
+
+    // initial tab
+    tabBtns[0].classList.add('bg-blue-500');
+    loadTab('single');
+
+    function showBanner(message, ok=true){
+      banner.textContent = message;
+      banner.className = `mt-4 text-center px-4 py-2 rounded text-sm ${ok ? 'bg-green-600 text-black' : 'bg-red-600 text-white'}`;
+      banner.style.display = 'block';
+    }
+
+    // ---------- Submit ----------
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        showBanner('You must be logged in to create events.', false);
-        return;
-      }
+      if (!user) return showBanner('You must be logged in to create events.', false);
 
       const formData = new FormData(form);
       const baseData = {
         event_name: formData.get('event_name'),
         category: formData.get('category'),
         publish_status: formData.get('publish_status'),
-        image_url: formData.get('image_url'),
-        description: formData.get('description'),
+        image_url: formData.get('image_url') || null,
+        description: formData.get('description') || null,
         organiser_id: user.id
       };
-      const venueIds = formData.getAll('venue_id[]');
-      const dates = formData.getAll('event_date[]');
-      const times = formData.getAll('
+
+      const venueIds  = formData.getAll('venue_id[]').filter(Boolean);
+      const dates     = formData.getAll('event_date[]').filter(Boolean);
+      const times     = formData.getAll('event_time[]').filter(Boolean);
+      const tickets   = formData.getAll('ticket_url[]');
+
+      let payload = [];
+
+      if (eventTypeInput.value === 'recurring') {
+        // one venue/time, many dates
+        if (!venueIds[0] || !times[0] || dates.length === 0) {
+          return showBanner('Please complete venue, time and at least one date.', false);
+        }
+        payload = dates.map((d) => ({
+          ...baseData,
+          venue_id: venueIds[0],
+          event_date: d,
+          event_time: times[0],
+          ticket_url: tickets[0] || null
+        }));
+      } else {
+        // single or tour: align arrays
+        if (venueIds.length !== dates.length || dates.length !== times.length) {
+          return showBanner('Each venue needs a matching date and time.', false);
+        }
+        payload = venueIds.map((vId, i) => ({
+          ...baseData,
+          venue_id: vId,
+          event_date: dates[i],
+          event_time: times[i],
+          ticket_url: tickets[i] || null
+        }));
+      }
+
+      const { error } = await supabase.from('events').insert(payload);
+      if (error) return showBanner('Some events failed to submit.', false);
+
+      showBanner('Event(s) submitted successfully!', true);
+      form.reset();
+      tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+      tabBtns[0].classList.add('bg-blue-500');
+      loadTab('single');
+    });
+  </script>
+</body>
+</html>
