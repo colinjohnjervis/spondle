@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Event â€“ Spondle</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
+  <link rel="stylesheet" href="./styles.css?v=global-9">
+  <link rel="stylesheet" href="./hearts.css?v=global-9">
+  <style>
+    .venue-card{border:1px solid #444;border-radius:12px;padding:12px;margin-bottom:12px;background:#111;cursor:pointer}
+    .venue-card strong{display:block;margin-bottom:4px}
+    .no-results{text-align:center;color:#888;margin-top:10px}
+    .venue-form input,.venue-form button{width:100%;padding:10px;margin-bottom:10px;border-radius:12px;box-sizing:border-box}
+    .input-wrapper{position:relative}
+    .clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer}
+    .thumb-selected{outline:4px solid #22c55e;}
+    .danger{background:#ef4444;color:#000}
+    .soft{background:#f59e0b;color:#000}
+  </style>
+</head>
+<body class="bg-black text-white">
+  <div id="layout-root"></div>
+
+  <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
+    <h1 class="text-3xl font-bold">Edit Event</h1>
+
+    <form id="eventForm" class="space-y-6 mt-6">
+      <div>
+        <label class="block mb-2">Event Name</label>
+        <input id="event_name" type="text" name="event_name" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      </div>
+
+      <div>
+        <label class="block mb-2">Description</label>
+        <textarea id="description" name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
+      </div>
+
+      <div>
+        <label class="block mb-2">Category</label>
+        <select id="category" name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <option value="">Select category</option>
+          <option value="music">Music</option>
+          <option value="comedy">Comedy</option>
+          <option value="theatre">Theatre</option>
+          <option value="sports">Sports</option>
+          <option value="festival">Festival</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-2">Image URL</label>
+        <input id="imageUrlInput" type="url" name="image_url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="https://example.com/image.jpg">
+      </div>
+
+      <div>
+        <label class="block mb-2">Or choose a stock image</label>
+        <select id="stockImageSelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <option value="">Select stock category</option>
+          <option value="music">Music</option>
+          <option value="comedy">Comedy</option>
+          <option value="theatre">Theatre</option>
+          <option value="sports">Sports</option>
+          <option value="festival">Festival</option>
+        </select>
+        <div id="stockImageCarousel" class="flex gap-2 overflow-x-auto mt-2 pb-2"></div>
+      </div>
+
+      <div>
+        <label class="block mb-2">Publish Status</label>
+        <select id="publish_status" name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="deleted">Deleted</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-2">Venue</label>
+        <div class="input-wrapper">
+          <input id="venue_search" type="text" placeholder="Search by venue name..." class="search w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <button type="button" class="clear-btn" title="Clear">&times;</button>
+        </div>
+        <input id="venue_id" type="text" name="venue_id" placeholder="Venue ID will appear here" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
+        <div class="venue-list mt-2"></div>
+        <div class="no-results" style="display:none;">
+          No results â€” <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
+        </div>
+        <div class="venue-form mt-4" style="display:none;">
+          <input type="text" placeholder="Venue name" class="venue-name bg-gray-800 border border-gray-600">
+          <input type="text" placeholder="Street address" class="venue-street bg-gray-800 border border-gray-600">
+          <input type="text" placeholder="Postcode" class="venue-postcode bg-gray-800 border border-gray-600">
+          <button type="button" class="venue-submit bg-green-500 text-black">Create Venue</button>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <div class="w-1/2">
+          <label class="block mb-2">Event Date</label>
+          <input id="event_date" type="date" name="event_date" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <div class="w-1/2">
+          <label class="block mb-2">Event Time</label>
+          <input id="event_time" type="time" name="event_time" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+      </div>
+
+      <div>
+        <label class="block mb-2">Ticket URL (optional)</label>
+        <input id="ticket_url" type="url" name="ticket_url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button id="saveBtn" type="button" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Save Changes</button>
+        <button id="softDeleteBtn" type="button" class="px-6 py-2 soft font-semibold rounded hover:opacity-90">Soft Delete</button>
+        <button id="hardDeleteBtn" type="button" class="px-6 py-2 danger font-semibold rounded hover:opacity-90">Permanently Delete</button>
+      </div>
+
+      <div>
+        <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID</label>
+        <input type="text" id="organiser_id" name="organiser_id" readonly
+          class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 text-sm" placeholder="Fetching..." />
+      </div>
+
+      <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
+    </form>
+  </main>
+
+  <script src="./spondle-layout.js?v=global-9" type="module"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout?.init({ active: "dashboard" });
+    });
+  </script>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
+
+    const qs = (s) => document.querySelector(s);
+    const showBanner = (message, ok=true) => {
+      const banner = qs('#banner');
+      banner.textContent = message;
+      banner.className = `mt-4 text-center px-4 py-2 rounded text-sm ${ok ? 'bg-green-600 text-black' : 'bg-red-600 text-white'}`;
+      banner.style.display = 'block';
+    };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    qs('#organiser_id').value = user ? user.id : 'Not logged in';
+
+    const params = new URLSearchParams(location.search);
+    const eventId = params.get('id');
+    if (!eventId) { showBanner('Missing ?id= in URL.', false); throw new Error('No event id'); }
+
+    const { data: rows, error: fetchErr } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .limit(1);
+
+    if (fetchErr || !rows || !rows.length) { showBanner('Event not found or no access.', false); throw fetchErr || new Error('Not found'); }
+
+    const row = rows[0];
+    qs('#event_name').value = row.event_name ?? '';
+    qs('#description').value = row.description ?? '';
+    qs('#category').value = row.category ?? '';
+    qs('#imageUrlInput').value = row.image_url ?? '';
+    qs('#publish_status').value = row.publish_status ?? 'draft';
+    qs('#venue_search').value = row.venue_name || '';
+    qs('#venue_id').value = row.venue_id ?? '';
+    qs('#event_date').value = row.event_date ?? '';
+    qs('#event_time').value = row.event_time ?? '';
+    qs('#ticket_url').value = row.ticket_url ?? '';
+
+    const stockImages = {
+      music: [
+        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1504805572947-34fad45aed93?auto=format&fit=crop&w=1200&q=80"
+      ],
+      comedy: [
+        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80"
+      ],
+      theatre: [
+        "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80"
+      ],
+      sports: [
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1200&q=80"
+      ],
+      festival: [
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1464375117522-1311d6a5b81b?auto=format&fit=crop&w=1200&q=80"
+      ]
+    };
+
+    const stockSelect = qs("#stockImageSelect");
+    const imageUrlInput = qs("#imageUrlInput");
+    const carousel = qs("#stockImageCarousel");
+
+    stockSelect.addEventListener("change", () => {
+      const category = stockSelect.value;
+      carousel.innerHTML = "";
+      if (stockImages[category]) {
+        stockImages[category].forEach(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = category;
+          img.className = "h-24 w-36 object-cover rounded cursor-pointer hover:opacity-80 border border-gray-600";
+          img.addEventListener("click", () => {
+            imageUrlInput.value = url;
+            carousel.querySelectorAll("img").forEach(i => i.classList.remove("thumb-selected"));
+            img.classList.add("thumb-selected");
+          });
+          carousel.appendChild(img);
+        });
+      }
+    });
+
+    (function wireVenueSearch(){
+      const wrapper = document.querySelector('.input-wrapper');
+      const searchInput = wrapper.querySelector('.search');
+      const venueIdInput = qs('#venue_id');
+      const venueList = document.querySelector('.venue-list');
+      const noResults = document.querySelector('.no-results');
+      const venueForm = document.querySelector('.venue-form');
+      const clearBtn = wrapper.querySelector('.clear-btn');
+
+      searchInput.addEventListener('input', async () => {
+        const q = searchInput.value.trim();
+        venueList.innerHTML = '';
+        noResults.style.display = 'none';
+        if (!q) return;
+        const { data: venues, error } = await supabase
+          .from('venues')
+          .select('id,venue_name,street_name,postcode')
+          .ilike('venue_name', `%${q}%`)
+          .limit(5);
+        if (error) return;
+        if (!venues || venues.length === 0) {
+          noResults.style.display = 'block';
+          return;
+        }
+        venues.forEach(v => {
+          const card = document.createElement('div');
+          card.className = 'venue-card';
+          card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name || ''}${v.postcode ? ', '+v.postcode : ''}`;
+          card.addEventListener('click', () => {
+            searchInput.value = v.venue_name;
+            venueIdInput.value = v.id;
+            venueList.innerHTML = '';
+            noResults.style.display = 'none';
+          });
+          venueList.appendChild(card);
+        });
+      });
+
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        venueIdInput.value = '';
+        venueList.innerHTML = '';
+        venueForm.style.display = 'none';
+        noResults.style.display = 'none';
+      });
+
+      document.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        venueForm.style.display = 'block';
+      });
+
+      document.querySelector('.venue-submit')?.addEventListener('click', async () => {
+        const name = document.querySelector('.venue-name').value.trim();
+        const street = document.querySelector('.venue-street').value.trim();
+        const postcode = document.querySelector('.venue-postcode').value.trim();
+        if (!name) return alert('Enter a venue name');
+        const { data, error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]).select('id');
+        if (error) return alert('Error creating venue');
+        searchInput.value = name;
+        venueIdInput.value = data[0].id;
+        venueForm.style.display = 'none';
+        venueList.innerHTML = '';
+        noResults.style.display = 'none';
+      });
+    })();
+
+    qs('#saveBtn').addEventListener('click', async () => {
+      if (!user) return showBanner('You must be logged in to edit events.', false);
+
+      const updates = {
+        event_name: qs('#event_name').value.trim(),
+        description: qs('#description').value.trim() || null,
+        category: qs('#category').value,
+        image_url: qs('#imageUrlInput').value.trim() || null,
+        publish_status: qs('#publish_status').value,
+        venue_id: qs('#venue_id').value || null,
+        event_date: qs('#event_date').value,
+        event_time: qs('#event_time').value,
+        ticket_url: qs('#ticket_url').value.trim() || null,
+        last_modified_at: new Date().toISOString(),
+        last_modified_by: user?.id || null
+      };
+
+      const { error } = await supabase.from('events')
+        .update(updates)
+        .eq('id', eventId)
+        .eq('organiser_id', user.id);
+
+      if (error) return showBanner('Failed to save changes.', false);
+      showBanner('Changes saved.');
+    });
+
+    qs('#softDeleteBtn').addEventListener('click', async () => {
+      if (!user) return showBanner('You must be logged in.', false);
+      if (!confirm('Soft delete this event? It will be hidden but recoverable.')) return;
+
+      const { error } = await supabase.from('events')
+        .update({ publish_status: 'deleted', last_modified_at: new Date().toISOString(), last_modified_by: user.id })
+        .eq('id', eventId)
+        .eq('organiser_id', user.id);
+
+      if (error) return showBanner('Failed to soft delete.', false);
+      showBanner('Event soft-deleted.');
+    });
+
+    qs('#hardDeleteBtn').addEventListener('click', async () => {
+      if (!user) return showBanner('You must be logged in.', false);
+      if (!confirm('Permanently delete this event? This cannot be undone.')) return;
+
+      const { error } = await supabase.from('events')
+        .delete()
+        .eq('id', eventId)
+        .eq('organiser_id', user.id);
+
+      if (error) return showBanner('Failed to permanently delete.', false);
+      showBanner('Event permanently deleted.');
+    });
+  </script>
+</body>
+          </html>
