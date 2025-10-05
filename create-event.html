@@ -3,42 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Event – Spondle</title>
+  <title>Create Event — Spondle</title>
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + styles -->
+  <!-- Shared layout + styles (unchanged) -->
   <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
   <link rel="stylesheet" href="./styles.css?v=global-9">
   <link rel="stylesheet" href="./hearts.css?v=global-9">
 
   <style>
+    /* Panels / inputs look like your other pages */
+    .panel { background: #0b0f14; border: 1px solid #223; border-radius: 16px; }
+    .input-like { background:#1f2937; border:1px solid #374151; }
+    .btn { border-radius: 10px; font-weight: 600; }
+    .btn-primary { background:#10b981; color:#000; }
+    .btn-primary:hover{ filter:brightness(1.05); }
+    .btn-ghost { background:#374151; color:#fff; }
+    .btn-ghost[aria-pressed="true"] { background:#111827; border:1px solid #10b981; }
+    .badge { font-size:.75rem; letter-spacing:.02em; }
+
+    /* Stock carousel: one full image per page with snap scroll */
+    .stock-wrap { position: relative; }
+    .stock-rail {
+      display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory;
+      padding-bottom:10px;
+    }
+    .stock-rail::-webkit-scrollbar{ height:8px; }
+    .stock-rail::-webkit-scrollbar-thumb{ background:#374151; border-radius:999px; }
+    .stock-card{
+      flex:0 0 100%;
+      max-width:100%;
+      aspect-ratio: 16/9;
+      border-radius:14px; overflow:hidden; position:relative; scroll-snap-align:center;
+      border:1px solid #374151; background:#0b0f14;
+    }
+    .stock-card img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .stock-card button.pick {
+      position:absolute; right:10px; bottom:10px;
+      background:#111827cc; border:1px solid #374151; color:#fff;
+      padding:.4rem .7rem; border-radius:999px; font-size:.8rem;
+    }
+    .stock-card.selected{ outline:4px solid #22c55e; outline-offset:0; }
+
+    /* Always-visible grey arrows (overlay) */
+    .stock-arrow{
+      position:absolute; top:50%; transform:translateY(-50%);
+      width:40px; height:40px; border-radius:999px;
+      display:grid; place-items:center;
+      background:#6b7280ee; color:#0b0f14; border:1px solid #9ca3af;
+      z-index:5;
+    }
+    .stock-arrow:active{ filter:brightness(0.95); }
+    .stock-arrow.left{ left:-6px; }
+    .stock-arrow.right{ right:-6px; }
+
+    /* Simple venue search cards (same style used elsewhere) */
     .venue-card{border:1px solid #444;border-radius:12px;padding:12px;margin-bottom:12px;background:#111;cursor:pointer}
     .venue-card strong{display:block;margin-bottom:4px}
     .no-results{text-align:center;color:#888;margin-top:10px}
-    .venue-form input,.venue-form button{width:100%;padding:10px;margin-bottom:10px;border-radius:12px;box-sizing:border-box}
     .input-wrapper{position:relative}
     .clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer}
-    .thumb-selected{outline:4px solid #22c55e;}
-
-    /* Carousel overlay arrows (always visible, grey) */
-    .carousel-wrapper{position:relative}
-    .carousel-arrow{
-      position:absolute;top:50%;transform:translateY(-50%);
-      background:rgba(120,120,120,0.6);color:#fff;border:none;
-      padding:8px;border-radius:9999px;cursor:pointer;z-index:10;font-size:20px;line-height:1
-    }
-    .carousel-arrow:hover{background:rgba(120,120,120,0.85)}
-    .arrow-left{left:6px}
-    .arrow-right{right:6px}
-
-    /* Make stock thumbs match event tiles (landscape, rounded, cover) */
-    #stockImageCarousel img{
-      height:10rem;           /* ~h-40 */
-      aspect-ratio:16/9;      /* landscape feel */
-      max-width:220px;
-      object-fit:cover;
-      border-radius:0.75rem;  /* rounded-xl */
-    }
   </style>
 </head>
 <body class="bg-black text-white">
@@ -46,96 +72,153 @@
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
-    <h1 class="text-3xl font-bold">Create Event</h1>
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Create Event</h1>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">Add a new event and choose a stock image if you don’t have one.</p>
 
-    <form id="eventForm" class="space-y-6 mt-6">
-      <!-- Basic Info -->
-      <div>
-        <label class="block mb-2">Event Name</label>
-        <input type="text" name="event_name" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>
+      <form id="eventForm" class="space-y-8 mt-8">
 
-      <div>
-        <label class="block mb-2">Description</label>
-        <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
-      </div>
+        <!-- Basic details -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div>
+              <label class="block mb-2">Event Name</label>
+              <input id="event_name" type="text" required class="w-full p-3 rounded input-like" placeholder="eg. Friday Night Live" />
+            </div>
 
-      <div>
-        <label class="block mb-2">Category</label>
-        <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <option value="">Select category</option>
-          <option value="music">Music</option>
-          <option value="comedy">Comedy</option>
-          <option value="theatre">Theatre</option>
-          <option value="sports">Sports</option>
-          <option value="festival">Festival</option>
-        </select>
-      </div>
+            <div>
+              <label class="block mb-2">Description</label>
+              <textarea id="description" rows="5" class="w-full p-3 rounded input-like" placeholder="Optional event description..."></textarea>
+            </div>
 
-      <div>
-        <label class="block mb-2">Image URL</label>
-        <input id="imageUrlInput" type="url" name="image_url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="https://example.com/image.jpg">
-      </div>
+            <div>
+              <label class="block mb-2">Category</label>
+              <select id="category" class="w-full p-3 rounded input-like">
+                <option value="">Select category</option>
+                <option value="music">Music</option>
+                <option value="comedy">Comedy</option>
+                <option value="theatre">Theatre</option>
+                <option value="sports">Sports</option>
+                <option value="festival">Festival</option>
+              </select>
+            </div>
+          </div>
 
-      <div>
-        <label class="block mb-2">Or choose a stock image</label>
-        <select id="stockImageSelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <option value="">Select stock category</option>
-          <option value="music">Music</option>
-          <option value="comedy">Comedy</option>
-          <option value="theatre">Theatre</option>
-          <option value="sports">Sports</option>
-          <option value="festival">Festival</option>
-        </select>
+          <!-- Image URL + Stock picker -->
+          <div class="space-y-4">
+            <div>
+              <label class="block mb-2">Image URL</label>
+              <input id="image_url" type="url" class="w-full p-3 rounded input-like" placeholder="https://example.com/image.jpg" />
+            </div>
 
-        <!-- Overlay arrow carousel -->
-        <div class="carousel-wrapper mt-2 pb-2">
-          <button type="button" id="arrowLeft" class="carousel-arrow arrow-left">&#9664;</button>
-          <div id="stockImageCarousel" class="flex gap-2 overflow-x-auto scroll-smooth"></div>
-          <button type="button" id="arrowRight" class="carousel-arrow arrow-right">&#9654;</button>
+            <div>
+              <label class="block mb-2">Or choose a stock image</label>
+              <div class="flex items-center gap-3">
+                <select id="stockImageSelect" class="w-full p-3 rounded input-like">
+                  <option value="">Select stock category</option>
+                  <option value="music">Music</option>
+                  <option value="comedy">Comedy</option>
+                  <option value="theatre">Theatre</option>
+                  <option value="sports">Sports</option>
+                  <option value="festival">Festival</option>
+                </select>
+              </div>
+
+              <!-- Carousel -->
+              <div class="stock-wrap mt-3">
+                <button type="button" class="stock-arrow left" aria-label="Scroll left" id="arrowLeft">◀</button>
+                <button type="button" class="stock-arrow right" aria-label="Scroll right" id="arrowRight">▶</button>
+
+                <div id="stockRail" class="stock-rail">
+                  <!-- JS will render .stock-card items here -->
+                </div>
+              </div>
+
+              <p class="text-sm text-gray-400 mt-2">Tap a stock image to use it. You can still paste your own URL above.</p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <label class="block mb-2">Publish Status</label>
-        <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
-      </div>
-
-      <!-- Schedule Tabs -->
-      <div>
-        <label class="block mb-2 font-medium">Schedule</label>
-        <div class="flex gap-2 mb-4">
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
+        <!-- Publish -->
+        <div>
+          <label class="block mb-2">Publish Status</label>
+          <select id="publish_status" class="w-full p-3 rounded input-like">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
         </div>
-        <input type="hidden" name="event_type" id="eventType" value="single">
-        <div id="tabContent"></div>
-      </div>
 
-      <!-- Submit & Organiser ID -->
-      <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
+        <!-- Schedule -->
+        <div>
+          <label class="block mb-2">Schedule</label>
+          <div class="flex gap-3">
+            <button type="button" class="btn btn-ghost px-5 py-2" id="schSingle" aria-pressed="true">Single</button>
+            <button type="button" class="btn btn-ghost px-5 py-2" id="schRecurring" aria-pressed="false">Recurring</button>
+            <button type="button" class="btn btn-ghost px-5 py-2" id="schTour" aria-pressed="false">Tour</button>
+          </div>
+          <input type="hidden" id="schedule_mode" value="single" />
 
-      <!-- Organiser ID (temporary, for dev use) -->
-      <div>
-        <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
-        <input type="text" id="organiser_id" name="organiser_id" readonly
-          class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 text-sm" placeholder="Fetching..." />
-      </div>
+          <!-- Single -->
+          <div id="singleFields" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label class="block mb-2">Event Date</label>
+              <input id="event_date" type="date" class="w-full p-3 rounded input-like" />
+            </div>
+            <div>
+              <label class="block mb-2">Event Time</label>
+              <input id="event_time" type="time" class="w-full p-3 rounded input-like" />
+            </div>
+          </div>
 
-      <!-- Banner for error/success -->
-      <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
-    </form>
+          <!-- Placeholders (kept for future) -->
+          <div id="recurringFields" class="mt-4 hidden">
+            <div class="p-4 rounded input-like text-gray-400">Recurring configuration (coming soon)</div>
+          </div>
+          <div id="tourFields" class="mt-4 hidden">
+            <div class="p-4 rounded input-like text-gray-400">Tour configuration (coming soon)</div>
+          </div>
+        </div>
+
+        <!-- Venue -->
+        <div>
+          <label class="block mb-2">Venue</label>
+          <div class="input-wrapper">
+            <input id="venue_search" type="text" placeholder="Search by venue name..." class="w-full p-3 rounded input-like">
+            <button type="button" class="clear-btn" title="Clear">&times;</button>
+          </div>
+          <input id="venue_id" type="text" placeholder="Venue ID will appear here" class="w-full p-3 rounded input-like text-green-400 mt-2" readonly>
+          <div class="venue-list mt-2"></div>
+          <div class="no-results hidden">No results</div>
+        </div>
+
+        <!-- Ticket URL -->
+        <div>
+          <label class="block mb-2">Ticket URL (optional)</label>
+          <input id="ticket_url" type="url" class="w-full p-3 rounded input-like" placeholder="https://tickets.example.com/..." />
+        </div>
+
+        <!-- Submit -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button id="submitBtn" type="button" class="btn btn-primary px-6 py-3">Submit Event</button>
+        </div>
+
+        <!-- Organiser ID -->
+        <div>
+          <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
+          <input type="text" id="organiser_id" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 text-sm" placeholder="Fetching..." />
+        </div>
+
+        <!-- Banner -->
+        <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
+      </form>
+    </section>
   </main>
 
-  <!-- Layout script -->
+  <!-- Shared layout init -->
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      window.Layout?.init({ active: "dashboard" });
+      window.Layout?.init({ active: "create" });
     });
   </script>
 
@@ -147,298 +230,172 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    // Autofill organiser_id
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      const organiserInput = document.getElementById('organiser_id');
-      organiserInput.value = user ? user.id : 'Not logged in';
-    });
-
-    // ---------- Image stock picker (baked-in) ----------
-    const stockImages = {
-      music: [
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1504805572947-34fad45aed93?auto=format&fit=crop&w=1200&q=80"
-      ],
-      comedy: [
-        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80"
-      ],
-      theatre: [
-        "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80"
-      ],
-      sports: [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1200&q=80"
-      ],
-      festival: [
-        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1464375117522-1311d6a5b81b?auto=format&fit=crop&w=1200&q=80"
-      ]
-    };
-
-    const stockSelect = document.getElementById('stockImageSelect');
-    const imageUrlInput = document.getElementById('imageUrlInput');
-    const carousel = document.getElementById('stockImageCarousel');
-    const leftArrow = document.getElementById('arrowLeft');
-    const rightArrow = document.getElementById('arrowRight');
-
-    function oneThumbWidth(){
-      const first = carousel.querySelector('img');
-      if (!first) return 220; // fallback
-      const styles = getComputedStyle(first);
-      const w = first.getBoundingClientRect().width;
-      const gap = parseFloat(styles.marginRight || 8) || 8;
-      return Math.max(160, Math.min(320, Math.round(w + gap)));
-    }
-
-    function updateArrowVisibility(){
-      const canLeft = carousel.scrollLeft > 0;
-      const canRight = (carousel.scrollWidth - carousel.clientWidth - carousel.scrollLeft) > 1;
-      leftArrow.style.opacity = canLeft ? '1' : '0.4';
-      rightArrow.style.opacity = canRight ? '1' : '0.4';
-    }
-
-    stockSelect.addEventListener('change', () => {
-      const category = stockSelect.value;
-      carousel.innerHTML = '';
-      if (stockImages[category]) {
-        stockImages[category].forEach(url => {
-          const img = document.createElement('img');
-          img.src = url;
-          img.alt = category;
-          img.className = 'cursor-pointer hover:opacity-80 border border-gray-600 flex-shrink-0';
-          img.addEventListener('click', () => {
-            imageUrlInput.value = url;
-            carousel.querySelectorAll('img').forEach(i => i.classList.remove('thumb-selected'));
-            img.classList.add('thumb-selected');
-          });
-          carousel.appendChild(img);
-        });
-      }
-      carousel.scrollLeft = 0;
-      updateArrowVisibility();
-    });
-
-    leftArrow.addEventListener('click', () => {
-      carousel.scrollBy({ left: -oneThumbWidth(), behavior: 'smooth' });
-    });
-    rightArrow.addEventListener('click', () => {
-      carousel.scrollBy({ left: oneThumbWidth(), behavior: 'smooth' });
-    });
-    carousel.addEventListener('scroll', updateArrowVisibility);
-    // Initialize (covers case where a category is preselected by browser restore)
-    updateArrowVisibility();
-
-    // ---------- Tabs / schedule views ----------
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContent = document.getElementById('tabContent');
-    const eventTypeInput = document.getElementById('eventType');
-    const banner = document.getElementById('banner');
-    const form = document.getElementById('eventForm');
-
-    const venueSearchBlock = () => `
-      <div>
-        <div class="input-wrapper">
-          <input type="text" placeholder="Search by venue name..." class="search w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <button type="button" class="clear-btn" title="Clear">&times;</button>
-        </div>
-        <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="venue-id w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
-        <div class="venue-list mt-2"></div>
-        <div class="no-results" style="display:none;">
-          No results — <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
-        </div>
-        <div class="venue-form mt-4" style="display:none;">
-          <input type="text" placeholder="Venue name" class="venue-name bg-gray-800 border border-gray-600">
-          <input type="text" placeholder="Street address" class="venue-street bg-gray-800 border border-gray-600">
-          <input type="text" placeholder="Postcode" class="venue-postcode bg-gray-800 border border-gray-600">
-          <button type="button" class="venue-submit bg-green-500 text-black">Create Venue</button>
-        </div>
-      </div>
-    `;
-
-    const views = {
-      single: () => `
-        <div class="space-y-2">
-          ${venueSearchBlock()}
-          <div class="flex gap-4">
-            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          </div>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>
-      `,
-      recurring: () => `
-        <div class="space-y-2">
-          ${venueSearchBlock()}
-          <div class="flex gap-4">
-            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          </div>
-        <label class="block text-sm">Recurring Dates:</label>
-        <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>
-      `,
-      tour: () => `
-        <div id="scheduleSection" class="space-y-4">
-          ${venueSearchBlock()}
-          <div class="flex gap-4">
-            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          </div>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
-        </div>
-      `
-    };
-
-    function wireVenueSearch(scope=document){
-      scope.querySelectorAll('.input-wrapper').forEach(wrapper => {
-        const searchInput = wrapper.querySelector('.search');
-        const parent = wrapper.closest('div'); // local wrapper div
-        const block = parent.parentElement;    // whole venue block
-        const venueIdInput = block.querySelector('.venue-id');
-        const venueList = block.querySelector('.venue-list');
-        const noResults = block.querySelector('.no-results');
-        const venueForm = block.querySelector('.venue-form');
-        const clearBtn = wrapper.querySelector('.clear-btn');
-
-        searchInput.addEventListener('input', async () => {
-          const q = searchInput.value.trim();
-          venueList.innerHTML = '';
-          noResults.style.display = 'none';
-          if (!q) return;
-
-          const { data: venues, error } = await supabase
-            .from('venues')
-            .select('id,venue_name,street_name,postcode')
-            .ilike('venue_name', `%${q}%`)
-            .limit(5);
-
-          if (error) return;
-          if (!venues || venues.length === 0) {
-            noResults.style.display = 'block';
-            return;
-          }
-          venues.forEach(v => {
-            const card = document.createElement('div');
-            card.className = 'venue-card';
-            card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name || ''}${v.postcode ? ', '+v.postcode : ''}`;
-            card.addEventListener('click', () => {
-              searchInput.value = v.venue_name;
-              venueIdInput.value = v.id;
-              venueList.innerHTML = '';
-              noResults.style.display = 'none';
-            });
-            venueList.appendChild(card);
-          });
-        });
-
-        clearBtn.addEventListener('click', () => {
-          searchInput.value = '';
-          venueIdInput.value = '';
-          venueList.innerHTML = '';
-          venueForm.style.display = 'none';
-          noResults.style.display = 'none';
-        });
-
-        block.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
-          e.preventDefault();
-          venueForm.style.display = 'block';
-        });
-
-        block.querySelector('.venue-submit')?.addEventListener('click', async () => {
-          const name = block.querySelector('.venue-name').value.trim();
-          const street = block.querySelector('.venue-street').value.trim();
-          const postcode = block.querySelector('.venue-postcode').value.trim();
-          if (!name) return alert('Enter a venue name');
-          const { data, error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]).select('id');
-          if (error) return alert('Error creating venue');
-          searchInput.value = name;
-          venueIdInput.value = data[0].id;
-          venueForm.style.display = 'none';
-          venueList.innerHTML = '';
-          noResults.style.display = 'none';
-        });
-      });
-    }
-
-    function createScheduleInput(){
-      const section = document.getElementById('scheduleSection');
-      const wrapper = document.createElement('div');
-      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
-      wrapper.innerHTML = views.single();
-      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
-      wireVenueSearch(wrapper);
-    }
-
-    function loadTab(type){
-      tabContent.innerHTML = views[type]();
-      eventTypeInput.value = type;
-
-      if (type === 'tour') {
-        document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
-      }
-      if (type === 'recurring') {
-        document.getElementById('addRecurringDate').addEventListener('click', () => {
-          const newInput = document.createElement('input');
-          newInput.type = 'date';
-          newInput.name = 'event_date[]';
-          newInput.required = true;
-          newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
-          document.getElementById('addRecurringDate').before(newInput);
-        });
-      }
-      wireVenueSearch(tabContent);
-    }
-
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('bg-blue-500'));
-        btn.classList.add('bg-blue-500');
-        loadTab(btn.dataset.type);
-      });
-    });
-
-    // initial tab
-    document.querySelectorAll('.tab-btn')[0].classList.add('bg-blue-500');
-    loadTab('single');
-
-    function showBanner(message, ok=true){
+    const qs = (s) => document.querySelector(s);
+    const banner = qs('#banner');
+    const showBanner = (message, ok=true) => {
       banner.textContent = message;
       banner.className = `mt-4 text-center px-4 py-2 rounded text-sm ${ok ? 'bg-green-600 text-black' : 'bg-red-600 text-white'}`;
       banner.style.display = 'block';
+    };
+
+    /* ---------- Auth / organiser id ---------- */
+    const { data: { user } } = await supabase.auth.getUser();
+    qs('#organiser_id').value = user ? user.id : 'Not logged in';
+
+    /* ---------- Stock images ---------- */
+    const stockImages = {
+      music: [
+        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1504805572947-34fad45aed93?auto=format&fit=crop&w=1400&q=80"
+      ],
+      comedy: [
+        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1400&q=80"
+      ],
+      theatre: [
+        "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80"
+      ],
+      sports: [
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1400&q=80"
+      ],
+      festival: [
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=80",
+        "https://images.unsplash.com/photo-1464375117522-1311d6a5b81b?auto=format&fit=crop&w=1400&q=80"
+      ]
+    };
+
+    const stockSelect = qs('#stockImageSelect');
+    const stockRail   = qs('#stockRail');
+    const imageInput  = qs('#image_url');
+    const leftBtn     = qs('#arrowLeft');
+    const rightBtn    = qs('#arrowRight');
+
+    function renderStock(category){
+      stockRail.innerHTML = '';
+      const list = stockImages[category] || [];
+      list.forEach((url, idx) => {
+        const card = document.createElement('div');
+        card.className = 'stock-card';
+        card.innerHTML = `
+          <img src="${url}" alt="${category} ${idx+1}">
+          <button type="button" class="pick">Use this</button>
+        `;
+        card.querySelector('.pick').addEventListener('click', () => {
+          imageInput.value = url;
+          stockRail.querySelectorAll('.stock-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+        });
+        stockRail.appendChild(card);
+      });
     }
 
-    // ---------- Submit ----------
-    document.getElementById('eventForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return showBanner('You must be logged in to create events.', false);
+    stockSelect.addEventListener('change', () => {
+      renderStock(stockSelect.value);
+    });
 
-      const form = e.currentTarget;
-      const formData = new FormData(form);
-      const baseData = {
-        event_name: formData.get('event_name'),
-        category: formData.get('category'),
-        publish_status: formData.get('publish_status'),
-        image_url: formData.get('image_url') || null,
-        description: formData.get('description') || null,
-        organiser_id: user.id
+    function scrollByPage(dir){
+      const w = stockRail.clientWidth;
+      stockRail.scrollBy({ left: dir * w, behavior: 'smooth' });
+    }
+    leftBtn.addEventListener('click', () => scrollByPage(-1));
+    rightBtn.addEventListener('click', () => scrollByPage(1));
+
+    /* ---------- Schedule toggles ---------- */
+    const modeInput = qs('#schedule_mode');
+    const singleBtn = qs('#schSingle');
+    const recurBtn  = qs('#schRecurring');
+    const tourBtn   = qs('#schTour');
+    const singleBox = qs('#singleFields');
+    const recurBox  = qs('#recurringFields');
+    const tourBox   = qs('#tourFields');
+
+    function setMode(mode){
+      modeInput.value = mode;
+      singleBtn.setAttribute('aria-pressed', String(mode==='single'));
+      recurBtn.setAttribute('aria-pressed',  String(mode==='recurring'));
+      tourBtn.setAttribute('aria-pressed',   String(mode==='tour'));
+      singleBox.classList.toggle('hidden', mode!=='single');
+      recurBox.classList.toggle('hidden',  mode!=='recurring');
+      tourBox.classList.toggle('hidden',   mode!=='tour');
+    }
+    singleBtn.addEventListener('click', () => setMode('single'));
+    recurBtn.addEventListener('click',  () => setMode('recurring'));
+    tourBtn.addEventListener('click',   () => setMode('tour'));
+    setMode('single');
+
+    /* ---------- Venue quick search (lightweight) ---------- */
+    (function wireVenueSearch(){
+      const searchInput = qs('#venue_search');
+      const venueIdInput = qs('#venue_id');
+      const venueList = document.querySelector('.venue-list');
+      const noResults = document.querySelector('.no-results');
+      const clearBtn = document.querySelector('.clear-btn');
+
+      async function doSearch(q){
+        venueList.innerHTML = '';
+        noResults.classList.add('hidden');
+        if(!q) return;
+        const { data: venues, error } = await supabase
+          .from('venues')
+          .select('id,venue_name,street_name,postcode')
+          .ilike('venue_name', `%${q}%`)
+          .limit(6);
+        if(error) return;
+        if(!venues || venues.length===0){ noResults.classList.remove('hidden'); return; }
+        venues.forEach(v => {
+          const card = document.createElement('div');
+          card.className = 'venue-card';
+          card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name || ''}${v.postcode ? ', '+v.postcode : ''}`;
+          card.addEventListener('click', () => {
+            searchInput.value = v.venue_name;
+            venueIdInput.value = v.id;
+            venueList.innerHTML = '';
+            noResults.classList.add('hidden');
+          });
+          venueList.appendChild(card);
+        });
+      }
+
+      searchInput.addEventListener('input', (e)=> doSearch(e.target.value.trim()));
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = ''; venueIdInput.value=''; venueList.innerHTML=''; noResults.classList.add('hidden');
+      });
+    })();
+
+    /* ---------- Submit ---------- */
+    qs('#submitBtn').addEventListener('click', async () => {
+      if(!user){ showBanner('You must be logged in to create events.', false); return; }
+
+      const record = {
+        organiser_id: user.id,
+        event_name: qs('#event_name').value.trim(),
+        description: qs('#description').value.trim() || null,
+        category: qs('#category').value || null,
+        image_url: qs('#image_url').value.trim() || null,
+        publish_status: qs('#publish_status').value || 'draft',
+        schedule_mode: qs('#schedule_mode').value,
+        event_date: qs('#event_date').value || null,
+        event_time: qs('#event_time').value || null,
+        venue_id: qs('#venue_id').value || null,
+        ticket_url: qs('#ticket_url').value.trim() || null,
+        created_at: new Date().toISOString()
       };
 
-      const venueIds  = formData.getAll('venue_id[]').filter(Boolean);
-      const dates     = formData.getAll('event_date[]').filter(Boolean);
-      const times     = formData.getAll('event_time[]').filter(Boolean);
-      const tickets   = formData.getAll('ticket_url[]');
+      // Basic validation for single schedule
+      if(record.schedule_mode==='single' && (!record.event_date || !record.event_time)){
+        showBanner('Please provide event date and time.', false); return;
+      }
 
-      let payload = [];
+      const { error } = await supabase.from('events').insert([record]);
+      if(error){ showBanner('Failed to create event.', false); return; }
 
-      if (document.getElementById('eventType').value === 'recurring') {
-        // one venue/time, many dates
-        if (!venueIds[0] || !times[0] || dates.length === 0) {
-          return showBanner('Please complete venue, time and at least one date.', false);
-        }
-       
+      showBanner('Event created!');
+      // Optional: redirect back to dashboard after a second
+      setTimeout(()=>{ location.href = '/event-dashboard.html'; }, 900);
+    });
+  </script>
+</body>
+  </html>
