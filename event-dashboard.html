@@ -3,44 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Event Dashboard — Spondle</title>
+  <title>Event Dashboard â€” Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./spondle-layout.css?v=1001">
   <link rel="stylesheet" href="./styles.css?v=1001">
 </head>
 <body>
-  <!-- Header + Sidebar injected -->
   <div id="layout-root"></div>
-
   <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Event Dashboard</h1>
-      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
-        Manage your events — drafts, published, and past.
-      </p>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">Manage your events â€” drafts, published, and past.</p>
 
-      <!-- Buttons side-by-side -->
       <div class="mt-6 flex flex-wrap gap-3">
-        <a href="/create-event.html"
-           class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
-          + Create Event
-        </a>
-        <a href="/events-miniview01.html"
-           class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-400 transition">
-          View Mini Events
-        </a>
+        <a href="/create-event.html" class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">+ Create Event</a>
+        <a href="/events-miniview01.html" class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-400 transition">View Mini Events</a>
       </div>
 
-      <!-- Month-Year Filter -->
       <div class="mt-6">
         <label for="monthFilter" class="block text-sm text-gray-400 mb-1">Filter by Month/Year</label>
-        <select id="monthFilter" class="w-full sm:w-64 p-2 bg-gray-800 border border-gray-600 rounded">
-          <!-- Options populated by JS -->
-        </select>
+        <select id="monthFilter" class="w-full sm:w-64 p-2 bg-gray-800 border border-gray-600 rounded"></select>
       </div>
 
-      <!-- Tabs -->
       <div class="border-b border-gray-700 mt-8 mb-4">
         <nav class="-mb-px flex space-x-6" id="dashboard-tabs">
           <button data-tab="overview" class="tab-button border-b-2 border-green-500 text-green-500 px-3 py-2 text-sm font-medium">Overview</button>
@@ -51,7 +36,6 @@
       </div>
 
       <div id="tab-content">
-        <!-- Overview -->
         <div id="overview" class="tab-panel">
           <h2 class="text-xl font-semibold mb-4">Quick snapshot of your events:</h2>
           <ul class="list-disc pl-5 text-gray-300">
@@ -62,19 +46,16 @@
           </ul>
         </div>
 
-        <!-- Drafts -->
         <div id="drafts" class="tab-panel hidden">
           <h2 class="text-xl font-semibold mb-4">Draft Events</h2>
           <div id="drafts-list" class="space-y-4"></div>
         </div>
 
-        <!-- Published -->
         <div id="published" class="tab-panel hidden">
           <h2 class="text-xl font-semibold mb-4">Published Events</h2>
           <div id="published-list" class="space-y-4"></div>
         </div>
 
-        <!-- Past -->
         <div id="past" class="tab-panel hidden">
           <h2 class="text-xl font-semibold mb-4">Past Events</h2>
           <div id="past-list" class="space-y-4"></div>
@@ -83,11 +64,9 @@
     </section>
   </main>
 
-  <!-- JS -->
   <script src="./spondle-layout.js?v=1001" type="module"></script>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
@@ -95,19 +74,16 @@
 
     let allEvents = [];
 
-    // Tab switching
     document.querySelectorAll(".tab-button").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tab-button").forEach(b => {
-          b.classList.remove("border-green-500","text-green-500");
+          b.classList.remove("border-green-500", "text-green-500");
           b.classList.add("text-gray-400");
         });
-        btn.classList.add("border-green-500","text-green-500");
+        btn.classList.add("border-green-500", "text-green-500");
         btn.classList.remove("text-gray-400");
-
         document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.add("hidden"));
         document.getElementById(btn.dataset.tab).classList.remove("hidden");
-
         renderLists();
       });
     });
@@ -118,13 +94,21 @@
       });
     }
 
-    function renderEventCard(event) {
+    function renderEventCard(event, showEdit = false) {
       const venueName = event.venues?.venue_name || "Venue TBA";
       const townCity = event.venues?.location?.town_city || "";
       const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
 
+      const editIcon = showEdit ? `
+        <a href="/edit-event.html?id=${event.id}" class="absolute top-2 right-2 text-gray-400" title="Edit Event">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 1 1 2.971 2.972L7.5 18.793l-4.125.458a.75.75 0 0 1-.836-.836l.458-4.125L16.862 3.487z" />
+          </svg>
+        </a>` : "";
+
       return `
-        <div class="p-4 bg-gray-800 rounded shadow">
+        <div class="relative p-4 bg-gray-800 rounded shadow">
+          ${editIcon}
           <h3 class="font-semibold text-lg">${event.event_name}</h3>
           <p class="text-sm text-gray-300">${formatDate(event.event_date)} @ ${venueDisplay}</p>
           <p class="text-xs text-gray-400 uppercase">${event.publish_status}</p>
@@ -136,24 +120,17 @@
       const select = document.getElementById("monthFilter");
       const months = new Set(events.map(e => {
         const d = new Date(e.event_date);
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
       }));
-
       const sorted = Array.from(months).sort();
-
-      select.innerHTML = `<option value="all">All Events</option>` +
-        sorted.map(val => {
-          const [y,m] = val.split("-");
-          const label = new Date(y, m-1).toLocaleDateString("en-GB", { month:"long", year:"numeric" });
-          return `<option value="${val}">${label}</option>`;
-        }).join("");
-
-      // default to current month
+      select.innerHTML = `<option value="all">All Events</option>` + sorted.map(val => {
+        const [y, m] = val.split("-");
+        const label = new Date(y, m - 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+        return `<option value="${val}">${label}</option>`;
+      }).join("");
       const now = new Date();
-      const current = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
-      if (sorted.includes(current)) {
-        select.value = current;
-      }
+      const current = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+      if (sorted.includes(current)) select.value = current;
     }
 
     function filterEvents(events) {
@@ -161,7 +138,7 @@
       if (val === "all") return events;
       return events.filter(e => {
         const d = new Date(e.event_date);
-        const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+        const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
         return ym === val;
       });
     }
@@ -177,41 +154,25 @@
       document.getElementById("count-past").textContent = past.length;
       document.getElementById("count-total").textContent = filtered.length;
 
-      document.getElementById("drafts-list").innerHTML = drafts.map(renderEventCard).join("");
-      document.getElementById("published-list").innerHTML = published.map(renderEventCard).join("");
-      document.getElementById("past-list").innerHTML = past.map(renderEventCard).join("");
+      document.getElementById("drafts-list").innerHTML = drafts.map(e => renderEventCard(e, true)).join("");
+      document.getElementById("published-list").innerHTML = published.map(e => renderEventCard(e, true)).join("");
+      document.getElementById("past-list").innerHTML = past.map(e => renderEventCard(e, false)).join("");
     }
 
     async function loadEvents() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
       const { data: events, error } = await supabase
         .from("events")
-        .select(`
-          id,
-          event_name,
-          event_date,
-          publish_status,
-          venues (
-            venue_name,
-            location:location_id (town_city)
-          )
-        `)
+        .select(`id, event_name, event_date, publish_status, venues (venue_name, location:location_id (town_city))`)
         .eq("organiser_id", user.id);
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
+      if (error) { console.error(error); return; }
       allEvents = events;
       populateMonthFilter(events);
       renderLists();
     }
 
     document.getElementById("monthFilter").addEventListener("change", renderLists);
-
     loadEvents();
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -219,4 +180,4 @@
     });
   </script>
 </body>
-              </html>
+</html>
