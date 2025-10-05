@@ -3,19 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Event â€“ Spondle</title>
+  <title>Create Event – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Shared layout + styles -->
   <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
   <link rel="stylesheet" href="./styles.css?v=global-9">
   <link rel="stylesheet" href="./hearts.css?v=global-9">
+
   <style>
-    .venue-card{border:1px solid #444;border-radius:12px;padding:12px;margin-bottom:12px;background:#111;cursor:pointer}
-    .venue-card strong{display:block;margin-bottom:4px}
-    .no-results{text-align:center;color:#888;margin-top:10px}
-    .venue-form input,.venue-form button{width:100%;padding:10px;margin-bottom:10px;border-radius:12px;box-sizing:border-box}
-    .input-wrapper{position:relative}
-    .clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer}
-    .thumb-selected{outline:4px solid #22c55e;}
+    .venue-card { border:1px solid #444;border-radius:12px;padding:12px;margin-bottom:12px;background:#111;cursor:pointer; }
+    .venue-card strong { display:block;margin-bottom:4px; }
+    .no-results { text-align:center;color:#888;margin-top:10px; }
+    .venue-form input,.venue-form button { width:100%;padding:10px;margin-bottom:10px;border-radius:12px;box-sizing:border-box; }
+    .input-wrapper { position:relative; }
+    .clear-btn { position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer; }
+    .thumb-selected { outline:4px solid #22c55e; }
+
+    /* Carousel overlay arrows */
+    .carousel-wrapper { position: relative; }
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      border: none;
+      padding: 8px;
+      border-radius: 9999px;
+      cursor: pointer;
+      z-index: 10;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .carousel-arrow:hover { background: rgba(0,0,0,0.8); }
+    .arrow-left { left: 6px; }
+    .arrow-right { right: 6px; }
+
+    /* Make stock thumbnails resemble event tiles */
+    #stockImageCarousel img {
+      height: 10rem;          /* ~ h-40 */
+      max-width: 220px;       /* landscape feel */
+      object-fit: cover;      /* object-cover */
+      border-radius: 0.75rem; /* rounded-xl */
+    }
   </style>
 </head>
 <body class="bg-black text-white">
@@ -64,7 +95,13 @@
           <option value="sports">Sports</option>
           <option value="festival">Festival</option>
         </select>
-        <div id="stockImageCarousel" class="flex gap-2 overflow-x-auto mt-2 pb-2"></div>
+
+        <!-- Overlay arrow carousel -->
+        <div class="carousel-wrapper mt-2 pb-2">
+          <button type="button" id="arrowLeft" class="carousel-arrow arrow-left">&#9664;</button>
+          <div id="stockImageCarousel" class="flex gap-2 overflow-x-auto scroll-smooth"></div>
+          <button type="button" id="arrowRight" class="carousel-arrow arrow-right">&#9654;</button>
+        </div>
       </div>
 
       <div>
@@ -110,7 +147,7 @@
     });
   </script>
 
-  <!-- Page logic (everything in one module) -->
+  <!-- Page logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
@@ -124,7 +161,7 @@
       organiserInput.value = user ? user.id : 'Not logged in';
     });
 
-    // ---- Stock images baked in + carousel ----
+    // ---------- Image stock picker (baked-in) ----------
     const stockImages = {
       music: [
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
@@ -149,28 +186,51 @@
       ]
     };
 
-    const stockSelect = document.getElementById("stockImageSelect");
-    const imageUrlInput = document.getElementById("imageUrlInput");
-    const carousel = document.getElementById("stockImageCarousel");
+    const stockSelect = document.getElementById('stockImageSelect');
+    const imageUrlInput = document.getElementById('imageUrlInput');
+    const carousel = document.getElementById('stockImageCarousel');
+    const leftArrow = document.getElementById('arrowLeft');
+    const rightArrow = document.getElementById('arrowRight');
 
-    stockSelect.addEventListener("change", () => {
+    stockSelect.addEventListener('change', () => {
       const category = stockSelect.value;
-      carousel.innerHTML = "";
+      carousel.innerHTML = '';
       if (stockImages[category]) {
         stockImages[category].forEach(url => {
-          const img = document.createElement("img");
+          const img = document.createElement('img');
           img.src = url;
           img.alt = category;
-          img.className = "h-24 w-36 object-cover rounded cursor-pointer hover:opacity-80 border border-gray-600";
-          img.addEventListener("click", () => {
+          img.className = 'cursor-pointer hover:opacity-80 border border-gray-600 flex-shrink-0';
+          img.addEventListener('click', () => {
             imageUrlInput.value = url;
-            carousel.querySelectorAll("img").forEach(i => i.classList.remove("thumb-selected"));
-            img.classList.add("thumb-selected");
+            carousel.querySelectorAll('img').forEach(i => i.classList.remove('thumb-selected'));
+            img.classList.add('thumb-selected');
           });
           carousel.appendChild(img);
         });
       }
+      // reset scroll & update arrow states
+      carousel.scrollLeft = 0;
+      updateArrowVisibility();
     });
+
+    function updateArrowVisibility() {
+      // Always visible, but dim if cannot scroll
+      const canLeft = carousel.scrollLeft > 0;
+      const canRight = carousel.scrollWidth - carousel.clientWidth - carousel.scrollLeft > 1;
+      leftArrow.style.opacity = canLeft ? '1' : '0.4';
+      rightArrow.style.opacity = canRight ? '1' : '0.4';
+    }
+
+    leftArrow.addEventListener('click', () => {
+      carousel.scrollBy({ left: -220, behavior: 'smooth' });
+    });
+    rightArrow.addEventListener('click', () => {
+      carousel.scrollBy({ left: 220, behavior: 'smooth' });
+    });
+    carousel.addEventListener('scroll', updateArrowVisibility);
+    // initialize once
+    updateArrowVisibility();
 
     // ---------- Tabs / schedule views ----------
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -188,7 +248,7 @@
         <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="venue-id w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
         <div class="venue-list mt-2"></div>
         <div class="no-results" style="display:none;">
-          No results â€” <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
+          No results — <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
         </div>
         <div class="venue-form mt-4" style="display:none;">
           <input type="text" placeholder="Venue name" class="venue-name bg-gray-800 border border-gray-600">
@@ -238,11 +298,12 @@
     function wireVenueSearch(scope=document){
       scope.querySelectorAll('.input-wrapper').forEach(wrapper => {
         const searchInput = wrapper.querySelector('.search');
-        const parent = wrapper.closest('div'); // scope for this block
-        const venueIdInput = parent.parentElement.querySelector('.venue-id');
-        const venueList = parent.parentElement.querySelector('.venue-list');
-        const noResults = parent.parentElement.querySelector('.no-results');
-        const venueForm = parent.parentElement.querySelector('.venue-form');
+        const parent = wrapper.closest('div');
+        const block = parent.parentElement;
+        const venueIdInput = block.querySelector('.venue-id');
+        const venueList = block.querySelector('.venue-list');
+        const noResults = block.querySelector('.no-results');
+        const venueForm = block.querySelector('.venue-form');
         const clearBtn = wrapper.querySelector('.clear-btn');
 
         searchInput.addEventListener('input', async () => {
@@ -284,15 +345,15 @@
           noResults.style.display = 'none';
         });
 
-        parent.parentElement.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
+        block.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
           e.preventDefault();
           venueForm.style.display = 'block';
         });
 
-        parent.parentElement.querySelector('.venue-submit')?.addEventListener('click', async () => {
-          const name = parent.parentElement.querySelector('.venue-name').value.trim();
-          const street = parent.parentElement.querySelector('.venue-street').value.trim();
-          const postcode = parent.parentElement.querySelector('.venue-postcode').value.trim();
+        block.querySelector('.venue-submit')?.addEventListener('click', async () => {
+          const name = block.querySelector('.venue-name').value.trim();
+          const street = block.querySelector('.venue-street').value.trim();
+          const postcode = block.querySelector('.venue-postcode').value.trim();
           if (!name) return alert('Enter a venue name');
           const { data, error } = await supabase.from('venues').insert([{ venue_name: name, street_name: street, postcode }]).select('id');
           if (error) return alert('Error creating venue');
@@ -393,23 +454,4 @@
           return showBanner('Each venue needs a matching date and time.', false);
         }
         payload = venueIds.map((vId, i) => ({
-          ...baseData,
-          venue_id: vId,
-          event_date: dates[i],
-          event_time: times[i],
-          ticket_url: tickets[i] || null
-        }));
-      }
-
-      const { error } = await supabase.from('events').insert(payload);
-      if (error) return showBanner('Some events failed to submit.', false);
-
-      showBanner('Event(s) submitted successfully!', true);
-      form.reset();
-      tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
-      tabBtns[0].classList.add('bg-blue-500');
-      loadTab('single');
-    });
-  </script>
-</body>
-  </html>
+          ...baseDat
