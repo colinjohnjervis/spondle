@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Event Dashboard — Spondle</title>
+  <title>Event Dashboard â€” Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="./spondle-layout.css?v=1001">
@@ -17,7 +17,7 @@
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Event Dashboard</h1>
       <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
-        Manage your events — drafts, published, and past.
+        Manage your events â€” drafts, published, and past.
       </p>
 
       <!-- Buttons side-by-side -->
@@ -118,39 +118,50 @@
       });
     }
 
-    function renderEventCard(event) {
+    // NEW: renderEventCard now supports optional edit icon
+    function renderEventCard(event, showEdit = false) {
       const venueName = event.venues?.venue_name || "Venue TBA";
       const townCity = event.venues?.location?.town_city || "";
-      const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+      const venueDisplay = townCity ? \`\${venueName}, \${townCity}\` : venueName;
 
-      return `
-        <div class="p-4 bg-gray-800 rounded shadow">
-          <h3 class="font-semibold text-lg">${event.event_name}</h3>
-          <p class="text-sm text-gray-300">${formatDate(event.event_date)} @ ${venueDisplay}</p>
-          <p class="text-xs text-gray-400 uppercase">${event.publish_status}</p>
+      const editBtn = showEdit
+        ? \`<a href="/edit-event.html?id=\${event.id}" aria-label="Edit event" class="absolute top-2 right-2 text-gray-400 p-2 -m-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-5 h-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+            </svg>
+          </a>\`
+        : "";
+
+      return \`
+        <div class="relative p-4 bg-gray-800 rounded shadow">
+          \${editBtn}
+          <h3 class="font-semibold text-lg">\${event.event_name}</h3>
+          <p class="text-sm text-gray-300">\${formatDate(event.event_date)} @ \${venueDisplay}</p>
+          <p class="text-xs text-gray-400 uppercase">\${event.publish_status}</p>
         </div>
-      `;
+      \`;
     }
 
     function populateMonthFilter(events) {
       const select = document.getElementById("monthFilter");
       const months = new Set(events.map(e => {
         const d = new Date(e.event_date);
-        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+        return \`\${d.getFullYear()}-\${String(d.getMonth()+1).padStart(2,"0")}\`;
       }));
 
       const sorted = Array.from(months).sort();
 
-      select.innerHTML = `<option value="all">All Events</option>` +
+      select.innerHTML = \`<option value="all">All Events</option>\` +
         sorted.map(val => {
           const [y,m] = val.split("-");
           const label = new Date(y, m-1).toLocaleDateString("en-GB", { month:"long", year:"numeric" });
-          return `<option value="${val}">${label}</option>`;
+          return \`<option value="\${val}">\${label}</option>\`;
         }).join("");
 
       // default to current month
       const now = new Date();
-      const current = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+      const current = \`\${now.getFullYear()}-\${String(now.getMonth()+1).padStart(2,"0")}\`;
       if (sorted.includes(current)) {
         select.value = current;
       }
@@ -161,7 +172,7 @@
       if (val === "all") return events;
       return events.filter(e => {
         const d = new Date(e.event_date);
-        const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+        const ym = \`\${d.getFullYear()}-\${String(d.getMonth()+1).padStart(2,"0")}\`;
         return ym === val;
       });
     }
@@ -177,9 +188,12 @@
       document.getElementById("count-past").textContent = past.length;
       document.getElementById("count-total").textContent = filtered.length;
 
-      document.getElementById("drafts-list").innerHTML = drafts.map(renderEventCard).join("");
-      document.getElementById("published-list").innerHTML = published.map(renderEventCard).join("");
-      document.getElementById("past-list").innerHTML = past.map(renderEventCard).join("");
+      // Show edit icon for Drafts and Published only
+      document.getElementById("drafts-list").innerHTML = drafts.map(e => renderEventCard(e, true)).join("");
+      document.getElementById("published-list").innerHTML = published.map(e => renderEventCard(e, true)).join("");
+
+      // No edit icon in Past
+      document.getElementById("past-list").innerHTML = past.map(e => renderEventCard(e, false)).join("");
     }
 
     async function loadEvents() {
