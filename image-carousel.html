@@ -2,22 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Spondle – Image Carousel (Standalone)</title>
+  <title>Spondle – Image Carousel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    button:focus-visible { outline: none; }
-
-    /* Proper ring that won't clip on mobile */
     .img-wrapper {
       border-radius: 0.5rem;
       overflow: hidden;
-      transition: box-shadow 0.2s ease;
+      background-clip: padding-box;
+      border: 3px solid transparent;
+      transition: border-color 0.25s ease;
     }
     .img-wrapper.selected {
-      box-shadow: 0 0 0 3px #22c55e;
+      border-color: #22c55e;
     }
   </style>
 </head>
@@ -35,102 +34,81 @@
       <option value="festival">Festival</option>
     </select>
 
-    <section aria-label="Stock images carousel">
-      <div id="carouselTrack" class="flex no-scrollbar overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1 pb-2">
-        <!-- Slides injected by JS -->
-      </div>
-      <p class="text-xs text-gray-400 mt-2">Swipe/scroll to browse. Tap an image to select it.</p>
-    </section>
+    <div id="carouselTrack" class="flex no-scrollbar overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1 pb-2"></div>
+    <p class="text-xs text-gray-400 mt-2">Swipe/scroll to browse. Tap an image to select it.</p>
 
     <div class="mt-4 text-sm text-gray-300">
-      Selected URL:
-      <span id="selectedUrl" class="text-green-400 break-all"></span>
+      Selected URL: <span id="selectedUrl" class="text-green-400 break-all"></span>
     </div>
   </main>
 
   <script>
     const stockImages = {
-      music: [
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1483412035649-2a6fd3b30563?auto=format&fit=crop&w=1200&q=80"
-      ],
-      comedy: [
-        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1532634896-26909d0d4b6a?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=80"
-      ],
-      theatre: [
-        "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1464375117522-1311d046fcb5?auto=format&fit=crop&w=1200&q=80"
-      ],
-      sports: [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80"
-      ],
       festival: [
         "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
         "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1492683513053-36f34f7d0dcb?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80"
+      ],
+      comedy: [
+        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1200&q=80"
+      ],
+      music: [
+        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80"
+      ],
+      theatre: [
+        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"
+      ],
+      sports: [
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1200&q=80"
       ]
     };
 
-    const cat = document.getElementById('stockCategory');
-    const track = document.getElementById('carouselTrack');
-    const selectedOut = document.getElementById('selectedUrl');
+    const cat = document.getElementById("stockCategory");
+    const track = document.getElementById("carouselTrack");
+    const selectedOut = document.getElementById("selectedUrl");
 
     function makeFallback() {
-      const holder = document.createElement('div');
-      holder.className = 'w-full h-full bg-gray-800 flex items-center justify-center';
-      holder.innerHTML = '<span class="text-xs text-gray-400">Image failed to load</span>';
-      return holder;
+      const div = document.createElement("div");
+      div.className = "w-full h-full bg-gray-800 flex items-center justify-center";
+      div.innerHTML = '<span class="text-xs text-gray-400">Image failed</span>';
+      return div;
     }
 
     function buildCarousel(category) {
-      track.innerHTML = '';
-      selectedOut.textContent = '';
-
+      track.innerHTML = "";
+      selectedOut.textContent = "";
       const urls = stockImages[category] || [];
+
       urls.forEach((url, i) => {
-        const slide = document.createElement('div');
-        slide.className = 'shrink-0 min-w-full snap-start px-1';
+        const slide = document.createElement("div");
+        slide.className = "shrink-0 min-w-full snap-start px-1";
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'img-wrapper';
+        const wrapper = document.createElement("div");
+        wrapper.className = "img-wrapper";
 
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'block w-full h-40 focus:outline-none';
-        btn.setAttribute('aria-label', `Select ${category || 'image'} ${i + 1}`);
-
-        const img = document.createElement('img');
+        const img = document.createElement("img");
         img.src = url;
-        img.alt = `${category || 'stock'} image ${i + 1}`;
-        img.className = 'w-full h-full object-cover';
+        img.alt = `${category} image ${i + 1}`;
+        img.className = "w-full h-40 object-cover";
         img.onerror = () => img.replaceWith(makeFallback());
 
-        btn.appendChild(img);
-        wrapper.appendChild(btn);
-
-        btn.addEventListener('click', () => {
-          track.querySelectorAll('.img-wrapper').forEach(w => w.classList.remove('selected'));
-          wrapper.classList.add('selected');
-          selectedOut.textContent = url;
-        });
-
+        wrapper.appendChild(img);
         slide.appendChild(wrapper);
         track.appendChild(slide);
+
+        wrapper.addEventListener("click", () => {
+          track.querySelectorAll(".img-wrapper").forEach(w => w.classList.remove("selected"));
+          wrapper.classList.add("selected");
+          selectedOut.textContent = url;
+        });
       });
     }
 
-    cat.addEventListener('change', () => buildCarousel(cat.value));
+    cat.addEventListener("change", () => buildCarousel(cat.value));
   </script>
 </body>
 </html>
