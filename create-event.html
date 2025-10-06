@@ -56,8 +56,10 @@
         <input id="imageUrlInput" type="url" name="image_url" class="w-full p-2 bg-gray-800 border border-gray-600 rounded" placeholder="https://example.com/image.jpg">
       </div>
 
+      <!-- START Carousel Update -->
       <div>
         <label class="block mb-2">Or choose a stock image</label>
+        <!-- Keep your existing category filter -->
         <select id="stockImageSelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
           <option value="">Select stock category</option>
           <option value="music">Music</option>
@@ -66,7 +68,20 @@
           <option value="sports">Sports</option>
           <option value="festival">Festival</option>
         </select>
+
+        <!-- New: one-at-a-time, horizontally scrollable carousel -->
+        <div id="stockCarouselWrapper" class="mt-3">
+          <div
+            id="stockCarouselTrack"
+            class="w-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 -mx-1 px-1 [&::-webkit-scrollbar]:hidden"
+            style="scrollbar-width: none;"
+          >
+            <!-- Slides injected by JS based on category -->
+          </div>
+          <p id="stockHint" class="text-xs text-gray-400 mt-2">Swipe/scroll to browse. Tap an image to select it.</p>
+        </div>
       </div>
+      <!-- END Carousel Update -->
 
       <div>
         <label class="block mb-2">Publish Status</label>
@@ -125,22 +140,72 @@
       organiserInput.value = user ? user.id : 'Not logged in';
     });
 
-    // ---------- Image stock picker ----------
+    /* ---------- Image stock picker: UPDATED to support carousel ---------- */
+    // Multiple images per category to enable real scrolling:
     const stockImages = {
-      music: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-      comedy: "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-      theatre: "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&w=1200&q=80",
-      sports: "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-      festival: "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
+      music: [
+        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1483412035649-2a6fd3b30563?auto=format&fit=crop&w=1200&q=80"
+      ],
+      comedy: [
+        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1532634896-26909d0d4b6a?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=80"
+      ],
+      theatre: [
+        "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1464375117522-1311d046fcb5?auto=format&fit=crop&w=1200&q=80"
+      ],
+      sports: [
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80"
+      ],
+      festival: [
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1492683513053-36f34f7d0dcb?auto=format&fit=crop&w=1200&q=80"
+      ]
     };
+
     const stockSelect = document.getElementById('stockImageSelect');
     const imageUrlInput = document.getElementById('imageUrlInput');
-    stockSelect.addEventListener('change', () => {
-      const v = stockSelect.value;
-      if (v && stockImages[v]) imageUrlInput.value = stockImages[v];
-    });
+    const stockTrack = document.getElementById('stockCarouselTrack');
 
-    // ---------- Tabs / schedule views ----------
+    function buildCarousel(category) {
+      stockTrack.innerHTML = '';
+      const imgs = stockImages[category] || [];
+      imgs.forEach((url, idx) => {
+        const slide = document.createElement('div');
+        slide.className = 'shrink-0 min-w-full snap-start';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'block w-full h-40 rounded-lg overflow-hidden focus:outline-none';
+        btn.innerHTML = `<img src="${url}" alt="${category} image ${idx+1}" class="w-full h-full object-cover">`;
+        btn.addEventListener('click', () => {
+          imageUrlInput.value = url;
+          // Simple visual confirmation (ring) without changing your theme
+          stockTrack.querySelectorAll('button').forEach(b => b.classList.remove('ring-4','ring-green-400'));
+          btn.classList.add('ring-4','ring-green-400');
+        });
+        slide.appendChild(btn);
+        stockTrack.appendChild(slide);
+      });
+    }
+
+    stockSelect.addEventListener('change', () => buildCarousel(stockSelect.value));
+
+    // If a category is preselected for any reason, build immediately
+    if (stockSelect.value) buildCarousel(stockSelect.value);
+
+    /* ---------- Tabs / schedule views (unchanged) ---------- */
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContent = document.getElementById('tabContent');
     const eventTypeInput = document.getElementById('eventType');
@@ -320,7 +385,7 @@
       banner.style.display = 'block';
     }
 
-    // ---------- Submit ----------
+    // ---------- Submit (unchanged) ----------
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const { data: { user } } = await supabase.auth.getUser();
