@@ -1,200 +1,378 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Choose Event Image</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase JS v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <style>
-    body{background:#000;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif;}
-    .tab-btn{flex:1;text-align:center;padding:.5rem 0;border-radius:.5rem;background:#222;}
-    .tab-btn.active{background:#3b82f6;color:#fff;}
-    .arrow-btn{
-      position:absolute;top:50%;transform:translateY(-50%);
-      background:rgba(0,0,0,.4);color:rgba(255,255,255,.9);
-      font-size:22px;width:40px;height:40px;border:none;border-radius:50%;
-      cursor:pointer;display:flex;align-items:center;justify-content:center;
-      transition:background .2s;
+    :root {
+      --bg: #0b0b0b;
+      --fg: #e9eef2;
+      --muted: #9aa4ad;
+      --accent: #2ecc71;
+      --accent-weak: rgba(46, 204, 113, .25);
+      --card: #111418;
+      --btn: #1f2937;
+      --btn-active: #2563eb;
     }
-    .arrow-btn:hover{background:rgba(0,0,0,.6);}
-    .img-wrapper{border-radius:0.5rem;overflow:hidden;border:3px solid transparent;transition:border-color .25s ease;}
-    .img-wrapper.selected{border-color:#22c55e;}
-    .banner{display:none;margin-top:.75rem;border-radius:.5rem;padding:.5rem .75rem;font-size:.9rem;text-align:center;}
-    .banner.ok{background:#16a34a;color:#000;}
-    .banner.err{background:#dc2626;color:#fff;}
-    .banner.info{background:#374151;color:#fff;}
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      line-height: 1.25;
+    }
+    .wrap { max-width: 820px; margin: 28px auto 80px; padding: 0 16px; }
+    h1 { font-size: 34px; margin: 0 0 18px; }
+
+    /* tabs */
+    .tabs { display: flex; gap: 12px; margin: 14px 0 18px; }
+    .tab {
+      background: var(--btn);
+      color: #cdd4db;
+      border: 0;
+      padding: 14px 18px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab.active { background: var(--btn-active); color: #fff; }
+
+    .hidden { display: none !important; }
+
+    /* buttons */
+    .btn {
+      background: #374151;
+      color: #fff;
+      border: 0;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn.inline { margin-right: 8px; }
+
+    /* tiles */
+    .tile {
+      position: relative;
+      background: var(--card);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 3px solid transparent;
+      margin-top: 14px;
+    }
+    .tile.selected { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-weak) inset; }
+
+    .img-wrap {
+      position: relative;
+      width: 100%;
+      /* 16:9-ish window */
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: #0f1216;
+    }
+    .img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* arrows inside the image */
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 0;
+      background: rgba(255,255,255,.8);
+      color: #111;
+      font-weight: 900;
+      font-size: 22px;
+      line-height: 44px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      user-select: none;
+    }
+    .arrow:active { transform: translateY(-50%) scale(.98); }
+    .arrow.left { left: 10px; }
+    .arrow.right { right: 10px; }
+
+    /* helper text */
+    .hint { color: var(--muted); margin: 10px 2px 0; font-size: 14px; }
+
+    .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0 2px; }
+
+    .dropdown {
+      background: #0f141a;
+      color: #e8edf2;
+      border: 1px solid #2a323c;
+      padding: 10px 12px;
+      border-radius: 10px;
+      min-width: 220px;
+    }
+
+    .selected-url {
+      margin-top: 16px;
+      word-break: break-all;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      color: #8be0a4;
+    }
+
+    .danger { background: #7f1d1d; color: #fff; border-radius: 10px; padding: 12px 14px; margin: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
   </style>
 </head>
-<body class="p-6 flex flex-col items-center">
-  <h1 class="text-3xl font-bold mb-6">Choose Event Image</h1>
+<body>
+  <div class="wrap">
+    <h1>Choose Event Image</h1>
 
-  <div class="flex gap-2 mb-4 w-full max-w-md">
-    <button id="uploadTab" class="tab-btn active">Upload My Own</button>
-    <button id="stockTab" class="tab-btn">Choose Stock Image</button>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button id="tab-upload" class="tab active">Upload My Own</button>
+      <button id="tab-stock" class="tab">Choose Stock Image</button>
+    </div>
+
+    <!-- Upload panel -->
+    <section id="panel-upload">
+      <div class="row">
+        <label class="btn inline" for="file-input">Choose File</label>
+        <input id="file-input" class="sr-only" type="file" accept="image/*" />
+        <button id="btn-upload" class="btn" disabled>Upload Image</button>
+      </div>
+
+      <!-- Preview tile (shows chosen file immediately, selected style after upload) -->
+      <div id="upload-tile" class="tile">
+        <div class="img-wrap">
+          <img id="upload-preview" alt="Your image preview" />
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="btn-replace" class="btn inline" disabled>Replace Image</button>
+        <span id="filename" class="hint"></span>
+      </div>
+
+      <div id="upload-error" class="danger hidden"></div>
+      <div class="selected-url" id="upload-url"></div>
+    </section>
+
+    <!-- Stock panel -->
+    <section id="panel-stock" class="hidden">
+      <div class="row">
+        <label for="category" class="hint">Category</label>
+        <select id="category" class="dropdown"></select>
+      </div>
+
+      <div id="stock-tile" class="tile selected">
+        <div class="img-wrap">
+          <img id="stock-image" alt="Stock preview" />
+          <button id="arrow-left" class="arrow left" aria-label="Previous">&#8249;</button>
+          <button id="arrow-right" class="arrow right" aria-label="Next">&#8250;</button>
+        </div>
+      </div>
+
+      <p class="hint">Swipe/scroll to browse (or use arrows). Tap the image to select it.</p>
+      <div class="selected-url" id="stock-url"></div>
+    </section>
   </div>
 
-  <div id="banner" class="banner"></div>
+  <script>
+    // --------------------------
+    // CONFIG (fill these in)
+    // --------------------------
+    const SUPABASE_URL = window.SUPABASE_URL || "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY";
+    const BUCKET = "event-images"; // exact bucket name
 
-  <!-- Upload section -->
-  <section id="uploadSection" class="space-y-3 w-full max-w-md">
-    <input type="file" id="imageUpload" accept="image/*" class="hidden">
-    <button id="uploadBtn" class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 w-full">Upload Image</button>
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <div id="uploadPreview" class="hidden">
-      <div id="previewWrapper" class="img-wrapper selected w-full h-48 flex items-center justify-center">
-        <img id="previewImg" src="" alt="Preview" class="w-full h-full object-cover">
-      </div>
-      <div class="flex items-center justify-between mt-2">
-        <button id="replaceBtn" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-sm">Replace Image</button>
-        <span class="text-sm text-gray-400">File: <span id="uploadedFilename" class="text-green-400"></span></span>
-      </div>
-    </div>
-  </section>
+    // --------------------------
+    // TABS
+    // --------------------------
+    const tabUpload = document.getElementById('tab-upload');
+    const tabStock  = document.getElementById('tab-stock');
+    const panelUpload = document.getElementById('panel-upload');
+    const panelStock  = document.getElementById('panel-stock');
 
-  <!-- Stock image section -->
-  <section id="stockSection" class="hidden w-full max-w-md">
-    <div class="relative w-full h-48 mb-4 overflow-hidden rounded-lg">
-      <div id="carousel" class="flex w-full h-full transition-transform duration-500 ease-in-out"></div>
-      <button id="leftArrow" class="arrow-btn left-2" type="button">&lt;</button>
-      <button id="rightArrow" class="arrow-btn right-2" type="button">&gt;</button>
-    </div>
-    <div id="stockPreview" class="hidden w-full h-48 rounded-lg overflow-hidden mb-2">
-      <img id="stockPreviewImg" src="" alt="Selected preview" class="w-full h-full object-cover" />
-    </div>
-    <button id="selectStockBtn" class="hidden w-full px-4 py-2 bg-green-500 text-black rounded hover:bg-green-400">Select This Image</button>
-  </section>
-
-  <!-- Selected URL output -->
-  <p class="mt-6 text-sm text-gray-300 text-center">
-    <strong>Selected URL:</strong><br>
-    <span id="selectedUrl" class="text-green-400 break-all"></span>
-  </p>
-
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(
-      "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-    );
-    const BUCKET = "event-images";
-
-    const uploadTab=document.getElementById("uploadTab");
-    const stockTab=document.getElementById("stockTab");
-    const uploadSection=document.getElementById("uploadSection");
-    const stockSection=document.getElementById("stockSection");
-    const banner=document.getElementById("banner");
-    const selectedUrl=document.getElementById("selectedUrl");
-
-    function showBanner(msg,type="info"){
-      banner.textContent=msg;
-      banner.className=`banner ${type}`;
-      banner.style.display="block";
-      if(type==="ok")setTimeout(()=>banner.style.display="none",2000);
+    function setTab(which) {
+      const isUpload = which === 'upload';
+      tabUpload.classList.toggle('active', isUpload);
+      tabStock.classList.toggle('active', !isUpload);
+      panelUpload.classList.toggle('hidden', !isUpload);
+      panelStock.classList.toggle('hidden', isUpload);
     }
+    tabUpload.addEventListener('click', () => setTab('upload'));
+    tabStock.addEventListener('click', () => setTab('stock'));
 
-    function switchTab(tab){
-      uploadTab.classList.remove("active");
-      stockTab.classList.remove("active");
-      uploadSection.classList.add("hidden");
-      stockSection.classList.add("hidden");
-      if(tab==="upload"){uploadTab.classList.add("active");uploadSection.classList.remove("hidden");}
-      else{stockTab.classList.add("active");stockSection.classList.remove("hidden");}
+    // --------------------------
+    // UPLOAD FLOW (fixed)
+    // --------------------------
+    const fileInput = document.getElementById('file-input');
+    const btnUpload = document.getElementById('btn-upload');
+    const btnReplace = document.getElementById('btn-replace');
+    const uploadPreview = document.getElementById('upload-preview');
+    const uploadTile = document.getElementById('upload-tile');
+    const fileNameEl = document.getElementById('filename');
+    const uploadUrlEl = document.getElementById('upload-url');
+    const uploadErrEl = document.getElementById('upload-error');
+
+    let chosenFile = null;
+
+    function resetUploadUI() {
+      btnUpload.disabled = true;
+      btnReplace.disabled = true;
+      fileNameEl.textContent = '';
+      uploadUrlEl.textContent = '';
+      uploadErrEl.classList.add('hidden');
+      uploadErrEl.textContent = '';
+      uploadPreview.src = '';
+      uploadTile.classList.remove('selected');
     }
-    uploadTab.addEventListener("click",()=>switchTab("upload"));
-    stockTab.addEventListener("click",()=>switchTab("stock"));
+    resetUploadUI();
 
-    // --- Upload logic ---
-    const imageUpload=document.getElementById("imageUpload");
-    const uploadBtn=document.getElementById("uploadBtn");
-    const uploadPreview=document.getElementById("uploadPreview");
-    const previewImg=document.getElementById("previewImg");
-    const replaceBtn=document.getElementById("replaceBtn");
-    const uploadedFilename=document.getElementById("uploadedFilename");
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) { resetUploadUI(); return; }
+      chosenFile = f;
 
-    uploadBtn.addEventListener("click",()=>imageUpload.click());
-    replaceBtn.addEventListener("click",()=>imageUpload.click());
-
-    imageUpload.addEventListener("change",async(e)=>{
-      const file=e.target.files[0];
-      if(!file)return;
-      const reader=new FileReader();
-      reader.onload=()=>{previewImg.src=reader.result;uploadPreview.classList.remove("hidden");};
-      reader.readAsDataURL(file);
-      showBanner("Uploading image…","info");
-
-      const fileName=`${Date.now()}_${file.name}`;
-      const { error }=await supabase.storage.from(BUCKET).upload(fileName,file);
-      if(error){showBanner("Upload failed: "+error.message,"err");return;}
-      const { data:urlData }=supabase.storage.from(BUCKET).getPublicUrl(fileName);
-      uploadedFilename.textContent=file.name;
-      selectedUrl.textContent=urlData.publicUrl;
-      showBanner("Image uploaded successfully.","ok");
+      // Show local preview immediately
+      const url = URL.createObjectURL(f);
+      uploadPreview.src = url;
+      fileNameEl.textContent = f.name;
+      btnUpload.disabled = false;
+      btnReplace.disabled = true;
+      uploadUrlEl.textContent = '';
     });
 
-    // --- Stock image carousel ---
-    const carousel=document.getElementById("carousel");
-    const leftArrow=document.getElementById("leftArrow");
-    const rightArrow=document.getElementById("rightArrow");
-    const stockPreview=document.getElementById("stockPreview");
-    const stockPreviewImg=document.getElementById("stockPreviewImg");
-    const selectStockBtn=document.getElementById("selectStockBtn");
+    btnUpload.addEventListener('click', async () => {
+      if (!chosenFile) return;
 
-    const stockImages=[
-      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
-    ];
+      btnUpload.disabled = true;
+      uploadErrEl.classList.add('hidden');
+      uploadErrEl.textContent = '';
 
-    let currentIndex=0;
-    function renderCarousel(){
-      carousel.innerHTML="";
-      stockImages.forEach((url,i)=>{
-        const div=document.createElement("div");
-        div.className="img-wrapper w-full h-full shrink-0";
-        const img=document.createElement("img");
-        img.src=url;img.className="w-full h-full object-cover cursor-pointer";
-        img.addEventListener("click",()=>{
-          carousel.querySelectorAll(".img-wrapper").forEach(el=>el.classList.remove("selected"));
-          div.classList.add("selected");
-          stockPreviewImg.src=url;
-          stockPreview.classList.remove("hidden");
-          selectStockBtn.classList.remove("hidden");
-          currentIndex=i;
-        });
-        div.appendChild(img);
-        carousel.appendChild(div);
-      });
-      updateArrows();
-    }
+      try {
+        // Sanitize and create a unique filename
+        const safeName = chosenFile.name.replace(/[^\w.\-]+/g, '_');
+        const path = `${Date.now()}_${safeName}`;
 
-    function updateArrows(){
-      leftArrow.disabled=currentIndex<=0;
-      rightArrow.disabled=currentIndex>=stockImages.length-1;
-    }
+        // IMPORTANT: no "public/" prefix; upload straight to the bucket root
+        const { data, error } = await supabaseClient
+          .storage
+          .from(BUCKET)
+          .upload(path, chosenFile, { upsert: true, contentType: chosenFile.type });
 
-    leftArrow.addEventListener("click",()=>{
-      currentIndex=Math.max(0,currentIndex-1);
-      carousel.scrollTo({left:carousel.clientWidth*currentIndex,behavior:"smooth"});
-      updateArrows();
-    });
-    rightArrow.addEventListener("click",()=>{
-      currentIndex=Math.min(stockImages.length-1,currentIndex+1);
-      carousel.scrollTo({left:carousel.clientWidth*currentIndex,behavior:"smooth"});
-      updateArrows();
-    });
+        if (error) {
+          // Expose the real error in UI for troubleshooting
+          uploadErrEl.textContent = `Upload error: ${error.message}`;
+          uploadErrEl.classList.remove('hidden');
+          btnUpload.disabled = false;
+          return;
+        }
 
-    selectStockBtn.addEventListener("click",()=>{
-      const selected=stockPreviewImg.src;
-      if(selected){
-        selectedUrl.textContent=selected;
-        showBanner("Stock image selected.","ok");
+        // Get public URL
+        const { data: pub } = supabaseClient
+          .storage
+          .from(BUCKET)
+          .getPublicUrl(path);
+
+        uploadUrlEl.textContent = `Selected URL: ${pub.publicUrl}`;
+        uploadTile.classList.add('selected');
+        btnReplace.disabled = false;
+      } catch (err) {
+        uploadErrEl.textContent = `Unexpected error: ${err?.message || err}`;
+        uploadErrEl.classList.remove('hidden');
+        btnUpload.disabled = false;
       }
     });
 
-    renderCarousel();
+    btnReplace.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // --------------------------
+    // STOCK CAROUSEL (original look)
+    // --------------------------
+    const categories = {
+      Festival: [
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80"
+      ],
+      Music: [
+        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80"
+      ],
+      Theatre: [
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1452195100486-9cc805987862?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1485561557069-4b301463d4ea?auto=format&fit=crop&w=1200&q=80"
+      ],
+      Comedy: [
+        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1523246126472-9f2d62411e8f?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80"
+      ]
+    };
+
+    const categorySelect = document.getElementById('category');
+    const stockImg = document.getElementById('stock-image');
+    const stockUrlEl = document.getElementById('stock-url');
+    const leftBtn = document.getElementById('arrow-left');
+    const rightBtn = document.getElementById('arrow-right');
+
+    // init categories
+    for (const c of Object.keys(categories)) {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      categorySelect.appendChild(opt);
+    }
+
+    let curCat = Object.keys(categories)[0];
+    let curIdx = 0;
+
+    function showStock() {
+      const list = categories[curCat];
+      if (!list || !list.length) return;
+      if (curIdx < 0) curIdx = list.length - 1;
+      if (curIdx >= list.length) curIdx = 0;
+      stockImg.src = list[curIdx];
+      // keep green border always on this tile (visual consistency)
+      stockUrlEl.textContent = '';
+    }
+
+    categorySelect.addEventListener('change', () => {
+      curCat = categorySelect.value;
+      curIdx = 0;
+      showStock();
+    });
+
+    leftBtn.addEventListener('click', () => { curIdx--; showStock(); });
+    rightBtn.addEventListener('click', () => { curIdx++; showStock(); });
+
+    // Tap image to select
+    stockImg.addEventListener('click', () => {
+      const url = categories[curCat][curIdx];
+      stockUrlEl.textContent = `Selected URL: ${url}`;
+    });
+
+    // initial render
+    categorySelect.value = curCat;
+    showStock();
   </script>
 </body>
 </html>
