@@ -10,9 +10,9 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     button:focus-visible { outline: none; }
 
-    /* Force full ring highlight */
+    /* Full ring highlight with even spacing */
     .selected-img {
-      box-shadow: 0 0 0 4px #22c55e; /* Tailwind green-500 equivalent */
+      box-shadow: 0 0 0 3px #22c55e; /* Tailwind green-500 */
       border-radius: 0.5rem; /* match rounded-lg */
       transition: box-shadow 0.2s ease;
     }
@@ -101,21 +101,19 @@
 
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'block w-full h-40 rounded-lg overflow-hidden focus:outline-none transition-all duration-200 border-2 border-transparent';
+        btn.className = 'block w-full h-40 rounded-lg overflow-hidden focus:outline-none transition-all duration-200 border-2 border-transparent p-0.5 bg-black';
         btn.setAttribute('aria-label', `Select ${category || 'image'} ${i + 1}`);
 
         const img = document.createElement('img');
         img.src = url;
         img.alt = `${category || 'stock'} image ${i + 1}`;
-        img.className = 'w-full h-full object-cover';
+        img.className = 'w-full h-full object-cover rounded-md';
         img.onerror = () => img.replaceWith(makeFallback());
 
         btn.appendChild(img);
 
         btn.addEventListener('click', () => {
-          track.querySelectorAll('button').forEach(b => {
-            b.classList.remove('selected-img');
-          });
+          track.querySelectorAll('button').forEach(b => b.classList.remove('selected-img'));
           btn.classList.add('selected-img');
           selectedOut.textContent = url;
         });
