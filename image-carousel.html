@@ -2,224 +2,141 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Spondle – Image Carousel (Standalone)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Carousel – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    button:focus-visible { outline: none; }
-
-    /* Proper border highlight (never clips) */
-    .img-wrapper {
-      border-radius: 0.5rem; /* ~ rounded-lg */
-      overflow: hidden;
-      background-clip: padding-box;
-      border: 3px solid transparent;
-      transition: border-color 0.25s ease;
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: ui-sans-serif, system-ui, sans-serif;
     }
-    .img-wrapper.selected {
-      border-color: #22c55e; /* green-500 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
     }
-
-    /* Arrow buttons: white, slightly transparent */
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    button:focus-visible {
+      outline: none;
+    }
     .arrow-btn {
-      @apply absolute top-1/2 -translate-y-1/2 p-2 rounded-full;
-      background: rgba(255,255,255,0.28);
-      color: black;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.4);
+      color: rgba(255,255,255,0.9);
+      font-size: 22px;
+      width: 40px;
+      height: 40px;
       border: none;
-      line-height: 0;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.35);
-      backdrop-filter: blur(2px);
-      transition: background 0.15s ease, transform 0.15s ease;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
     }
-    .arrow-btn:hover { background: rgba(255,255,255,0.5); }
-    .arrow-btn:active { transform: translateY(-50%) scale(0.96); }
-    .arrow-btn[disabled] { opacity: 0.35; cursor: default; }
-    /* Make sure arrows never block edge clicks on the image too much */
-    .arrow-hit { width: 36px; height: 36px; display: grid; place-items: center; }
-
-    /* SVG size */
-    .arrow-icon { width: 18px; height: 18px; }
+    .arrow-btn:hover {
+      background: rgba(0,0,0,0.6);
+    }
   </style>
 </head>
-<body class="bg-black text-white min-h-screen">
-  <main class="max-w-2xl mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-4">Choose a Stock Image</h1>
+<body class="p-6">
+  <h1 class="text-3xl font-bold mb-4">Choose a Stock Image</h1>
 
-    <!-- Category filter (temporary for design/testing) -->
-    <label for="stockCategory" class="block mb-2 text-sm text-gray-300">Category</label>
-    <select id="stockCategory" class="w-full p-2 bg-gray-800 border border-gray-600 rounded mb-4">
-      <option value="">Select stock category</option>
-      <option value="music">Music</option>
-      <option value="comedy">Comedy</option>
-      <option value="theatre">Theatre</option>
-      <option value="sports">Sports</option>
-      <option value="festival">Festival</option>
-    </select>
+  <label class="block mb-2">Category</label>
+  <select id="categorySelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded mb-4">
+    <option value="">Select stock category</option>
+    <option value="music">Music</option>
+    <option value="comedy">Comedy</option>
+    <option value="theatre">Theatre</option>
+    <option value="sports">Sports</option>
+    <option value="festival">Festival</option>
+  </select>
 
-    <!-- Carousel container (relative for overlay arrows) -->
-    <section aria-label="Stock images carousel" id="carouselContainer" class="relative">
-      <!-- Track -->
-      <div
-        id="carouselTrack"
-        class="flex no-scrollbar overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1 pb-2"
-        style="scrollbar-width: none;"
-      >
-        <!-- Slides injected by JS -->
-      </div>
+  <div class="relative">
+    <div id="carousel" class="flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth"></div>
 
-      <!-- Arrows (hidden until a category with slides is selected) -->
-      <button id="prevBtn" class="arrow-btn hidden left-2" aria-label="Previous image" type="button">
-        <span class="arrow-hit">
-          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </span>
-      </button>
-      <button id="nextBtn" class="arrow-btn hidden right-2" aria-label="Next image" type="button">
-        <span class="arrow-hit">
-          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </span>
-      </button>
+    <!-- Arrows inside image -->
+    <button id="leftArrow" class="arrow-btn left-2 hidden">&lt;</button>
+    <button id="rightArrow" class="arrow-btn right-2 hidden">&gt;</button>
+  </div>
 
-      <p class="text-xs text-gray-400 mt-2">Swipe/scroll to browse. Tap an image to select it.</p>
-    </section>
-
-    <!-- Selected value (for visual feedback while testing) -->
-    <div class="mt-4 text-sm text-gray-300">
-      Selected URL:
-      <span id="selectedUrl" class="text-green-400 break-all"></span>
-    </div>
-  </main>
+  <p class="text-gray-400 mt-3">Swipe/scroll to browse. Tap an image to select it.</p>
+  <p class="mt-4 text-sm">
+    <strong>Selected URL:</strong>
+    <span id="selectedUrl" class="text-green-400 break-all"></span>
+  </p>
 
   <script>
-    // Images per category
+    const categorySelect = document.getElementById('categorySelect');
+    const carousel = document.getElementById('carousel');
+    const selectedUrl = document.getElementById('selectedUrl');
+    const leftArrow = document.getElementById('leftArrow');
+    const rightArrow = document.getElementById('rightArrow');
+
     const stockImages = {
       music: [
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
         "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1483412035649-2a6fd3b30563?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1518364538800-6bae3c1f3a36?auto=format&fit=crop&w=1200&q=80"
       ],
       comedy: [
         "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1532634896-26909d0d4b6a?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1525182010674-70a2d87b3d21?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1525181820845-73275b6f8d4d?auto=format&fit=crop&w=1200&q=80"
       ],
       theatre: [
-        "https://images.unsplash.com/photo-1507925921958-8a62f3d1a50d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1464375117522-1311d046fcb5?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=1200&q=80"
       ],
       sports: [
         "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80"
       ],
       festival: [
         "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
         "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1492683513053-36f34f7d0dcb?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff33?auto=format&fit=crop&w=1200&q=80"
       ]
     };
 
-    const cat = document.getElementById('stockCategory');
-    const track = document.getElementById('carouselTrack');
-    const selectedOut = document.getElementById('selectedUrl');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const container = document.getElementById('carouselContainer');
-
-    let currentIndex = 0;
-    let slides = [];
-
-    function makeFallback() {
-      const div = document.createElement('div');
-      div.className = 'w-full h-full bg-gray-800 flex items-center justify-center';
-      div.innerHTML = '<span class="text-xs text-gray-400">Image failed to load</span>';
-      return div;
-    }
-
-    function updateArrowStates() {
-      if (!slides.length) {
-        prevBtn.classList.add('hidden');
-        nextBtn.classList.add('hidden');
+    categorySelect.addEventListener('change', () => {
+      const category = categorySelect.value;
+      carousel.innerHTML = '';
+      selectedUrl.textContent = '';
+      if (!category) {
+        leftArrow.classList.add('hidden');
+        rightArrow.classList.add('hidden');
         return;
       }
-      prevBtn.classList.remove('hidden');
-      nextBtn.classList.remove('hidden');
-      prevBtn.disabled = currentIndex <= 0;
-      nextBtn.disabled = currentIndex >= slides.length - 1;
-    }
 
-    function scrollToIndex(idx) {
-      if (!slides[idx]) return;
-      currentIndex = Math.max(0, Math.min(idx, slides.length - 1));
-      const left = slides[currentIndex].offsetLeft;
-      track.scrollTo({ left, behavior: 'smooth' });
-      updateArrowStates();
-    }
-
-    function buildCarousel(category) {
-      track.innerHTML = '';
-      selectedOut.textContent = '';
-      currentIndex = 0;
-
-      const urls = stockImages[category] || [];
-      urls.forEach((url, i) => {
-        const slide = document.createElement('div');
-        slide.className = 'shrink-0 min-w-full snap-start px-1';
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'img-wrapper';
-
+      stockImages[category].forEach(url => {
         const img = document.createElement('img');
         img.src = url;
-        img.alt = `${category || 'stock'} image ${i + 1}`;
-        img.className = 'w-full h-40 object-cover';
-        img.onerror = () => img.replaceWith(makeFallback());
-
-        wrapper.appendChild(img);
-        slide.appendChild(wrapper);
-        track.appendChild(slide);
-
-        wrapper.addEventListener('click', () => {
-          track.querySelectorAll('.img-wrapper').forEach(w => w.classList.remove('selected'));
-          wrapper.classList.add('selected');
-          selectedOut.textContent = url;
+        img.className = 'h-40 w-full object-cover rounded-lg snap-center flex-shrink-0 border-4 border-transparent cursor-pointer transition-all duration-200';
+        img.addEventListener('click', () => {
+          carousel.querySelectorAll('img').forEach(i => i.classList.remove('border-green-400'));
+          img.classList.add('border-green-400');
+          selectedUrl.textContent = url;
         });
+        carousel.appendChild(img);
       });
 
-      slides = Array.from(track.children);
+      leftArrow.classList.remove('hidden');
+      rightArrow.classList.remove('hidden');
+    });
 
-      // Snap index tracking on user scroll/swipe
-      track.addEventListener('scroll', () => {
-        const width = container.clientWidth; // equals slide width
-        const idx = Math.round(track.scrollLeft / width);
-        if (idx !== currentIndex) {
-          currentIndex = idx;
-          updateArrowStates();
-        }
-      }, { passive: true });
-
-      updateArrowStates();
-    }
-
-    // Arrow click handlers (move exactly one slide)
-    prevBtn.addEventListener('click', () => scrollToIndex(currentIndex - 1));
-    nextBtn.addEventListener('click', () => scrollToIndex(currentIndex + 1));
-
-    // Wire dropdown
-    cat.addEventListener('change', () => buildCarousel(cat.value));
+    leftArrow.addEventListener('click', () => {
+      carousel.scrollBy({ left: -carousel.clientWidth, behavior: 'smooth' });
+    });
+    rightArrow.addEventListener('click', () => {
+      carousel.scrollBy({ left: carousel.clientWidth, behavior: 'smooth' });
+    });
   </script>
 </body>
 </html>
