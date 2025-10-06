@@ -9,6 +9,9 @@
     /* Hide scrollbars while preserving scrollability */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Ensure keyboard focus doesn’t add an outline */
+    button:focus-visible { outline: none; }
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
@@ -45,7 +48,6 @@
   </main>
 
   <script>
-    // Multiple images per category so horizontal scroll feels real
     const stockImages = {
       music: [
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
@@ -83,7 +85,13 @@
     const track = document.getElementById('carouselTrack');
     const selectedOut = document.getElementById('selectedUrl');
 
-    // Build slides for chosen category
+    function makeFallback() {
+      const holder = document.createElement('div');
+      holder.className = 'w-full h-full bg-gray-800 flex items-center justify-center';
+      holder.innerHTML = '<span class="text-xs text-gray-400">Image failed to load</span>';
+      return holder;
+    }
+
     function buildCarousel(category) {
       track.innerHTML = '';
       selectedOut.textContent = '';
@@ -102,16 +110,15 @@
         img.src = url;
         img.alt = `${category || 'stock'} image ${i + 1}`;
         img.className = 'w-full h-full object-cover';
-        // Fallback if an image fails to load
-        img.onerror = () => {
-          img.replaceWith(makeFallback());
-        };
+        img.onerror = () => img.replaceWith(makeFallback());
 
         btn.appendChild(img);
+
         btn.addEventListener('click', () => {
-          // Remove previous selection highlight
-          track.querySelectorAll('button').forEach(b => b.classList.remove('ring-4','ring-green-400'));
-          btn.classList.add('ring-4','ring-green-400');
+          track.querySelectorAll('button').forEach(b => {
+            b.classList.remove('ring-4','ring-green-400','ring-offset-2','ring-offset-black');
+          });
+          btn.classList.add('ring-4','ring-green-400','ring-offset-2','ring-offset-black','transition-all','duration-200');
           selectedOut.textContent = url;
         });
 
@@ -120,18 +127,9 @@
       });
     }
 
-    // Simple visual fallback tile if an image fails
-    function makeFallback() {
-      const holder = document.createElement('div');
-      holder.className = 'w-full h-full bg-gray-800 flex items-center justify-center';
-      holder.innerHTML = '<span class="text-xs text-gray-400">Image failed to load</span>';
-      return holder;
-    }
-
-    // Wire up dropdown
     cat.addEventListener('change', () => buildCarousel(cat.value));
 
-    // Optional: preselect a category for quick testing (comment out if not desired)
+    // Uncomment below to auto-load a category for quick preview
     // cat.value = 'music';
     // buildCarousel(cat.value);
   </script>
