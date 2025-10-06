@@ -3,140 +3,191 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Image Carousel – Spondle</title>
+  <title>Spondle – Image Selector</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: ui-sans-serif, system-ui, sans-serif;
+    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; }
+    .no-scrollbar::-webkit-scrollbar{display:none;}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+    .img-wrapper{
+      border-radius:0.5rem;
+      overflow:hidden;
+      background-clip:padding-box;
+      border:3px solid transparent;
+      transition:border-color .25s ease;
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+    .img-wrapper.selected{border-color:#22c55e;}
+    .arrow-btn{
+      position:absolute;top:50%;transform:translateY(-50%);
+      background:rgba(0,0,0,.4);color:rgba(255,255,255,.9);
+      font-size:22px;width:40px;height:40px;border:none;border-radius:50%;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:background .2s;
     }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    button:focus-visible {
-      outline: none;
-    }
-    .arrow-btn {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.4);
-      color: rgba(255,255,255,0.9);
-      font-size: 22px;
-      width: 40px;
-      height: 40px;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-    .arrow-btn:hover {
-      background: rgba(0,0,0,0.6);
-    }
+    .arrow-btn:hover{background:rgba(0,0,0,.6);}
+    .tab-btn{flex:1;text-align:center;padding:.5rem 0;border-radius:.5rem;background:#222;}
+    .tab-btn.active{background:#3b82f6;color:#fff;}
   </style>
 </head>
 <body class="p-6">
-  <h1 class="text-3xl font-bold mb-4">Choose a Stock Image</h1>
+  <h1 class="text-3xl font-bold mb-6">Choose Event Image</h1>
 
-  <label class="block mb-2">Category</label>
-  <select id="categorySelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded mb-4">
-    <option value="">Select stock category</option>
-    <option value="music">Music</option>
-    <option value="comedy">Comedy</option>
-    <option value="theatre">Theatre</option>
-    <option value="sports">Sports</option>
-    <option value="festival">Festival</option>
-  </select>
-
-  <div class="relative">
-    <div id="carousel" class="flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth"></div>
-
-    <!-- Arrows inside image -->
-    <button id="leftArrow" class="arrow-btn left-2 hidden">&lt;</button>
-    <button id="rightArrow" class="arrow-btn right-2 hidden">&gt;</button>
+  <!-- Tabs -->
+  <div class="flex gap-2 mb-4">
+    <button id="uploadTab" class="tab-btn active">Upload My Own</button>
+    <button id="stockTab" class="tab-btn">Choose Stock Image</button>
   </div>
 
-  <p class="text-gray-400 mt-3">Swipe/scroll to browse. Tap an image to select it.</p>
-  <p class="mt-4 text-sm">
-    <strong>Selected URL:</strong>
-    <span id="selectedUrl" class="text-green-400 break-all"></span>
-  </p>
+  <!-- Upload Section -->
+  <div id="uploadSection" class="space-y-3">
+    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+    <button id="uploadBtn" class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">Upload Image</button>
+
+    <div id="uploadPreview" class="hidden">
+      <div id="previewWrapper" class="img-wrapper selected w-full h-40 flex items-center justify-center">
+        <img id="previewImg" src="" alt="Preview" class="w-full h-full object-cover">
+      </div>
+      <button id="replaceBtn" class="mt-2 px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-sm">Replace Image</button>
+    </div>
+  </div>
+
+  <!-- Stock Section -->
+  <div id="stockSection" class="hidden">
+    <label class="block mb-2">Category</label>
+    <select id="categorySelect" class="w-full p-2 bg-gray-800 border border-gray-600 rounded mb-4">
+      <option value="">Select stock category</option>
+      <option value="music">Music</option>
+      <option value="comedy">Comedy</option>
+      <option value="theatre">Theatre</option>
+      <option value="sports">Sports</option>
+      <option value="festival">Festival</option>
+    </select>
+
+    <div class="relative">
+      <div id="carousel" class="flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth"></div>
+      <button id="leftArrow" class="arrow-btn left-2 hidden">&lt;</button>
+      <button id="rightArrow" class="arrow-btn right-2 hidden">&gt;</button>
+    </div>
+    <p class="text-gray-400 mt-2 text-sm">Swipe/scroll to browse. Tap an image to select it.</p>
+  </div>
+
+  <p class="mt-4 text-sm"><strong>Selected URL:</strong>
+    <span id="selectedUrl" class="text-green-400 break-all"></span></p>
 
   <script>
-    const categorySelect = document.getElementById('categorySelect');
-    const carousel = document.getElementById('carousel');
-    const selectedUrl = document.getElementById('selectedUrl');
-    const leftArrow = document.getElementById('leftArrow');
-    const rightArrow = document.getElementById('rightArrow');
+    const uploadTab=document.getElementById('uploadTab');
+    const stockTab=document.getElementById('stockTab');
+    const uploadSection=document.getElementById('uploadSection');
+    const stockSection=document.getElementById('stockSection');
+    const imageUpload=document.getElementById('imageUpload');
+    const uploadBtn=document.getElementById('uploadBtn');
+    const uploadPreview=document.getElementById('uploadPreview');
+    const previewImg=document.getElementById('previewImg');
+    const replaceBtn=document.getElementById('replaceBtn');
+    const selectedUrl=document.getElementById('selectedUrl');
 
-    const stockImages = {
-      music: [
+    // Tab switching
+    function setActive(tab){
+      uploadTab.classList.remove('active');
+      stockTab.classList.remove('active');
+      uploadSection.classList.add('hidden');
+      stockSection.classList.add('hidden');
+      if(tab==='upload'){
+        uploadTab.classList.add('active');
+        uploadSection.classList.remove('hidden');
+      }else{
+        stockTab.classList.add('active');
+        stockSection.classList.remove('hidden');
+      }
+    }
+    uploadTab.addEventListener('click',()=>setActive('upload'));
+    stockTab.addEventListener('click',()=>setActive('stock'));
+
+    // Upload logic
+    uploadBtn.addEventListener('click',()=>imageUpload.click());
+    replaceBtn.addEventListener('click',()=>imageUpload.click());
+    imageUpload.addEventListener('change',e=>{
+      const file=e.target.files[0];
+      if(!file)return;
+      const reader=new FileReader();
+      reader.onload=()=>{
+        previewImg.src=reader.result;
+        uploadPreview.classList.remove('hidden');
+        selectedUrl.textContent=reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Stock logic
+    const categorySelect=document.getElementById('categorySelect');
+    const carousel=document.getElementById('carousel');
+    const leftArrow=document.getElementById('leftArrow');
+    const rightArrow=document.getElementById('rightArrow');
+
+    const stockImages={
+      music:[
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1518364538800-6bae3c1f3a36?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80"
       ],
-      comedy: [
+      comedy:[
         "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1525182010674-70a2d87b3d21?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1525181820845-73275b6f8d4d?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1200&q=80"
       ],
-      theatre: [
+      theatre:[
         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1496307653780-42ee777d4833?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80"
       ],
-      sports: [
+      sports:[
         "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1200&q=80"
       ],
-      festival: [
+      festival:[
         "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1492684223066-81342ee5ff33?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80"
       ]
     };
 
-    categorySelect.addEventListener('change', () => {
-      const category = categorySelect.value;
-      carousel.innerHTML = '';
-      selectedUrl.textContent = '';
-      if (!category) {
-        leftArrow.classList.add('hidden');
-        rightArrow.classList.add('hidden');
-        return;
-      }
-
-      stockImages[category].forEach(url => {
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = 'h-40 w-full object-cover rounded-lg snap-center flex-shrink-0 border-4 border-transparent cursor-pointer transition-all duration-200';
-        img.addEventListener('click', () => {
-          carousel.querySelectorAll('img').forEach(i => i.classList.remove('border-green-400'));
-          img.classList.add('border-green-400');
-          selectedUrl.textContent = url;
-        });
-        carousel.appendChild(img);
-      });
-
+    let slides=[];
+    let currentIndex=0;
+    function updateArrows(){
       leftArrow.classList.remove('hidden');
       rightArrow.classList.remove('hidden');
+      leftArrow.disabled=currentIndex<=0;
+      rightArrow.disabled=currentIndex>=slides.length-1;
+    }
+    function scrollToIndex(i){
+      if(!slides[i])return;
+      currentIndex=Math.max(0,Math.min(i,slides.length-1));
+      const left=slides[currentIndex].offsetLeft;
+      carousel.scrollTo({left,behavior:'smooth'});
+      updateArrows();
+    }
+
+    categorySelect.addEventListener('change',()=>{
+      const cat=categorySelect.value;
+      carousel.innerHTML='';
+      selectedUrl.textContent='';
+      if(!cat){leftArrow.classList.add('hidden');rightArrow.classList.add('hidden');return;}
+      stockImages[cat].forEach(url=>{
+        const wrapper=document.createElement('div');
+        wrapper.className='img-wrapper w-full h-40 shrink-0 snap-center';
+        const img=document.createElement('img');
+        img.src=url;
+        img.className='w-full h-full object-cover cursor-pointer';
+        img.addEventListener('click',()=>{
+          carousel.querySelectorAll('.img-wrapper').forEach(w=>w.classList.remove('selected'));
+          wrapper.classList.add('selected');
+          selectedUrl.textContent=url;
+        });
+        wrapper.appendChild(img);
+        carousel.appendChild(wrapper);
+      });
+      slides=Array.from(carousel.children);
+      updateArrows();
     });
 
-    leftArrow.addEventListener('click', () => {
-      carousel.scrollBy({ left: -carousel.clientWidth, behavior: 'smooth' });
-    });
-    rightArrow.addEventListener('click', () => {
-      carousel.scrollBy({ left: carousel.clientWidth, behavior: 'smooth' });
-    });
+    leftArrow.addEventListener('click',()=>scrollToIndex(currentIndex-1));
+    rightArrow.addEventListener('click',()=>scrollToIndex(currentIndex+1));
   </script>
 </body>
 </html>
