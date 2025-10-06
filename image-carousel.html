@@ -6,19 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Hide scrollbars while preserving scrollability */
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-    /* Ensure keyboard focus doesn’t add an outline */
     button:focus-visible { outline: none; }
+
+    /* Force full ring highlight */
+    .selected-img {
+      box-shadow: 0 0 0 4px #22c55e; /* Tailwind green-500 equivalent */
+      border-radius: 0.5rem; /* match rounded-lg */
+      transition: box-shadow 0.2s ease;
+    }
   </style>
 </head>
 <body class="bg-black text-white min-h-screen">
   <main class="max-w-2xl mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-4">Choose a Stock Image</h1>
 
-    <!-- Category filter (temporary for design/testing) -->
     <label for="stockCategory" class="block mb-2 text-sm text-gray-300">Category</label>
     <select id="stockCategory" class="w-full p-2 bg-gray-800 border border-gray-600 rounded mb-4">
       <option value="">Select stock category</option>
@@ -29,18 +32,13 @@
       <option value="festival">Festival</option>
     </select>
 
-    <!-- Carousel -->
     <section aria-label="Stock images carousel">
-      <div
-        id="carouselTrack"
-        class="flex no-scrollbar overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1 pb-2"
-      >
+      <div id="carouselTrack" class="flex no-scrollbar overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-1 px-1 pb-2">
         <!-- Slides injected by JS -->
       </div>
       <p class="text-xs text-gray-400 mt-2">Swipe/scroll to browse. Tap an image to select it.</p>
     </section>
 
-    <!-- Selected value (for visual feedback while testing) -->
     <div class="mt-4 text-sm text-gray-300">
       Selected URL:
       <span id="selectedUrl" class="text-green-400 break-all"></span>
@@ -99,11 +97,11 @@
       const urls = stockImages[category] || [];
       urls.forEach((url, i) => {
         const slide = document.createElement('div');
-        slide.className = 'shrink-0 min-w-full snap-start';
+        slide.className = 'shrink-0 min-w-full snap-start px-1';
 
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'block w-full h-40 rounded-lg overflow-hidden focus:outline-none transition-shadow';
+        btn.className = 'block w-full h-40 rounded-lg overflow-hidden focus:outline-none transition-all duration-200 border-2 border-transparent';
         btn.setAttribute('aria-label', `Select ${category || 'image'} ${i + 1}`);
 
         const img = document.createElement('img');
@@ -116,9 +114,9 @@
 
         btn.addEventListener('click', () => {
           track.querySelectorAll('button').forEach(b => {
-            b.classList.remove('ring-4','ring-green-400','ring-offset-2','ring-offset-black');
+            b.classList.remove('selected-img');
           });
-          btn.classList.add('ring-4','ring-green-400','ring-offset-2','ring-offset-black','transition-all','duration-200');
+          btn.classList.add('selected-img');
           selectedOut.textContent = url;
         });
 
@@ -128,10 +126,6 @@
     }
 
     cat.addEventListener('change', () => buildCarousel(cat.value));
-
-    // Uncomment below to auto-load a category for quick preview
-    // cat.value = 'music';
-    // buildCarousel(cat.value);
   </script>
 </body>
 </html>
