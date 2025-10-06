@@ -10,11 +10,14 @@
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     button:focus-visible { outline: none; }
 
-    /* Full ring highlight with even spacing */
-    .selected-img {
-      box-shadow: 0 0 0 3px #22c55e; /* Tailwind green-500 */
-      border-radius: 0.5rem; /* match rounded-lg */
+    /* Proper ring that won't clip on mobile */
+    .img-wrapper {
+      border-radius: 0.5rem;
+      overflow: hidden;
       transition: box-shadow 0.2s ease;
+    }
+    .img-wrapper.selected {
+      box-shadow: 0 0 0 3px #22c55e;
     }
   </style>
 </head>
@@ -99,26 +102,30 @@
         const slide = document.createElement('div');
         slide.className = 'shrink-0 min-w-full snap-start px-1';
 
+        const wrapper = document.createElement('div');
+        wrapper.className = 'img-wrapper';
+
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'block w-full h-40 rounded-lg overflow-hidden focus:outline-none transition-all duration-200 border-2 border-transparent p-0.5 bg-black';
+        btn.className = 'block w-full h-40 focus:outline-none';
         btn.setAttribute('aria-label', `Select ${category || 'image'} ${i + 1}`);
 
         const img = document.createElement('img');
         img.src = url;
         img.alt = `${category || 'stock'} image ${i + 1}`;
-        img.className = 'w-full h-full object-cover rounded-md';
+        img.className = 'w-full h-full object-cover';
         img.onerror = () => img.replaceWith(makeFallback());
 
         btn.appendChild(img);
+        wrapper.appendChild(btn);
 
         btn.addEventListener('click', () => {
-          track.querySelectorAll('button').forEach(b => b.classList.remove('selected-img'));
-          btn.classList.add('selected-img');
+          track.querySelectorAll('.img-wrapper').forEach(w => w.classList.remove('selected'));
+          wrapper.classList.add('selected');
           selectedOut.textContent = url;
         });
 
-        slide.appendChild(btn);
+        slide.appendChild(wrapper);
         track.appendChild(slide);
       });
     }
