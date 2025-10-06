@@ -5,114 +5,196 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Choose Event Image</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body{background:#000;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif;}
+    .tab-btn{flex:1;text-align:center;padding:.5rem 0;border-radius:.5rem;background:#222;}
+    .tab-btn.active{background:#3b82f6;color:#fff;}
+    .arrow-btn{
+      position:absolute;top:50%;transform:translateY(-50%);
+      background:rgba(0,0,0,.4);color:rgba(255,255,255,.9);
+      font-size:22px;width:40px;height:40px;border:none;border-radius:50%;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;
+      transition:background .2s;
+    }
+    .arrow-btn:hover{background:rgba(0,0,0,.6);}
+    .img-wrapper{border-radius:0.5rem;overflow:hidden;border:3px solid transparent;transition:border-color .25s ease;}
+    .img-wrapper.selected{border-color:#22c55e;}
+    .banner{display:none;margin-top:.75rem;border-radius:.5rem;padding:.5rem .75rem;font-size:.9rem;text-align:center;}
+    .banner.ok{background:#16a34a;color:#000;}
+    .banner.err{background:#dc2626;color:#fff;}
+    .banner.info{background:#374151;color:#fff;}
+  </style>
 </head>
-<body class="bg-black text-white flex flex-col items-center p-6">
+<body class="p-6 flex flex-col items-center">
   <h1 class="text-3xl font-bold mb-6">Choose Event Image</h1>
 
-  <div class="flex gap-4 mb-4">
-    <button id="uploadOwnBtn" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Upload My Own</button>
-    <button id="chooseStockBtn" class="bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded">Choose Stock Image</button>
+  <div class="flex gap-2 mb-4 w-full max-w-md">
+    <button id="uploadTab" class="tab-btn active">Upload My Own</button>
+    <button id="stockTab" class="tab-btn">Choose Stock Image</button>
   </div>
 
-  <div id="errorBox" class="hidden bg-red-700 text-white p-3 rounded mb-4 text-center max-w-md">
-    Storage bucket missing. Please create a public bucket named "event-images" in Supabase Storage (one-time setup).
-  </div>
+  <div id="banner" class="banner"></div>
 
-  <div id="uploadSection" class="hidden flex flex-col items-center">
-    <input type="file" id="fileInput" accept="image/*" class="mb-3 text-white" />
-    <button id="uploadBtn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">Upload Image</button>
-  </div>
+  <!-- Upload section -->
+  <section id="uploadSection" class="space-y-3 w-full max-w-md">
+    <input type="file" id="imageUpload" accept="image/*" class="hidden">
+    <button id="uploadBtn" class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600 w-full">Upload Image</button>
 
-  <div id="previewContainer" class="mt-6 w-full max-w-md"></div>
-  <p class="mt-4 text-sm text-gray-300">
-    Selected filename: <span id="fileName" class="text-white"></span><br />
-    Selected URL: <span id="fileUrl" class="text-blue-400 break-all"></span>
+    <div id="uploadPreview" class="hidden">
+      <div id="previewWrapper" class="img-wrapper selected w-full h-48 flex items-center justify-center">
+        <img id="previewImg" src="" alt="Preview" class="w-full h-full object-cover">
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <button id="replaceBtn" class="px-3 py-1 bg-gray-700 rounded hover:bg-gray-600 text-sm">Replace Image</button>
+        <span class="text-sm text-gray-400">File: <span id="uploadedFilename" class="text-green-400"></span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stock image section -->
+  <section id="stockSection" class="hidden w-full max-w-md">
+    <div class="relative w-full h-48 mb-4 overflow-hidden rounded-lg">
+      <div id="carousel" class="flex w-full h-full transition-transform duration-500 ease-in-out"></div>
+      <button id="leftArrow" class="arrow-btn left-2" type="button">&lt;</button>
+      <button id="rightArrow" class="arrow-btn right-2" type="button">&gt;</button>
+    </div>
+    <div id="stockPreview" class="hidden w-full h-48 rounded-lg overflow-hidden mb-2">
+      <img id="stockPreviewImg" src="" alt="Selected preview" class="w-full h-full object-cover" />
+    </div>
+    <button id="selectStockBtn" class="hidden w-full px-4 py-2 bg-green-500 text-black rounded hover:bg-green-400">Select This Image</button>
+  </section>
+
+  <!-- Selected URL output -->
+  <p class="mt-6 text-sm text-gray-300 text-center">
+    <strong>Selected URL:</strong><br>
+    <span id="selectedUrl" class="text-green-400 break-all"></span>
   </p>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
+    const BUCKET = "event-images";
 
-    const errorBox = document.getElementById("errorBox");
-    const uploadSection = document.getElementById("uploadSection");
-    const uploadOwnBtn = document.getElementById("uploadOwnBtn");
-    const chooseStockBtn = document.getElementById("chooseStockBtn");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const fileInput = document.getElementById("fileInput");
-    const fileNameDisplay = document.getElementById("fileName");
-    const fileUrlDisplay = document.getElementById("fileUrl");
-    const previewContainer = document.getElementById("previewContainer");
+    const uploadTab=document.getElementById("uploadTab");
+    const stockTab=document.getElementById("stockTab");
+    const uploadSection=document.getElementById("uploadSection");
+    const stockSection=document.getElementById("stockSection");
+    const banner=document.getElementById("banner");
+    const selectedUrl=document.getElementById("selectedUrl");
 
-    // Check if bucket is accessible (directly)
-    async function checkBucketAccess() {
-      const bucket = supabase.storage.from("event-images");
-      const { data, error } = await bucket.list("", { limit: 1 });
-
-      if (error) {
-        console.error("Error accessing bucket:", error.message);
-        errorBox.classList.remove("hidden");
-        uploadOwnBtn.disabled = true;
-        chooseStockBtn.disabled = true;
-        uploadBtn.disabled = true;
-      } else {
-        console.log("Bucket accessible ✅");
-        errorBox.classList.add("hidden");
-        uploadOwnBtn.disabled = false;
-        chooseStockBtn.disabled = false;
-        uploadBtn.disabled = false;
-      }
+    function showBanner(msg,type="info"){
+      banner.textContent=msg;
+      banner.className=`banner ${type}`;
+      banner.style.display="block";
+      if(type==="ok")setTimeout(()=>banner.style.display="none",2000);
     }
 
-    checkBucketAccess();
+    function switchTab(tab){
+      uploadTab.classList.remove("active");
+      stockTab.classList.remove("active");
+      uploadSection.classList.add("hidden");
+      stockSection.classList.add("hidden");
+      if(tab==="upload"){uploadTab.classList.add("active");uploadSection.classList.remove("hidden");}
+      else{stockTab.classList.add("active");stockSection.classList.remove("hidden");}
+    }
+    uploadTab.addEventListener("click",()=>switchTab("upload"));
+    stockTab.addEventListener("click",()=>switchTab("stock"));
 
-    uploadOwnBtn.addEventListener("click", () => {
-      uploadSection.classList.remove("hidden");
+    // --- Upload logic ---
+    const imageUpload=document.getElementById("imageUpload");
+    const uploadBtn=document.getElementById("uploadBtn");
+    const uploadPreview=document.getElementById("uploadPreview");
+    const previewImg=document.getElementById("previewImg");
+    const replaceBtn=document.getElementById("replaceBtn");
+    const uploadedFilename=document.getElementById("uploadedFilename");
+
+    uploadBtn.addEventListener("click",()=>imageUpload.click());
+    replaceBtn.addEventListener("click",()=>imageUpload.click());
+
+    imageUpload.addEventListener("change",async(e)=>{
+      const file=e.target.files[0];
+      if(!file)return;
+      const reader=new FileReader();
+      reader.onload=()=>{previewImg.src=reader.result;uploadPreview.classList.remove("hidden");};
+      reader.readAsDataURL(file);
+      showBanner("Uploading image…","info");
+
+      const fileName=`${Date.now()}_${file.name}`;
+      const { error }=await supabase.storage.from(BUCKET).upload(fileName,file);
+      if(error){showBanner("Upload failed: "+error.message,"err");return;}
+      const { data:urlData }=supabase.storage.from(BUCKET).getPublicUrl(fileName);
+      uploadedFilename.textContent=file.name;
+      selectedUrl.textContent=urlData.publicUrl;
+      showBanner("Image uploaded successfully.","ok");
     });
 
-    chooseStockBtn.addEventListener("click", () => {
-      alert("Stock image chooser coming soon!");
-    });
+    // --- Stock image carousel ---
+    const carousel=document.getElementById("carousel");
+    const leftArrow=document.getElementById("leftArrow");
+    const rightArrow=document.getElementById("rightArrow");
+    const stockPreview=document.getElementById("stockPreview");
+    const stockPreviewImg=document.getElementById("stockPreviewImg");
+    const selectStockBtn=document.getElementById("selectStockBtn");
 
-    uploadBtn.addEventListener("click", async () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        alert("Please select a file first.");
-        return;
-      }
+    const stockImages=[
+      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
+    ];
 
-      const fileName = `${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from("event-images")
-        .upload(fileName, file);
-
-      if (error) {
-        alert("Upload failed: " + error.message);
-        console.error(error);
-        return;
-      }
-
-      const { data: urlData } = supabase.storage.from("event-images").getPublicUrl(fileName);
-      const imageUrl = urlData.publicUrl;
-
-      fileNameDisplay.textContent = file.name;
-      fileUrlDisplay.textContent = imageUrl;
-
-      previewContainer.innerHTML = `
-        <img src="${imageUrl}" alt="Preview" class="rounded-lg shadow-md w-full h-auto mt-4" />
-        <button id="replaceBtn" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded mt-3">Replace Image</button>
-      `;
-
-      document.getElementById("replaceBtn").addEventListener("click", () => {
-        fileInput.value = "";
-        fileNameDisplay.textContent = "";
-        fileUrlDisplay.textContent = "";
-        previewContainer.innerHTML = "";
+    let currentIndex=0;
+    function renderCarousel(){
+      carousel.innerHTML="";
+      stockImages.forEach((url,i)=>{
+        const div=document.createElement("div");
+        div.className="img-wrapper w-full h-full shrink-0";
+        const img=document.createElement("img");
+        img.src=url;img.className="w-full h-full object-cover cursor-pointer";
+        img.addEventListener("click",()=>{
+          carousel.querySelectorAll(".img-wrapper").forEach(el=>el.classList.remove("selected"));
+          div.classList.add("selected");
+          stockPreviewImg.src=url;
+          stockPreview.classList.remove("hidden");
+          selectStockBtn.classList.remove("hidden");
+          currentIndex=i;
+        });
+        div.appendChild(img);
+        carousel.appendChild(div);
       });
+      updateArrows();
+    }
+
+    function updateArrows(){
+      leftArrow.disabled=currentIndex<=0;
+      rightArrow.disabled=currentIndex>=stockImages.length-1;
+    }
+
+    leftArrow.addEventListener("click",()=>{
+      currentIndex=Math.max(0,currentIndex-1);
+      carousel.scrollTo({left:carousel.clientWidth*currentIndex,behavior:"smooth"});
+      updateArrows();
     });
+    rightArrow.addEventListener("click",()=>{
+      currentIndex=Math.min(stockImages.length-1,currentIndex+1);
+      carousel.scrollTo({left:carousel.clientWidth*currentIndex,behavior:"smooth"});
+      updateArrows();
+    });
+
+    selectStockBtn.addEventListener("click",()=>{
+      const selected=stockPreviewImg.src;
+      if(selected){
+        selectedUrl.textContent=selected;
+        showBanner("Stock image selected.","ok");
+      }
+    });
+
+    renderCarousel();
   </script>
 </body>
 </html>
