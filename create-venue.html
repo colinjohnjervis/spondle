@@ -5,104 +5,7 @@
   <title>Create Venue – Admin Only</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-    const supabase = createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTcwNzE3MDYsImV4cCI6MjAxMjY0NzcwNn0.WOaUzyDNohMtPYKp7xHpE-eW6QznCdUMjvhWquw4WR8'
-    );
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const venueSearch = document.getElementById('venueSearch');
-      const searchResults = document.getElementById('searchResults');
-      const venueForm = document.getElementById('venueForm');
-      const message = document.getElementById('message');
-
-      async function loadTowns() {
-        const { data, error } = await supabase
-          .from('town_city')
-          .select('id, name')
-          .order('name');
-
-        if (!error && data) {
-          const dropdown = document.getElementById('town_city_id');
-          data.forEach((town) => {
-            const opt = document.createElement('option');
-            opt.value = town.id;
-            opt.textContent = town.name;
-            dropdown.appendChild(opt);
-          });
-        }
-      }
-
-      venueSearch.addEventListener('input', async (e) => {
-        const query = e.target.value.trim();
-        searchResults.innerHTML = '';
-        venueForm.classList.add('hidden');
-        message.textContent = '';
-
-        if (query.length < 2) return;
-
-        const { data, error } = await supabase
-          .from('venues')
-          .select('name')
-          .ilike('name', `%${query}%`)
-          .limit(10);
-
-        if (error) {
-          const li = document.createElement('li');
-          li.textContent = `Error: ${error.message}`;
-          li.classList.add('text-red-400');
-          searchResults.appendChild(li);
-          return;
-        }
-
-        if (data?.length) {
-          data.forEach((venue) => {
-            const li = document.createElement('li');
-            li.textContent = venue.name;
-            li.classList.add('text-green-400');
-            searchResults.appendChild(li);
-          });
-        } else {
-          const li = document.createElement('li');
-          li.textContent = 'No match found. You may proceed to add a new venue.';
-          li.classList.add('text-yellow-400');
-          searchResults.appendChild(li);
-          venueForm.classList.remove('hidden');
-        }
-      });
-
-      document.getElementById('venueForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const newVenue = {
-          name: form.name.value.trim(),
-          address: form.address.value.trim(),
-          postcode: form.postcode.value.trim(),
-          phone: form.phone.value.trim(),
-          email: form.email.value.trim(),
-          website: form.website.value.trim(),
-          town_city_id: form.town_city_id.value || null
-        };
-
-        const { error } = await supabase.from('venues').insert([newVenue]);
-
-        if (error) {
-          message.textContent = `❌ Error: ${error.message}`;
-          message.className = 'text-red-400 font-semibold';
-        } else {
-          message.textContent = '✅ Venue successfully created!';
-          message.className = 'text-green-400 font-semibold';
-          venueForm.reset();
-          venueForm.classList.add('hidden');
-        }
-      });
-
-      loadTowns();
-    });
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
 
@@ -145,5 +48,105 @@
     <div id="message" class="mt-4 text-sm font-semibold"></div>
   </div>
 
+  <script>
+    const supabase = supabase.createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTcwNzE3MDYsImV4cCI6MjAxMjY0NzcwNn0.WOaUzyDNohMtPYKp7xHpE-eW6QznCdUMjvhWquw4WR8'
+    );
+
+    const venueSearch = document.getElementById('venueSearch');
+    const searchResults = document.getElementById('searchResults');
+    const venueForm = document.getElementById('venueForm');
+    const message = document.getElementById('message');
+
+    // Load towns for dropdown
+    async function loadTowns() {
+      const { data, error } = await supabase
+        .from('town_city')
+        .select('id, name')
+        .order('name');
+
+      if (data && !error) {
+        const dropdown = document.getElementById('town_city_id');
+        data.forEach((town) => {
+          const opt = document.createElement('option');
+          opt.value = town.id;
+          opt.textContent = town.name;
+          dropdown.appendChild(opt);
+        });
+      }
+    }
+
+    // Search venues
+    venueSearch.addEventListener('input', async (e) => {
+      const query = e.target.value.trim();
+      searchResults.innerHTML = '';
+      venueForm.classList.add('hidden');
+      message.textContent = '';
+
+      if (query.length < 2) return;
+
+      const { data, error } = await supabase
+        .from('venues')
+        .select('name')
+        .ilike('name', `%${query}%`)
+        .limit(10);
+
+      if (error) {
+        const li = document.createElement('li');
+        li.textContent = `Error: ${error.message}`;
+        li.classList.add('text-red-400');
+        searchResults.appendChild(li);
+        return;
+      }
+
+      if (data?.length) {
+        data.forEach((venue) => {
+          const li = document.createElement('li');
+          li.textContent = venue.name;
+          li.classList.add('text-green-400');
+          searchResults.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.textContent = 'No match found. You may proceed to add a new venue.';
+        li.classList.add('text-yellow-400');
+        searchResults.appendChild(li);
+        venueForm.classList.remove('hidden');
+      }
+    });
+
+    // Handle venue form submission
+    document.getElementById('venueForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+
+      const newVenue = {
+        name: form.name.value.trim(),
+        address: form.address.value.trim(),
+        postcode: form.postcode.value.trim(),
+        phone: form.phone.value.trim(),
+        email: form.email.value.trim(),
+        website: form.website.value.trim(),
+        town_city_id: form.town_city_id.value || null
+      };
+
+      const { error } = await supabase.from('venues').insert([newVenue]);
+
+      if (error) {
+        message.textContent = `❌ Error: ${error.message}`;
+        message.className = 'text-red-400 font-semibold';
+      } else {
+        message.textContent = '✅ Venue successfully created!';
+        message.className = 'text-green-400 font-semibold';
+        form.reset();
+        venueForm.classList.add('hidden');
+        searchResults.innerHTML = '';
+        venueSearch.value = '';
+      }
+    });
+
+    loadTowns();
+  </script>
 </body>
 </html>
