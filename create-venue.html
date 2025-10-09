@@ -59,38 +59,46 @@
     const venueForm = document.getElementById('venueForm');
     const message = document.getElementById('message');
 
+    console.log("🟢 Venue admin page loaded");
+
     // Load towns for dropdown
     async function loadTowns() {
-      const { data, error } = await supabase
-        .from('town_city')
-        .select('id, name')
-        .order('name');
-
-      if (data && !error) {
+      const { data, error } = await supabase.from('town_city').select('id, name').order('name');
+      if (data) {
         const dropdown = document.getElementById('town_city_id');
-        data.forEach((town) => {
+        data.forEach(town => {
           const opt = document.createElement('option');
           opt.value = town.id;
           opt.textContent = town.name;
           dropdown.appendChild(opt);
         });
+        console.log("🏙️ Town list loaded");
+      } else {
+        console.error("Failed to load towns:", error);
       }
     }
 
-    // Search venues
+    // Venue search
     venueSearch.addEventListener('input', async (e) => {
       const query = e.target.value.trim();
+      console.log(`🔍 Searching for: "${query}"`);
+
       searchResults.innerHTML = '';
       venueForm.classList.add('hidden');
       message.textContent = '';
 
-      if (query.length < 2) return;
+      if (query.length < 2) {
+        console.log("ℹ️ Search input too short");
+        return;
+      }
 
       const { data, error } = await supabase
         .from('venues')
         .select('name')
         .ilike('name', `%${query}%`)
         .limit(10);
+
+      console.log("📦 Supabase result:", { data, error });
 
       if (error) {
         const li = document.createElement('li');
@@ -100,23 +108,25 @@
         return;
       }
 
-      if (data?.length) {
+      if (data?.length > 0) {
         data.forEach((venue) => {
           const li = document.createElement('li');
           li.textContent = venue.name;
           li.classList.add('text-green-400');
           searchResults.appendChild(li);
         });
+        console.log("✅ Match(es) found");
       } else {
         const li = document.createElement('li');
         li.textContent = 'No match found. You may proceed to add a new venue.';
         li.classList.add('text-yellow-400');
         searchResults.appendChild(li);
         venueForm.classList.remove('hidden');
+        console.log("⚠️ No match. Showing form.");
       }
     });
 
-    // Handle venue form submission
+    // Submit venue
     document.getElementById('venueForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
@@ -136,6 +146,7 @@
       if (error) {
         message.textContent = `❌ Error: ${error.message}`;
         message.className = 'text-red-400 font-semibold';
+        console.error("❌ Insert error:", error.message);
       } else {
         message.textContent = '✅ Venue successfully created!';
         message.className = 'text-green-400 font-semibold';
@@ -143,6 +154,7 @@
         venueForm.classList.add('hidden');
         searchResults.innerHTML = '';
         venueSearch.value = '';
+        console.log("✅ Venue inserted");
       }
     });
 
