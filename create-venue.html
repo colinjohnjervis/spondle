@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Create Venue – Admin Only</title>
+  <title>Create Venue — Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -12,38 +12,37 @@
   <div class="max-w-xl mx-auto">
     <h1 class="text-3xl font-bold mb-4">Create a New Venue</h1>
 
-    <!-- Venue Search -->
-    <div id="search-section" class="mb-6">
+    <div id="search-block" class="mb-6">
       <label class="block mb-2 font-semibold">Search for venue first:</label>
       <input id="venueSearch" type="text" placeholder="Start typing a venue name..."
         class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
       <ul id="searchResults" class="mt-2 space-y-1 text-sm text-gray-300"></ul>
     </div>
 
-    <!-- Venue Form -->
-    <form id="venueForm" class="space-y-4 hidden">
-      <input id="name" name="name" type="text" placeholder="Venue Name" required
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="address" name="address" type="text" placeholder="Address"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="postcode" name="postcode" type="text" placeholder="Postcode"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="phone" name="phone" type="text" placeholder="Phone"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="email" name="email" type="email" placeholder="Email"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="website" name="website" type="text" placeholder="Website"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+    <div id="addVenueBlock" class="hidden">
+      <form id="venueForm" class="space-y-4">
+        <input id="name" name="name" type="text" placeholder="Venue Name" required
+          class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <input id="address" name="address" type="text" placeholder="Address"
+          class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <input id="postcode" name="postcode" type="text" placeholder="Postcode"
+          class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <input id="phone" name="phone" type="text" placeholder="Phone"
+          class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <input id="email" name="email" type="email" placeholder="Email"
+          class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+        <input id="website" name="website" type="text" placeholder="Website"
+          class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
 
-      <!-- Town/City Dropdown -->
-      <select id="town_city_id" name="town_city_id"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
-        <option value="">Select a town/city</option>
-      </select>
+        <select id="town_city_id" name="town_city_id"
+          class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
+          <option value="">Select a town/city</option>
+        </select>
 
-      <button type="submit"
-        class="w-full bg-green-600 hover:bg-green-700 p-2 rounded font-bold">Create Venue</button>
-    </form>
+        <button type="submit"
+          class="w-full bg-green-600 hover:bg-green-700 p-2 rounded font-bold">Create Venue</button>
+      </form>
+    </div>
 
     <div id="message" class="mt-4 text-sm font-semibold"></div>
   </div>
@@ -56,49 +55,60 @@
 
     const venueSearch = document.getElementById('venueSearch');
     const searchResults = document.getElementById('searchResults');
+    const addVenueBlock = document.getElementById('addVenueBlock');
     const venueForm = document.getElementById('venueForm');
     const message = document.getElementById('message');
 
-    console.log("🟢 Venue admin page loaded");
-
-    // Load towns for dropdown
+    // Load towns
     async function loadTowns() {
-      const { data, error } = await supabase.from('town_city').select('id, name').order('name');
+      const { data, error } = await supabase
+        .from('town_city')
+        .select('id, name')
+        .order('name');
+
+      if (error) {
+        console.error("Error loading towns:", error);
+        return;
+      }
       if (data) {
-        const dropdown = document.getElementById('town_city_id');
-        data.forEach(town => {
+        const sel = document.getElementById('town_city_id');
+        data.forEach(t => {
           const opt = document.createElement('option');
-          opt.value = town.id;
-          opt.textContent = town.name;
-          dropdown.appendChild(opt);
+          opt.value = t.id;
+          opt.textContent = t.name;
+          sel.appendChild(opt);
         });
-        console.log("🏙️ Town list loaded");
-      } else {
-        console.error("Failed to load towns:", error);
       }
     }
 
-    // Venue search
-    venueSearch.addEventListener('input', async (e) => {
-      const query = e.target.value.trim();
-      console.log(`🔍 Searching for: "${query}"`);
+    // Debounce utility
+    function debounce(fn, delay = 300) {
+      let timeout;
+      return (...args) => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+      };
+    }
 
+    // Search function
+    async function doSearch(query) {
+      console.log("Search called with:", query);
       searchResults.innerHTML = '';
-      venueForm.classList.add('hidden');
+      addVenueBlock.classList.add('hidden');
       message.textContent = '';
 
       if (query.length < 2) {
-        console.log("ℹ️ Search input too short");
+        console.log("Query too short for search");
         return;
       }
 
       const { data, error } = await supabase
         .from('venues')
-        .select('name')
+        .select('id, name')
         .ilike('name', `%${query}%`)
         .limit(10);
 
-      console.log("📦 Supabase result:", { data, error });
+      console.log("Search results:", data, "error:", error);
 
       if (error) {
         const li = document.createElement('li');
@@ -108,26 +118,32 @@
         return;
       }
 
-      if (data?.length > 0) {
-        data.forEach((venue) => {
+      if (data && data.length > 0) {
+        data.forEach(v => {
           const li = document.createElement('li');
-          li.textContent = venue.name;
+          li.textContent = v.name;
           li.classList.add('text-green-400');
           searchResults.appendChild(li);
         });
-        console.log("✅ Match(es) found");
+        console.log("Matches found, not showing add block");
       } else {
         const li = document.createElement('li');
-        li.textContent = 'No match found. You may proceed to add a new venue.';
+        li.textContent = 'No match found. You can add a new venue below:';
         li.classList.add('text-yellow-400');
         searchResults.appendChild(li);
-        venueForm.classList.remove('hidden');
-        console.log("⚠️ No match. Showing form.");
+        addVenueBlock.classList.remove('hidden');
+        console.log("No matches, showing add block");
       }
-    });
+    }
 
-    // Submit venue
-    document.getElementById('venueForm').addEventListener('submit', async (e) => {
+    const debouncedSearch = debounce((evt) => {
+      doSearch(evt.target.value.trim());
+    }, 300);
+
+    venueSearch.addEventListener('input', debouncedSearch);
+
+    // Submission
+    venueForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
 
@@ -144,20 +160,21 @@
       const { error } = await supabase.from('venues').insert([newVenue]);
 
       if (error) {
-        message.textContent = `❌ Error: ${error.message}`;
-        message.className = 'text-red-400 font-semibold';
-        console.error("❌ Insert error:", error.message);
+        message.textContent = `Error: ${error.message}`;
+        message.className = 'text-red-400';
+        console.error("Insert error:", error);
       } else {
-        message.textContent = '✅ Venue successfully created!';
-        message.className = 'text-green-400 font-semibold';
+        message.textContent = 'Venue created successfully!';
+        message.className = 'text-green-400';
         form.reset();
-        venueForm.classList.add('hidden');
+        addVenueBlock.classList.add('hidden');
         searchResults.innerHTML = '';
         venueSearch.value = '';
-        console.log("✅ Venue inserted");
+        console.log("Venue inserted");
       }
     });
 
+    // Initialize
     loadTowns();
   </script>
 </body>
