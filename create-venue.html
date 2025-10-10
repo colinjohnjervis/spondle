@@ -1,48 +1,64 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Supabase connectivity test (fixed timing)</title>
+  <title>Supabase Venue Test – Full Debug</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
+
 <body class="bg-gray-900 text-white p-6">
-  <h1 class="text-xl font-bold mb-4">Supabase connectivity test</h1>
-  <p id="status" class="text-gray-400">Preparing…</p>
-  <ul id="list" class="mt-3 text-sm text-gray-300 space-y-1"></ul>
+  <h1 class="text-xl font-bold mb-4">Supabase Connectivity Test (Full Debug)</h1>
+  <div id="log" class="text-sm text-gray-300 space-y-1"></div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const status = document.getElementById("status");
-      const list = document.getElementById("list");
+    // Utility: append messages visibly
+    const log = msg => {
+      const p = document.createElement('p');
+      p.textContent = msg;
+      document.getElementById('log').appendChild(p);
+    };
 
-      const supabase = supabase.createClient(
-        "https://jvuunvnbpdfrttusgelz.supabase.co",
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTcwNzE3MDYsImV4cCI6MjAxMjY0NzcwNn0.WOaUzyDNohMtPYKp7xHpE-eW6QznCdUMjvhWquw4WR8"
-      );
+    log('🟢 Step 1: Script loaded');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      log('🟢 Step 2: DOMContentLoaded fired');
 
       try {
-        status.textContent = "🔎 Requesting first 5 venues…";
-        const { data, error } = await supabase.from("venues").select("name").limit(5);
+        log('🟢 Step 3: Initialising Supabase client...');
+        const supabaseClient = supabase.createClient(
+          'https://jvuunvnbpdfrttusgelz.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTcwNzE3MDYsImV4cCI6MjAxMjY0NzcwNn0.WOaUzyDNohMtPYKp7xHpE-eW6QznCdUMjvhWquw4WR8'
+        );
+
+        log('🟢 Step 4: Supabase client created. Running test query...');
+
+        const { data, error } = await supabaseClient
+          .from('venues')
+          .select('id,name')
+          .limit(5);
+
+        log('🟢 Step 5: Query returned.');
 
         if (error) {
-          status.textContent = "❌ Supabase error: " + error.message;
+          log('❌ Supabase error: ' + error.message);
           return;
         }
+
         if (!data || data.length === 0) {
-          status.textContent = "⚠️ No venues returned.";
+          log('⚠️ No data returned from venues table.');
           return;
         }
-        status.textContent = `✅ Connected – showing ${data.length} venue(s):`;
-        data.forEach(v => {
-          const li = document.createElement("li");
-          li.textContent = "• " + v.name;
-          list.appendChild(li);
-        });
+
+        log('✅ Success! Received ' + data.length + ' record(s):');
+        data.forEach(v => log('• ' + v.name));
+
       } catch (err) {
-        status.textContent = "💥 Script crashed: " + err.message;
+        log('💥 Script crashed: ' + err.message);
       }
+
+      log('🟢 Step 6: End of script.');
     });
   </script>
 </body>
