@@ -1,83 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- =========================================
-       META & TITLE
-  ========================================== -->
+  <!-- META -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spondle • Create Venue</title>
 
-  <!-- =========================================
-       STYLES & LIBS (match other pages)
-  ========================================== -->
+  <!-- LIBS (same as other pages) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Global layout (sidebar + sticky header) -->
+  <!-- Sidebar + sticky header loader (your shared layout) -->
   <script type="module" src="./spondle-layout.js"></script>
 
   <style>
-    /* Keep look/feel identical to your dark theme pages */
-    body { background: #0b1220; color: #e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
+    body { background:#0b1220; color:#e5e7eb; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
     .card { background:#101826; border:1px solid #1f2a3b; border-radius:14px; }
-    input, select, textarea {
-      background-color: #121a2a;
-      border: 1px solid #29344a;
-      border-radius: 10px;
-      color: #e5e7eb;
-      padding: 0.6rem 0.8rem;
-      width: 100%;
-      outline: none;
-    }
-    input:focus, select:focus, textarea:focus { border-color:#3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
-    label { font-size: 0.9rem; color:#aab4c5; }
-    .btn {
-      display:inline-flex; align-items:center; justify-content:center;
-      background:#22c55e; color:#081220; font-weight:700;
-      border-radius:10px; padding:0.7rem 1rem;
-    }
+    input, select, textarea { background:#121a2a; border:1px solid #29344a; border-radius:10px; color:#e5e7eb; padding:.6rem .8rem; width:100%; outline:none; }
+    input:focus, select:focus, textarea:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.25); }
+    label { font-size:.9rem; color:#aab4c5; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; background:#22c55e; color:#081220; font-weight:700; border-radius:10px; padding:.7rem 1rem; }
     .btn:hover { filter:brightness(1.05) }
     .hidden { display:none }
   </style>
 </head>
 <body>
-
-  <!-- =========================================
-       MAIN CONTENT CONTAINER (matches other pages)
-       Your layout script will mount the header & sidebar.
-       Place page body inside a centered container.
-  ========================================== -->
   <div id="main-content" class="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 py-6">
-
-    <!-- PAGE HEADER -->
     <div class="mb-6">
       <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Create Venue</h1>
-      <!-- Top connection/status banner (keep like create-event) -->
       <p id="status" class="mt-2 text-sm text-emerald-400">Connecting to Supabase…</p>
     </div>
 
-    <!-- =========================================
-         SEARCH SECTION (mirror event flow)
-    ========================================== -->
+    <!-- SEARCH -->
     <div class="card p-5 mb-6">
       <h2 class="text-lg font-semibold text-white mb-3">Search for venue first</h2>
-
       <label for="venue_search" class="mb-1 block">Venue name</label>
       <input id="venue_search" type="text" placeholder="Start typing a venue name…" autocomplete="off" />
-
       <div id="venue_search_results" class="mt-4 space-y-2 text-sm"></div>
-
-      <!-- Small hint to match UX tone -->
-      <p class="mt-3 text-xs text-slate-400">
-        If nothing matches, the add-venue form will appear below.
-      </p>
+      <p class="mt-3 text-xs text-slate-400">If nothing matches, the add-venue form will appear below.</p>
     </div>
 
-    <!-- =========================================
-         ADD VENUE FORM (hidden until no matches)
-         Fields match what you're used to.
-    ========================================== -->
+    <!-- ADD VENUE FORM (revealed when no matches) -->
     <div id="add_venue_block" class="card p-5 mb-10 hidden">
       <h2 class="text-lg font-semibold text-white mb-4">Add new venue</h2>
 
@@ -128,27 +91,19 @@
         </div>
       </form>
 
-      <!-- Inline messages (success / error) -->
       <div id="form_message" class="mt-3 text-sm"></div>
     </div>
+  </div>
 
-  </div><!-- /#main-content -->
-
-  <!-- =========================================
-       SCRIPT: SUPABASE + PAGE LOGIC
-  ========================================== -->
   <script>
     // =========================================
-    // SECTION 1: SUPABASE INITIALISATION
+    // SECTION 1: SUPABASE INIT — paste key here
     // =========================================
     const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-
-    // 👉👉👉 PASTE YOUR NEW PUBLISHABLE KEY BETWEEN THE QUOTES 👇
-    const supabaseKey = 'sb_publishable_3MgTmkpcR73OVvablohiog_06I0EQsn';
-    // 👆👆👆 Do not add spaces/line-breaks inside the string.
-
+    const supabaseKey = 'sb_publishable_3MgTmkpcR73OVvablohiog_06I0EQsn'; // <-- replace with your sb_publishable_...
     const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+    // Grabs
     const statusEl = document.getElementById('status');
     const resultsBox = document.getElementById('venue_search_results');
     const searchInput = document.getElementById('venue_search');
@@ -157,45 +112,36 @@
     const msg = document.getElementById('form_message');
 
     // =========================================
-    // SECTION 2: CONNECTION TEST (top banner)
+    // SECTION 2: CONNECTION CHECK
     // =========================================
-    (async function testConnection() {
+    (async () => {
       try {
-        const { data, error } = await supabase.from('venues').select('id').limit(1);
+        const { error } = await supabase.from('venues').select('id').limit(1);
         if (error) throw error;
         statusEl.textContent = '✅ Connected to Supabase successfully';
-        statusEl.classList.remove('text-rose-400');
-        statusEl.classList.add('text-emerald-400');
+        statusEl.classList.remove('text-rose-400'); statusEl.classList.add('text-emerald-400');
       } catch (err) {
         statusEl.textContent = '❌ Supabase connection error: ' + err.message;
-        statusEl.classList.remove('text-emerald-400');
-        statusEl.classList.add('text-rose-400');
+        statusEl.classList.remove('text-emerald-400'); statusEl.classList.add('text-rose-400');
       }
     })();
 
     // =========================================
-    // SECTION 3: SEARCH (mirror event flow)
-    // - Type ≥ 2 chars → search by venue_name
-    // - If matches → list them (and keep form hidden)
-    // - If none → reveal the add venue form
+    // SECTION 3: SEARCH
     // =========================================
-    function debounce(fn, delay = 250) {
-      let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
-    }
-
+    const debounce = (fn, d=250) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), d); } };
     const runSearch = debounce(async () => {
-      const query = (searchInput.value || '').trim();
+      const q = (searchInput.value || '').trim();
       resultsBox.innerHTML = '';
       addBlock.classList.add('hidden');
       msg.textContent = '';
 
-      if (query.length < 2) return;
+      if (q.length < 2) return;
 
-      // Use ilike on venue_name to match your schema & event flow
       const { data, error } = await supabase
         .from('venues')
         .select('id, venue_name')
-        .ilike('venue_name', `%${query}%`)
+        .ilike('venue_name', `%${q}%`)
         .limit(10);
 
       if (error) {
@@ -203,67 +149,55 @@
         return;
       }
 
-      if (data && data.length > 0) {
-        const list = document.createElement('ul');
-        list.className = 'space-y-1';
-        data.forEach(v => {
-          const li = document.createElement('li');
-          li.className = 'text-slate-300';
-          li.textContent = v.venue_name;
-          list.appendChild(li);
-        });
-        resultsBox.innerHTML = `<p class="text-amber-300 mb-2">${data.length} matching venue(s) found – please check before adding:</p>`;
-        resultsBox.appendChild(list);
+      if (data && data.length) {
+        const items = data.map(v => `<li class="text-slate-300">${v.venue_name}</li>`).join('');
+        resultsBox.innerHTML = `<p class="text-amber-300 mb-2">${data.length} matching venue(s) found – please check before adding:</p><ul class="space-y-1">${items}</ul>`;
       } else {
         resultsBox.innerHTML = `<p class="text-emerald-400">No existing venue found — you can add it below.</p>`;
         addBlock.classList.remove('hidden');
-        document.getElementById('venue_name').value = query;
+        document.getElementById('venue_name').value = q;
       }
     }, 300);
-
     searchInput.addEventListener('input', runSearch);
 
     // =========================================
-    // SECTION 4: SUBMIT NEW VENUE
-    // Matches the columns you're used to:
-    //   venue_name, address, town_city, county, postcode, email, phone, website
+    // SECTION 4: SUBMIT (correct column names)
+    // NOTE: Supabase columns are:
+    // - venue_name
+    // - street_name   (NOT "address")
+    // - town_city
+    // - county
+    // - postcode
+    // - email
+    // - telephone     (NOT "phone")
+    // - website
     // =========================================
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      msg.textContent = '';
-      msg.className = 'mt-3 text-sm';
+      msg.textContent = ''; msg.className = 'mt-3 text-sm';
 
       const payload = {
         venue_name: (document.getElementById('venue_name').value || '').trim(),
-        address:    (document.getElementById('address').value || '').trim(),
-        town_city:  (document.getElementById('town_city').value || '').trim(),
-        county:     (document.getElementById('county').value || '').trim(),
-        postcode:   (document.getElementById('postcode').value || '').trim(),
-        email:      (document.getElementById('email').value || '').trim(),
-        phone:      (document.getElementById('phone').value || '').trim(),
-        website:    (document.getElementById('website').value || '').trim()
+        street_name: (document.getElementById('address').value || '').trim(),   // <-- fixed
+        town_city: (document.getElementById('town_city').value || '').trim(),
+        county: (document.getElementById('county').value || '').trim(),
+        postcode: (document.getElementById('postcode').value || '').trim(),
+        email: (document.getElementById('email').value || '').trim(),
+        telephone: (document.getElementById('phone').value || '').trim(),       // <-- fixed
+        website: (document.getElementById('website').value || '').trim()
       };
 
       if (!payload.venue_name) {
-        msg.textContent = 'Please enter a venue name.';
-        msg.classList.add('text-amber-300');
-        return;
+        msg.textContent = 'Please enter a venue name.'; msg.classList.add('text-amber-300'); return;
       }
 
       const { error } = await supabase.from('venues').insert([payload]);
 
       if (error) {
-        msg.textContent = '❌ ' + error.message;
-        msg.classList.add('text-rose-400');
+        msg.textContent = '❌ ' + error.message; msg.classList.add('text-rose-400');
       } else {
-        msg.textContent = '✅ Venue created successfully.';
-        msg.classList.add('text-emerald-400');
-
-        // Reset UX to match event flow
-        form.reset();
-        addBlock.classList.add('hidden');
-        searchInput.value = '';
-        resultsBox.innerHTML = '';
+        msg.textContent = '✅ Venue created successfully.'; msg.classList.add('text-emerald-400');
+        form.reset(); addBlock.classList.add('hidden'); searchInput.value = ''; resultsBox.innerHTML = '';
       }
     });
   </script>
