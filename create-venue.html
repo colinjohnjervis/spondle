@@ -3,26 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Create Venue – Admin</title>
+  <title>Create a New Venue – Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen p-6">
 
   <div class="max-w-xl mx-auto">
-    <h1 class="text-3xl font-bold mb-4">Create a New Venue</h1>
+    <h1 class="text-3xl font-bold mb-6">Create a New Venue</h1>
 
+    <!-- Status messages -->
     <p id="status" class="text-xs text-gray-400 mb-4">Script loading…</p>
 
-    <!-- Search -->
-    <label class="block mb-2 font-semibold">Search for venue first:</label>
-    <input id="venueSearchInput" type="text" placeholder="Start typing a venue name..."
+    <!-- Venue Search -->
+    <label for="venue_search" class="block mb-2 font-semibold">Search for venue first:</label>
+    <input id="venue_search" type="text" placeholder="Start typing a venue name..."
       class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-    <div id="venueSearchResults" class="mt-2 space-y-1 text-sm text-gray-300"></div>
+    <div id="venue_search_results" class="mt-2 space-y-1 text-sm text-gray-300"></div>
 
-    <!-- Venue Form -->
-    <form id="venueForm" class="space-y-4 hidden mt-6">
-      <input id="venueName" type="text" placeholder="Venue Name" required
+    <!-- Add New Venue Form -->
+    <form id="add_venue_form" class="space-y-4 mt-6 hidden">
+      <input id="venue_name" type="text" placeholder="Venue Name" required
         class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
       <input id="address" type="text" placeholder="Address"
         class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
@@ -35,7 +36,8 @@
       <input id="website" type="text" placeholder="Website"
         class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
 
-      <select id="town_city_id" class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
+      <select id="town_city_id"
+        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
         <option value="">Select a town/city</option>
       </select>
 
@@ -57,9 +59,9 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTcwNzE3MDYsImV4cCI6MjAxMjY0NzcwNn0.WOaUzyDNohMtPYKp7xHpE-eW6QznCdUMjvhWquw4WR8'
     );
 
-    const input = document.getElementById('venueSearchInput');
-    const resultsBox = document.getElementById('venueSearchResults');
-    const form = document.getElementById('venueForm');
+    const input = document.getElementById('venue_search');
+    const resultsBox = document.getElementById('venue_search_results');
+    const form = document.getElementById('add_venue_form');
     const msg = document.getElementById('message');
 
     input.addEventListener('input', async () => {
@@ -67,41 +69,50 @@
       resultsBox.innerHTML = '';
       form.classList.add('hidden');
       msg.textContent = '';
-      status.textContent = '🔎 Searching…';
+      status.textContent = '🔎 Searching...';
 
       if (query.length < 2) {
         status.textContent = '✋ Type at least 2 characters';
         return;
       }
 
-      const { data, error } = await supabase
-        .from('venues')
-        .select('name')
-        .ilike('name', `%${query}%`)
-        .limit(10);
+      try {
+        const { data, error } = await supabase
+          .from('venues')
+          .select('id, name')
+          .textSearch('name', query)
+          .limit(3);
 
-      if (error) {
-        status.textContent = '❌ Supabase error: ' + error.message;
-        return;
-      }
+        if (error) {
+          status.textContent = '❌ Supabase error: ' + error.message;
+          return;
+        }
 
-      if (data && data.length > 0) {
-        status.textContent = `✅ Found ${data.length} result(s)`;
-        data.forEach(v => {
-          const div = document.createElement('div');
-          div.textContent = v.name;
-          div.className = 'text-green-400';
-          resultsBox.appendChild(div);
-        });
-      } else {
-        status.textContent = '⚠️ No matches found — showing form';
-        form.classList.remove('hidden');
-        document.getElementById('venueName').value = query;
+        if (data && data.length > 0) {
+          status.textContent = `✅ Found ${data.length} result(s)`;
+          data.forEach(v => {
+            const div = document.createElement('div');
+            div.textContent = v.name;
+            div.className = 'text-green-400';
+            resultsBox.appendChild(div);
+          });
+        } else {
+          status.textContent = '⚠️ No matches found — showing form';
+          form.classList.remove('hidden');
+          document.getElementById('venue_name').value = query;
+        }
+      } catch (err) {
+        status.textContent = '💥 Script crashed: ' + err.message;
       }
     });
 
+    // Load towns for dropdown
     async function loadTowns() {
-      const { data, error } = await supabase.from('town_city').select('id, name').order('name');
+      const { data, error } = await supabase
+        .from('town_city')
+        .select('id, name')
+        .order('name');
+
       const dropdown = document.getElementById('town_city_id');
       if (data) {
         data.forEach(t => {
@@ -116,11 +127,12 @@
       }
     }
 
+    // Submit new venue
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      msg.textContent = 'Submitting…';
+      msg.textContent = 'Submitting...';
       const newVenue = {
-        name: document.getElementById('venueName').value.trim(),
+        name: document.getElementById('venue_name').value.trim(),
         address: document.getElementById('address').value.trim(),
         postcode: document.getElementById('postcode').value.trim(),
         phone: document.getElementById('phone').value.trim(),
@@ -144,4 +156,4 @@
     loadTowns();
   </script>
 </body>
-  </html>
+</html>
