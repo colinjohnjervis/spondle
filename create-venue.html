@@ -1,159 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Create a New Venue – Admin</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Supabase test</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-6">
-
-  <div class="max-w-xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">Create a New Venue</h1>
-
-    <!-- Status messages -->
-    <p id="status" class="text-xs text-gray-400 mb-4">Script loading…</p>
-
-    <!-- Venue Search -->
-    <label for="venue_search" class="block mb-2 font-semibold">Search for venue first:</label>
-    <input id="venue_search" type="text" placeholder="Start typing a venue name..."
-      class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-    <div id="venue_search_results" class="mt-2 space-y-1 text-sm text-gray-300"></div>
-
-    <!-- Add New Venue Form -->
-    <form id="add_venue_form" class="space-y-4 mt-6 hidden">
-      <input id="venue_name" type="text" placeholder="Venue Name" required
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="address" type="text" placeholder="Address"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="postcode" type="text" placeholder="Postcode"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="phone" type="text" placeholder="Phone"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="email" type="email" placeholder="Email"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-      <input id="website" type="text" placeholder="Website"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-
-      <select id="town_city_id"
-        class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white">
-        <option value="">Select a town/city</option>
-      </select>
-
-      <button type="submit"
-        class="w-full bg-green-600 hover:bg-green-700 p-2 rounded font-bold">
-        Create Venue
-      </button>
-    </form>
-
-    <div id="message" class="mt-4 text-sm font-semibold"></div>
-  </div>
+<body class="bg-gray-900 text-white p-6">
+  <h1 class="text-xl font-bold mb-4">Supabase connectivity test</h1>
+  <p id="status" class="text-gray-400">Checking…</p>
+  <ul id="list" class="mt-3 text-sm text-gray-300 space-y-1"></ul>
 
   <script>
-    const status = document.getElementById('status');
-    status.textContent = '✅ Script loaded successfully';
+    const status = document.getElementById("status");
+    const list = document.getElementById("list");
 
     const supabase = supabase.createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTcwNzE3MDYsImV4cCI6MjAxMjY0NzcwNn0.WOaUzyDNohMtPYKp7xHpE-eW6QznCdUMjvhWquw4WR8'
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTcwNzE3MDYsImV4cCI6MjAxMjY0NzcwNn0.WOaUzyDNohMtPYKp7xHpE-eW6QznCdUMjvhWquw4WR8"
     );
 
-    const input = document.getElementById('venue_search');
-    const resultsBox = document.getElementById('venue_search_results');
-    const form = document.getElementById('add_venue_form');
-    const msg = document.getElementById('message');
-
-    input.addEventListener('input', async () => {
-      const query = input.value.trim();
-      resultsBox.innerHTML = '';
-      form.classList.add('hidden');
-      msg.textContent = '';
-      status.textContent = '🔎 Searching...';
-
-      if (query.length < 2) {
-        status.textContent = '✋ Type at least 2 characters';
+    async function runTest() {
+      status.textContent = "🔎 Requesting first 5 venues…";
+      const { data, error } = await supabase.from("venues").select("name").limit(5);
+      if (error) {
+        status.textContent = "❌ Supabase error: " + error.message;
         return;
       }
-
-      try {
-        const { data, error } = await supabase
-          .from('venues')
-          .select('id, name')
-          .textSearch('name', query)
-          .limit(3);
-
-        if (error) {
-          status.textContent = '❌ Supabase error: ' + error.message;
-          return;
-        }
-
-        if (data && data.length > 0) {
-          status.textContent = `✅ Found ${data.length} result(s)`;
-          data.forEach(v => {
-            const div = document.createElement('div');
-            div.textContent = v.name;
-            div.className = 'text-green-400';
-            resultsBox.appendChild(div);
-          });
-        } else {
-          status.textContent = '⚠️ No matches found — showing form';
-          form.classList.remove('hidden');
-          document.getElementById('venue_name').value = query;
-        }
-      } catch (err) {
-        status.textContent = '💥 Script crashed: ' + err.message;
+      if (!data || data.length === 0) {
+        status.textContent = "⚠️ No venues returned.";
+        return;
       }
-    });
-
-    // Load towns for dropdown
-    async function loadTowns() {
-      const { data, error } = await supabase
-        .from('town_city')
-        .select('id, name')
-        .order('name');
-
-      const dropdown = document.getElementById('town_city_id');
-      if (data) {
-        data.forEach(t => {
-          const opt = document.createElement('option');
-          opt.value = t.id;
-          opt.textContent = t.name;
-          dropdown.appendChild(opt);
-        });
-        status.textContent += ' | 🏙️ Towns loaded';
-      } else {
-        status.textContent += ' | ⚠️ Town load error';
-      }
+      status.textContent = `✅ Connected – showing ${data.length} venue(s):`;
+      data.forEach(v => {
+        const li = document.createElement("li");
+        li.textContent = "• " + v.name;
+        list.appendChild(li);
+      });
     }
 
-    // Submit new venue
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      msg.textContent = 'Submitting...';
-      const newVenue = {
-        name: document.getElementById('venue_name').value.trim(),
-        address: document.getElementById('address').value.trim(),
-        postcode: document.getElementById('postcode').value.trim(),
-        phone: document.getElementById('phone').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        website: document.getElementById('website').value.trim(),
-        town_city_id: document.getElementById('town_city_id').value || null
-      };
-
-      const { error } = await supabase.from('venues').insert([newVenue]);
-
-      if (error) {
-        msg.textContent = '❌ ' + error.message;
-      } else {
-        msg.textContent = '✅ Venue created!';
-        input.value = '';
-        resultsBox.innerHTML = '';
-        form.classList.add('hidden');
-      }
-    });
-
-    loadTowns();
+    runTest();
   </script>
 </body>
 </html>
