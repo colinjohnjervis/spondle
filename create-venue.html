@@ -12,7 +12,7 @@
   <div class="max-w-xl mx-auto">
     <h1 class="text-3xl font-bold mb-4">Create a New Venue</h1>
 
-    <p id="status" class="text-xs text-gray-400 mb-4">Loading script...</p>
+    <p id="status" class="text-xs text-gray-400 mb-4">Script loading…</p>
 
     <!-- Search -->
     <label class="block mb-2 font-semibold">Search for venue first:</label>
@@ -39,7 +39,8 @@
         <option value="">Select a town/city</option>
       </select>
 
-      <button type="submit" class="w-full bg-green-600 hover:bg-green-700 p-2 rounded font-bold">
+      <button type="submit"
+        class="w-full bg-green-600 hover:bg-green-700 p-2 rounded font-bold">
         Create Venue
       </button>
     </form>
@@ -73,32 +74,29 @@
         return;
       }
 
-      try {
-        const { data, error } = await supabase
-          .from('venues')
-          .select('name')
-          .textSearch('name', query);
+      const { data, error } = await supabase
+        .from('venues')
+        .select('name')
+        .ilike('name', `%${query}%`)
+        .limit(10);
 
-        if (error) {
-          status.textContent = '❌ Supabase error: ' + error.message;
-          return;
-        }
+      if (error) {
+        status.textContent = '❌ Supabase error: ' + error.message;
+        return;
+      }
 
-        if (data && data.length > 0) {
-          status.textContent = '✅ Found ' + data.length + ' result(s)';
-          data.forEach(v => {
-            const div = document.createElement('div');
-            div.textContent = v.name;
-            div.className = 'text-green-400';
-            resultsBox.appendChild(div);
-          });
-        } else {
-          status.textContent = '⚠️ No matches found — showing form';
-          form.classList.remove('hidden');
-          document.getElementById('venueName').value = query;
-        }
-      } catch (err) {
-        status.textContent = '💥 Script crashed: ' + err.message;
+      if (data && data.length > 0) {
+        status.textContent = `✅ Found ${data.length} result(s)`;
+        data.forEach(v => {
+          const div = document.createElement('div');
+          div.textContent = v.name;
+          div.className = 'text-green-400';
+          resultsBox.appendChild(div);
+        });
+      } else {
+        status.textContent = '⚠️ No matches found — showing form';
+        form.classList.remove('hidden');
+        document.getElementById('venueName').value = query;
       }
     });
 
@@ -146,4 +144,4 @@
     loadTowns();
   </script>
 </body>
-</html>
+  </html>
