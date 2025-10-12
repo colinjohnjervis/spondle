@@ -76,8 +76,8 @@
           <input id="postcode" class="input" />
         </div>
         <div>
-          <label for="email">Email</label>
-          <input id="email" type="email" class="input" required />
+          <label for="email_address">Email</label>
+          <input id="email_address" type="email" class="input" required />
         </div>
         <div>
           <label for="telephone">Telephone</label>
@@ -150,7 +150,7 @@
         <div><b>Name:</b> ${row.venue_name || "-"}</div>
         <div><b>Street:</b> ${row.street_name || "-"}</div>
         <div><b>Postcode:</b> ${row.postcode || "-"}</div>
-        <div><b>Email:</b> ${row.email || "-"}</div>
+        <div><b>Email:</b> ${row.email_address || "-"}</div>
         <div><b>Telephone:</b> ${row.telephone || "-"}</div>
         <div><b>Website:</b> ${row.website || "-"}</div>
       `;
@@ -180,7 +180,7 @@
 
       const { data, error } = await supabase
         .from("venues")
-        .select("id, venue_name, street_name, postcode, email, telephone, website")
+        .select("id, venue_name, street_name, postcode, email_address, telephone, website")
         .ilike("venue_name", `%${q}%`)
         .limit(12);
 
@@ -209,7 +209,7 @@
         street_name: document.getElementById("street_name").value.trim(),
         location_id: document.getElementById("location_id").value.trim(),
         postcode: document.getElementById("postcode").value.trim(),
-        email: document.getElementById("email").value.trim(),
+        email_address: document.getElementById("email_address").value.trim(),
         telephone: document.getElementById("telephone").value.trim(),
         website: document.getElementById("website").value.trim()
       };
