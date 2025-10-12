@@ -10,6 +10,40 @@
   <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
   <link rel="stylesheet" href="./styles.css?v=3">
   <link rel="stylesheet" href="./hearts.css?v=2">
+
+  <style>
+    .confirm-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.75rem;
+      z-index: 20;
+    }
+    .confirm-box {
+      background: #1f2937;
+      border: 1px solid #374151;
+      padding: 1rem 1.25rem;
+      border-radius: 0.75rem;
+      text-align: center;
+      max-width: 240px;
+    }
+    .confirm-box p {
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+    .confirm-btn {
+      font-weight: 600;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+    }
+    .confirm-yes { background: #ef4444; color: white; margin-right: 0.5rem; }
+    .confirm-cancel { background: #374151; color: #d1d5db; }
+    .confirm-yes:hover { filter: brightness(1.1); }
+    .confirm-cancel:hover { background: #4b5563; }
+  </style>
 </head>
 <body>
   <div id="layout-root"></div>
@@ -68,35 +102,73 @@
       return true;
     }
 
+    // Confirm unfavourite overlay
+    function showConfirmation(card, eventId, btn) {
+      if (card.querySelector('.confirm-overlay')) return;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      overlay.innerHTML = `
+        <div class="confirm-box">
+          <p>Remove from favourites?</p>
+          <button class="confirm-btn confirm-yes">Yes</button>
+          <button class="confirm-btn confirm-cancel">Cancel</button>
+        </div>
+      `;
+      card.appendChild(overlay);
+
+      overlay.querySelector('.confirm-yes').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await removeFavourite(eventId, card, btn);
+        overlay.remove();
+      });
+
+      overlay.querySelector('.confirm-cancel').addEventListener('click', (e) => {
+        e.stopPropagation();
+        overlay.remove();
+      });
+    }
+
+    // Remove favourite (confirmed)
+    async function removeFavourite(eventId, card, btn) {
+      if (!user) return;
+
+      await supabase
+        .from('event_favourites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('event_id', eventId);
+
+      favouriteEventIds.delete(eventId);
+      btn.classList.remove('fav-on');
+      card.remove();
+
+      if (favouriteEventIds.size === 0) {
+        eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
+      }
+    }
+
     // Toggle favourite
-    async function toggleFavourite(eventId, btn, e) {
-      e.stopPropagation(); // prevent card click navigation
+    function toggleFavourite(eventId, btn, e) {
+      e.stopPropagation();
+      const card = btn.closest('.event-card');
       if (!user) return;
 
       if (favouriteEventIds.has(eventId)) {
-        await supabase
-          .from('event_favourites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('event_id', eventId);
-
-        favouriteEventIds.delete(eventId);
-        btn.classList.remove('fav-on');
-
-        // Remove card from favourites view
-        btn.closest('.event-card')?.remove();
-
-        if (favouriteEventIds.size === 0) {
-          eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
-        }
+        showConfirmation(card, eventId, btn);
       } else {
-        await supabase
-          .from('event_favourites')
-          .insert([{ user_id: user.id, event_id: eventId }]);
-
-        favouriteEventIds.add(eventId);
-        btn.classList.add('fav-on');
+        addFavourite(eventId, btn);
       }
+    }
+
+    // Add favourite
+    async function addFavourite(eventId, btn) {
+      await supabase
+        .from('event_favourites')
+        .insert([{ user_id: user.id, event_id: eventId }]);
+
+      favouriteEventIds.add(eventId);
+      btn.classList.add('fav-on');
     }
 
     async function loadFavouriteEvents() {
