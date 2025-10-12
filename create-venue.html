@@ -6,22 +6,25 @@
   <title>Create Venue – Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Sidebar + sticky header -->
   <script type="module" src="./spondle-layout.js"></script>
 
   <style>
-    body { background-color: #0a0f1a; color: #e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial; }
-    .panel { background: #0f172a; border: 1px solid #1f2937; border-radius: 12px; padding: 1rem; }
-    .input { width: 100%; background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 0.6rem 0.75rem; color: #f3f4f6; font-size: 0.95rem; }
-    .input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
-    .btn { display: inline-flex; justify-content: center; align-items: center; font-weight: 600; border-radius: 8px; padding: 0.75rem 1rem; }
-    .btn-green { background: #22c55e; color: #00130a; }
-    .btn-green:hover { filter: brightness(1.1); }
-    .btn-ghost { color: #93c5fd; }
-    .btn-ghost:hover { text-decoration: underline; }
-    .result-card { background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 0.75rem; cursor: pointer; }
-    .result-card:hover { background: #0c1526; border-color: #334155; }
-    .hidden { display: none; }
-    label { display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    body { background:#0a0f1a; color:#e5e7eb; font-family:ui-sans-serif, system-ui, -apple-system,"Segoe UI",Roboto,Helvetica,Arial; }
+    .panel { background:#0f172a; border:1px solid #1f2937; border-radius:12px; padding:1rem; }
+    .input { width:100%; background:#111827; border:1px solid #1f2937; border-radius:8px; padding:.6rem .75rem; color:#f3f4f6; font-size:.95rem; }
+    .input:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.25); }
+    .btn { display:inline-flex; justify-content:center; align-items:center; font-weight:600; border-radius:8px; padding:.75rem 1rem; }
+    .btn-green { background:#22c55e; color:#00130a; } .btn-green:hover{filter:brightness(1.1)}
+    .btn-ghost { color:#93c5fd; } .btn-ghost:hover{ text-decoration:underline }
+    .result-card { background:#0b1220; border:1px solid #1f2937; border-radius:10px; padding:.75rem; cursor:pointer; }
+    .result-card:hover { background:#0c1526; border-color:#334155; }
+    .dropdown { position:relative }
+    .menu { position:absolute; z-index:30; top:100%; left:0; right:0; background:#0b1220; border:1px solid #1f2937; border-radius:10px; margin-top:.25rem; max-height:16rem; overflow:auto; }
+    .menu button { width:100%; text-align:left; padding:.55rem .75rem; }
+    .menu button:hover { background:#0c1526; }
+    .hidden{display:none}
+    label{display:block;color:#cbd5e1;font-size:.9rem;margin-bottom:.25rem}
   </style>
 </head>
 
@@ -58,35 +61,53 @@
     <!-- Add new venue -->
     <div id="venueFormSection" class="panel hidden">
       <h2 class="text-xl font-semibold mb-3">Add new venue</h2>
-      <form id="venueForm" class="space-y-4">
+      <form id="venueForm" class="space-y-4" autocomplete="off">
         <div>
           <label for="venue_name">Venue Name</label>
           <input id="venue_name" class="input" required />
         </div>
+
         <div>
           <label for="street_name">Street Address</label>
           <input id="street_name" class="input" />
         </div>
-        <div>
-          <label for="location_id">Town / City (ID)</label>
-          <input id="location_id" class="input" placeholder="Enter location ID (linked to towns/cities)" />
+
+        <!-- Town/City Autocomplete -->
+        <div class="dropdown">
+          <label for="town_city">Town / City</label>
+          <input id="town_city" class="input" placeholder="Start typing…" />
+          <!-- hidden location_id for submission -->
+          <input id="location_id" type="hidden" />
+          <!-- suggestions -->
+          <div id="townMenu" class="menu hidden"></div>
         </div>
+
+        <!-- County (visible read-only, auto-fills after selection) -->
+        <div>
+          <label for="county">County</label>
+          <input id="county" class="input" readonly />
+        </div>
+
         <div>
           <label for="postcode">Postcode</label>
           <input id="postcode" class="input" />
         </div>
+
         <div>
           <label for="email_address">Email</label>
           <input id="email_address" type="email" class="input" required />
         </div>
+
         <div>
           <label for="telephone_number">Telephone</label>
           <input id="telephone_number" class="input" type="tel" />
         </div>
+
         <div>
           <label for="website_address">Website</label>
           <input id="website_address" class="input" placeholder="www.example.com" />
         </div>
+
         <button type="submit" class="btn btn-green w-full mt-2">Create Venue</button>
       </form>
       <div id="formFeedback" class="mt-4 text-sm font-medium"></div>
@@ -100,6 +121,7 @@
       "sb_publishable_3MgTmkpcR73OVvablohiog_06I0EQsn"
     );
 
+    // Els
     const connectionStatus = document.getElementById("connectionStatus");
     const searchInput = document.getElementById("venueSearch");
     const searchResults = document.getElementById("searchResults");
@@ -110,12 +132,20 @@
     const selectedPanel = document.getElementById("selectedVenuePanel");
     const selectedBody = document.getElementById("selectedVenueBody");
     const clearSelectionBtn = document.getElementById("clearSelectionBtn");
+
     const formSection = document.getElementById("venueFormSection");
     const form = document.getElementById("venueForm");
     const formFeedback = document.getElementById("formFeedback");
 
+    // Autocomplete els
+    const townInput = document.getElementById("town_city");
+    const townMenu = document.getElementById("townMenu");
+    const locationIdInput = document.getElementById("location_id");
+    const countyInput = document.getElementById("county");
+
     let selectedVenueId = null;
 
+    // Connection test
     (async () => {
       const { error } = await supabase.from("venues").select("id").limit(1);
       if (error) {
@@ -126,24 +156,23 @@
       }
     })();
 
-    const debounce = (fn, delay = 300) => {
-      let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
-    };
+    // Utils
+    const debounce = (fn, delay=300) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), delay); } };
+    const closeTownMenu = () => townMenu.classList.add("hidden");
 
-    function renderResultCard(row) {
-      const el = document.createElement("button");
-      el.type = "button";
-      el.className = "result-card w-full text-left";
+    // Search venues (like event form)
+    function resultCard(row){
+      const el=document.createElement("button");
+      el.type="button"; el.className="result-card w-full text-left";
       el.innerHTML = `
         <div class="font-medium">${row.venue_name || "(no name)"}</div>
-        <div class="text-sm text-gray-400">${row.street_name || ""} ${row.postcode ? "· " + row.postcode : ""}</div>
-      `;
-      el.addEventListener("click", () => selectVenue(row));
+        <div class="text-sm text-gray-400">${row.street_name || ""} ${row.postcode ? "· "+row.postcode : ""}</div>`;
+      el.addEventListener("click",()=>selectVenue(row));
       return el;
     }
 
-    function selectVenue(row) {
-      selectedVenueId = row.id;
+    function selectVenue(row){
+      selectedVenueId=row.id;
       formSection.classList.add("hidden");
       selectedPanel.classList.remove("hidden");
       selectedBody.innerHTML = `
@@ -152,62 +181,103 @@
         <div><b>Postcode:</b> ${row.postcode || "-"}</div>
         <div><b>Email:</b> ${row.email_address || "-"}</div>
         <div><b>Telephone:</b> ${row.telephone_number || "-"}</div>
-        <div><b>Website:</b> ${row.website_address || "-"}</div>
-      `;
+        <div><b>Website:</b> ${row.website_address || "-"}</div>`;
     }
 
-    clearSelectionBtn.addEventListener("click", () => {
-      selectedVenueId = null;
+    clearSelectionBtn.addEventListener("click",()=>{
+      selectedVenueId=null;
       selectedPanel.classList.add("hidden");
     });
 
-    showCreateBtn.addEventListener("click", () => {
+    showCreateBtn.addEventListener("click",()=>{
       formSection.classList.remove("hidden");
-      formFeedback.textContent = "";
-      const q = searchInput.value.trim();
-      if (q) document.getElementById("venue_name").value = q;
+      formFeedback.textContent="";
+      const q=searchInput.value.trim();
+      if(q) document.getElementById("venue_name").value=q;
     });
-    cantFindBtn.addEventListener("click", () => showCreateBtn.click());
+    cantFindBtn.addEventListener("click",()=>showCreateBtn.click());
 
-    const runSearch = debounce(async () => {
-      const q = searchInput.value.trim();
-      searchResults.innerHTML = "";
+    const runSearch = debounce(async ()=>{
+      const q=searchInput.value.trim();
+      searchResults.innerHTML="";
       createPromptRow.classList.add("hidden");
       cantFindRow.classList.add("hidden");
       formSection.classList.add("hidden");
 
-      if (q.length < 2) return;
+      if(q.length<2) return;
 
       const { data, error } = await supabase
         .from("venues")
         .select("id, venue_name, street_name, postcode, email_address, telephone_number, website_address")
-        .ilike("venue_name", `%${q}%`)
-        .limit(12);
+        .ilike("venue_name", `%${q}%`).limit(12);
 
-      if (error) {
-        searchResults.innerHTML = `<p class="text-red-400 text-sm">Error: ${error.message}</p>`;
-        return;
-      }
+      if(error){ searchResults.innerHTML=`<p class="text-red-400 text-sm">Error: ${error.message}</p>`; return; }
 
-      if (data && data.length) {
-        data.forEach(row => searchResults.appendChild(renderResultCard(row)));
+      if(data && data.length){
+        data.forEach(r=>searchResults.appendChild(resultCard(r)));
         cantFindRow.classList.remove("hidden");
       } else {
-        searchResults.innerHTML = `<p class="text-emerald-400">No results found.</p>`;
+        searchResults.innerHTML=`<p class="text-emerald-400">No results found.</p>`;
         createPromptRow.classList.remove("hidden");
       }
-    }, 300);
-
+    },300);
     searchInput.addEventListener("input", runSearch);
 
-    form.addEventListener("submit", async (e) => {
+    // --- Town/City Autocomplete (location table) ---
+    const searchLocation = debounce(async ()=>{
+      const q = townInput.value.trim();
+      locationIdInput.value = ""; // reset until a selection is made
+      if(q.length<2){ closeTownMenu(); return; }
+
+      const { data, error } = await supabase
+        .from("location")
+        .select("id, town_city, county")
+        .ilike("town_city", `%${q}%`)
+        .order("town_city")
+        .limit(20);
+
+      if(error || !data){ closeTownMenu(); return; }
+
+      // Build menu
+      townMenu.innerHTML = "";
+      data.forEach(row=>{
+        const btn=document.createElement("button");
+        btn.type="button";
+        btn.className="text-sm";
+        btn.textContent = `${row.town_city} — ${row.county}`;
+        btn.addEventListener("click", ()=>{
+          townInput.value = row.town_city;           // show name only
+          countyInput.value = row.county || "";      // show county read-only
+          locationIdInput.value = row.id;            // store id for insert
+          closeTownMenu();
+        });
+        townMenu.appendChild(btn);
+      });
+      townMenu.classList.remove("hidden");
+    }, 250);
+
+    townInput.addEventListener("input", searchLocation);
+    townInput.addEventListener("focus", ()=>{ if(townInput.value.trim().length>=2) searchLocation(); });
+    document.addEventListener("click",(e)=>{ if(!e.target.closest(".dropdown")) closeTownMenu(); });
+
+    // Submit
+    form.addEventListener("submit", async (e)=>{
       e.preventDefault();
-      formFeedback.textContent = "";
+      formFeedback.textContent=""; formFeedback.className="mt-4 text-sm font-medium";
+
+      // Require a valid selection from autocomplete
+      const location_id = locationIdInput.value.trim();
+      if(!location_id){
+        formFeedback.textContent="Please choose a Town/City from the list.";
+        formFeedback.classList.add("text-amber-300");
+        townInput.focus();
+        return;
+      }
 
       const payload = {
         venue_name: document.getElementById("venue_name").value.trim(),
         street_name: document.getElementById("street_name").value.trim(),
-        location_id: document.getElementById("location_id").value.trim(),
+        location_id, // from hidden input
         postcode: document.getElementById("postcode").value.trim(),
         email_address: document.getElementById("email_address").value.trim(),
         telephone_number: document.getElementById("telephone_number").value.trim(),
@@ -216,13 +286,16 @@
 
       const { data, error } = await supabase.from("venues").insert([payload]).select("*").single();
 
-      if (error) {
+      if(error){
         formFeedback.textContent = `❌ ${error.message}`;
         formFeedback.classList.add("text-red-400");
       } else {
         formFeedback.textContent = "✅ Venue created successfully!";
         formFeedback.classList.add("text-green-400");
         form.reset();
+        // also clear hidden/location UI
+        locationIdInput.value=""; countyInput.value="";
+        // show the created venue as selected
         selectVenue(data);
       }
     });
