@@ -80,11 +80,10 @@
     let user = null;
     let favouriteEventIds = new Set();
 
-    // Load current user and favourites
+    // Load user and favourites
     async function loadUserAndFavourites() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       user = currentUser;
-
       if (!user) {
         eventsGrid.innerHTML = '<p class="text-gray-400">Please log in to view your favourites.</p>';
         return false;
@@ -95,17 +94,13 @@
         .select('event_id')
         .eq('user_id', user.id);
 
-      if (!error && data) {
-        favouriteEventIds = new Set(data.map(f => f.event_id));
-      }
-
+      if (!error && data) favouriteEventIds = new Set(data.map(f => f.event_id));
       return true;
     }
 
-    // Confirm unfavourite overlay
+    // Confirmation overlay
     function showConfirmation(card, eventId, btn) {
       if (card.querySelector('.confirm-overlay')) return;
-
       const overlay = document.createElement('div');
       overlay.className = 'confirm-overlay';
       overlay.innerHTML = `
@@ -113,36 +108,33 @@
           <p>Remove from favourites?</p>
           <button class="confirm-btn confirm-yes">Yes</button>
           <button class="confirm-btn confirm-cancel">Cancel</button>
-        </div>
-      `;
+        </div>`;
       card.appendChild(overlay);
 
       overlay.querySelector('.confirm-yes').addEventListener('click', async (e) => {
         e.stopPropagation();
+        e.preventDefault();
         await removeFavourite(eventId, card, btn);
         overlay.remove();
       });
 
       overlay.querySelector('.confirm-cancel').addEventListener('click', (e) => {
         e.stopPropagation();
+        e.preventDefault();
         overlay.remove();
       });
     }
 
-    // Remove favourite (confirmed)
+    // Remove favourite
     async function removeFavourite(eventId, card, btn) {
       if (!user) return;
-
-      await supabase
-        .from('event_favourites')
+      await supabase.from('event_favourites')
         .delete()
         .eq('user_id', user.id)
         .eq('event_id', eventId);
-
       favouriteEventIds.delete(eventId);
       btn.classList.remove('fav-on');
       card.remove();
-
       if (favouriteEventIds.size === 0) {
         eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
       }
@@ -151,29 +143,22 @@
     // Toggle favourite
     function toggleFavourite(eventId, btn, e) {
       e.stopPropagation();
+      e.preventDefault(); // stops link navigation
       const card = btn.closest('.event-card');
       if (!user) return;
-
-      if (favouriteEventIds.has(eventId)) {
-        showConfirmation(card, eventId, btn);
-      } else {
-        addFavourite(eventId, btn);
-      }
+      if (favouriteEventIds.has(eventId)) showConfirmation(card, eventId, btn);
+      else addFavourite(eventId, btn);
     }
 
     // Add favourite
     async function addFavourite(eventId, btn) {
-      await supabase
-        .from('event_favourites')
-        .insert([{ user_id: user.id, event_id: eventId }]);
-
+      await supabase.from('event_favourites').insert([{ user_id: user.id, event_id: eventId }]);
       favouriteEventIds.add(eventId);
       btn.classList.add('fav-on');
     }
 
     async function loadFavouriteEvents() {
       if (!user) return;
-
       const { data, error } = await supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
@@ -185,14 +170,12 @@
         eventsError.classList.remove('hidden');
         return;
       }
-
       if (!data || !data.length) {
         eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
         return;
       }
 
       eventsGrid.innerHTML = '';
-
       data.forEach(event => {
         const cardLink = document.createElement('a');
         cardLink.href = `/event-page.html?id=${event.id}`;
@@ -203,10 +186,7 @@
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
         const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         });
 
         const venueName = event.venues?.venue_name || 'Venue TBA';
@@ -225,12 +205,10 @@
             <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
             <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
             <p class="text-sm text-gray-400">${venueDisplay}</p>
-          </div>
-        `;
+          </div>`;
 
         const heartBtn = cardLink.querySelector('.heart-btn');
         heartBtn.addEventListener('click', (e) => toggleFavourite(event.id, heartBtn, e));
-
         eventsGrid.appendChild(cardLink);
       });
     }
