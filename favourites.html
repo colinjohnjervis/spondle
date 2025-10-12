@@ -25,24 +25,28 @@
     .confirm-box {
       background: #1f2937;
       border: 1px solid #374151;
-      padding: 1rem 1.25rem;
+      padding: 1.2rem 1.5rem;
       border-radius: 0.75rem;
       text-align: center;
-      max-width: 240px;
+      max-width: 260px;
     }
     .confirm-box p {
-      margin-bottom: 0.75rem;
-      font-size: 0.95rem;
+      margin-bottom: 0.9rem;
+      font-size: 1rem;
+      color: #f3f4f6;
     }
     .confirm-btn {
       font-weight: 600;
-      padding: 0.4rem 0.8rem;
+      padding: 0.6rem 0;
+      width: 90px;
       border-radius: 0.5rem;
+      background: #4b5563;
+      color: #ffffff;
+      border: none;
     }
-    .confirm-yes { background: #ef4444; color: white; margin-right: 0.5rem; }
-    .confirm-cancel { background: #374151; color: #d1d5db; }
-    .confirm-yes:hover { filter: brightness(1.1); }
-    .confirm-cancel:hover { background: #4b5563; }
+    .confirm-btn + .confirm-btn {
+      margin-left: 0.75rem;
+    }
   </style>
 </head>
 <body>
@@ -76,11 +80,9 @@
 
     const eventsGrid = document.getElementById('eventsGrid');
     const eventsError = document.getElementById('eventsError');
-
     let user = null;
     let favouriteEventIds = new Set();
 
-    // Load user and favourites
     async function loadUserAndFavourites() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       user = currentUser;
@@ -88,17 +90,14 @@
         eventsGrid.innerHTML = '<p class="text-gray-400">Please log in to view your favourites.</p>';
         return false;
       }
-
       const { data, error } = await supabase
         .from('event_favourites')
         .select('event_id')
         .eq('user_id', user.id);
-
       if (!error && data) favouriteEventIds = new Set(data.map(f => f.event_id));
       return true;
     }
 
-    // Confirmation overlay
     function showConfirmation(card, eventId, btn) {
       if (card.querySelector('.confirm-overlay')) return;
       const overlay = document.createElement('div');
@@ -106,8 +105,10 @@
       overlay.innerHTML = `
         <div class="confirm-box">
           <p>Remove from favourites?</p>
-          <button class="confirm-btn confirm-yes">Yes</button>
-          <button class="confirm-btn confirm-cancel">Cancel</button>
+          <div class="flex justify-center">
+            <button class="confirm-btn confirm-yes">Yes</button>
+            <button class="confirm-btn confirm-no">No</button>
+          </div>
         </div>`;
       card.appendChild(overlay);
 
@@ -118,14 +119,13 @@
         overlay.remove();
       });
 
-      overlay.querySelector('.confirm-cancel').addEventListener('click', (e) => {
+      overlay.querySelector('.confirm-no').addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
         overlay.remove();
       });
     }
 
-    // Remove favourite
     async function removeFavourite(eventId, card, btn) {
       if (!user) return;
       await supabase.from('event_favourites')
@@ -140,17 +140,15 @@
       }
     }
 
-    // Toggle favourite
     function toggleFavourite(eventId, btn, e) {
       e.stopPropagation();
-      e.preventDefault(); // stops link navigation
+      e.preventDefault();
       const card = btn.closest('.event-card');
       if (!user) return;
       if (favouriteEventIds.has(eventId)) showConfirmation(card, eventId, btn);
       else addFavourite(eventId, btn);
     }
 
-    // Add favourite
     async function addFavourite(eventId, btn) {
       await supabase.from('event_favourites').insert([{ user_id: user.id, event_id: eventId }]);
       favouriteEventIds.add(eventId);
