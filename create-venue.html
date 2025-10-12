@@ -3,229 +3,196 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create a New Venue – Spondle</title>
+  <title>Create Venue – Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Sidebar + sticky header (same as other pages) -->
   <script type="module" src="./spondle-layout.js"></script>
 
   <style>
-    body { background-color:#0a0f1a; color:#e5e7eb; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-    .panel { background:#0f172a; border:1px solid #1f2937; border-radius:12px; padding:1.25rem; }
-    label { display:block; font-size:.9rem; color:#cbd5e1; margin-bottom:.25rem; }
-    input { width:100%; background:#111827; border:1px solid #1f2937; border-radius:.5rem; color:#f3f4f6; padding:.65rem .8rem; }
-    input:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.25); }
-    .btn { display:inline-flex; align-items:center; justify-content:center; border-radius:.5rem; padding:.75rem 1rem; font-weight:600; }
-    .btn-green { background:#22c55e; color:#00130a; }
-    .btn-green:hover { filter:brightness(1.08); }
-    .btn-ghost { background:transparent; color:#93c5fd; }
-    .btn-ghost:hover { text-decoration:underline; }
-    .result-card { background:#0b1220; border:1px solid #1f2937; border-radius:.75rem; padding:.75rem .9rem; cursor:pointer; }
-    .result-card:hover { border-color:#334155; background:#0c1526; }
-    .muted { color:#9aa7bd; }
-    .hidden { display:none; }
+    body { background-color: #0a0f1a; color: #e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial; }
+    .panel { background: #0f172a; border: 1px solid #1f2937; border-radius: 12px; padding: 1rem; }
+    .input { width: 100%; background: #111827; border: 1px solid #1f2937; border-radius: 8px; padding: 0.6rem 0.75rem; color: #f3f4f6; font-size: 0.95rem; }
+    .input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+    .btn { display: inline-flex; justify-content: center; align-items: center; font-weight: 600; border-radius: 8px; padding: 0.75rem 1rem; }
+    .btn-green { background: #22c55e; color: #00130a; }
+    .btn-green:hover { filter: brightness(1.1); }
+    .btn-ghost { color: #93c5fd; }
+    .btn-ghost:hover { text-decoration: underline; }
+    .result-card { background: #0b1220; border: 1px solid #1f2937; border-radius: 10px; padding: 0.75rem; cursor: pointer; }
+    .result-card:hover { background: #0c1526; border-color: #334155; }
+    .hidden { display: none; }
+    label { display: block; color: #cbd5e1; font-size: 0.9rem; margin-bottom: 0.25rem; }
   </style>
 </head>
 
-<body class="min-h-screen">
+<body>
   <div id="main-content" class="max-w-3xl mx-auto px-4 py-6">
-    <!-- Header -->
-    <h1 class="text-3xl font-bold mb-3">Create a New Venue</h1>
-    <!-- Connection status -->
-    <p id="connectionStatus" class="mb-6 text-green-400">Connecting to Supabase...</p>
+    <h1 class="text-3xl font-bold mb-4">Create a New Venue</h1>
+    <p id="connectionStatus" class="mb-5 text-green-400">Connecting to Supabase...</p>
 
-    <!-- SEARCH -->
+    <!-- Search -->
     <div class="panel mb-6">
       <label for="venueSearch" class="font-semibold">Search for venue first</label>
-      <input id="venueSearch" type="text" placeholder="Type a venue name..." autocomplete="off" />
+      <input id="venueSearch" type="text" class="input" placeholder="Type a venue name..." autocomplete="off" />
       <div id="searchResults" class="mt-3 space-y-2 text-sm"></div>
 
-      <!-- Helper row -->
-      <div id="createPromptRow" class="mt-4 flex items-center justify-between hidden">
-        <p class="text-emerald-400">No results — you can create a new venue.</p>
-        <button id="showCreateBtn" type="button" class="btn btn-green">Create a new venue</button>
+      <div id="createPromptRow" class="mt-4 hidden">
+        <p class="text-emerald-400 mb-2">No results found — you can create a new venue.</p>
+        <button id="showCreateBtn" class="btn btn-green w-full">Create a new venue</button>
       </div>
 
-      <!-- Also show “can’t find it?” when there ARE results -->
-      <div id="cantFindRow" class="mt-3 hidden">
-        <button id="cantFindBtn" type="button" class="btn btn-ghost text-sm">Can’t find it? Create a new venue</button>
+      <div id="cantFindRow" class="mt-3 hidden text-right">
+        <button id="cantFindBtn" class="btn btn-ghost text-sm">Can’t find it? Create a new venue</button>
       </div>
     </div>
 
-    <!-- SELECTED VENUE (when user taps a result) -->
+    <!-- Selected venue -->
     <div id="selectedVenuePanel" class="panel mb-6 hidden">
-      <div class="flex items-start justify-between">
+      <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold">Selected venue</h2>
-        <button id="clearSelectionBtn" type="button" class="btn btn-ghost text-sm">Clear selection</button>
+        <button id="clearSelectionBtn" class="btn btn-ghost text-sm">Clear</button>
       </div>
       <div id="selectedVenueBody" class="mt-3 text-sm"></div>
     </div>
 
-    <!-- ADD VENUE FORM (shown only when user clicks “Create a new venue”) -->
+    <!-- Add new venue -->
     <div id="venueFormSection" class="panel hidden">
       <h2 class="text-xl font-semibold mb-3">Add new venue</h2>
       <form id="venueForm" class="space-y-4">
         <div>
           <label for="venue_name">Venue Name</label>
-          <input id="venue_name" type="text" required />
+          <input id="venue_name" class="input" required />
         </div>
         <div>
           <label for="street_name">Street Address</label>
-          <input id="street_name" type="text" />
+          <input id="street_name" class="input" />
         </div>
         <div>
-          <label for="town_city">Town / City</label>
-          <input id="town_city" type="text" />
+          <label for="location_id">Town / City (ID)</label>
+          <input id="location_id" class="input" placeholder="Enter location ID (linked to towns/cities)" />
         </div>
         <div>
           <label for="postcode">Postcode</label>
-          <input id="postcode" type="text" />
+          <input id="postcode" class="input" />
         </div>
         <div>
           <label for="email">Email</label>
-          <input id="email" type="email" required />
+          <input id="email" type="email" class="input" required />
         </div>
         <div>
           <label for="telephone">Telephone</label>
-          <input id="telephone" type="tel" />
+          <input id="telephone" class="input" type="tel" />
         </div>
         <div>
           <label for="website">Website</label>
-          <input id="website" type="text" placeholder="www.example.com" />
+          <input id="website" class="input" placeholder="www.example.com" />
         </div>
-
         <button type="submit" class="btn btn-green w-full mt-2">Create Venue</button>
       </form>
       <div id="formFeedback" class="mt-4 text-sm font-medium"></div>
     </div>
   </div>
 
-  <!-- Logic -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    // --- Supabase init (publishable key you provided) ---
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "sb_publishable_3MgTmkpcR73OVvablohiog_06I0EQsn"
     );
 
-    // --- Elements ---
     const connectionStatus = document.getElementById("connectionStatus");
-    const searchInput       = document.getElementById("venueSearch");
-    const searchResults     = document.getElementById("searchResults");
-    const createPromptRow   = document.getElementById("createPromptRow");
-    const showCreateBtn     = document.getElementById("showCreateBtn");
-    const cantFindRow       = document.getElementById("cantFindRow");
-    const cantFindBtn       = document.getElementById("cantFindBtn");
-    const selectedPanel     = document.getElementById("selectedVenuePanel");
-    const selectedBody      = document.getElementById("selectedVenueBody");
+    const searchInput = document.getElementById("venueSearch");
+    const searchResults = document.getElementById("searchResults");
+    const createPromptRow = document.getElementById("createPromptRow");
+    const showCreateBtn = document.getElementById("showCreateBtn");
+    const cantFindRow = document.getElementById("cantFindRow");
+    const cantFindBtn = document.getElementById("cantFindBtn");
+    const selectedPanel = document.getElementById("selectedVenuePanel");
+    const selectedBody = document.getElementById("selectedVenueBody");
     const clearSelectionBtn = document.getElementById("clearSelectionBtn");
-    const formSection       = document.getElementById("venueFormSection");
-    const form              = document.getElementById("venueForm");
-    const formFeedback      = document.getElementById("formFeedback");
+    const formSection = document.getElementById("venueFormSection");
+    const form = document.getElementById("venueForm");
+    const formFeedback = document.getElementById("formFeedback");
 
-    let selectedVenueId = null; // mirrors create-event selection behaviour
+    let selectedVenueId = null;
 
-    // --- Connection test (top banner) ---
     (async () => {
-      try {
-        const { error } = await supabase.from("venues").select("id").limit(1);
-        if (error) throw error;
-        connectionStatus.textContent = "✅ Connected to Supabase successfully";
-        connectionStatus.classList.remove("text-red-400");
-        connectionStatus.classList.add("text-green-400");
-      } catch (err) {
+      const { error } = await supabase.from("venues").select("id").limit(1);
+      if (error) {
         connectionStatus.textContent = "❌ Failed to connect to Supabase";
-        connectionStatus.classList.remove("text-green-400");
         connectionStatus.classList.add("text-red-400");
+      } else {
+        connectionStatus.textContent = "✅ Connected to Supabase successfully";
       }
     })();
 
-    // --- Debounce helper ---
-    const debounce = (fn, delay = 250) => {
+    const debounce = (fn, delay = 300) => {
       let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
     };
 
-    // --- Render one search result card (clickable) ---
     function renderResultCard(row) {
       const el = document.createElement("button");
       el.type = "button";
       el.className = "result-card w-full text-left";
-      const town = row.town_city ? `<span class="muted"> · ${row.town_city}</span>` : "";
-      const pc   = row.postcode ? `<span class="muted"> · ${row.postcode}</span>` : "";
-      el.innerHTML = `<div class="font-medium">${row.venue_name || "(no name)"}${town}${pc}</div>`;
+      el.innerHTML = `
+        <div class="font-medium">${row.venue_name || "(no name)"}</div>
+        <div class="text-sm text-gray-400">${row.street_name || ""} ${row.postcode ? "· " + row.postcode : ""}</div>
+      `;
       el.addEventListener("click", () => selectVenue(row));
       return el;
     }
 
-    // --- When a venue is clicked (like create-event) ---
     function selectVenue(row) {
       selectedVenueId = row.id;
-      formSection.classList.add("hidden"); // hide create form
-      createPromptRow.classList.add("hidden");
-      cantFindRow.classList.add("hidden");
-
-      // Show selected panel with details (read-only summary)
+      formSection.classList.add("hidden");
       selectedPanel.classList.remove("hidden");
       selectedBody.innerHTML = `
-        <div class="space-y-1">
-          <div><span class="muted">Name:</span> ${row.venue_name || "-"}</div>
-          <div><span class="muted">Street:</span> ${row.street_name || "-"}</div>
-          <div><span class="muted">Town/City:</span> ${row.town_city || "-"}</div>
-          <div><span class="muted">Postcode:</span> ${row.postcode || "-"}</div>
-          <div><span class="muted">Email:</span> ${row.email || "-"}</div>
-          <div><span class="muted">Telephone:</span> ${row.telephone || "-"}</div>
-          <div><span class="muted">Website:</span> ${row.website || "-"}</div>
-        </div>
+        <div><b>Name:</b> ${row.venue_name || "-"}</div>
+        <div><b>Street:</b> ${row.street_name || "-"}</div>
+        <div><b>Postcode:</b> ${row.postcode || "-"}</div>
+        <div><b>Email:</b> ${row.email || "-"}</div>
+        <div><b>Telephone:</b> ${row.telephone || "-"}</div>
+        <div><b>Website:</b> ${row.website || "-"}</div>
       `;
-      // mimic the event form: keep results visible so you can re-pick if needed
     }
 
-    // --- Clear selection (like changing your mind in event form) ---
     clearSelectionBtn.addEventListener("click", () => {
       selectedVenueId = null;
       selectedPanel.classList.add("hidden");
     });
 
-    // --- Show create form (only when the user clicks) ---
     showCreateBtn.addEventListener("click", () => {
       formSection.classList.remove("hidden");
       formFeedback.textContent = "";
-      // Pre-fill name with current search term (nice touch from event form UX)
       const q = searchInput.value.trim();
       if (q) document.getElementById("venue_name").value = q;
     });
     cantFindBtn.addEventListener("click", () => showCreateBtn.click());
 
-    // --- Search behaviour (identical feel to event form) ---
     const runSearch = debounce(async () => {
       const q = searchInput.value.trim();
       searchResults.innerHTML = "";
       createPromptRow.classList.add("hidden");
       cantFindRow.classList.add("hidden");
-      formSection.classList.add("hidden"); // only show if user clicks
-      formFeedback.textContent = "";
+      formSection.classList.add("hidden");
 
       if (q.length < 2) return;
 
       const { data, error } = await supabase
         .from("venues")
-        .select("id, venue_name, town_city, postcode, street_name, email, telephone, website")
+        .select("id, venue_name, street_name, postcode, email, telephone, website")
         .ilike("venue_name", `%${q}%`)
         .limit(12);
 
       if (error) {
-        searchResults.innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+        searchResults.innerHTML = `<p class="text-red-400 text-sm">Error: ${error.message}</p>`;
         return;
       }
 
       if (data && data.length) {
-        // Show cards + “Can’t find it?” link
         data.forEach(row => searchResults.appendChild(renderResultCard(row)));
         cantFindRow.classList.remove("hidden");
       } else {
-        // Show “No results” prompt + button
         searchResults.innerHTML = `<p class="text-emerald-400">No results found.</p>`;
         createPromptRow.classList.remove("hidden");
       }
@@ -233,27 +200,19 @@
 
     searchInput.addEventListener("input", runSearch);
 
-    // --- Create venue submission ---
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       formFeedback.textContent = "";
-      formFeedback.className = "mt-4 text-sm font-medium";
 
       const payload = {
         venue_name: document.getElementById("venue_name").value.trim(),
         street_name: document.getElementById("street_name").value.trim(),
-        town_city: document.getElementById("town_city").value.trim(),
+        location_id: document.getElementById("location_id").value.trim(),
         postcode: document.getElementById("postcode").value.trim(),
         email: document.getElementById("email").value.trim(),
         telephone: document.getElementById("telephone").value.trim(),
         website: document.getElementById("website").value.trim()
       };
-
-      if (!payload.venue_name) {
-        formFeedback.textContent = "Please enter a venue name.";
-        formFeedback.classList.add("text-amber-300");
-        return;
-      }
 
       const { data, error } = await supabase.from("venues").insert([payload]).select("*").single();
 
@@ -261,9 +220,8 @@
         formFeedback.textContent = `❌ ${error.message}`;
         formFeedback.classList.add("text-red-400");
       } else {
-        formFeedback.textContent = "✅ Venue created successfully.";
+        formFeedback.textContent = "✅ Venue created successfully!";
         formFeedback.classList.add("text-green-400");
-        // Reset and show as selected (mirrors choosing an existing venue)
         form.reset();
         selectVenue(data);
       }
