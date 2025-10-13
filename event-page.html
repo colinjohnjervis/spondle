@@ -6,10 +6,10 @@
   <title>Event – Spondle</title>
   <meta name="color-scheme" content="dark" />
 
-  <!-- Open Graph (for WhatsApp, Facebook, etc.) -->
+  <!-- Open Graph (for WhatsApp/Facebook previews) -->
   <meta property="og:title" content="Event – Spondle" />
   <meta property="og:description" content="Discover gigs, shows, and local events on Spondle." />
-  <meta property="og:image" content="https://spondle-uk.vercel.app/file_000000002f686243b31639a2bca68eca.png?v=2" />
+  <meta property="og:image" content="https://spondle-uk.vercel.app/images/file_000000002f686243b31639a2bca68eca.png?v=4" />
   <meta property="og:url" content="https://spondle-uk.vercel.app" />
   <meta property="og:type" content="website" />
 
@@ -17,7 +17,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Event – Spondle" />
   <meta name="twitter:description" content="Discover gigs, shows, and local events on Spondle." />
-  <meta name="twitter:image" content="https://spondle-uk.vercel.app/file_000000002f686243b31639a2bca68eca.png?v=2" />
+  <meta name="twitter:image" content="https://spondle-uk.vercel.app/images/file_000000002f686243b31639a2bca68eca.png?v=4" />
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -25,35 +25,6 @@
   <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
   <link rel="stylesheet" href="./styles.css?v=global-9">
   <link rel="stylesheet" href="./hearts.css?v=global-9">
-
-  <style>
-    /* Simple dropdown styling */
-    .share-dropdown {
-      position: absolute;
-      background-color: #1f2937; /* Tailwind gray-800 */
-      border: 1px solid #374151; /* Tailwind gray-700 */
-      border-radius: 8px;
-      padding: 8px 0;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      display: none;
-      flex-direction: column;
-      min-width: 180px;
-      z-index: 20;
-    }
-
-    .share-dropdown button {
-      text-align: left;
-      padding: 8px 16px;
-      width: 100%;
-      color: #fff;
-      background: none;
-      border: none;
-    }
-
-    .share-dropdown button:hover {
-      background-color: #374151;
-    }
-  </style>
 </head>
 <body>
   <!-- Layout (sticky header + sidebar) -->
@@ -146,64 +117,31 @@
           <p class="text-[color:var(--muted)]">📅 ${formattedDate}</p>
           <p class="text-white/90">${event.description || ""}</p>
 
-          <div class="flex flex-wrap gap-3 mt-4 relative">
+          <div class="flex flex-wrap gap-3 mt-4">
             <button class="px-4 py-2 bg-[color:var(--brand)] text-black rounded-md font-medium">
               Buy Tickets
             </button>
             <button class="px-4 py-2 bg-gray-800 text-white rounded-md font-medium">
               Add to Calendar
             </button>
-            <button id="shareToggle" class="px-4 py-2 bg-gray-800 text-white rounded-md font-medium">
+
+            <!-- Share section -->
+            <button id="shareBtn" class="px-4 py-2 bg-gray-700 text-white rounded-md font-medium">
               Share
             </button>
-
-            <!-- Dropdown -->
-            <div id="shareDropdown" class="share-dropdown">
-              <button id="shareWhatsapp">📱 Share via WhatsApp</button>
-              <button id="shareFacebook">🟦 Share on Facebook</button>
-              <button id="shareTwitter">🕊 Share on X (Twitter)</button>
-              <button id="shareCopy">📋 Copy Link</button>
-            </div>
           </div>
         </div>
       `;
 
       document.getElementById("favBtn").addEventListener("click", () => toggleFavourite(event.id, document.getElementById("favBtn")));
-
-      // Share button logic
-      const shareToggle = document.getElementById("shareToggle");
-      const shareDropdown = document.getElementById("shareDropdown");
-
-      shareToggle.addEventListener("click", (e) => {
-        e.stopPropagation();
-        shareDropdown.style.display = shareDropdown.style.display === "flex" ? "none" : "flex";
-      });
-
-      document.addEventListener("click", (e) => {
-        if (!shareDropdown.contains(e.target) && e.target !== shareToggle) {
-          shareDropdown.style.display = "none";
+      document.getElementById("shareBtn").addEventListener("click", () => {
+        const shareUrl = window.location.href;
+        const shareText = `Check out this event: ${event.event_name} – ${shareUrl}`;
+        if (navigator.share) {
+          navigator.share({ title: event.event_name, text: shareText, url: shareUrl });
+        } else {
+          window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, "_blank");
         }
-      });
-
-      // WhatsApp share
-      const currentUrl = window.location.href;
-      document.getElementById("shareWhatsapp").addEventListener("click", () => {
-        const text = `Check out this event: ${event.event_name} – ${currentUrl}`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-      });
-
-      // Placeholder share buttons
-      document.getElementById("shareFacebook").addEventListener("click", () => {
-        alert("Facebook sharing coming soon!");
-      });
-
-      document.getElementById("shareTwitter").addEventListener("click", () => {
-        alert("X (Twitter) sharing coming soon!");
-      });
-
-      document.getElementById("shareCopy").addEventListener("click", () => {
-        navigator.clipboard.writeText(currentUrl);
-        alert("Link copied to clipboard!");
       });
     }
 
