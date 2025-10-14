@@ -6,13 +6,16 @@ const supabase = createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
 );
 
+// -------------------------
 // Helpers
+// -------------------------
 function getFiltersFromURL() {
   const sp = new URL(window.location.href).searchParams;
   return {
     text: (sp.get("text") || "").trim(),
     startDate: (sp.get("startDate") || "").trim(),
     endDate: (sp.get("endDate") || "").trim(),
+    location: (sp.get("location") || "").trim(),
   };
 }
 function toQueryString(filters) {
@@ -20,11 +23,21 @@ function toQueryString(filters) {
   if (filters.text) p.set("text", filters.text);
   if (filters.startDate) p.set("startDate", filters.startDate);
   if (filters.endDate) p.set("endDate", filters.endDate);
+  if (filters.location) p.set("location", filters.location);
   const qs = p.toString();
   return qs ? `?${qs}` : "";
 }
+function debounce(fn, wait = 200) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), wait);
+  };
+}
 
-// Inject Flatpickr CSS/JS once
+// -------------------------
+// Flatpickr loader
+// -------------------------
 async function ensureFlatpickrLoaded() {
   const FLATPICKR_CSS_ID = "sp-flatpickr-css";
   const FLATPICKR_THEME_ID = "sp-flatpickr-dark-css";
@@ -57,7 +70,9 @@ async function ensureFlatpickrLoaded() {
   await addScript(FLATPICKR_JS_ID, "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js");
 }
 
-// Date utilities
+// -------------------------
+// Date utils
+// -------------------------
 function formatYMD(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -154,6 +169,7 @@ window.Layout = {
       zIndex: "10040",
     });
 
+    // Search form HTML (includes Location field + suggestions)
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3" style="pointer-events:auto;">
         <div class="md:col-span-2">
@@ -162,12 +178,27 @@ window.Layout = {
             class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
         </div>
 
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-400 mb-1">Location</label>
+          <div class="relative">
+            <input id="globalLocationInput" name="location" type="text" autocomplete="off" placeholder="Type a town or city…"
+              class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+            <div id="locationSuggestions"
+              class="absolute left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg overflow-hidden hidden z-[10060]">
+              <!-- suggestions injected here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline date range picker -->
         <div class="md:col-span-2 flex flex-col items-center">
           <div id="spDatePicker" class="rounded-md border border-gray-700 overflow-hidden w-full flex justify-center"></div>
 
+          <!-- Hidden inputs keep the old IDs/names so existing logic keeps working -->
           <input id="globalStartDate" name="startDate" type="hidden" />
           <input id="globalEndDate" name="endDate" type="hidden" />
 
+          <!-- Quick buttons -->
           <div class="mt-3 flex flex-wrap justify-center gap-2">
             <button type="button" id="spAnytimeBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Anytime</button>
             <button type="button" id="spTodayBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Today</button>
@@ -304,7 +335,7 @@ window.Layout = {
       }
     });
 
-    // ---------- Quick buttons ----------
+    // ---------- Quick date buttons ----------
     document.getElementById("spAnytimeBtn").addEventListener("click", () => {
       fp.clear();
       startInput.value = "";
@@ -329,10 +360,74 @@ window.Layout = {
       endInput.value = formatYMD(end);
     });
 
-    // ---------- Prefill search ----------
+    // ---------- Prefill search + location from URL ----------
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
+    const globalLocationInput = document.getElementById("globalLocationInput");
+    const locationSuggestions = document.getElementById("locationSuggestions");
+    globalLocationInput.value = urlFilters.location || "";
 
-    // ---------- Submit ----------
+    // ---------- Location autocomplete (top 5) ----------
+    function hideSuggestions() {
+      locationSuggestions.classList.add("hidden");
+      locationSuggestions.innerHTML = "";
+    }
+    function showSuggestions(items) {
+      if (!items || items.length === 0) {
+        hideSuggestions();
+        return;
+      }
+      locationSuggestions.innerHTML = items
+        .map(t => `<button type="button" class="w-full text-left px-3 py-2 hover:bg-gray-700">${t}</button>`)
+        .join("");
+      locationSuggestions.classList.remove("hidden");
+
+      Array.from(locationSuggestions.querySelectorAll("button")).forEach(btn => {
+        btn.addEventListener("click", () => {
+          globalLocationInput.value = btn.textContent.trim();
+          hideSuggestions();
+        });
+      });
+    }
+
+    const fetchLocations = debounce(async (term) => {
+      term = term.trim();
+      if (!term) {
+        hideSuggestions();
+        return;
+      }
+      // Query top 5 matching town_city
+      const { data, error } = await supabase
+        .from("location")
+        .select("town_city")
+        .ilike("town_city", `%${term}%`)
+        .order("town_city", { ascending: true })
+        .limit(5);
+
+      if (error) {
+        console.error(error);
+        hideSuggestions();
+        return;
+      }
+      const unique = Array.from(new Set((data || []).map(r => r.town_city).filter(Boolean)));
+      showSuggestions(unique.slice(0, 5));
+    }, 200);
+
+    globalLocationInput.addEventListener("input", () => {
+      fetchLocations(globalLocationInput.value);
+    });
+    globalLocationInput.addEventListener("focus", () => {
+      if (globalLocationInput.value.trim()) fetchLocations(globalLocationInput.value);
+    });
+    document.addEventListener("click", (e) => {
+      const within = e.target.closest("#globalLocationInput") || e.target.closest("#locationSuggestions");
+      if (!within) hideSuggestions();
+    });
+    // ESC to close suggestions
+    globalLocationInput.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") hideSuggestions();
+    });
+
+    // ---------- Submit (global) ----------
     const searchForm = document.getElementById("globalSearchForm");
     searchForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -340,6 +435,7 @@ window.Layout = {
         text: document.getElementById("globalSearchInput").value.trim(),
         startDate: startInput.value,
         endDate: endInput.value,
+        location: globalLocationInput.value.trim(),
       };
       window.location.href = `/events.html${toQueryString(filters)}`;
     });
