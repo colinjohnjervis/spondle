@@ -8,9 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-8">
-  <link rel="stylesheet" href="./styles.css?v=global-8">
-  <link rel="stylesheet" href="./hearts.css?v=global-8">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
+  <link rel="stylesheet" href="./styles.css?v=global-9">
+  <link rel="stylesheet" href="./hearts.css?v=global-9">
 </head>
 <body>
   <!-- START: LAYOUT ROOT -->
@@ -35,7 +35,7 @@
   </main>
 
   <!-- START: LAYOUT SCRIPT -->
-  <script src="./spondle-layout.js?v=global-8" type="module"></script>
+  <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       window.Layout.init({ active: "events" });
@@ -179,6 +179,8 @@
        START: LOAD EVENTS (SUPABASE)
     ---------------------------------- */
     async function loadEventsServerPaged({ startDate, endDate }) {
+      const today = new Date().toISOString().split('T')[0];
+
       let q = supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
@@ -186,9 +188,16 @@
         .order('event_date', { ascending: true })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
-      const today = new Date().toISOString().split('T')[0];
-      q = q.gte('event_date', startDate || today);
-      if (endDate) q = q.lte('event_date', endDate);
+      // Apply start/end filters
+      if (startDate) {
+        q = q.gte('event_date', startDate);
+      } else {
+        q = q.gte('event_date', today);
+      }
+
+      if (endDate) {
+        q = q.lte('event_date', endDate);
+      }
 
       const { data, error } = await q;
       if (error) throw error;
@@ -211,7 +220,12 @@
         .ilike('event_name', `%${text}%`)
         .limit(500);
 
-      q1 = q1.gte('event_date', startDate || today);
+      if (startDate) {
+        q1 = q1.gte('event_date', startDate);
+      } else {
+        q1 = q1.gte('event_date', today);
+      }
+
       if (endDate) q1 = q1.lte('event_date', endDate);
 
       let q2 = supabase.from('events')
@@ -221,7 +235,12 @@
         .ilike('venues.venue_name', `%${text}%`)
         .limit(500);
 
-      q2 = q2.gte('event_date', startDate || today);
+      if (startDate) {
+        q2 = q2.gte('event_date', startDate);
+      } else {
+        q2 = q2.gte('event_date', today);
+      }
+
       if (endDate) q2 = q2.lte('event_date', endDate);
 
       const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
@@ -297,9 +316,6 @@
     }, { rootMargin: '200px' });
 
     observer.observe(sentinel);
-    /* ---------------------------------
-       END: INFINITE SCROLL
-    ---------------------------------- */
 
     /* ---------------------------------
        START: FILTERS FROM URL
