@@ -8,9 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
-  <link rel="stylesheet" href="./styles.css?v=global-9">
-  <link rel="stylesheet" href="./hearts.css?v=global-9">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-10">
+  <link rel="stylesheet" href="./styles.css?v=global-10">
+  <link rel="stylesheet" href="./hearts.css?v=global-10">
 </head>
 <body>
   <!-- START: LAYOUT ROOT -->
@@ -34,22 +34,17 @@
     <!-- END: EVENTS GRID -->
   </main>
 
-  <!-- START: LAYOUT SCRIPT -->
-  <script src="./spondle-layout.js?v=global-9" type="module"></script>
+  <!-- Shared layout -->
+  <script src="./spondle-layout.js?v=global-10" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       window.Layout.init({ active: "events" });
     });
   </script>
-  <!-- END: LAYOUT SCRIPT -->
 
-  <!-- START: PAGE LOGIC -->
+  <!-- PAGE LOGIC -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    /* ---------------------------------
-       START: SUPABASE INITIALIZATION
-    ---------------------------------- */
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
@@ -59,95 +54,81 @@
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     const eventsError = document.getElementById('eventsError');
 
-    /* ---------------------------------
-       START: FILTERS FROM URL (single source of truth)
-    ---------------------------------- */
+    const PAGE_SIZE = 12;
+    let page = 0;
+    let buffer = [];
+    let usingBuffer = false;
+    let user = null;
+    let favouriteEventIds = new Set();
+    let currentFilters = {};
+
+    function todayYMD() {
+      return new Date().toISOString().split('T')[0];
+    }
+
     function getFiltersFromURL() {
       const sp = new URL(window.location.href).searchParams;
-      const text = (sp.get("text") || "").trim();
-      const startDate = (sp.get("startDate") || "").trim();
-      const endDate = (sp.get("endDate") || "").trim();
+      let text = (sp.get("text") || "").trim();
+      let startDate = (sp.get("startDate") || "").trim();
+      let endDate = (sp.get("endDate") || "").trim();
 
-      // Normalize impossible ranges (e.g., end < start)
-      if (startDate && endDate && endDate < startDate) {
-        return { text, startDate, endDate: startDate };
-      }
+      // Apply sensible fallbacks
+      const today = todayYMD();
+      if (!startDate && !endDate) startDate = today; // no past events
+      if (startDate && !endDate) endDate = startDate; // single-day search
+      if (endDate && !startDate) startDate = today;
+
       return { text, startDate, endDate };
     }
 
-    // This object drives *all* loads (initial + infinite scroll)
-    let currentFilters = getFiltersFromURL();
-
-    /* ---------------------------------
-       START: PAGINATION + STATE
-    ---------------------------------- */
-    const PAGE_SIZE = 12;
-    let page = 0;
-    let user = null;
-    let favouriteEventIds = new Set();
-    let usingClientBuffer = false;
-    let buffer = [];
-
-    /* ---------------------------------
-       START: USER + FAVOURITES
-    ---------------------------------- */
     async function loadUserAndFavourites() {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      user = currentUser;
+      const { data: { user: u } } = await supabase.auth.getUser();
+      user = u;
       if (!user) return;
-
-      const { data } = await supabase
-        .from('event_favourites')
-        .select('event_id')
-        .eq('user_id', user.id);
-
+      const { data } = await supabase.from('event_favourites').select('event_id').eq('user_id', user.id);
       if (data) favouriteEventIds = new Set(data.map(r => r.event_id));
     }
 
     async function toggleFavourite(eventId, btn) {
       if (!user) return alert('Please log in to save favourites.');
-
       if (favouriteEventIds.has(eventId)) {
-        await supabase.from('event_favourites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('event_id', eventId);
+        await supabase.from('event_favourites').delete().eq('user_id', user.id).eq('event_id', eventId);
         favouriteEventIds.delete(eventId);
         btn.classList.remove('fav-on');
       } else {
-        await supabase.from('event_favourites')
-          .insert([{ user_id: user.id, event_id: eventId }]);
+        await supabase.from('event_favourites').insert([{ user_id: user.id, event_id: eventId }]);
         favouriteEventIds.add(eventId);
         btn.classList.add('fav-on');
       }
     }
 
-    /* ---------------------------------
-       START: RENDER EVENT CARDS
-    ---------------------------------- */
     function renderCards(rows) {
+      const seen = new Set();
       for (const event of rows) {
+        if (seen.has(event.id)) continue; // dedupe safeguard
+        seen.add(event.id);
+
         const card = document.createElement('a');
         card.href = `/event-page.html?id=${event.id}`;
-        card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:ring-2 hover:ring-[color:var(--brand)] transition';
+        card.className =
+          'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:ring-2 hover:ring-[color:var(--brand)] transition';
 
-        const imageContent = event.image_url
+        const image = event.image_url
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
           : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
-        const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
+        const date = new Date(event.event_date).toLocaleDateString('en-GB', {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         });
 
-        const venueName = event.venues?.venue_name || 'Venue TBA';
-        const townCity = event.venues?.location?.town_city || '';
-        const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+        const venue = event.venues?.venue_name || 'Venue TBA';
+        const town = event.venues?.location?.town_city || '';
+        const place = town ? `${venue}, ${town}` : venue;
 
-        const isFavourited = favouriteEventIds.has(event.id);
-
+        const fav = favouriteEventIds.has(event.id);
         card.innerHTML = `
-          ${imageContent}
-          <button class="heart-btn ${isFavourited ? 'fav-on' : ''}" aria-label="Favourite" onclick="event.preventDefault();">
+          ${image}
+          <button class="heart-btn ${fav ? 'fav-on' : ''}" onclick="event.preventDefault();">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
@@ -155,116 +136,79 @@
           </button>
           <div class="p-4">
             <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-            <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
-            <p class="text-sm text-gray-400">${venueDisplay}</p>
-          </div>
-        `;
+            <p class="text-sm text-gray-400 mb-1">${date}</p>
+            <p class="text-sm text-gray-400">${place}</p>
+          </div>`;
 
         const heartBtn = card.querySelector('.heart-btn');
-        heartBtn.addEventListener('click', (e) => {
+        heartBtn.addEventListener('click', e => {
           e.preventDefault();
           toggleFavourite(event.id, heartBtn);
         });
-
         eventsGrid.appendChild(card);
       }
     }
 
-    /* ---------------------------------
-       START: LOAD EVENTS (SUPABASE)
-    ---------------------------------- */
-    function todayYMD() {
-      return new Date().toISOString().split('T')[0];
-    }
-
     async function loadEventsServerPaged({ startDate, endDate }) {
-      const today = todayYMD();
-
-      let q = supabase
+      const { data, error } = await supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
         .eq('publish_status', 'published')
+        .gte('event_date', startDate)
+        .lte('event_date', endDate)
         .order('event_date', { ascending: true })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
-      // No past events rule
-      const effectiveStart = startDate || today;
-
-      q = q.gte('event_date', effectiveStart);
-      if (endDate) q = q.lte('event_date', endDate);
-
-      const { data, error } = await q;
       if (error) throw error;
-
       renderCards(data);
       page++;
     }
 
-    /* ---------------------------------
-       START: BUILD CLIENT BUFFER (SEARCH)
-    ---------------------------------- */
-    async function buildClientBuffer({ text, startDate, endDate }) {
-      const selectCols = 'id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))';
-      const today = todayYMD();
-      const effectiveStart = startDate || today;
-
-      let q1 = supabase.from('events')
-        .select(selectCols)
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true })
-        .ilike('event_name', `%${text}%`)
-        .gte('event_date', effectiveStart)
-        .limit(500);
-
-      if (endDate) q1 = q1.lte('event_date', endDate);
-
-      let q2 = supabase.from('events')
-        .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true })
-        .ilike('venues.venue_name', `%${text}%`)
-        .gte('event_date', effectiveStart)
-        .limit(500);
-
-      if (endDate) q2 = q2.lte('event_date', endDate);
-
-      const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
+    async function buildBuffer({ text, startDate, endDate }) {
+      const cols = 'id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))';
+      const [a, b] = await Promise.all([
+        supabase.from('events')
+          .select(cols)
+          .eq('publish_status', 'published')
+          .ilike('event_name', `%${text}%`)
+          .gte('event_date', startDate)
+          .lte('event_date', endDate)
+          .limit(500),
+        supabase.from('events')
+          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
+          .eq('publish_status', 'published')
+          .ilike('venues.venue_name', `%${text}%`)
+          .gte('event_date', startDate)
+          .lte('event_date', endDate)
+          .limit(500)
+      ]);
 
       const dedup = new Map();
-      [...(a || []), ...(b || [])].forEach(row => dedup.set(row.id, row));
+      [...(a.data || []), ...(b.data || [])].forEach(r => dedup.set(r.id, r));
       buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
-      usingClientBuffer = true;
+      usingBuffer = true;
     }
 
-    /* ---------------------------------
-       START: LOAD FROM CLIENT BUFFER
-    ---------------------------------- */
-    function loadFromClientBuffer() {
+    function loadFromBuffer() {
       const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
       renderCards(slice);
       page++;
     }
 
-    /* ---------------------------------
-       START: INITIAL LOAD
-    ---------------------------------- */
     async function initialLoad(filters) {
-      // Reset UI/state
       eventsGrid.innerHTML = '';
+      page = 0;
       eventsError.classList.add('hidden');
       loadMoreBtn.style.display = 'block';
-      page = 0;
-
-      const { text, startDate, endDate } = filters;
-      currentFilters = { text, startDate, endDate }; // keep in sync for infinite scroll
+      currentFilters = filters;
 
       try {
-        if (text) {
-          await buildClientBuffer({ text, startDate, endDate });
-          loadFromClientBuffer();
+        if (filters.text) {
+          await buildBuffer(filters);
+          loadFromBuffer();
         } else {
-          usingClientBuffer = false;
-          await loadEventsServerPaged({ startDate, endDate });
+          usingBuffer = false;
+          await loadEventsServerPaged(filters);
         }
       } catch (err) {
         console.error(err);
@@ -273,51 +217,25 @@
       }
     }
 
-    /* ---------------------------------
-       START: INFINITE SCROLL
-    ---------------------------------- */
-    loadMoreBtn.style.display = 'none'; // hide the manual button (still here as fallback)
+    // Infinite scroll
+    loadMoreBtn.style.display = 'none';
     const sentinel = document.createElement('div');
-    sentinel.id = 'infiniteScrollSentinel';
     sentinel.className = 'h-8';
     loadMoreBtn.insertAdjacentElement('afterend', sentinel);
 
-    let isLoading = false;
-    const observer = new IntersectionObserver(async (entries) => {
-      const target = entries[0];
-      if (target.isIntersecting && !isLoading) {
-        isLoading = true;
-        try {
-          if (usingClientBuffer) {
-            loadFromClientBuffer();
-          } else {
-            // Always use the same filter window as initial load
-            await loadEventsServerPaged({
-              startDate: currentFilters.startDate || '',
-              endDate: currentFilters.endDate || ''
-            });
-          }
-        } finally {
-          isLoading = false;
-        }
-      }
+    const observer = new IntersectionObserver(async entries => {
+      const [entry] = entries;
+      if (!entry.isIntersecting) return;
+      if (usingBuffer) loadFromBuffer();
+      else await loadEventsServerPaged(currentFilters);
     }, { rootMargin: '200px' });
-
     observer.observe(sentinel);
 
-    /* ---------------------------------
-       IMPORTANT: remove local form handler (Layout handles submit + redirect)
-       This avoids double-handling that could bypass URL filters.
-    ---------------------------------- */
-
-    /* ---------------------------------
-       START: INITIALIZE PAGE
-    ---------------------------------- */
     (async () => {
       await loadUserAndFavourites();
-      await initialLoad(currentFilters);
+      const filters = getFiltersFromURL();
+      await initialLoad(filters);
     })();
   </script>
-  <!-- END: PAGE LOGIC -->
 </body>
 </html>
