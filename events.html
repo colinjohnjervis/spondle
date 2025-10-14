@@ -60,28 +60,23 @@
     const eventsError = document.getElementById('eventsError');
 
     /* ---------------------------------
-       START: GLOBAL SEARCH HOOKS
+       START: FILTERS FROM URL (single source of truth)
     ---------------------------------- */
-    let searchForm, searchInput, startDateInput, endDateInput;
-    window.addEventListener("DOMContentLoaded", () => {
-      searchForm = document.getElementById('globalSearchForm');
-      searchInput = document.getElementById('globalSearchInput');
-      startDateInput = document.getElementById('globalStartDate');
-      endDateInput = document.getElementById('globalEndDate');
+    function getFiltersFromURL() {
+      const sp = new URL(window.location.href).searchParams;
+      const text = (sp.get("text") || "").trim();
+      const startDate = (sp.get("startDate") || "").trim();
+      const endDate = (sp.get("endDate") || "").trim();
 
-      if (searchForm) {
-        searchForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const filters = {
-            text: searchInput.value.trim(),
-            startDate: startDateInput.value,
-            endDate: endDateInput.value
-          };
-          initialLoad(filters);
-          document.body.classList.remove('search-open');
-        });
+      // Normalize impossible ranges (e.g., end < start)
+      if (startDate && endDate && endDate < startDate) {
+        return { text, startDate, endDate: startDate };
       }
-    });
+      return { text, startDate, endDate };
+    }
+
+    // This object drives *all* loads (initial + infinite scroll)
+    let currentFilters = getFiltersFromURL();
 
     /* ---------------------------------
        START: PAGINATION + STATE
@@ -178,8 +173,12 @@
     /* ---------------------------------
        START: LOAD EVENTS (SUPABASE)
     ---------------------------------- */
+    function todayYMD() {
+      return new Date().toISOString().split('T')[0];
+    }
+
     async function loadEventsServerPaged({ startDate, endDate }) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = todayYMD();
 
       let q = supabase
         .from('events')
@@ -188,16 +187,11 @@
         .order('event_date', { ascending: true })
         .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
 
-      // Apply start/end filters
-      if (startDate) {
-        q = q.gte('event_date', startDate);
-      } else {
-        q = q.gte('event_date', today);
-      }
+      // No past events rule
+      const effectiveStart = startDate || today;
 
-      if (endDate) {
-        q = q.lte('event_date', endDate);
-      }
+      q = q.gte('event_date', effectiveStart);
+      if (endDate) q = q.lte('event_date', endDate);
 
       const { data, error } = await q;
       if (error) throw error;
@@ -211,20 +205,16 @@
     ---------------------------------- */
     async function buildClientBuffer({ text, startDate, endDate }) {
       const selectCols = 'id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))';
-      const today = new Date().toISOString().split('T')[0];
+      const today = todayYMD();
+      const effectiveStart = startDate || today;
 
       let q1 = supabase.from('events')
         .select(selectCols)
         .eq('publish_status', 'published')
         .order('event_date', { ascending: true })
         .ilike('event_name', `%${text}%`)
+        .gte('event_date', effectiveStart)
         .limit(500);
-
-      if (startDate) {
-        q1 = q1.gte('event_date', startDate);
-      } else {
-        q1 = q1.gte('event_date', today);
-      }
 
       if (endDate) q1 = q1.lte('event_date', endDate);
 
@@ -233,13 +223,8 @@
         .eq('publish_status', 'published')
         .order('event_date', { ascending: true })
         .ilike('venues.venue_name', `%${text}%`)
+        .gte('event_date', effectiveStart)
         .limit(500);
-
-      if (startDate) {
-        q2 = q2.gte('event_date', startDate);
-      } else {
-        q2 = q2.gte('event_date', today);
-      }
 
       if (endDate) q2 = q2.lte('event_date', endDate);
 
@@ -264,12 +249,14 @@
        START: INITIAL LOAD
     ---------------------------------- */
     async function initialLoad(filters) {
+      // Reset UI/state
       eventsGrid.innerHTML = '';
       eventsError.classList.add('hidden');
       loadMoreBtn.style.display = 'block';
       page = 0;
 
       const { text, startDate, endDate } = filters;
+      currentFilters = { text, startDate, endDate }; // keep in sync for infinite scroll
 
       try {
         if (text) {
@@ -289,7 +276,7 @@
     /* ---------------------------------
        START: INFINITE SCROLL
     ---------------------------------- */
-    loadMoreBtn.style.display = 'none'; // hide the manual button
+    loadMoreBtn.style.display = 'none'; // hide the manual button (still here as fallback)
     const sentinel = document.createElement('div');
     sentinel.id = 'infiniteScrollSentinel';
     sentinel.className = 'h-8';
@@ -304,9 +291,10 @@
           if (usingClientBuffer) {
             loadFromClientBuffer();
           } else {
+            // Always use the same filter window as initial load
             await loadEventsServerPaged({
-              startDate: startDateInput?.value || '',
-              endDate: endDateInput?.value || ''
+              startDate: currentFilters.startDate || '',
+              endDate: currentFilters.endDate || ''
             });
           }
         } finally {
@@ -318,24 +306,16 @@
     observer.observe(sentinel);
 
     /* ---------------------------------
-       START: FILTERS FROM URL
+       IMPORTANT: remove local form handler (Layout handles submit + redirect)
+       This avoids double-handling that could bypass URL filters.
     ---------------------------------- */
-    function getFiltersFromURL() {
-      const sp = new URL(window.location.href).searchParams;
-      return {
-        text: (sp.get("text") || "").trim(),
-        startDate: (sp.get("startDate") || "").trim(),
-        endDate: (sp.get("endDate") || "").trim(),
-      };
-    }
 
     /* ---------------------------------
        START: INITIALIZE PAGE
     ---------------------------------- */
     (async () => {
       await loadUserAndFavourites();
-      const filtersFromURL = getFiltersFromURL();
-      await initialLoad(filtersFromURL);
+      await initialLoad(currentFilters);
     })();
   </script>
   <!-- END: PAGE LOGIC -->
