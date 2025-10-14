@@ -24,6 +24,69 @@ function toQueryString(filters) {
   return qs ? `?${qs}` : "";
 }
 
+// Inject Flatpickr CSS/JS once
+async function ensureFlatpickrLoaded() {
+  const FLATPICKR_CSS_ID = "sp-flatpickr-css";
+  const FLATPICKR_THEME_ID = "sp-flatpickr-dark-css";
+  const FLATPICKR_JS_ID = "sp-flatpickr-js";
+
+  const head = document.head;
+
+  function addLink(id, href) {
+    if (!document.getElementById(id)) {
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = href;
+      head.appendChild(link);
+    }
+  }
+  function addScript(id, src) {
+    return new Promise((resolve) => {
+      if (document.getElementById(id)) return resolve();
+      const s = document.createElement("script");
+      s.id = id;
+      s.src = src;
+      s.onload = () => resolve();
+      head.appendChild(s);
+    });
+  }
+
+  addLink(FLATPICKR_CSS_ID, "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css");
+  // Dark theme to fit your UI
+  addLink(FLATPICKR_THEME_ID, "https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css");
+  await addScript(FLATPICKR_JS_ID, "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js");
+}
+
+// Date utilities
+function formatYMD(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+function getToday() {
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  return d;
+}
+function getTomorrow() {
+  const d = getToday();
+  d.setDate(d.getDate() + 1);
+  return d;
+}
+function getUpcomingWeekend() {
+  // Next Saturday–Sunday from today (inclusive if today is Sat/Sun)
+  const d = getToday();
+  const day = d.getDay(); // 0 Sun ... 6 Sat
+  const daysUntilSaturday = (6 - day + 7) % 7;
+  const saturday = new Date(d);
+  saturday.setDate(d.getDate() + daysUntilSaturday);
+  const sunday = new Date(saturday);
+  sunday.setDate(saturday.getDate() + 1);
+  return { start: saturday, end: sunday };
+}
+
 window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -90,6 +153,8 @@ window.Layout = {
       borderBottom: "1px solid rgba(255,255,255,0.08)",
       zIndex: "10040",
     });
+
+    // REPLACED: From/To date inputs -> Inline flatpickr range + hidden inputs + quick buttons
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3" style="pointer-events:auto;">
         <div class="md:col-span-2">
@@ -97,16 +162,25 @@ window.Layout = {
           <input id="globalSearchInput" name="text" type="text" placeholder="Search by event or venue..."
             class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
         </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">From</label>
-          <input id="globalStartDate" name="startDate" type="date"
-            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
+
+        <!-- Inline date range picker spans 2 cols on desktop -->
+        <div class="md:col-span-2">
+          <label class="block text-xs text-gray-400 mb-2">When</label>
+          <div id="spDatePicker" class="rounded-md border border-gray-700 overflow-hidden"></div>
+
+          <!-- Hidden inputs keep the old IDs/names so existing logic keeps working -->
+          <input id="globalStartDate" name="startDate" type="hidden" />
+          <input id="globalEndDate" name="endDate" type="hidden" />
+
+          <!-- Quick buttons -->
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button type="button" id="spAnytimeBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Anytime</button>
+            <button type="button" id="spTodayBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Today</button>
+            <button type="button" id="spTomorrowBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Tomorrow</button>
+            <button type="button" id="spWeekendBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Weekend</button>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs text-gray-400 mb-1">To</label>
-          <input id="globalEndDate" name="endDate" type="date"
-            class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
-        </div>
+
         <div class="md:col-span-4">
           <button type="submit"
             class="w-full md:w-auto px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded hover:opacity-90 transition">
@@ -200,11 +274,74 @@ window.Layout = {
       }
     }
 
-    // ---------- Prefill search fields ----------
+    // ---------- Init Flatpickr inline range ----------
+    await ensureFlatpickrLoaded();
+
     const urlFilters = getFiltersFromURL();
+
+    // Grab hidden inputs & calendar container
+    const startInput = document.getElementById("globalStartDate");
+    const endInput   = document.getElementById("globalEndDate");
+
+    // Set defaults from URL (so picker reflects current state)
+    const defaultDates = [];
+    if (urlFilters.startDate) defaultDates.push(urlFilters.startDate);
+    if (urlFilters.endDate)   defaultDates.push(urlFilters.endDate);
+    // If only one date provided, Flatpickr will allow selecting the second one
+    startInput.value = urlFilters.startDate || "";
+    endInput.value   = urlFilters.endDate || "";
+
+    const fp = flatpickr("#spDatePicker", {
+      inline: true,
+      mode: "range",
+      dateFormat: "Y-m-d",
+      defaultDate: defaultDates.length ? defaultDates : null,
+      // Improve UX in dark mode
+      disableMobile: true,
+      onChange: (selectedDates) => {
+        if (selectedDates.length === 2) {
+          startInput.value = formatYMD(selectedDates[0]);
+          endInput.value   = formatYMD(selectedDates[1]);
+        } else if (selectedDates.length === 1) {
+          startInput.value = formatYMD(selectedDates[0]);
+          endInput.value   = "";
+        } else {
+          startInput.value = "";
+          endInput.value   = "";
+        }
+      }
+    });
+
+    // ---------- Quick buttons (Option B: do NOT auto-submit) ----------
+    document.getElementById("spAnytimeBtn").addEventListener("click", () => {
+      fp.clear();
+      startInput.value = "";
+      endInput.value = "";
+    });
+
+    document.getElementById("spTodayBtn").addEventListener("click", () => {
+      const t = getToday();
+      fp.setDate([t, t], true);
+      startInput.value = formatYMD(t);
+      endInput.value   = formatYMD(t);
+    });
+
+    document.getElementById("spTomorrowBtn").addEventListener("click", () => {
+      const t = getTomorrow();
+      fp.setDate([t, t], true);
+      startInput.value = formatYMD(t);
+      endInput.value   = formatYMD(t);
+    });
+
+    document.getElementById("spWeekendBtn").addEventListener("click", () => {
+      const { start, end } = getUpcomingWeekend();
+      fp.setDate([start, end], true);
+      startInput.value = formatYMD(start);
+      endInput.value   = formatYMD(end);
+    });
+
+    // ---------- Prefill search text ----------
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
-    document.getElementById("globalStartDate").value = urlFilters.startDate || "";
-    document.getElementById("globalEndDate").value = urlFilters.endDate || "";
 
     // ---------- Submit (global) ----------
     const searchForm = document.getElementById("globalSearchForm");
@@ -212,8 +349,8 @@ window.Layout = {
       e.preventDefault();
       const filters = {
         text: document.getElementById("globalSearchInput").value.trim(),
-        startDate: document.getElementById("globalStartDate").value,
-        endDate: document.getElementById("globalEndDate").value,
+        startDate: startInput.value,
+        endDate: endInput.value,
       };
       // Always redirect to events.html – let events.html handle rendering
       window.location.href = `/events.html${toQueryString(filters)}`;
