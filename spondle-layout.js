@@ -53,7 +53,6 @@ async function ensureFlatpickrLoaded() {
   }
 
   addLink(FLATPICKR_CSS_ID, "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css");
-  // Dark theme to fit your UI
   addLink(FLATPICKR_THEME_ID, "https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css");
   await addScript(FLATPICKR_JS_ID, "https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js");
 }
@@ -67,7 +66,7 @@ function formatYMD(date) {
 }
 function getToday() {
   const d = new Date();
-  d.setHours(0,0,0,0);
+  d.setHours(0, 0, 0, 0);
   return d;
 }
 function getTomorrow() {
@@ -76,9 +75,8 @@ function getTomorrow() {
   return d;
 }
 function getUpcomingWeekend() {
-  // Next Saturday–Sunday from today (inclusive if today is Sat/Sun)
   const d = getToday();
-  const day = d.getDay(); // 0 Sun ... 6 Sat
+  const day = d.getDay(); // 0=Sun ... 6=Sat
   const daysUntilSaturday = (6 - day + 7) % 7;
   const saturday = new Date(d);
   saturday.setDate(d.getDate() + daysUntilSaturday);
@@ -147,14 +145,15 @@ window.Layout = {
     searchPanel.className = "sp-search-panel";
     Object.assign(searchPanel.style, {
       position: "fixed",
-      left: "0", right: "0", top: "64px",
+      left: "0",
+      right: "0",
+      top: "64px",
       display: "none",
       background: "#0b0b0b",
       borderBottom: "1px solid rgba(255,255,255,0.08)",
       zIndex: "10040",
     });
 
-    // REPLACED: From/To date inputs -> Inline flatpickr range + hidden inputs + quick buttons
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3" style="pointer-events:auto;">
         <div class="md:col-span-2">
@@ -163,17 +162,13 @@ window.Layout = {
             class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
         </div>
 
-        <!-- Inline date range picker spans 2 cols on desktop -->
-        <div class="md:col-span-2">
-          <label class="block text-xs text-gray-400 mb-2">When</label>
-          <div id="spDatePicker" class="rounded-md border border-gray-700 overflow-hidden"></div>
+        <div class="md:col-span-2 flex flex-col items-center">
+          <div id="spDatePicker" class="rounded-md border border-gray-700 overflow-hidden w-full flex justify-center"></div>
 
-          <!-- Hidden inputs keep the old IDs/names so existing logic keeps working -->
           <input id="globalStartDate" name="startDate" type="hidden" />
           <input id="globalEndDate" name="endDate" type="hidden" />
 
-          <!-- Quick buttons -->
-          <div class="mt-3 flex flex-wrap gap-2">
+          <div class="mt-3 flex flex-wrap justify-center gap-2">
             <button type="button" id="spAnytimeBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Anytime</button>
             <button type="button" id="spTodayBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Today</button>
             <button type="button" id="spTomorrowBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Tomorrow</button>
@@ -279,71 +274,65 @@ window.Layout = {
 
     const urlFilters = getFiltersFromURL();
 
-    // Grab hidden inputs & calendar container
     const startInput = document.getElementById("globalStartDate");
-    const endInput   = document.getElementById("globalEndDate");
+    const endInput = document.getElementById("globalEndDate");
 
-    // Set defaults from URL (so picker reflects current state)
     const defaultDates = [];
     if (urlFilters.startDate) defaultDates.push(urlFilters.startDate);
-    if (urlFilters.endDate)   defaultDates.push(urlFilters.endDate);
-    // If only one date provided, Flatpickr will allow selecting the second one
+    if (urlFilters.endDate) defaultDates.push(urlFilters.endDate);
+
     startInput.value = urlFilters.startDate || "";
-    endInput.value   = urlFilters.endDate || "";
+    endInput.value = urlFilters.endDate || "";
 
     const fp = flatpickr("#spDatePicker", {
       inline: true,
       mode: "range",
       dateFormat: "Y-m-d",
       defaultDate: defaultDates.length ? defaultDates : null,
-      // Improve UX in dark mode
       disableMobile: true,
       onChange: (selectedDates) => {
         if (selectedDates.length === 2) {
           startInput.value = formatYMD(selectedDates[0]);
-          endInput.value   = formatYMD(selectedDates[1]);
+          endInput.value = formatYMD(selectedDates[1]);
         } else if (selectedDates.length === 1) {
           startInput.value = formatYMD(selectedDates[0]);
-          endInput.value   = "";
+          endInput.value = "";
         } else {
           startInput.value = "";
-          endInput.value   = "";
+          endInput.value = "";
         }
       }
     });
 
-    // ---------- Quick buttons (Option B: do NOT auto-submit) ----------
+    // ---------- Quick buttons ----------
     document.getElementById("spAnytimeBtn").addEventListener("click", () => {
       fp.clear();
       startInput.value = "";
       endInput.value = "";
     });
-
     document.getElementById("spTodayBtn").addEventListener("click", () => {
       const t = getToday();
       fp.setDate([t, t], true);
       startInput.value = formatYMD(t);
-      endInput.value   = formatYMD(t);
+      endInput.value = formatYMD(t);
     });
-
     document.getElementById("spTomorrowBtn").addEventListener("click", () => {
       const t = getTomorrow();
       fp.setDate([t, t], true);
       startInput.value = formatYMD(t);
-      endInput.value   = formatYMD(t);
+      endInput.value = formatYMD(t);
     });
-
     document.getElementById("spWeekendBtn").addEventListener("click", () => {
       const { start, end } = getUpcomingWeekend();
       fp.setDate([start, end], true);
       startInput.value = formatYMD(start);
-      endInput.value   = formatYMD(end);
+      endInput.value = formatYMD(end);
     });
 
-    // ---------- Prefill search text ----------
+    // ---------- Prefill search ----------
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
 
-    // ---------- Submit (global) ----------
+    // ---------- Submit ----------
     const searchForm = document.getElementById("globalSearchForm");
     searchForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -352,7 +341,6 @@ window.Layout = {
         startDate: startInput.value,
         endDate: endInput.value,
       };
-      // Always redirect to events.html – let events.html handle rendering
       window.location.href = `/events.html${toQueryString(filters)}`;
     });
   }
