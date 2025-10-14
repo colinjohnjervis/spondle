@@ -8,11 +8,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-11">
-  <link rel="stylesheet" href="./styles.css?v=global-11">
-  <link rel="stylesheet" href="./hearts.css?v=global-11">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-12">
+  <link rel="stylesheet" href="./styles.css?v=global-12">
+  <link rel="stylesheet" href="./hearts.css?v=global-12">
 </head>
 <body>
+  <!-- LAYOUT ROOT -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
@@ -30,15 +31,18 @@
     </section>
   </main>
 
-  <script src="./spondle-layout.js?v=global-11" type="module"></script>
+  <!-- Shared layout -->
+  <script src="./spondle-layout.js?v=global-12" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       window.Layout.init({ active: "events" });
     });
   </script>
 
+  <!-- Page logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
@@ -56,11 +60,12 @@
     let favouriteEventIds = new Set();
     let currentFilters = {};
 
+    // -------- Dates / filters helpers
     function todayYMD() {
       return new Date().toISOString().split('T')[0];
     }
-    function addMonths(date, months) {
-      const d = new Date(date);
+    function addMonths(ymd, months) {
+      const d = new Date(ymd);
       d.setMonth(d.getMonth() + months);
       return d.toISOString().split('T')[0];
     }
@@ -70,23 +75,25 @@
       let text = (sp.get("text") || "").trim();
       let startDate = (sp.get("startDate") || "").trim();
       let endDate = (sp.get("endDate") || "").trim();
+      let location = (sp.get("location") || "").trim(); // NEW
 
       const today = todayYMD();
       const oneYearAhead = addMonths(today, 12);
 
-      // Default behaviour if no dates chosen
+      // Default window if nothing chosen
       if (!startDate && !endDate) {
         startDate = today;
         endDate = oneYearAhead;
       }
 
-      // Single-day fallback
+      // Single-day fallback & no past events rule
       if (startDate && !endDate) endDate = startDate;
       if (endDate && !startDate) startDate = today;
 
-      return { text, startDate, endDate };
+      return { text, startDate, endDate, location };
     }
 
+    // -------- Auth + favourites
     async function loadUserAndFavourites() {
       const { data: { user: u } } = await supabase.auth.getUser();
       user = u;
@@ -108,6 +115,7 @@
       }
     }
 
+    // -------- Render
     function renderCards(rows) {
       const seen = new Set();
       for (const event of rows) {
@@ -154,42 +162,75 @@
       }
     }
 
-    async function loadEventsServerPaged({ startDate, endDate }) {
-      const { data, error } = await supabase
+    // -------- Server-paged load (no text search)
+    async function loadEventsServerPaged({ startDate, endDate, location }) {
+      // Select with nested venue + location (aliased as "location")
+      let q = supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
         .eq('publish_status', 'published')
-        .gte('event_date', startDate)
-        .lte('event_date', endDate)
         .order('event_date', { ascending: true })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
+        .gte('event_date', startDate)
+        .lte('event_date', endDate);
 
+      // If a location (town/city) is chosen, filter via the nested join
+      if (location) {
+        // Use inner join to ensure only events with a venue in that town are returned
+        q = supabase
+          .from('events')
+          .select('*, venues!inner(venue_name, location:location_id(town_city))')
+          .eq('publish_status', 'published')
+          .order('event_date', { ascending: true })
+          .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
+          .gte('event_date', startDate)
+          .lte('event_date', endDate)
+          // Case-insensitive exact match on the nested field
+          .ilike('venues.location.town_city', location);
+      }
+
+      const { data, error } = await q;
       if (error) throw error;
-      renderCards(data);
+
+      renderCards(data || []);
       page++;
     }
 
-    async function buildBuffer({ text, startDate, endDate }) {
-      const cols = 'id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))';
-      const [a, b] = await Promise.all([
-        supabase.from('events')
-          .select(cols)
-          .eq('publish_status', 'published')
-          .ilike('event_name', `%${text}%`)
-          .gte('event_date', startDate)
-          .lte('event_date', endDate)
-          .limit(500),
-        supabase.from('events')
-          .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
-          .eq('publish_status', 'published')
-          .ilike('venues.venue_name', `%${text}%`)
-          .gte('event_date', startDate)
-          .lte('event_date', endDate)
-          .limit(500)
-      ]);
+    // -------- Client buffer (when text search is used)
+    async function buildBuffer({ text, startDate, endDate, location }) {
+      const cols =
+        'id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))';
+
+      // Search by event name
+      let q1 = supabase.from('events')
+        .select(cols)
+        .eq('publish_status', 'published')
+        .order('event_date', { ascending: true })
+        .ilike('event_name', `%${text}%`)
+        .gte('event_date', startDate)
+        .lte('event_date', endDate)
+        .limit(500);
+
+      // Search by venue name (inner join)
+      let q2 = supabase.from('events')
+        .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
+        .eq('publish_status', 'published')
+        .order('event_date', { ascending: true })
+        .ilike('venues.venue_name', `%${text}%`)
+        .gte('event_date', startDate)
+        .lte('event_date', endDate)
+        .limit(500);
+
+      // If location chosen, add the town filter to both queries
+      if (location) {
+        q1 = q1.ilike('venues.location.town_city', location);
+        q2 = q2.ilike('venues.location.town_city', location);
+      }
+
+      const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
 
       const dedup = new Map();
-      [...(a.data || []), ...(b.data || [])].forEach(r => dedup.set(r.id, r));
+      [...(a || []), ...(b || [])].forEach(r => dedup.set(r.id, r));
       buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
       usingBuffer = true;
     }
@@ -200,6 +241,7 @@
       page++;
     }
 
+    // -------- Initial load + infinite scroll
     async function initialLoad(filters) {
       eventsGrid.innerHTML = '';
       page = 0;
@@ -222,7 +264,7 @@
       }
     }
 
-    // Infinite scroll
+    // Infinite scroll sentinel
     loadMoreBtn.style.display = 'none';
     const sentinel = document.createElement('div');
     sentinel.className = 'h-8';
@@ -231,11 +273,19 @@
     const observer = new IntersectionObserver(async entries => {
       const [entry] = entries;
       if (!entry.isIntersecting) return;
-      if (usingBuffer) loadFromBuffer();
-      else await loadEventsServerPaged(currentFilters);
+      try {
+        if (usingBuffer) {
+          loadFromBuffer();
+        } else {
+          await loadEventsServerPaged(currentFilters);
+        }
+      } catch (e) {
+        console.error(e);
+      }
     }, { rootMargin: '200px' });
     observer.observe(sentinel);
 
+    // Boot
     (async () => {
       await loadUserAndFavourites();
       const filters = getFiltersFromURL();
