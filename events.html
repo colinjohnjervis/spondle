@@ -8,19 +8,16 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-10">
-  <link rel="stylesheet" href="./styles.css?v=global-10">
-  <link rel="stylesheet" href="./hearts.css?v=global-10">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-11">
+  <link rel="stylesheet" href="./styles.css?v=global-11">
+  <link rel="stylesheet" href="./hearts.css?v=global-11">
 </head>
 <body>
-  <!-- START: LAYOUT ROOT -->
   <div id="layout-root"></div>
-  <!-- END: LAYOUT ROOT -->
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
     <h1 class="sr-only">Events</h1>
 
-    <!-- START: EVENTS GRID -->
     <section>
       <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
       <div class="flex justify-center mt-6">
@@ -31,18 +28,15 @@
       </div>
       <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load events.</p>
     </section>
-    <!-- END: EVENTS GRID -->
   </main>
 
-  <!-- Shared layout -->
-  <script src="./spondle-layout.js?v=global-10" type="module"></script>
+  <script src="./spondle-layout.js?v=global-11" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       window.Layout.init({ active: "events" });
     });
   </script>
 
-  <!-- PAGE LOGIC -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
@@ -65,6 +59,11 @@
     function todayYMD() {
       return new Date().toISOString().split('T')[0];
     }
+    function addMonths(date, months) {
+      const d = new Date(date);
+      d.setMonth(d.getMonth() + months);
+      return d.toISOString().split('T')[0];
+    }
 
     function getFiltersFromURL() {
       const sp = new URL(window.location.href).searchParams;
@@ -72,10 +71,17 @@
       let startDate = (sp.get("startDate") || "").trim();
       let endDate = (sp.get("endDate") || "").trim();
 
-      // Apply sensible fallbacks
       const today = todayYMD();
-      if (!startDate && !endDate) startDate = today; // no past events
-      if (startDate && !endDate) endDate = startDate; // single-day search
+      const oneYearAhead = addMonths(today, 12);
+
+      // Default behaviour if no dates chosen
+      if (!startDate && !endDate) {
+        startDate = today;
+        endDate = oneYearAhead;
+      }
+
+      // Single-day fallback
+      if (startDate && !endDate) endDate = startDate;
       if (endDate && !startDate) startDate = today;
 
       return { text, startDate, endDate };
@@ -105,13 +111,12 @@
     function renderCards(rows) {
       const seen = new Set();
       for (const event of rows) {
-        if (seen.has(event.id)) continue; // dedupe safeguard
+        if (seen.has(event.id)) continue;
         seen.add(event.id);
 
         const card = document.createElement('a');
         card.href = `/event-page.html?id=${event.id}`;
-        card.className =
-          'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:ring-2 hover:ring-[color:var(--brand)] transition';
+        card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:ring-2 hover:ring-[color:var(--brand)] transition';
 
         const image = event.image_url
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
