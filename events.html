@@ -8,9 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-13">
-  <link rel="stylesheet" href="./styles.css?v=global-13">
-  <link rel="stylesheet" href="./hearts.css?v=global-13">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-14">
+  <link rel="stylesheet" href="./styles.css?v=global-14">
+  <link rel="stylesheet" href="./hearts.css?v=global-14">
 </head>
 <body>
   <!-- LAYOUT ROOT -->
@@ -32,7 +32,7 @@
   </main>
 
   <!-- Shared layout -->
-  <script src="./spondle-layout.js?v=global-13" type="module"></script>
+  <script src="./spondle-layout.js?v=global-14" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       window.Layout.init({ active: "events" });
@@ -60,7 +60,7 @@
     let favouriteEventIds = new Set();
     let currentFilters = {};
 
-    // -------- Dates / filters helpers
+    // ---------- Date helpers ----------
     function todayYMD() {
       return new Date().toISOString().split('T')[0];
     }
@@ -70,30 +70,28 @@
       return d.toISOString().split('T')[0];
     }
 
+    // ---------- URL filters ----------
     function getFiltersFromURL() {
       const sp = new URL(window.location.href).searchParams;
       let text = (sp.get("text") || "").trim();
       let startDate = (sp.get("startDate") || "").trim();
       let endDate = (sp.get("endDate") || "").trim();
-      let location = (sp.get("location") || "").trim(); // NEW
+      let location = (sp.get("location") || "").trim();
 
       const today = todayYMD();
       const oneYearAhead = addMonths(today, 12);
 
-      // Default window if nothing chosen
       if (!startDate && !endDate) {
         startDate = today;
         endDate = oneYearAhead;
       }
-
-      // Single-day fallback & no past events rule
       if (startDate && !endDate) endDate = startDate;
       if (endDate && !startDate) startDate = today;
 
       return { text, startDate, endDate, location };
     }
 
-    // -------- Auth + favourites
+    // ---------- User + favourites ----------
     async function loadUserAndFavourites() {
       const { data: { user: u } } = await supabase.auth.getUser();
       user = u;
@@ -115,7 +113,7 @@
       }
     }
 
-    // -------- Render
+    // ---------- Render ----------
     function renderCards(rows) {
       const seen = new Set();
       for (const event of rows) {
@@ -162,9 +160,8 @@
       }
     }
 
-    // -------- Server-paged load (no text search)
+    // ---------- Server-paged load ----------
     async function loadEventsServerPaged({ startDate, endDate, location }) {
-      // Base select with location nested (not inner by default)
       let q = supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
@@ -174,95 +171,71 @@
         .gte('event_date', startDate)
         .lte('event_date', endDate);
 
-      // If a location (town/city) is chosen, switch to double inner join and filter
       if (location) {
         q = supabase
           .from('events')
-          .select(`
-            *,
-            venues!inner(
-              venue_name,
-              location:location_id!inner(town_city)
-            )
-          `)
+          .select('*, venues!inner(venue_name, location:location_id!inner(town_city))')
           .eq('publish_status', 'published')
           .order('event_date', { ascending: true })
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
           .gte('event_date', startDate)
           .lte('event_date', endDate)
-          // case-insensitive partial match for friendlier UX
-          .ilike('venues.location.town_city', \`%${location}%\`);
+          .ilike('venues.location_id.town_city', `%${location}%`);
       }
 
       const { data, error } = await q;
       if (error) throw error;
-
       renderCards(data || []);
       page++;
     }
 
-    // -------- Client buffer (when text search is used)
+    // ---------- Client buffer (for text search) ----------
     async function buildBuffer({ text, startDate, endDate, location }) {
-      // When location is provided, both queries use double inner join + filter
+      let q1, q2;
+
       if (location) {
-        const qName = supabase.from('events')
-          .select(`
-            id,event_name,event_date,event_time,image_url,
-            venues!inner(
-              venue_name,
-              location:location_id!inner(town_city)
-            )
-          `)
+        q1 = supabase
+          .from('events')
+          .select('id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id!inner(town_city))')
           .eq('publish_status', 'published')
           .order('event_date', { ascending: true })
-          .ilike('event_name', \`%${text}%\`)
+          .ilike('event_name', `%${text}%`)
           .gte('event_date', startDate)
           .lte('event_date', endDate)
-          .ilike('venues.location.town_city', \`%${location}%\`)
+          .ilike('venues.location_id.town_city', `%${location}%`)
           .limit(500);
 
-        const qVenue = supabase.from('events')
-          .select(`
-            id,event_name,event_date,event_time,image_url,
-            venues!inner(
-              venue_name,
-              location:location_id!inner(town_city)
-            )
-          `)
+        q2 = supabase
+          .from('events')
+          .select('id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id!inner(town_city))')
           .eq('publish_status', 'published')
           .order('event_date', { ascending: true })
-          .ilike('venues.venue_name', \`%${text}%\`)
+          .ilike('venues.venue_name', `%${text}%`)
           .gte('event_date', startDate)
           .lte('event_date', endDate)
-          .ilike('venues.location.town_city', \`%${location}%\`)
+          .ilike('venues.location_id.town_city', `%${location}%`)
+          .limit(500);
+      } else {
+        q1 = supabase
+          .from('events')
+          .select('id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))')
+          .eq('publish_status', 'published')
+          .order('event_date', { ascending: true })
+          .ilike('event_name', `%${text}%`)
+          .gte('event_date', startDate)
+          .lte('event_date', endDate)
           .limit(500);
 
-        const [{ data: a }, { data: b }] = await Promise.all([qName, qVenue]);
-        const dedup = new Map();
-        [...(a || []), ...(b || [])].forEach(r => dedup.set(r.id, r));
-        buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
-        usingBuffer = true;
-        return;
+        q2 = supabase
+          .from('events')
+          .select('id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))')
+          .eq('publish_status', 'published')
+          .order('event_date', { ascending: true })
+          .ilike('venues.venue_name', `%${text}%`)
+          .gte('event_date', startDate)
+          .lte('event_date', endDate)
+          .limit(500);
       }
-
-      // No location filter → original two-query approach
-      const q1 = supabase.from('events')
-        .select('id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))')
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true })
-        .ilike('event_name', \`%${text}%\`)
-        .gte('event_date', startDate)
-        .lte('event_date', endDate)
-        .limit(500);
-
-      const q2 = supabase.from('events')
-        .select('id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))')
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true })
-        .ilike('venues.venue_name', \`%${text}%\`)
-        .gte('event_date', startDate)
-        .lte('event_date', endDate)
-        .limit(500);
 
       const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
       const dedup = new Map();
@@ -277,7 +250,7 @@
       page++;
     }
 
-    // -------- Initial load + infinite scroll
+    // ---------- Initial load ----------
     async function initialLoad(filters) {
       eventsGrid.innerHTML = '';
       page = 0;
@@ -300,7 +273,7 @@
       }
     }
 
-    // Infinite scroll sentinel
+    // ---------- Infinite scroll ----------
     loadMoreBtn.style.display = 'none';
     const sentinel = document.createElement('div');
     sentinel.className = 'h-8';
@@ -310,18 +283,14 @@
       const [entry] = entries;
       if (!entry.isIntersecting) return;
       try {
-        if (usingBuffer) {
-          loadFromBuffer();
-        } else {
-          await loadEventsServerPaged(currentFilters);
-        }
-      } catch (e) {
-        console.error(e);
-      }
+        if (usingBuffer) loadFromBuffer();
+        else await loadEventsServerPaged(currentFilters);
+      } catch (e) { console.error(e); }
     }, { rootMargin: '200px' });
+
     observer.observe(sentinel);
 
-    // Boot
+    // ---------- Boot ----------
     (async () => {
       await loadUserAndFavourites();
       const filters = getFiltersFromURL();
