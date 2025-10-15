@@ -7,35 +7,43 @@
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
-  <link rel="stylesheet" href="./styles.css?v=global-9">
-  <link rel="stylesheet" href="./hearts.css?v=global-9">
+  <!-- Styles -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-8">
+  <link rel="stylesheet" href="./styles.css?v=global-8">
+  <link rel="stylesheet" href="./hearts.css?v=global-8">
 </head>
-<body class="bg-[#0b0b0b] text-white min-h-screen">
+<body>
+  <!-- Header + Sidebar injected -->
+  <div id="layout-root"></div>
 
-  <script type="module">
-    import { Layout } from './spondle-layout.js?v=global-9';
-    console.log('About page: Layout.js loaded');
-    Layout.init({ active: 'about' });
-  </script>
+  <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
+    <section class="panel p-6 md:p-8">
+      <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-[color:var(--brand)]">About Spondle</h1>
+      <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
+        Spondle is an event discovery and management platform designed to make it easier for organisers to create, share, and promote events of all kinds — from live music and comedy to community gatherings and festivals.
+      </p>
+      <p class="text-[color:var(--muted)] mt-4 max-w-2xl">
+        Our goal is to connect event seekers with organisers in a way that’s seamless, engaging, and visually appealing. Whether you’re managing a small local gig or a full tour, Spondle gives you the tools to showcase your events beautifully.
+      </p>
+      <p class="text-[color:var(--muted)] mt-4 max-w-2xl">
+        Event organisers can create custom microsites, integrate their events on their own websites using our plugin, and track engagement through analytics dashboards — all powered by a modern, user-friendly interface.
+      </p>
+    </section>
 
-  <main class="p-6 mt-20 max-w-3xl mx-auto text-gray-200">
-    <h1 class="text-3xl font-bold mb-4 text-[color:var(--brand)]">About Spondle</h1>
-    <p class="mb-4">
-      Spondle is an event discovery and management platform designed to make it easier for organisers to create, share, and promote events of all kinds — from live music and comedy to community gatherings and festivals.
-    </p>
-    <p class="mb-4">
-      Our goal is to connect event seekers with organisers in a way that’s seamless, engaging, and visually appealing. Whether you’re managing a small local gig or a full tour, Spondle gives you the tools to showcase your events beautifully.
-    </p>
-    <p class="mb-4">
-      Event organisers can create custom microsites, integrate their events on their own websites using our plugin, and track engagement through analytics dashboards — all powered by a modern, user-friendly interface.
-    </p>
-
-    <div class="mt-8 border-t border-gray-700 pt-4 text-sm text-gray-400">
-      <p>Built with ❤️ by the Spondle team.</p>
-      <p class="mt-1">© 2025 Spondle. All rights reserved.</p>
-    </div>
+    <section class="panel p-6 md:p-8 border-t border-gray-700">
+      <p class="text-sm text-gray-400">
+        Built with ❤️ by the Spondle team.<br />
+        © 2025 Spondle. All rights reserved.
+      </p>
+    </section>
   </main>
+
+  <!-- Shared Layout -->
+  <script src="./spondle-layout.js?v=global-8" type="module"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout.init({ active: "about" });
+    });
+  </script>
 </body>
 </html>
