@@ -11,8 +11,12 @@
   <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
   <link rel="stylesheet" href="./styles.css?v=global-9">
   <link rel="stylesheet" href="./hearts.css?v=global-9">
+
+  <!-- Supabase + Layout (required for sidebar + header) -->
+  <script type="module" src="./spondle-layout.js?v=global-9"></script>
 </head>
 <body class="bg-[#0b0b0b] text-white min-h-screen">
+
   <script type="module">
     import { Layout } from './spondle-layout.js';
     Layout.init({ active: 'about' });
