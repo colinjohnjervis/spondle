@@ -8,9 +8,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Shared styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-12">
-  <link rel="stylesheet" href="./styles.css?v=global-12">
-  <link rel="stylesheet" href="./hearts.css?v=global-12">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-13">
+  <link rel="stylesheet" href="./styles.css?v=global-13">
+  <link rel="stylesheet" href="./hearts.css?v=global-13">
 </head>
 <body>
   <!-- LAYOUT ROOT -->
@@ -32,7 +32,7 @@
   </main>
 
   <!-- Shared layout -->
-  <script src="./spondle-layout.js?v=global-12" type="module"></script>
+  <script src="./spondle-layout.js?v=global-13" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       window.Layout.init({ active: "events" });
@@ -164,7 +164,7 @@
 
     // -------- Server-paged load (no text search)
     async function loadEventsServerPaged({ startDate, endDate, location }) {
-      // Select with nested venue + location (aliased as "location")
+      // Base select with location nested (not inner by default)
       let q = supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
@@ -174,19 +174,24 @@
         .gte('event_date', startDate)
         .lte('event_date', endDate);
 
-      // If a location (town/city) is chosen, filter via the nested join
+      // If a location (town/city) is chosen, switch to double inner join and filter
       if (location) {
-        // Use inner join to ensure only events with a venue in that town are returned
         q = supabase
           .from('events')
-          .select('*, venues!inner(venue_name, location:location_id(town_city))')
+          .select(`
+            *,
+            venues!inner(
+              venue_name,
+              location:location_id!inner(town_city)
+            )
+          `)
           .eq('publish_status', 'published')
           .order('event_date', { ascending: true })
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
           .gte('event_date', startDate)
           .lte('event_date', endDate)
-          // Case-insensitive exact match on the nested field
-          .ilike('venues.location.town_city', location);
+          // case-insensitive partial match for friendlier UX
+          .ilike('venues.location.town_city', \`%${location}%\`);
       }
 
       const { data, error } = await q;
@@ -198,37 +203,68 @@
 
     // -------- Client buffer (when text search is used)
     async function buildBuffer({ text, startDate, endDate, location }) {
-      const cols =
-        'id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))';
-
-      // Search by event name
-      let q1 = supabase.from('events')
-        .select(cols)
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true })
-        .ilike('event_name', `%${text}%`)
-        .gte('event_date', startDate)
-        .lte('event_date', endDate)
-        .limit(500);
-
-      // Search by venue name (inner join)
-      let q2 = supabase.from('events')
-        .select(`id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))`)
-        .eq('publish_status', 'published')
-        .order('event_date', { ascending: true })
-        .ilike('venues.venue_name', `%${text}%`)
-        .gte('event_date', startDate)
-        .lte('event_date', endDate)
-        .limit(500);
-
-      // If location chosen, add the town filter to both queries
+      // When location is provided, both queries use double inner join + filter
       if (location) {
-        q1 = q1.ilike('venues.location.town_city', location);
-        q2 = q2.ilike('venues.location.town_city', location);
+        const qName = supabase.from('events')
+          .select(`
+            id,event_name,event_date,event_time,image_url,
+            venues!inner(
+              venue_name,
+              location:location_id!inner(town_city)
+            )
+          `)
+          .eq('publish_status', 'published')
+          .order('event_date', { ascending: true })
+          .ilike('event_name', \`%${text}%\`)
+          .gte('event_date', startDate)
+          .lte('event_date', endDate)
+          .ilike('venues.location.town_city', \`%${location}%\`)
+          .limit(500);
+
+        const qVenue = supabase.from('events')
+          .select(`
+            id,event_name,event_date,event_time,image_url,
+            venues!inner(
+              venue_name,
+              location:location_id!inner(town_city)
+            )
+          `)
+          .eq('publish_status', 'published')
+          .order('event_date', { ascending: true })
+          .ilike('venues.venue_name', \`%${text}%\`)
+          .gte('event_date', startDate)
+          .lte('event_date', endDate)
+          .ilike('venues.location.town_city', \`%${location}%\`)
+          .limit(500);
+
+        const [{ data: a }, { data: b }] = await Promise.all([qName, qVenue]);
+        const dedup = new Map();
+        [...(a || []), ...(b || [])].forEach(r => dedup.set(r.id, r));
+        buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
+        usingBuffer = true;
+        return;
       }
 
-      const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
+      // No location filter → original two-query approach
+      const q1 = supabase.from('events')
+        .select('id,event_name,event_date,event_time,image_url,venues(venue_name,location:location_id(town_city))')
+        .eq('publish_status', 'published')
+        .order('event_date', { ascending: true })
+        .ilike('event_name', \`%${text}%\`)
+        .gte('event_date', startDate)
+        .lte('event_date', endDate)
+        .limit(500);
 
+      const q2 = supabase.from('events')
+        .select('id,event_name,event_date,event_time,image_url,venues!inner(venue_name,location:location_id(town_city))')
+        .eq('publish_status', 'published')
+        .order('event_date', { ascending: true })
+        .ilike('venues.venue_name', \`%${text}%\`)
+        .gte('event_date', startDate)
+        .lte('event_date', endDate)
+        .limit(500);
+
+      const [{ data: a }, { data: b }] = await Promise.all([q1, q2]);
       const dedup = new Map();
       [...(a || []), ...(b || [])].forEach(r => dedup.set(r.id, r));
       buffer = [...dedup.values()].sort((x, y) => x.event_date.localeCompare(y.event_date));
