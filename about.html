@@ -14,9 +14,9 @@
 </head>
 <body class="bg-[#0b0b0b] text-white min-h-screen">
 
-  <!-- Initialise shared layout -->
   <script type="module">
-    import { Layout } from './spondle-layout.js';
+    import { Layout } from './spondle-layout.js?v=global-9';
+    console.log('About page: Layout.js loaded');
     Layout.init({ active: 'about' });
   </script>
 
