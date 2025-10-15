@@ -90,7 +90,7 @@ function getTomorrow() {
 }
 function getUpcomingWeekend() {
   const d = getToday();
-  const day = d.getDay();
+  const day = d.getDay(); // 0=Sun ... 6=Sat
   const daysUntilSaturday = (6 - day + 7) % 7;
   const saturday = new Date(d);
   saturday.setDate(d.getDate() + daysUntilSaturday);
@@ -207,6 +207,8 @@ window.Layout = {
         </div>
       </form>
     `;
+    // Allow interaction inside the panel without closing anything
+    searchPanel.addEventListener("click", (e) => e.stopPropagation());
 
     // ---------- Overlay + Sidebar ----------
     const overlay = document.createElement("div");
@@ -228,17 +230,11 @@ window.Layout = {
       <nav class="sp-nav" id="sidebar-links">
         <a href="/index.html" class="${active === 'home' ? 'is-active' : ''}">Home</a>
         <a href="/events.html" class="${active === 'events' ? 'is-active' : ''}">Events</a>
-        <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
       </nav>
     `;
 
-    // ---------- Helper functions ----------
-    const closeAllPanels = () => {
-      searchPanel.style.display = "none";
-      document.body.classList.remove("sp-search-open");
-      document.body.classList.remove("sp-drawer-open");
-      overlay.style.display = "none";
-      overlay.style.pointerEvents = "none";
+    // ---------- Helper functions (centralised toggles) ----------
+    const resetBurgerIcon = () => {
       icon.innerHTML = `
         <line x1="3" y1="12" x2="21" y2="12"/>
         <line x1="3" y1="6" x2="21" y2="6"/>
@@ -246,66 +242,98 @@ window.Layout = {
       `;
     };
 
+    const showCloseIcon = () => {
+      icon.innerHTML = `
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      `;
+    };
+
+    const closeAllPanels = () => {
+      // Close search
+      searchPanel.style.display = "none";
+      document.body.classList.remove("sp-search-open");
+
+      // Close sidebar
+      document.body.classList.remove("sp-drawer-open");
+      overlay.style.display = "none";
+      overlay.style.pointerEvents = "none";
+      resetBurgerIcon();
+    };
+
     const toggleSidebar = () => {
-      const isOpen = document.body.classList.toggle("sp-drawer-open");
-      if (isOpen) {
+      const willOpen = !document.body.classList.contains("sp-drawer-open");
+
+      // If opening sidebar, ensure search is closed
+      if (willOpen) {
         searchPanel.style.display = "none";
         document.body.classList.remove("sp-search-open");
+      }
+
+      document.body.classList.toggle("sp-drawer-open");
+      const isOpen = document.body.classList.contains("sp-drawer-open");
+
+      if (isOpen) {
         overlay.style.display = "block";
         overlay.style.pointerEvents = "auto";
-        icon.innerHTML = `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`;
+        showCloseIcon();
       } else {
         overlay.style.display = "none";
         overlay.style.pointerEvents = "none";
-        icon.innerHTML = `
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        `;
+        resetBurgerIcon();
       }
     };
 
     const toggleSearch = () => {
       const isOpen = searchPanel.style.display === "block";
+
       if (isOpen) {
+        // close search
         searchPanel.style.display = "none";
         document.body.classList.remove("sp-search-open");
       } else {
+        // close sidebar if open
         document.body.classList.remove("sp-drawer-open");
         overlay.style.display = "none";
         overlay.style.pointerEvents = "none";
-        icon.innerHTML = `
-          <line x1="3" y1="12" x2="21" y2="12"/>
-          <line x1="3" y1="6" x2="21" y2="6"/>
-          <line x1="3" y1="18" x2="21" y2="18"/>
-        `;
+        resetBurgerIcon();
+
+        // open search
         searchPanel.style.display = "block";
         document.body.classList.add("sp-search-open");
       }
     };
 
-    // ---------- Bindings ----------
+    // ---------- Event bindings ----------
     overlay.onclick = closeAllPanels;
     sidebar.querySelector(".sp-close").onclick = closeAllPanels;
     burgerButton.onclick = toggleSidebar;
     searchButton.onclick = toggleSearch;
 
+    // ---------- Add elements to DOM ----------
     document.body.prepend(searchPanel);
     document.body.prepend(nav);
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
 
-    // ---------- Auth links ----------
+    // ---------- Sidebar links (About + conditionals) ----------
     const navContainer = document.getElementById("sidebar-links");
     if (navContainer) {
       if (user) {
+        // Logged in order:
+        // Home, Events, Favourites, Event Dashboard, My Profile, About, Sign out
         navContainer.innerHTML += `
+          <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
           <a href="/event-dashboard.html">Event Dashboard</a>
           <a href="/profile.html">My Profile</a>
+          <a href="/about.html">About</a>
           <a href="/logout.html">Sign out</a>
         `;
       } else {
+        // Logged out order:
+        // Home, Events, About, Sign in
         navContainer.innerHTML += `
+          <a href="/about.html">About</a>
           <a href="/login.html" class="${active === "login" ? "is-active" : ""}">Sign in</a>
         `;
       }
@@ -313,12 +341,16 @@ window.Layout = {
 
     // ---------- Init Flatpickr ----------
     await ensureFlatpickrLoaded();
+
     const urlFilters = getFiltersFromURL();
+
     const startInput = document.getElementById("globalStartDate");
     const endInput = document.getElementById("globalEndDate");
+
     const defaultDates = [];
     if (urlFilters.startDate) defaultDates.push(urlFilters.startDate);
     if (urlFilters.endDate) defaultDates.push(urlFilters.endDate);
+
     startInput.value = urlFilters.startDate || "";
     endInput.value = urlFilters.endDate || "";
 
@@ -367,12 +399,13 @@ window.Layout = {
       endInput.value = formatYMD(end);
     });
 
-    // ---------- Location autocomplete ----------
+    // ---------- Prefill search + location from URL ----------
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
     const globalLocationInput = document.getElementById("globalLocationInput");
     const locationSuggestions = document.getElementById("locationSuggestions");
     globalLocationInput.value = urlFilters.location || "";
 
+    // ---------- Location autocomplete (top 5) ----------
     function hideSuggestions() {
       locationSuggestions.classList.add("hidden");
       locationSuggestions.innerHTML = "";
@@ -382,9 +415,11 @@ window.Layout = {
         hideSuggestions();
         return;
       }
-      locationSuggestions.innerHTML = items.map(t =>
-        `<button type="button" class="w-full text-left px-3 py-2 hover:bg-gray-700">${t}</button>`).join("");
+      locationSuggestions.innerHTML = items
+        .map(t => `<button type="button" class="w-full text-left px-3 py-2 hover:bg-gray-700">${t}</button>`)
+        .join("");
       locationSuggestions.classList.remove("hidden");
+
       Array.from(locationSuggestions.querySelectorAll("button")).forEach(btn => {
         btn.addEventListener("click", () => {
           globalLocationInput.value = btn.textContent.trim();
@@ -393,12 +428,13 @@ window.Layout = {
       });
     }
 
-const fetchLocations = debounce(async (term) => {
+    const fetchLocations = debounce(async (term) => {
       term = term.trim();
       if (!term) {
         hideSuggestions();
         return;
       }
+      // Query top 5 matching town_city
       const { data, error } = await supabase
         .from("location")
         .select("town_city")
@@ -411,10 +447,7 @@ const fetchLocations = debounce(async (term) => {
         hideSuggestions();
         return;
       }
-
-      const unique = Array.from(
-        new Set((data || []).map(r => r.town_city).filter(Boolean))
-      );
+      const unique = Array.from(new Set((data || []).map(r => r.town_city).filter(Boolean)));
       showSuggestions(unique.slice(0, 5));
     }, 200);
 
@@ -422,18 +455,18 @@ const fetchLocations = debounce(async (term) => {
       fetchLocations(globalLocationInput.value);
     });
     globalLocationInput.addEventListener("focus", () => {
-      if (globalLocationInput.value.trim())
-        fetchLocations(globalLocationInput.value);
+      if (globalLocationInput.value.trim()) fetchLocations(globalLocationInput.value);
     });
     document.addEventListener("click", (e) => {
       const within = e.target.closest("#globalLocationInput") || e.target.closest("#locationSuggestions");
       if (!within) hideSuggestions();
     });
+    // ESC to close suggestions
     globalLocationInput.addEventListener("keydown", (e) => {
       if (e.key === "Escape") hideSuggestions();
     });
 
-    // ---------- Submit handler ----------
+    // ---------- Submit (global) ----------
     const searchForm = document.getElementById("globalSearchForm");
     searchForm.addEventListener("submit", (e) => {
       e.preventDefault();
