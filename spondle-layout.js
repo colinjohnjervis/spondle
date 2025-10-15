@@ -42,7 +42,6 @@ async function ensureFlatpickrLoaded() {
   const FLATPICKR_CSS_ID = "sp-flatpickr-css";
   const FLATPICKR_THEME_ID = "sp-flatpickr-dark-css";
   const FLATPICKR_JS_ID = "sp-flatpickr-js";
-
   const head = document.head;
 
   function addLink(id, href) {
@@ -91,7 +90,7 @@ function getTomorrow() {
 }
 function getUpcomingWeekend() {
   const d = getToday();
-  const day = d.getDay(); // 0=Sun ... 6=Sat
+  const day = d.getDay();
   const daysUntilSaturday = (6 - day + 7) % 7;
   const saturday = new Date(d);
   saturday.setDate(d.getDate() + daysUntilSaturday);
@@ -100,6 +99,9 @@ function getUpcomingWeekend() {
   return { start: saturday, end: sunday };
 }
 
+// -------------------------
+// Layout Init
+// -------------------------
 window.Layout = {
   async init({ active } = {}) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -150,7 +152,6 @@ window.Layout = {
       <line x1="3" y1="18" x2="21" y2="18"/>
     `;
     burgerButton.appendChild(icon);
-
     actions.appendChild(searchButton);
     actions.appendChild(burgerButton);
 
@@ -168,8 +169,6 @@ window.Layout = {
       borderBottom: "1px solid rgba(255,255,255,0.08)",
       zIndex: "10040",
     });
-
-    // Search form HTML (includes Location field + suggestions)
     searchPanel.innerHTML = `
       <form id="globalSearchForm" class="p-4 grid grid-cols-1 md:grid-cols-4 gap-3" style="pointer-events:auto;">
         <div class="md:col-span-2">
@@ -184,21 +183,14 @@ window.Layout = {
             <input id="globalLocationInput" name="location" type="text" autocomplete="off" placeholder="Type a town or city…"
               class="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white" />
             <div id="locationSuggestions"
-              class="absolute left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg overflow-hidden hidden z-[10060]">
-              <!-- suggestions injected here -->
-            </div>
+              class="absolute left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg overflow-hidden hidden z-[10060]"></div>
           </div>
         </div>
 
-        <!-- Inline date range picker -->
         <div class="md:col-span-2 flex flex-col items-center">
           <div id="spDatePicker" class="rounded-md border border-gray-700 overflow-hidden w-full flex justify-center"></div>
-
-          <!-- Hidden inputs keep the old IDs/names so existing logic keeps working -->
           <input id="globalStartDate" name="startDate" type="hidden" />
           <input id="globalEndDate" name="endDate" type="hidden" />
-
-          <!-- Quick buttons -->
           <div class="mt-3 flex flex-wrap justify-center gap-2">
             <button type="button" id="spAnytimeBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Anytime</button>
             <button type="button" id="spTodayBtn" class="px-3 py-1.5 rounded bg-gray-800 border border-gray-700 text-white text-sm hover:bg-gray-700">Today</button>
@@ -215,18 +207,6 @@ window.Layout = {
         </div>
       </form>
     `;
-    searchPanel.addEventListener("click", e => e.stopPropagation());
-
-    let searchOpen = false;
-    const toggleSearch = (force = null) => {
-      searchOpen = force !== null ? force : !searchOpen;
-      searchPanel.style.display = searchOpen ? "block" : "none";
-      document.body.classList.toggle("sp-search-open", searchOpen);
-    };
-    searchButton.addEventListener("click", () => toggleSearch());
-
-    document.body.prepend(searchPanel);
-    document.body.prepend(nav);
 
     // ---------- Overlay + Sidebar ----------
     const overlay = document.createElement("div");
@@ -236,16 +216,6 @@ window.Layout = {
       display: "none",
       pointerEvents: "none",
     });
-    overlay.onclick = () => {
-      document.body.classList.remove("sp-drawer-open");
-      overlay.style.display = "none";
-      overlay.style.pointerEvents = "none";
-      icon.innerHTML = `
-        <line x1="3" y1="12" x2="21" y2="12"/>
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <line x1="3" y1="18" x2="21" y2="18"/>
-      `;
-    };
 
     const sidebar = document.createElement("div");
     sidebar.className = "sp-sidebar";
@@ -261,7 +231,11 @@ window.Layout = {
         <a href="/favourites.html" class="${active === 'favourites' ? 'is-active' : ''}">Favourites</a>
       </nav>
     `;
-    sidebar.querySelector(".sp-close").onclick = () => {
+
+    // ---------- Helper functions ----------
+    const closeAllPanels = () => {
+      searchPanel.style.display = "none";
+      document.body.classList.remove("sp-search-open");
       document.body.classList.remove("sp-drawer-open");
       overlay.style.display = "none";
       overlay.style.pointerEvents = "none";
@@ -272,17 +246,54 @@ window.Layout = {
       `;
     };
 
+    const toggleSidebar = () => {
+      const isOpen = document.body.classList.toggle("sp-drawer-open");
+      if (isOpen) {
+        searchPanel.style.display = "none";
+        document.body.classList.remove("sp-search-open");
+        overlay.style.display = "block";
+        overlay.style.pointerEvents = "auto";
+        icon.innerHTML = `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`;
+      } else {
+        overlay.style.display = "none";
+        overlay.style.pointerEvents = "none";
+        icon.innerHTML = `
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        `;
+      }
+    };
+
+    const toggleSearch = () => {
+      const isOpen = searchPanel.style.display === "block";
+      if (isOpen) {
+        searchPanel.style.display = "none";
+        document.body.classList.remove("sp-search-open");
+      } else {
+        document.body.classList.remove("sp-drawer-open");
+        overlay.style.display = "none";
+        overlay.style.pointerEvents = "none";
+        icon.innerHTML = `
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        `;
+        searchPanel.style.display = "block";
+        document.body.classList.add("sp-search-open");
+      }
+    };
+
+    // ---------- Bindings ----------
+    overlay.onclick = closeAllPanels;
+    sidebar.querySelector(".sp-close").onclick = closeAllPanels;
+    burgerButton.onclick = toggleSidebar;
+    searchButton.onclick = toggleSearch;
+
+    document.body.prepend(searchPanel);
+    document.body.prepend(nav);
     document.body.prepend(overlay);
     document.body.prepend(sidebar);
-
-    burgerButton.onclick = () => {
-      const isOpen = document.body.classList.toggle("sp-drawer-open");
-      overlay.style.display = isOpen ? "block" : "none";
-      overlay.style.pointerEvents = isOpen ? "auto" : "none";
-      icon.innerHTML = isOpen
-        ? `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`
-        : `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`;
-    };
 
     // ---------- Auth links ----------
     const navContainer = document.getElementById("sidebar-links");
@@ -300,18 +311,14 @@ window.Layout = {
       }
     }
 
-    // ---------- Init Flatpickr inline range ----------
+    // ---------- Init Flatpickr ----------
     await ensureFlatpickrLoaded();
-
     const urlFilters = getFiltersFromURL();
-
     const startInput = document.getElementById("globalStartDate");
     const endInput = document.getElementById("globalEndDate");
-
     const defaultDates = [];
     if (urlFilters.startDate) defaultDates.push(urlFilters.startDate);
     if (urlFilters.endDate) defaultDates.push(urlFilters.endDate);
-
     startInput.value = urlFilters.startDate || "";
     endInput.value = urlFilters.endDate || "";
 
@@ -360,13 +367,12 @@ window.Layout = {
       endInput.value = formatYMD(end);
     });
 
-    // ---------- Prefill search + location from URL ----------
+    // ---------- Location autocomplete ----------
     document.getElementById("globalSearchInput").value = urlFilters.text || "";
     const globalLocationInput = document.getElementById("globalLocationInput");
     const locationSuggestions = document.getElementById("locationSuggestions");
     globalLocationInput.value = urlFilters.location || "";
 
-    // ---------- Location autocomplete (top 5) ----------
     function hideSuggestions() {
       locationSuggestions.classList.add("hidden");
       locationSuggestions.innerHTML = "";
@@ -376,11 +382,9 @@ window.Layout = {
         hideSuggestions();
         return;
       }
-      locationSuggestions.innerHTML = items
-        .map(t => `<button type="button" class="w-full text-left px-3 py-2 hover:bg-gray-700">${t}</button>`)
-        .join("");
+      locationSuggestions.innerHTML = items.map(t =>
+        `<button type="button" class="w-full text-left px-3 py-2 hover:bg-gray-700">${t}</button>`).join("");
       locationSuggestions.classList.remove("hidden");
-
       Array.from(locationSuggestions.querySelectorAll("button")).forEach(btn => {
         btn.addEventListener("click", () => {
           globalLocationInput.value = btn.textContent.trim();
@@ -389,13 +393,12 @@ window.Layout = {
       });
     }
 
-    const fetchLocations = debounce(async (term) => {
+const fetchLocations = debounce(async (term) => {
       term = term.trim();
       if (!term) {
         hideSuggestions();
         return;
       }
-      // Query top 5 matching town_city
       const { data, error } = await supabase
         .from("location")
         .select("town_city")
@@ -408,7 +411,10 @@ window.Layout = {
         hideSuggestions();
         return;
       }
-      const unique = Array.from(new Set((data || []).map(r => r.town_city).filter(Boolean)));
+
+      const unique = Array.from(
+        new Set((data || []).map(r => r.town_city).filter(Boolean))
+      );
       showSuggestions(unique.slice(0, 5));
     }, 200);
 
@@ -416,18 +422,18 @@ window.Layout = {
       fetchLocations(globalLocationInput.value);
     });
     globalLocationInput.addEventListener("focus", () => {
-      if (globalLocationInput.value.trim()) fetchLocations(globalLocationInput.value);
+      if (globalLocationInput.value.trim())
+        fetchLocations(globalLocationInput.value);
     });
     document.addEventListener("click", (e) => {
       const within = e.target.closest("#globalLocationInput") || e.target.closest("#locationSuggestions");
       if (!within) hideSuggestions();
     });
-    // ESC to close suggestions
     globalLocationInput.addEventListener("keydown", (e) => {
       if (e.key === "Escape") hideSuggestions();
     });
 
-    // ---------- Submit (global) ----------
+    // ---------- Submit handler ----------
     const searchForm = document.getElementById("globalSearchForm");
     searchForm.addEventListener("submit", (e) => {
       e.preventDefault();
