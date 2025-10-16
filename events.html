@@ -125,8 +125,8 @@
         card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:ring-2 hover:ring-[color:var(--brand)] transition';
 
         const image = event.image_url
-          ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
-          : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
+          ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-64 object-cover">`
+          : `<div class="w-full h-64 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
         const date = new Date(event.event_date).toLocaleDateString('en-GB', {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
