@@ -9,6 +9,9 @@ const stockImages = {
     "https://images.unsplash.com/photo-1504805572947-34fad45aed93?auto=format&fit=crop&w=1200&q=80"
   ],
   comedy: [
+    // Locally hosted image (Voles)
+    "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-105803.png",
+    // Existing Unsplash fallbacks
     "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
     "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80"
   ],
