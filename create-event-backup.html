@@ -502,4 +502,111 @@ nextArrow.addEventListener('click', () => scrollToIndex(currentIndex + 1));
     function createScheduleInput(){
       const section = document.getElementById('scheduleSection');
       const wrapper = document.createElement('div');
-      wrapper.className = 'spa
+      wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
+      wrapper.innerHTML = views.single();
+      section.insertBefore(wrapper, document.getElementById('addScheduleBtn'));
+      wireVenueSearch(wrapper);
+    }
+
+    function loadTab(type){
+      tabContent.innerHTML = views[type]();
+      eventTypeInput.value = type;
+      if (type === 'tour') {
+        document.getElementById('addScheduleBtn').addEventListener('click', createScheduleInput);
+      }
+      if (type === 'recurring') {
+        document.getElementById('addRecurringDate').addEventListener('click', () => {
+          const newInput = document.createElement('input');
+          newInput.type = 'date';
+          newInput.name = 'event_date[]';
+          newInput.required = true;
+          newInput.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
+          document.getElementById('addRecurringDate').before(newInput);
+        });
+      }
+      wireVenueSearch(tabContent);
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+        btn.classList.add('bg-blue-500');
+        loadTab(btn.dataset.type);
+      });
+    });
+
+    tabBtns[0].classList.add('bg-blue-500');
+    loadTab('single');
+    /* ---------------------------------
+       END: TAB SWITCHING LOGIC
+    ---------------------------------- */
+
+    /* ---------------------------------
+       START: FORM SUBMISSION LOGIC
+    ---------------------------------- */
+    function showBanner(message, ok=true){
+      banner.textContent = message;
+      banner.className = `mt-4 text-center px-4 py-2 rounded text-sm ${ok ? 'bg-green-600 text-black' : 'bg-red-600 text-white'}`;
+      banner.style.display = 'block';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return showBanner('You must be logged in to create events.', false);
+
+      const formData = new FormData(form);
+      const baseData = {
+        event_name: formData.get('event_name'),
+        category: formData.get('category'),
+        publish_status: formData.get('publish_status'),
+        image_url: formData.get('image_url') || null,
+        description: formData.get('description') || null,
+        organiser_id: user.id
+      };
+
+      const venueIds  = formData.getAll('venue_id[]').filter(Boolean);
+      const dates     = formData.getAll('event_date[]').filter(Boolean);
+      const times     = formData.getAll('event_time[]').filter(Boolean);
+      const tickets   = formData.getAll('ticket_url[]');
+      let payload = [];
+
+      if (eventTypeInput.value === 'recurring') {
+        if (!venueIds[0] || !times[0] || dates.length === 0) {
+          return showBanner('Please complete venue, time and at least one date.', false);
+        }
+        payload = dates.map((d) => ({
+          ...baseData,
+          venue_id: venueIds[0],
+          event_date: d,
+          event_time: times[0],
+          ticket_url: tickets[0] || null
+        }));
+      } else {
+        if (venueIds.length !== dates.length || dates.length !== times.length) {
+          return showBanner('Each venue needs a matching date and time.', false);
+        }
+        payload = venueIds.map((vId, i) => ({
+          ...baseData,
+          venue_id: vId,
+          event_date: dates[i],
+          event_time: times[i],
+          ticket_url: tickets[i] || null
+        }));
+      }
+
+      const { error } = await supabase.from('events').insert(payload);
+      if (error) return showBanner('Some events failed to submit.', false);
+      showBanner('Event(s) submitted successfully!', true);
+      form.reset();
+      tabBtns.forEach(b => b.classList.remove('bg-blue-500'));
+      tabBtns[0].classList.add('bg-blue-500');
+      loadTab('single');
+    });
+    /* ---------------------------------
+       END: FORM SUBMISSION LOGIC
+    ---------------------------------- */
+  </script>
+  <!-- END: PAGE LOGIC -->
+</body>
+</html>
