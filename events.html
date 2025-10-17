@@ -126,7 +126,7 @@
 
         const image = event.image_url
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-80 object-cover">`
-          : `<div class="w-full h-80 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
+          : `<div class="w-full h-96 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
 
         const date = new Date(event.event_date).toLocaleDateString('en-GB', {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
