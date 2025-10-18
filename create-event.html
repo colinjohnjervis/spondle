@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="./hearts.css?v=global-9">
 
   <style>
+  /* -----------------------------
+     INLINE PAGE STYLES
+  ----------------------------- */
   .venue-card{border:1px solid #444;border-radius:12px;padding:12px;margin-bottom:12px;background:#111;cursor:pointer;}
   .venue-card strong{display:block;margin-bottom:4px;}
   .no-results{text-align:center;color:#888;margin-top:10px;}
@@ -19,13 +22,19 @@
   .input-wrapper{position:relative;}
   .clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer;}
 
-  /* IMAGE CAROUSEL */
+  /* -----------------------------------
+     START: IMAGE CAROUSEL STYLES
+  ----------------------------------- */
   .no-scrollbar::-webkit-scrollbar{display:none;}
   .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
   .img-wrapper{border-radius:0.5rem;overflow:hidden;background-clip:padding-box;border:3px solid transparent;transition:border-color .25s ease;}
   .img-wrapper.selected{border-color:#22c55e;}
   .arrow-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);color:rgba(255,255,255,.9);font-size:22px;width:40px;height:40px;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
   .arrow-btn:hover{background:rgba(0,0,0,.6);}
+  .placeholder-box{height:24rem;background:#e5e5e5;color:#222;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;border-radius:.5rem;}
+  /* -----------------------------------
+     END: IMAGE CAROUSEL STYLES
+  ----------------------------------- */
   </style>
 </head>
 
@@ -62,8 +71,11 @@
         </select>
       </div>
 
-      <!-- Hidden image URL that the carousel sets -->
+      <!-- Hidden image URL -->
       <input type="hidden" id="imageUrlInput" name="image_url" />
+
+      <!-- Placeholder shown before category selection -->
+      <div id="placeholderBox" class="placeholder-box">Spondle</div>
 
       <div>
         <label class="block mb-2">Publish Status</label>
@@ -88,14 +100,11 @@
       <!-- END: SCHEDULE TABS -->
 
       <!-- START: SUBMIT + ORGANISER ID -->
-      <button type="submit"
-        class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
+      <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
 
       <div>
         <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
-        <input type="text" id="organiser_id" name="organiser_id" readonly
-          class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 text-sm"
-          placeholder="Fetching..." />
+        <input type="text" id="organiser_id" name="organiser_id" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 text-sm" placeholder="Fetching..." />
       </div>
 
       <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
@@ -114,448 +123,335 @@
 
   <!-- START: PAGE LOGIC -->
   <script type="module">
-    /* ---------------------------------
-       START: SUPABASE INITIALIZATION
-    ---------------------------------- */
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabase = createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-    );
-
-    // Autofill organiser_id
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      const organiserInput = document.getElementById('organiser_id');
-      organiserInput.value = user ? user.id : 'Not logged in';
-    });
-    /* ---------------------------------
-       END: SUPABASE INITIALIZATION
-    ---------------------------------- */
-
-    /* ---------------------------------
-       START: IMAGE STOCK PICKER
-    ---------------------------------- */
-const imageUrlInput = document.getElementById('imageUrlInput'); // hidden
-const categorySelect = document.querySelector('select[name="category"]');
-
-// --- STOCK IMAGES BY CATEGORY ---
-const stockImages = {
-  music: [
-    "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1518364538800-6bae3c1f3a36?auto=format&fit=crop&w=1200&q=80"
-  ],
-  comedy: [
-    "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
-    "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
-    "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1532636480627-8b785aa5d4b1?auto=format&fit=crop&w=1200&q=80"
-  ],
-  theatre: [
-    "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=1200&q=80"
-  ],
-  sports: [
-    "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80"
-  ],
-  festival: [
-    "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1492684223066-81342ee5ff33?auto=format&fit=crop&w=1200&q=80"
-  ],
-  quiz: [
-    "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80"
-  ]
-};
-
-// --- BUILD CAROUSEL ELEMENTS ---
-const carouselContainer = document.createElement('div');
-carouselContainer.className = 'relative mt-3';
-
-const carouselTrack = document.createElement('div');
-carouselTrack.id = 'carousel';
-carouselTrack.className = 'flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth';
-carouselContainer.appendChild(carouselTrack);
-
-const prevArrow = document.createElement('button');
-prevArrow.type = 'button';
-prevArrow.id = 'prevArrow';
-prevArrow.innerHTML = '&lt;';
-prevArrow.className = 'arrow-btn left-2 hidden';
-carouselContainer.appendChild(prevArrow);
-
-const nextArrow = document.createElement('button');
-nextArrow.type = 'button';
-nextArrow.id = 'nextArrow';
-nextArrow.innerHTML = '&gt;';
-nextArrow.className = 'arrow-btn right-2 hidden';
-carouselContainer.appendChild(nextArrow);
-
-// Insert carousel just below the category dropdown
-const categoryField = document.querySelector('select[name="category"]').closest('div');
-categoryField.insertAdjacentHTML('beforeend', `
-  <label class="block mt-4 mb-2">Stock image preview</label>
-`);
-categoryField.appendChild(carouselContainer);
-
-// --- CAROUSEL LOGIC ---
-let slides = [];
-let currentIndex = 0;
-
-function updateArrows() {
-  if (!slides.length) {
-    prevArrow.classList.add('hidden');
-    nextArrow.classList.add('hidden');
-    return;
-  }
-  prevArrow.classList.remove('hidden');
-  nextArrow.classList.remove('hidden');
-  prevArrow.disabled = currentIndex <= 0;
-  nextArrow.disabled = currentIndex >= slides.length - 1;
-}
-
-function scrollToIndex(i) {
-  if (!slides[i]) return;
-  currentIndex = Math.max(0, Math.min(i, slides.length - 1));
-  const left = slides[currentIndex].offsetLeft;
-  carouselTrack.scrollTo({ left, behavior: 'smooth' });
-  updateArrows();
-}
-
-// Populate carousel when category changes
-categorySelect.addEventListener('change', () => {
-  const cat = categorySelect.value;
-  carouselTrack.innerHTML = '';
-  imageUrlInput.value = '';
-
-  if (!cat || !stockImages[cat]) {
-    prevArrow.classList.add('hidden');
-    nextArrow.classList.add('hidden');
-    return;
-  }
-
-  stockImages[cat].forEach(url => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'img-wrapper w-full h-40 shrink-0 snap-center';
-    const img = document.createElement('img');
-    img.src = url;
-    img.className = 'w-full h-full object-cover cursor-pointer';
-    img.alt = `${cat} image`;
-    img.addEventListener('click', () => {
-      carouselTrack.querySelectorAll('.img-wrapper').forEach(w => w.classList.remove('selected'));
-      wrapper.classList.add('selected');
-      imageUrlInput.value = url; // set hidden field
-    });
-    wrapper.appendChild(img);
-    carouselTrack.appendChild(wrapper);
+  /* ---------------------------------
+     START: SUPABASE INITIALIZATION
+  ---------------------------------- */
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const supabase = createClient(
+    'https://jvuunvnbpdfrttusgelz.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+  );
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    document.getElementById('organiser_id').value = user ? user.id : 'Not logged in';
   });
 
-  slides = Array.from(carouselTrack.children);
-  currentIndex = 0;
-  updateArrows();
-});
+  /* ---------------------------------
+     START: IMAGE STOCK PICKER
+  ---------------------------------- */
+  const imageUrlInput = document.getElementById('imageUrlInput');
+  const categorySelect = document.querySelector('select[name="category"]');
+  const placeholderBox = document.getElementById('placeholderBox');
 
-prevArrow.addEventListener('click', () => scrollToIndex(currentIndex - 1));
-nextArrow.addEventListener('click', () => scrollToIndex(currentIndex + 1));
+  const stockImages = {
+    music: [
+      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1518364538800-6bae3c1f3a36?auto=format&fit=crop&w=1200&q=80"
+    ],
+    comedy: [
+      "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
+      "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
+      "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1532636480627-8b785aa5d4b1?auto=format&fit=crop&w=1200&q=80"
+    ],
+    theatre: [
+      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=1200&q=80"
+    ],
+    sports: [
+      "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80"
+    ],
+    festival: [
+      "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff33?auto=format&fit=crop&w=1200&q=80"
+    ],
+    quiz: [
+      "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80"
+    ]
+  };
 
-/* ---------------------------------
-   END: IMAGE STOCK PICKER
----------------------------------- */
+  const carouselContainer = document.createElement('div');
+  carouselContainer.className = 'relative mt-3 hidden';
+  const carouselTrack = document.createElement('div');
+  carouselTrack.id = 'carousel';
+  carouselTrack.className = 'flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth';
+  carouselContainer.appendChild(carouselTrack);
+  const prevArrow = document.createElement('button');
+  prevArrow.type = 'button';
+  prevArrow.innerHTML = '&lt;';
+  prevArrow.className = 'arrow-btn left-2 hidden';
+  carouselContainer.appendChild(prevArrow);
+  const nextArrow = document.createElement('button');
+  nextArrow.type = 'button';
+  nextArrow.innerHTML = '&gt;';
+  nextArrow.className = 'arrow-btn right-2 hidden';
+  carouselContainer.appendChild(nextArrow);
 
-    /* ---------------------------------
-       START: TAB & SCHEDULE LOGIC
-    ---------------------------------- */
-const tabBtns = document.querySelectorAll('.tab-btn');
-const tabContent = document.getElementById('tabContent');
-const eventTypeInput = document.getElementById('eventType');
-const banner = document.getElementById('banner');
-const form = document.getElementById('eventForm');
+  // Insert carousel below the placeholder
+  placeholderBox.insertAdjacentElement('afterend', carouselContainer);
 
-const venueSearchBlock = () => `
-  <div>
-    <div class="input-wrapper">
-      <input type="text" placeholder="Search by venue name..." class="search w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      <button type="button" class="clear-btn" title="Clear">&times;</button>
-    </div>
-    <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="venue-id w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
-    <div class="venue-list mt-2"></div>
-    <div class="no-results" style="display:none;">
-      No results — <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
-    </div>
-    <div class="venue-form mt-4" style="display:none;">
-      <input type="text" placeholder="Venue name" class="venue-name bg-gray-800 border border-gray-600">
-      <input type="text" placeholder="Street address" class="venue-street bg-gray-800 border border-gray-600">
-      <input type="text" placeholder="Postcode" class="venue-postcode bg-gray-800 border border-gray-600">
-      <button type="button" class="venue-submit bg-green-500 text-black">Create Venue</button>
-    </div>
-  </div>
-`;
-
-const views = {
-  single: () => `
-    <div class="space-y-2">
-      ${venueSearchBlock()}
-      <div class="flex gap-4">
-        <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>
-      <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
-  `,
-  recurring: () => `
-    <div class="space-y-2">
-      ${venueSearchBlock()}
-      <div class="flex gap-4">
-        <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>
-      <label class="block text-sm">Recurring Dates:</label>
-      <div id="recurringDates" class="space-y-2"></div>
-      <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-      <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-    </div>
-  `,
-  tour: () => `
-    <div id="scheduleSection" class="space-y-4">
-      ${venueSearchBlock()}
-      <div class="flex gap-4">
-        <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>
-      <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
-    </div>
-  `
-};
-
-function renderTab(type) {
-  eventTypeInput.value = type;
-  tabContent.innerHTML = views[type]();
-  tabBtns.forEach(b => b.classList.toggle('bg-green-600', b.dataset.type === type));
-  wireVenueSearch(tabContent);
-
-  // wire per-tab extras
-  if (type === 'recurring') {
-    const addBtn = tabContent.querySelector('#addRecurringDate');
-    const datesWrap = tabContent.querySelector('#recurringDates');
-    addBtn.addEventListener('click', () => {
-      const i = document.createElement('input');
-      i.type = 'date';
-      i.name = 'event_date[]';
-      i.required = true;
-      i.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded';
-      datesWrap.appendChild(i);
-    });
+  let slides = [], currentIndex = 0;
+  function updateArrows(){
+    if(!slides.length){prevArrow.classList.add('hidden');nextArrow.classList.add('hidden');return;}
+    prevArrow.classList.remove('hidden');nextArrow.classList.remove('hidden');
+    prevArrow.disabled=currentIndex<=0;nextArrow.disabled=currentIndex>=slides.length-1;
+  }
+  function scrollToIndex(i){
+    if(!slides[i])return;
+    currentIndex=Math.max(0,Math.min(i,slides.length-1));
+    carouselTrack.scrollTo({left:slides[currentIndex].offsetLeft,behavior:'smooth'});
+    updateArrows();
   }
 
-  if (type === 'tour') {
-    const addScheduleBtn = tabContent.querySelector('#addScheduleBtn');
-    addScheduleBtn.addEventListener('click', createScheduleInput);
-  }
-}
-
-tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => renderTab(btn.dataset.type));
-});
-
-// initial view
-renderTab('single');
-/* ---------------------------------
-   END: TAB & SCHEDULE LOGIC
----------------------------------- */
-
-    /* ---------------------------------
-       START: VENUE SEARCH / CREATE LOGIC
-    ---------------------------------- */
-function wireVenueSearch(scope=document){
-  scope.querySelectorAll('.input-wrapper').forEach(wrapper => {
-    const searchInput = wrapper.querySelector('.search');
-    const parent = wrapper.closest('div');
-    const venueIdInput = parent.parentElement.querySelector('.venue-id');
-    const venueList = parent.parentElement.querySelector('.venue-list');
-    const noResults = parent.parentElement.querySelector('.no-results');
-    const venueForm = parent.parentElement.querySelector('.venue-form');
-    const clearBtn = wrapper.querySelector('.clear-btn');
-
-    searchInput.addEventListener('input', async () => {
-      const q = searchInput.value.trim();
-      venueList.innerHTML = '';
-      noResults.style.display = 'none';
-      if (!q) return;
-      const { data: venues, error } = await supabase
-        .from('venues')
-        .select('id,venue_name,street_name,postcode')
-        .ilike('venue_name', `%${q}%`)
-        .limit(5);
-      if (error) return;
-      if (!venues || venues.length === 0) {
-        noResults.style.display = 'block';
-        return;
-      }
-      venues.forEach(v => {
-        const card = document.createElement('div');
-        card.className = 'venue-card';
-        card.innerHTML = `<strong>${v.venue_name}</strong>${v.street_name || ''}${v.postcode ? ', '+v.postcode : ''}`;
-        card.addEventListener('click', () => {
-          searchInput.value = v.venue_name;
-          venueIdInput.value = v.id;
-          venueList.innerHTML = '';
-          noResults.style.display = 'none';
-        });
-        venueList.appendChild(card);
+  categorySelect.addEventListener('change',()=>{
+    const cat=categorySelect.value;
+    carouselTrack.innerHTML='';
+    if(!cat){carouselContainer.classList.add('hidden');placeholderBox.classList.remove('hidden');imageUrlInput.value='';return;}
+    placeholderBox.classList.add('hidden');
+    carouselContainer.classList.remove('hidden');
+    stockImages[cat].forEach(url=>{
+      const wrapper=document.createElement('div');
+      wrapper.className='img-wrapper w-full h-96 shrink-0 snap-center';
+      const img=document.createElement('img');
+      img.src=url;
+      img.className='w-full h-full object-cover cursor-pointer';
+      img.alt=`${cat} image`;
+      img.addEventListener('click',()=>{
+        carouselTrack.querySelectorAll('.img-wrapper').forEach(w=>w.classList.remove('selected'));
+        wrapper.classList.add('selected');
+        imageUrlInput.value=url;
       });
+      wrapper.appendChild(img);
+      carouselTrack.appendChild(wrapper);
     });
-
-    clearBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      venueIdInput.value = '';
-      venueList.innerHTML = '';
-      venueForm.style.display = 'none';
-      noResults.style.display = 'none';
-    });
-
-    parent.parentElement.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      venueForm.style.display = 'block';
-    });
-
-    parent.parentElement.querySelector('.venue-submit')?.addEventListener('click', async () => {
-      const name = parent.parentElement.querySelector('.venue-name').value.trim();
-      const street = parent.parentElement.querySelector('.venue-street').value.trim();
-      const postcode = parent.parentElement.querySelector('.venue-postcode').value.trim();
-      if (!name) return alert('Enter a venue name');
-      const { data, error } = await supabase
-        .from('venues')
-        .insert([{ venue_name: name, street_name: street, postcode }])
-        .select('id');
-      if (error) return alert('Error creating venue');
-      searchInput.value = name;
-      venueIdInput.value = data[0].id;
-      venueForm.style.display = 'none';
-      venueList.innerHTML = '';
-      noResults.style.display = 'none';
-    });
+    slides=Array.from(carouselTrack.children);
+    currentIndex=0;
+    updateArrows();
   });
-}
-/* ---------------------------------
-   END: VENUE SEARCH / CREATE LOGIC
----------------------------------- */
+  prevArrow.addEventListener('click',()=>scrollToIndex(currentIndex-1));
+  nextArrow.addEventListener('click',()=>scrollToIndex(currentIndex+1));
+  /* ---------------------------------
+     END: IMAGE STOCK PICKER
+  ---------------------------------- */
 
-    /* ---------------------------------
-       START: ADD SCHEDULE ROW (TOUR)
-    ---------------------------------- */
-function createScheduleInput(){
-  const section = document.getElementById('scheduleSection');
-  const wrapper = document.createElement('div');
-  wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
-  wrapper.innerHTML = `
-    ${venueSearchBlock()}
-    <div class="flex gap-4">
-      <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-      <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+/* ---------------------------------
+     START: TAB & SCHEDULE LOGIC
+  ---------------------------------- */
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContent = document.getElementById('tabContent');
+  const eventTypeInput = document.getElementById('eventType');
+  const banner = document.getElementById('banner');
+  const form = document.getElementById('eventForm');
+
+  const venueSearchBlock = () => `
+    <div>
+      <div class="input-wrapper">
+        <input type="text" placeholder="Search by venue name..." class="search w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <button type="button" class="clear-btn" title="Clear">&times;</button>
+      </div>
+      <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="venue-id w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
+      <div class="venue-list mt-2"></div>
+      <div class="no-results" style="display:none;">
+        No results — <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
+      </div>
+      <div class="venue-form mt-4" style="display:none;">
+        <input type="text" placeholder="Venue name" class="venue-name bg-gray-800 border border-gray-600">
+        <input type="text" placeholder="Street address" class="venue-street bg-gray-800 border border-gray-600">
+        <input type="text" placeholder="Postcode" class="venue-postcode bg-gray-800 border border-gray-600">
+        <button type="button" class="venue-submit bg-green-500 text-black">Create Venue</button>
+      </div>
     </div>
-    <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
   `;
-  section.appendChild(wrapper);
-  wireVenueSearch(wrapper);
-}
-/* ---------------------------------
-   END: ADD SCHEDULE ROW (TOUR)
----------------------------------- 
 
-    /* ---------------------------------
-       START: SUBMIT HANDLER
-    ---------------------------------- */
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  banner.className = 'hidden';
-  banner.textContent = '';
+  const views = {
+    single: () => `
+      <div class="space-y-2">
+        ${venueSearchBlock()}
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      </div>
+    `,
+    recurring: () => `
+      <div class="space-y-2">
+        ${venueSearchBlock()}
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <label class="block text-sm">Recurring Dates:</label>
+        <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
+        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      </div>
+    `,
+    tour: () => `
+      <div id="scheduleSection" class="space-y-4">
+        ${venueSearchBlock()}
+        <div class="flex gap-4">
+          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+      </div>
+    `
+  };
 
-  const fd = new FormData(form);
-  const event_name = fd.get('event_name')?.trim();
-  const description = fd.get('description')?.trim() || '';
-  const category = fd.get('category');
-  const image_url = fd.get('image_url') || '';
-  const publish_status = fd.get('publish_status');
-  const organiser_id = fd.get('organiser_id') || null;
-  const event_type = fd.get('event_type');
+  /* ---------------------------------
+     START: VENUE SEARCH / CREATE LOGIC
+  ---------------------------------- */
+  function wireVenueSearch(scope=document){
+    scope.querySelectorAll('.input-wrapper').forEach(wrapper=>{
+      const searchInput=wrapper.querySelector('.search');
+      const parent=wrapper.closest('div');
+      const venueIdInput=parent.parentElement.querySelector('.venue-id');
+      const venueList=parent.parentElement.querySelector('.venue-list');
+      const noResults=parent.parentElement.querySelector('.no-results');
+      const venueForm=parent.parentElement.querySelector('.venue-form');
+      const clearBtn=wrapper.querySelector('.clear-btn');
 
-  if (!event_name || !category || !publish_status) {
-    showBanner('Please complete required fields.', 'bg-red-600');
-    return;
+      searchInput.addEventListener('input',async()=>{
+        const q=searchInput.value.trim();
+        venueList.innerHTML='';
+        noResults.style.display='none';
+        if(!q)return;
+        const{data:venues,error}=await supabase
+          .from('venues')
+          .select('id,venue_name,street_name,postcode')
+          .ilike('venue_name',`%${q}%`)
+          .limit(5);
+        if(error)return;
+        if(!venues||venues.length===0){noResults.style.display='block';return;}
+        venues.forEach(v=>{
+          const card=document.createElement('div');
+          card.className='venue-card';
+          card.innerHTML=`<strong>${v.venue_name}</strong>${v.street_name||''}${v.postcode?', '+v.postcode:''}`;
+          card.addEventListener('click',()=>{
+            searchInput.value=v.venue_name;
+            venueIdInput.value=v.id;
+            venueList.innerHTML='';
+            noResults.style.display='none';
+          });
+          venueList.appendChild(card);
+        });
+      });
+
+      clearBtn.addEventListener('click',()=>{
+        searchInput.value='';
+        venueIdInput.value='';
+        venueList.innerHTML='';
+        venueForm.style.display='none';
+        noResults.style.display='none';
+      });
+
+      parent.parentElement.querySelector('.create-venue-link')?.addEventListener('click',e=>{
+        e.preventDefault();
+        venueForm.style.display='block';
+      });
+
+      parent.parentElement.querySelector('.venue-submit')?.addEventListener('click',async()=>{
+        const name=parent.parentElement.querySelector('.venue-name').value.trim();
+        const street=parent.parentElement.querySelector('.venue-street').value.trim();
+        const postcode=parent.parentElement.querySelector('.venue-postcode').value.trim();
+        if(!name)return alert('Enter a venue name');
+        const{data,error}=await supabase.from('venues').insert([{venue_name:name,street_name:street,postcode}]).select('id');
+        if(error)return alert('Error creating venue');
+        searchInput.value=name;
+        venueIdInput.value=data[0].id;
+        venueForm.style.display='none';
+        venueList.innerHTML='';
+        noResults.style.display='none';
+      });
+    });
+  }
+  /* ---------------------------------
+     END: VENUE SEARCH / CREATE LOGIC
+  ---------------------------------- */
+
+  /* ---------------------------------
+     START: TAB SWITCHING LOGIC
+  ---------------------------------- */
+  function createScheduleInput(){
+    const section=document.getElementById('scheduleSection');
+    const wrapper=document.createElement('div');
+    wrapper.className='space-y-2 border-t border-gray-700 pt-4';
+    wrapper.innerHTML=views.single();
+    section.insertBefore(wrapper,section.querySelector('#addScheduleBtn'));
+    wireVenueSearch(wrapper);
   }
 
-  // Collect arrays (these come back in order per block)
-  const venue_ids = fd.getAll('venue_id[]').map(v => v || null);
-  const dates = fd.getAll('event_date[]');
-  const times = fd.getAll('event_time[]');
-  const ticket_urls = fd.getAll('ticket_url[]');
+  tabBtns.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      tabBtns.forEach(b=>b.classList.remove('bg-green-600'));
+      btn.classList.add('bg-green-600');
+      const type=btn.dataset.type;
+      eventTypeInput.value=type;
+      tabContent.innerHTML=views[type]();
+      if(type==='tour'){
+        const addBtn=document.getElementById('addScheduleBtn');
+        addBtn?.addEventListener('click',createScheduleInput);
+      }
+      wireVenueSearch(tabContent);
+    });
+  });
+  tabBtns[0].click();
+  /* ---------------------------------
+     END: TAB SWITCHING LOGIC
+  ---------------------------------- */
 
-  // Build rows by event_type
-  let rows = [];
-  if (event_type === 'single') {
-    if (!venue_ids[0]) return showBanner('Please choose a venue.', 'bg-red-600');
-    rows.push({
-      event_name, description, category, image_url, publish_status, organiser_id,
-      event_type, event_date: dates[0], event_time: times[0], venue_id: venue_ids[0],
-      ticket_url: ticket_urls[0] || null
+  /* ---------------------------------
+     START: FORM SUBMISSION
+  ---------------------------------- */
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const formData=new FormData(form);
+    const entries=Array.from(formData.entries());
+    const grouped={};
+    entries.forEach(([k,v])=>{
+      if(k.endsWith('[]')){const key=k.slice(0,-2);(grouped[key]=grouped[key]||[]).push(v);}
+      else grouped[k]=v;
     });
-  } else if (event_type === 'recurring') {
-    if (!venue_ids[0]) return showBanner('Please choose a venue.', 'bg-red-600');
-    // Option A: multiple dates → multiple rows (same venue/time/ticket)
-    dates.forEach((d, i) => {
-      if (!d) return;
-      rows.push({
-        event_name, description, category, image_url, publish_status, organiser_id,
-        event_type, event_date: d, event_time: times[0], venue_id: venue_ids[0],
-        ticket_url: (ticket_urls[0] || null)
-      });
-    });
-    // also include any extra dates from #recurringDates (already part of event_date[])
-  } else if (event_type === 'tour') {
-    for (let i = 0; i < dates.length; i++) {
-      if (!venue_ids[i]) return showBanner('Each schedule needs a venue.', 'bg-red-600');
-      rows.push({
-        event_name, description, category, image_url, publish_status, organiser_id,
-        event_type, event_date: dates[i], event_time: times[i], venue_id: venue_ids[i],
-        ticket_url: (ticket_urls[i] || null)
-      });
+
+    const organiser_id=document.getElementById('organiser_id').value;
+    const eventType=grouped.event_type;
+    const dates=grouped.event_date||[];
+    const times=grouped.event_time||[];
+    const venues=grouped.venue_id||[];
+    const tickets=grouped.ticket_url||[];
+
+    for(let i=0;i<dates.length;i++){
+      const{error}=await supabase.from('events').insert([{
+        event_name:grouped.event_name,
+        description:grouped.description,
+        category:grouped.category,
+        image_url:grouped.image_url,
+        publish_status:grouped.publish_status,
+        event_type:eventType,
+        event_date:dates[i],
+        event_time:times[i],
+        venue_id:venues[i]||null,
+        ticket_url:tickets[i]||null,
+        organiser_id
+      }]);
+      if(error){banner.textContent='Error submitting event';banner.className='mt-4 text-red-500';banner.classList.remove('hidden');return;}
     }
-  }
-
-  if (!rows.length) {
-    showBanner('Nothing to submit yet.', 'bg-red-600');
-    return;
-  }
-
-  // Insert rows
-  const { data, error } = await supabase.from('events').insert(rows).select('id');
-  if (error) {
-    showBanner('Error saving event(s). Please try again.', 'bg-red-600');
-    return;
-  }
-  showBanner(`Saved ${data.length} event${data.length>1?'s':''} ✔`, 'bg-green-600');
-
-  // Optional: reset form to initial state
-  form.reset();
-  imageUrlInput.value = '';
-  renderTab('single');
-});
-
-function showBanner(msg, cls){
-  banner.className = `mt-4 text-center px-4 py-2 rounded text-sm ${cls}`;
-  banner.textContent = msg;
-}
-/* ---------------------------------
-   END: SUBMIT HANDLER
----------------------------------- */
+    banner.textContent='Event submitted successfully';
+    banner.className='mt-4 text-green-500';
+    banner.classList.remove('hidden');
+    form.reset();
+    tabBtns[0].click();
+  });
+  /* ---------------------------------
+     END: FORM SUBMISSION
+  ---------------------------------- */
   </script>
-  <!-- END: PAGE LOGIC -->
 </body>
 </html>
