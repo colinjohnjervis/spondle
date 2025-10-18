@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schedule Setup – Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white min-h-screen">
+  <main class="max-w-xl mx-auto p-4 space-y-6">
+    <h1 class="text-2xl font-bold">Schedule Setup</h1>
+
+    <!-- Date & time -->
+    <div class="space-y-3">
+      <div>
+        <label class="block mb-1 text-sm text-gray-300">Date</label>
+        <input id="dateInput" type="date" class="w-full rounded border border-gray-700 bg-gray-900 p-2">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block mb-1 text-sm text-gray-300">Start time</label>
+          <input id="startInput" type="time" class="w-full rounded border border-gray-700 bg-gray-900 p-2">
+        </div>
+        <div>
+          <label class="block mb-1 text-sm text-gray-300">End time</label>
+          <input id="endInput" type="time" class="w-full rounded border border-gray-700 bg-gray-900 p-2">
+        </div>
+      </div>
+    </div>
+
+    <!-- Repeat (like Google Calendar) -->
+    <div class="space-y-2">
+      <label class="block text-sm text-gray-300">Repeat</label>
+      <button id="repeatBtn"
+              class="w-full text-left rounded border border-gray-700 bg-gray-900 p-3 hover:bg-gray-800">
+        <span id="repeatLabel">Does not repeat</span>
+      </button>
+      <!-- Hidden value your form can submit later -->
+      <input type="hidden" id="recurrenceRule" value="">
+    </div>
+
+    <!-- Centered overlay -->
+    <div id="overlay"
+         class="fixed inset-0 hidden items-center justify-center bg-black/60 p-4 z-50">
+      <div class="w-full max-w-sm rounded-2xl bg-gray-900 border border-gray-700 shadow-xl">
+        <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+          <h2 class="font-semibold">Repeat</h2>
+          <button id="closeOverlay" class="rounded px-2 py-1 text-sm bg-gray-800 hover:bg-gray-700">
+            Close
+          </button>
+        </div>
+        <div class="p-2">
+          <ul class="divide-y divide-gray-800">
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
+                        data-rule="NONE">Does not repeat</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
+                        data-rule="DAILY">Every day</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
+                        data-rule="WEEKLY">Every week</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
+                        data-rule="BIWEEKLY">Every 2 weeks</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
+                        data-rule="MONTHLY">Every month</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
+                        data-rule="YEARLY">Every year</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
+                        data-rule="CUSTOM" disabled>Custom… (soon)</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // --- helpers to build simple RRULEs using the chosen date ---
+    const dayMap = ['SU','MO','TU','WE','TH','FR','SA'];
+
+    function getDateParts() {
+      const dStr = document.getElementById('dateInput').value; // "YYYY-MM-DD"
+      if (!dStr) return null;
+      const d = new Date(dStr + 'T00:00:00');
+      return {
+        js: d,
+        byday: dayMap[d.getUTCDay()],                // BYDAY=MO
+        bymonthday: d.getUTCDate(),                  // BYMONTHDAY=18
+        bymonth: (d.getUTCMonth()+1)                 // BYMONTH=10
+      };
+    }
+
+    function ruleFor(kind) {
+      // Returns RRULE string (or empty for none)
+      const parts = getDateParts();
+      switch (kind) {
+        case 'NONE':       return '';
+        case 'DAILY':      return 'FREQ=DAILY';
+        case 'WEEKLY':     return parts ? `FREQ=WEEKLY;BYDAY=${parts.byday}` : 'FREQ=WEEKLY';
+        case 'BIWEEKLY':   return parts ? `FREQ=WEEKLY;INTERVAL=2;BYDAY=${parts.byday}` : 'FREQ=WEEKLY;INTERVAL=2';
+        case 'MONTHLY':    return parts ? `FREQ=MONTHLY;BYMONTHDAY=${parts.bymonthday}` : 'FREQ=MONTHLY';
+        case 'YEARLY':     return parts ? `FREQ=YEARLY;BYMONTH=${parts.bymonth};BYMONTHDAY=${parts.bymonthday}` : 'FREQ=YEARLY';
+        case 'CUSTOM':     return ''; // placeholder for future UI
+        default:           return '';
+      }
+    }
+
+    function humanLabel(kind) {
+      switch (kind) {
+        case 'NONE': return 'Does not repeat';
+        case 'DAILY': return 'Every day';
+        case 'WEEKLY': return 'Every week';
+        case 'BIWEEKLY': return 'Every 2 weeks';
+        case 'MONTHLY': return 'Every month';
+        case 'YEARLY': return 'Every year';
+        case 'CUSTOM': return 'Custom…';
+        default: return 'Does not repeat';
+      }
+    }
+
+    // --- UI wiring ---
+    const overlay = document.getElementById('overlay');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const closeOverlay = document.getElementById('closeOverlay');
+    const repeatLabel = document.getElementById('repeatLabel');
+    const recurrenceRule = document.getElementById('recurrenceRule');
+
+    repeatBtn.addEventListener('click', () => {
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+    });
+
+    function hideOverlay() {
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+    }
+
+    closeOverlay.addEventListener('click', hideOverlay);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) hideOverlay(); // click outside dialog to close
+    });
+
+    document.querySelectorAll('.repeat-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const kind = btn.dataset.rule;
+        const rule = ruleFor(kind);
+        recurrenceRule.value = rule;
+        repeatLabel.textContent = humanLabel(kind);
+        hideOverlay();
+      });
+    });
+
+    // Sensible defaults (today, next full hour start + end)
+    (function setDefaults(){
+      const now = new Date();
+      const pad = n => String(n).padStart(2,'0');
+      const yyyy = now.getFullYear();
+      const mm = pad(now.getMonth()+1);
+      const dd = pad(now.getDate());
+      document.getElementById('dateInput').value = `${yyyy}-${mm}-${dd}`;
+
+      const nextHour = new Date(now);
+      nextHour.setMinutes(0,0,0);
+      nextHour.setHours(now.getHours()+1);
+      const end = new Date(nextHour); end.setHours(nextHour.getHours()+1);
+      document.getElementById('startInput').value = `${pad(nextHour.getHours())}:${pad(nextHour.getMinutes())}`;
+      document.getElementById('endInput').value   = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
+    })();
+  </script>
+</body>
+</html>
