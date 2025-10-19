@@ -3,72 +3,160 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Schedule Setup – test</title>
+  <title>Schedule Setup – Spondle</title>
 
-  <!-- Tailwind (for basic styling) -->
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flowbite core (components) -->
-  <link  href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
+  <!-- Flowbite Core -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
 
-  <!-- ✅ Flowbite Datepicker (separate library!) -->
-  <link  href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
+  <!-- Flowbite Datepicker -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <style>
-    body { background:#0b0b0b; color:#fff; }
-    .card { background:#111; border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.25) }
-    /* Centre the popup like Google Calendar */
-    .datepicker[role="dialog"] { 
-      position: fixed !important; 
-      top: 50% !important; left: 50% !important; 
-      transform: translate(-50%,-50%) !important;
-      z-index: 9999;
-      border-radius: 12px;
+    /* --- Spondle Dark Theme Page --- */
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      min-height: 100vh;
     }
-    /* Spondle green selected circle */
-    .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; border-radius:50% !important; }
+
+    .card {
+      background-color: #111827;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    input[readonly] {
+      background-color: #0f172a;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* --- Google Calendar-Style Popup --- */
+    .datepicker[role="dialog"] {
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 9999 !important;
+      background-color: #fff !important;
+      border-radius: 16px !important;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25) !important;
+      color: #111 !important;
+      width: 90%;
+      max-width: 340px;
+    }
+
+    .datepicker-header {
+      border-bottom: none !important;
+      text-align: center;
+      padding: 0.75rem 0 !important;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #111 !important;
+    }
+
+    .datepicker-cell.selected {
+      background-color: #22c55e !important; /* Spondle green */
+      color: #fff !important;
+      border-radius: 50% !important;
+    }
+
+    .datepicker-cell:hover {
+      background-color: #e5e7eb !important;
+    }
+
+    .datepicker-view .days .datepicker-cell {
+      text-align: center !important;
+      width: 40px !important;
+      height: 40px !important;
+      line-height: 40px !important;
+      border-radius: 50% !important;
+      margin: 3px !important;
+    }
+
+    .datepicker-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1rem;
+    }
+
+    .datepicker-controls button {
+      background: none;
+      border: none;
+      color: #111;
+      font-size: 1.2rem;
+    }
+
+    .datepicker-controls button:hover {
+      color: #22c55e;
+    }
   </style>
 </head>
-<body class="min-h-screen flex items-start justify-center p-6">
-  <div class="card w-full max-w-xl p-6">
-    <h1 class="text-3xl font-bold mb-6">Schedule Setup</h1>
 
-    <label class="block text-sm text-gray-300 mb-2">From</label>
+<body class="flex items-start justify-center py-10">
+  <div class="card w-full max-w-md p-6">
+    <h1 class="text-3xl font-bold mb-6 text-white">Schedule Setup</h1>
+
+    <!-- FROM -->
+    <label for="fromDate" class="block text-sm text-gray-300 mb-2">From</label>
     <input id="fromDate" type="text" readonly
-      class="w-full p-3 rounded-lg bg-[#0f172a] border border-gray-700 focus:border-green-500 focus:ring-green-500"
+      class="w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
       placeholder="Select date (DD/MM/YYYY)" />
 
+    <!-- TO -->
     <div class="mt-6">
-      <label class="block text-sm text-gray-300 mb-2">To</label>
+      <label for="toDate" class="block text-sm text-gray-300 mb-2">To</label>
       <input id="toDate" type="text" readonly
-        class="w-full p-3 rounded-lg bg-[#0f172a] border border-gray-700 focus:border-green-500 focus:ring-green-500"
+        class="w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
         placeholder="Select date (DD/MM/YYYY)" />
     </div>
   </div>
 
   <script>
-    // Safety check: make sure the datepicker lib is actually loaded
+    // Safety check for Flowbite datepicker
     if (!window.Datepicker) {
-      console.error("Flowbite Datepicker is missing. Check the CDN includes for flowbite-datepicker.");
+      console.error("Flowbite Datepicker missing – check CDN links.");
     }
 
     const today = new Date();
-    const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const format = (d) =>
+      `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 
-    const fromEl = document.getElementById('fromDate');
-    const toEl   = document.getElementById('toDate');
-    fromEl.value = fmt(today);
-    toEl.value   = fmt(today);
+    const fromEl = document.getElementById("fromDate");
+    const toEl = document.getElementById("toDate");
 
-    // Initialize popups
-    const fromPicker = new Datepicker(fromEl, { autohide:true, defaultDate: today, language: 'en-GB' });
-    const toPicker   = new Datepicker(toEl,   { autohide:true, defaultDate: today, language: 'en-GB' });
+    fromEl.value = format(today);
+    toEl.value = format(today);
+
+    const fromPicker = new Datepicker(fromEl, {
+      autohide: true,
+      defaultDate: today,
+      language: "en-GB",
+    });
+    const toPicker = new Datepicker(toEl, {
+      autohide: true,
+      defaultDate: today,
+      language: "en-GB",
+    });
 
     // Open on click
-    fromEl.addEventListener('click', () => fromPicker.show());
-    toEl.addEventListener('click',   () => toPicker.show());
+    fromEl.addEventListener("click", () => fromPicker.show());
+    toEl.addEventListener("click", () => toPicker.show());
+
+    // Center popup always
+    document.addEventListener("show.datepicker", () => {
+      setTimeout(() => {
+        const picker = document.querySelector('.datepicker[role="dialog"]');
+        if (picker) picker.classList.add('calendar-modal');
+      }, 50);
+    });
   </script>
 </body>
 </html>
