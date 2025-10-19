@@ -12,8 +12,8 @@
 
   <style>
     /* ------------------------------------
-       GOOGLE-LIKE DATEPICKER (v4)
-       Centered grid + perfect circles
+       GOOGLE-LIKE DATEPICKER (v5)
+       Perfectly centered & circular days
     ------------------------------------ */
     .flatpickr-calendar {
       background: #f8f8f8 !important;
@@ -71,16 +71,16 @@
       justify-content: center !important;
     }
 
-    /* Center grid and remove built-in margins */
-    .dayContainer {
+    /* Override internal table with full grid centering */
+    .flatpickr-days, .dayContainer {
       display: grid !important;
       grid-template-columns: repeat(7, 1fr) !important;
       justify-items: center !important;
       align-items: center !important;
-      padding: 6px 0 10px !important;
       gap: 6px !important;
       margin: 0 auto !important;
       width: fit-content !important;
+      text-align: center !important;
     }
 
     .flatpickr-day {
@@ -89,12 +89,13 @@
       align-items: center !important;
       border-radius: 50% !important;
       aspect-ratio: 1 / 1 !important;
-      width: 46px !important;
-      height: 46px !important;
+      width: 50px !important;
+      height: 50px !important;
       font-size: 16px !important;
-      line-height: normal !important;
+      line-height: 1 !important;
       margin: 0 !important;
       transition: all 0.2s ease;
+      text-align: center !important;
     }
 
     .flatpickr-day:hover {
@@ -112,7 +113,7 @@
       background: #22c55e !important;
       color: #fff !important;
       font-weight: 600 !important;
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
 
     .flatpickr-footer {
