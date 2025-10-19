@@ -12,8 +12,8 @@
 
   <style>
     /* ------------------------------------
-       MATERIAL-STYLE MODAL DATEPICKER (v2)
-       Scaled to match Google Calendar
+       GOOGLE-LIKE DATEPICKER (v3)
+       Centered & perfectly circular
     ------------------------------------ */
     .flatpickr-calendar {
       background: #f8f8f8 !important;
@@ -38,7 +38,7 @@
       to { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
     }
 
-    /* Dark overlay backdrop */
+    /* Overlay backdrop */
     .flatpickr-calendar::before {
       content: "";
       position: fixed;
@@ -48,12 +48,18 @@
       backdrop-filter: blur(3px);
     }
 
+    /* Header */
     .flatpickr-months {
       background: #f8f8f8 !important;
       border-bottom: 1px solid #ddd !important;
       font-weight: 600 !important;
       padding: 16px 0 !important;
       font-size: 18px !important;
+      text-align: center;
+    }
+
+    .flatpickr-current-month {
+      justify-content: center !important;
     }
 
     .flatpickr-monthDropdown-months, .numInputWrapper input {
@@ -61,19 +67,34 @@
       font-weight: 500 !important;
     }
 
+    /* Weekdays */
     .flatpickr-weekdays {
       margin-top: 10px !important;
       font-size: 15px !important;
+      display: flex !important;
+      justify-content: center !important;
+    }
+
+    /* Calendar grid centering */
+    .dayContainer {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      justify-items: center !important;
+      padding: 6px 0 10px !important;
     }
 
     .flatpickr-day {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
       border-radius: 50% !important;
-      width: 46px !important;
-      height: 46px !important;
-      line-height: 46px !important;
-      margin: 4px !important;
+      width: 48px !important;
+      height: 48px !important;
+      line-height: 48px !important;
+      margin: 4px 0 !important;
       transition: all 0.2s ease;
       font-size: 16px !important;
+      text-align: center !important;
     }
 
     .flatpickr-day:hover {
@@ -82,16 +103,19 @@
     }
 
     .flatpickr-day.today {
-      border: 1px solid #22c55e !important;
+      border: 2px solid #22c55e !important;
       color: #22c55e !important;
+      font-weight: 600 !important;
     }
 
     .flatpickr-day.selected {
       background: #22c55e !important;
       color: #fff !important;
+      font-weight: 600 !important;
+      transform: scale(1.1);
     }
 
-    /* Footer buttons (larger, Google style) */
+    /* Footer buttons */
     .flatpickr-footer {
       display: flex;
       justify-content: flex-end;
@@ -181,7 +205,6 @@
   </main>
 
   <script>
-    /* Default times */
     const pad = n => String(n).padStart(2,'0');
     const now = new Date();
     const start = new Date(now);
@@ -191,7 +214,6 @@
     document.getElementById('fromTime').value = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
     document.getElementById('toTime').value   = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
 
-    /* Add OK/Cancel footer */
     function enhanceWithFooter(instance) {
       const calendar = instance.calendarContainer;
       if (calendar && !calendar.querySelector('.flatpickr-footer')) {
@@ -201,7 +223,6 @@
           <button class="flatpickr-btn flatpickr-btn-cancel">Cancel</button>
           <button class="flatpickr-btn flatpickr-btn-ok">OK</button>`;
         calendar.appendChild(footer);
-
         footer.querySelector('.flatpickr-btn-cancel').addEventListener('click', () => instance.close());
         footer.querySelector('.flatpickr-btn-ok').addEventListener('click', () => instance.close());
       }
@@ -234,7 +255,7 @@
       }
     }
 
-    /* Repeat overlay logic */
+    /* Repeat logic */
     const overlay = document.getElementById('overlay');
     const repeatBtn = document.getElementById('repeatBtn');
     const closeOverlay = document.getElementById('closeOverlay');
@@ -246,37 +267,31 @@
       overlay.classList.add('flex');
     });
 
-    function hideOverlay() {
+    const hideOverlay = () => {
       overlay.classList.add('hidden');
       overlay.classList.remove('flex');
-    }
+    };
 
     closeOverlay.addEventListener('click', hideOverlay);
     overlay.addEventListener('click', e => { if (e.target === overlay) hideOverlay(); });
 
-    const ruleFor = kind => {
-      switch(kind) {
-        case 'NONE': return '';
-        case 'DAILY': return 'FREQ=DAILY';
-        case 'WEEKLY': return 'FREQ=WEEKLY';
-        case 'BIWEEKLY': return 'FREQ=WEEKLY;INTERVAL=2';
-        case 'MONTHLY': return 'FREQ=MONTHLY';
-        case 'YEARLY': return 'FREQ=YEARLY';
-        default: return '';
-      }
-    };
+    const ruleFor = kind => ({
+      NONE: '',
+      DAILY: 'FREQ=DAILY',
+      WEEKLY: 'FREQ=WEEKLY',
+      BIWEEKLY: 'FREQ=WEEKLY;INTERVAL=2',
+      MONTHLY: 'FREQ=MONTHLY',
+      YEARLY: 'FREQ=YEARLY'
+    }[kind] || '');
 
-    const humanLabel = kind => {
-      switch(kind) {
-        case 'NONE': return 'Does not repeat';
-        case 'DAILY': return 'Every day';
-        case 'WEEKLY': return 'Every week';
-        case 'BIWEEKLY': return 'Every 2 weeks';
-        case 'MONTHLY': return 'Every month';
-        case 'YEARLY': return 'Every year';
-        default: return 'Does not repeat';
-      }
-    };
+    const humanLabel = kind => ({
+      NONE: 'Does not repeat',
+      DAILY: 'Every day',
+      WEEKLY: 'Every week',
+      BIWEEKLY: 'Every 2 weeks',
+      MONTHLY: 'Every month',
+      YEARLY: 'Every year'
+    }[kind] || 'Does not repeat');
 
     document.querySelectorAll('.repeat-option').forEach(btn => {
       btn.addEventListener('click', () => {
