@@ -20,13 +20,26 @@
     /* -----------------------------
        PAGE THEME (Spondle dark shell)
     ------------------------------ */
-    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
-    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
-    .input-dark { background:#0b1220; color:#fff; width:100%; }
+    body {
+      background:#000;
+      color:#fff;
+      font-family:ui-sans-serif,system-ui,sans-serif;
+      min-height:100vh;
+    }
+    .card {
+      background:#0f172a;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.45);
+    }
+    .input-dark {
+      background:#0b1220;
+      color:#fff;
+      width:100%;
+    }
     .input-dark::placeholder { color:#9ca3af; }
 
     /* -----------------------------
-       FLOWBITE DATEPICKER OVERRIDES
+       FLOWBITE DATEPICKER BASE STYLES
     ------------------------------ */
     .datepicker[role="dialog"] {
       border-radius:16px !important;
@@ -34,19 +47,28 @@
       border:none !important;
       background:#fff !important;
       color:#111 !important;
+      font-size:1rem !important;
     }
     .datepicker .days .datepicker-cell {
-      width:42px !important; height:42px !important; line-height:42px !important;
-      border-radius:50% !important; margin:3px !important; text-align:center !important;
+      width:44px !important;
+      height:44px !important;
+      line-height:44px !important;
+      border-radius:50% !important;
+      margin:4px !important;
+      text-align:center !important;
     }
     .datepicker-cell.selected{ background:#22c55e !important; color:#fff !important; }
     .datepicker-cell:hover{ background:#e5e7eb !important; }
-    .datepicker-controls{ padding:10px 14px !important; }
-    .datepicker-controls button{ color:#111 !important; }
+    .datepicker-controls {
+      padding:12px 16px !important;
+      font-size:1.1rem !important;
+    }
+    .datepicker-controls button { color:#111 !important; }
     .datepicker-footer{ display:none; }
 
     /* -----------------------------
        MOBILE-CENTERED CALENDAR
+       Larger, bit inset look
     ------------------------------ */
     @media (max-width:640px) {
       .datepicker[role="dialog"] {
@@ -56,10 +78,19 @@
         transform:translate(-50%,-50%) !important;
         width:90vw !important;
         max-width:420px !important;
-        height:auto !important;
+        height:480px !important;
         z-index:10001 !important;
+        border-radius:20px !important;
       }
-
+      .datepicker .days .datepicker-cell {
+        width:48px !important;
+        height:48px !important;
+        line-height:48px !important;
+        font-size:1.1rem !important;
+      }
+      .datepicker-controls {
+        font-size:1.2rem !important;
+      }
       /* dimmed overlay */
       body::before {
         content:'';
@@ -187,7 +218,6 @@
       orientation: 'bottom',
     });
 
-    // open on click/tap + toggle overlay on mobile
     function showPicker(picker) {
       picker.show();
       if (window.innerWidth <= 640) document.body.classList.add('show-calendar');
