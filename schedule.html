@@ -17,145 +17,196 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <style>
-    /* --- Spondle Dark Theme Page --- */
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: ui-sans-serif, system-ui, sans-serif;
-      min-height: 100vh;
-    }
+    /* ---------------------------------
+       PAGE THEME (Spondle dark shell)
+    ---------------------------------- */
+    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
+    .input-dark { background:#0b1220; color:#fff; }
+    .input-dark::placeholder { color:#9ca3af; }
 
-    .card {
-      background-color: #111827;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    /* ---------------------------------
+       GOOGLE-STYLE DATE POPUP (light)
+    ---------------------------------- */
+    .datepicker[role="dialog"]{
+      position:fixed !important;
+      top:50% !important; left:50% !important;
+      transform:translate(-50%,-50%) !important;
+      z-index:9999 !important;
+      width:90%; max-width:360px;
+      background:#fff !important; color:#111 !important;
+      border-radius:16px !important;
+      box-shadow:0 20px 60px rgba(0,0,0,.35) !important;
+      border:none !important;
     }
-
-    input[readonly] {
-      background-color: #0f172a;
-      color: #fff;
-      cursor: pointer;
+    .datepicker .days .datepicker-cell{
+      width:42px !important; height:42px !important; line-height:42px !important;
+      border-radius:50% !important; margin:3px !important; text-align:center !important;
     }
-
-    /* --- Google Calendar-Style Popup --- */
-    .datepicker[role="dialog"] {
-      position: fixed !important;
-      top: 50% !important;
-      left: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      z-index: 9999 !important;
-      background-color: #fff !important;
-      border-radius: 16px !important;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25) !important;
-      color: #111 !important;
-      width: 90%;
-      max-width: 340px;
-    }
-
-    .datepicker-header {
-      border-bottom: none !important;
-      text-align: center;
-      padding: 0.75rem 0 !important;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #111 !important;
-    }
-
-    .datepicker-cell.selected {
-      background-color: #22c55e !important; /* Spondle green */
-      color: #fff !important;
-      border-radius: 50% !important;
-    }
-
-    .datepicker-cell:hover {
-      background-color: #e5e7eb !important;
-    }
-
-    .datepicker-view .days .datepicker-cell {
-      text-align: center !important;
-      width: 40px !important;
-      height: 40px !important;
-      line-height: 40px !important;
-      border-radius: 50% !important;
-      margin: 3px !important;
-    }
-
-    .datepicker-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 1rem;
-    }
-
-    .datepicker-controls button {
-      background: none;
-      border: none;
-      color: #111;
-      font-size: 1.2rem;
-    }
-
-    .datepicker-controls button:hover {
-      color: #22c55e;
-    }
+    .datepicker-cell.selected{ background:#22c55e !important; color:#fff !important; }
+    .datepicker-cell:hover{ background:#e5e7eb !important; }
+    .datepicker-controls{ padding:10px 14px !important; }
+    .datepicker-controls button{ color:#111 !important; }
+    .datepicker-footer{ display:none; } /* keep it simple */
   </style>
 </head>
 
 <body class="flex items-start justify-center py-10">
-  <div class="card w-full max-w-md p-6">
-    <h1 class="text-3xl font-bold mb-6 text-white">Schedule Setup</h1>
+  <div class="card w-full max-w-xl p-6">
+    <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <!-- FROM -->
-    <label for="fromDate" class="block text-sm text-gray-300 mb-2">From</label>
-    <input id="fromDate" type="text" readonly
-      class="w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-      placeholder="Select date (DD/MM/YYYY)" />
+    <!-- =========================
+         FROM (date + time)
+    ========================== -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">From</label>
+        <input id="fromDate" type="text" readonly
+               class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
+      </div>
+      <div>
+        <label class="block text-sm text-gray-300 mb-2 invisible md:visible">Start time</label>
+        <select id="fromTime"
+                class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+      </div>
+    </div>
 
-    <!-- TO -->
+    <!-- =========================
+         TO (date + time)
+    ========================== -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">To</label>
+        <input id="toDate" type="text" readonly
+               class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
+      </div>
+      <div>
+        <label class="block text-sm text-gray-300 mb-2 invisible md:visible">End time</label>
+        <select id="toTime"
+                class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+      </div>
+    </div>
+
+    <!-- =========================
+         REPEAT
+    ========================== -->
     <div class="mt-6">
-      <label for="toDate" class="block text-sm text-gray-300 mb-2">To</label>
-      <input id="toDate" type="text" readonly
-        class="w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-        placeholder="Select date (DD/MM/YYYY)" />
+      <label class="block text-sm text-gray-300 mb-2">Repeat</label>
+      <select id="repeatRule"
+              class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+        <option value="none">Does not repeat</option>
+        <option value="daily">Every day</option>
+        <option value="weekly">Every week</option>
+        <option value="biweekly">Every 2 weeks</option>
+        <option value="monthly">Every month</option>
+        <option value="yearly">Every year</option>
+      </select>
     </div>
   </div>
 
   <script>
-    // Safety check for Flowbite datepicker
-    if (!window.Datepicker) {
-      console.error("Flowbite Datepicker missing – check CDN links.");
+    /* ---------------------------------
+       HELPERS
+    ---------------------------------- */
+    const formatUK = (d) =>
+      `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+
+    const parseUK = (str) => {
+      const [dd, mm, yyyy] = str.split('/').map(v => parseInt(v, 10));
+      return new Date(yyyy, mm - 1, dd);
+    };
+
+    /* ---------------------------------
+       DEFAULT VALUES (today)
+    ---------------------------------- */
+    const today = new Date();
+    const fromDateEl = document.getElementById('fromDate');
+    const toDateEl   = document.getElementById('toDate');
+    fromDateEl.value = formatUK(today);
+    toDateEl.value   = formatUK(today);
+
+    /* ---------------------------------
+       TIME DROPDOWNS (15-min steps)
+    ---------------------------------- */
+    const fromTimeEl = document.getElementById('fromTime');
+    const toTimeEl   = document.getElementById('toTime');
+
+    function fillTimes(selectEl, startMinutes = 0) {
+      selectEl.innerHTML = '';
+      for (let m = 0; m < 24 * 60; m += 15) {
+        const hh = Math.floor(m / 60);
+        const mm = m % 60;
+        const d = new Date(2000,0,1,hh,mm);
+        const label = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
+        const value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+        const opt = new Option(label, value);
+        selectEl.add(opt);
+      }
     }
 
-    const today = new Date();
-    const format = (d) =>
-      `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    fillTimes(fromTimeEl);
+    fillTimes(toTimeEl);
 
-    const fromEl = document.getElementById("fromDate");
-    const toEl = document.getElementById("toDate");
+    // sensible defaults (10:00 → 11:00)
+    const setSelectValue = (el, val) => {
+      const opt = Array.from(el.options).find(o => o.value === val);
+      if (opt) el.value = val;
+    };
+    setSelectValue(fromTimeEl, '10:00');
+    setSelectValue(toTimeEl,   '11:00');
 
-    fromEl.value = format(today);
-    toEl.value = format(today);
-
-    const fromPicker = new Datepicker(fromEl, {
+    /* ---------------------------------
+       FLOWBITE DATEPICKERS (DD/MM/YYYY)
+    ---------------------------------- */
+    const fromPicker = new Datepicker(fromDateEl, {
       autohide: true,
       defaultDate: today,
-      language: "en-GB",
+      language: 'en-GB',
+      format: 'dd/mm/yyyy',
+      orientation: 'bottom',
     });
-    const toPicker = new Datepicker(toEl, {
+
+    const toPicker = new Datepicker(toDateEl, {
       autohide: true,
       defaultDate: today,
-      language: "en-GB",
+      language: 'en-GB',
+      format: 'dd/mm/yyyy',
+      orientation: 'bottom',
     });
 
-    // Open on click
-    fromEl.addEventListener("click", () => fromPicker.show());
-    toEl.addEventListener("click", () => toPicker.show());
+    // open on click/tap
+    fromDateEl.addEventListener('click', () => fromPicker.show());
+    toDateEl  .addEventListener('click',   () => toPicker.show());
 
-    // Center popup always
-    document.addEventListener("show.datepicker", () => {
-      setTimeout(() => {
-        const picker = document.querySelector('.datepicker[role="dialog"]');
-        if (picker) picker.classList.add('calendar-modal');
-      }, 50);
+    /* ---------------------------------
+       BASIC LINKAGE (keep To >= From)
+    ---------------------------------- */
+    fromDateEl.addEventListener('changeDate', () => {
+      const f = parseUK(fromDateEl.value);
+      const t = parseUK(toDateEl.value);
+      if (t < f) {
+        toDateEl.value = fromDateEl.value; // snap “to” date forward
+        toPicker.setDate(f);
+      }
+    });
+
+    /* ---------------------------------
+       OPTIONAL: keep end time after start
+    ---------------------------------- */
+    fromTimeEl.addEventListener('change', () => {
+      const [fh, fm] = fromTimeEl.value.split(':').map(Number);
+      const [th, tm] = toTimeEl.value.split(':').map(Number);
+      const fmins = fh * 60 + fm;
+      const tmins = th * 60 + tm;
+      if (tmins <= fmins) {
+        // bump end time to +60 mins
+        const bumped = fmins + 60;
+        const hh = String(Math.floor(bumped / 60) % 24).padStart(2, '0');
+        const mm = String(bumped % 60).padStart(2, '0');
+        setSelectValue(toTimeEl, `${hh}:${mm}`);
+      }
     });
   </script>
 </body>
