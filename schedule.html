@@ -17,82 +17,100 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <style>
-    /* ---------------------------------
-       PAGE THEME (Spondle dark shell)
-    ---------------------------------- */
-    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
-    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
-    .input-dark { background:#0b1220; color:#fff; width:100%; }
-    .input-dark::placeholder { color:#9ca3af; }
+    /* --------------------------
+       Spondle dark shell
+    --------------------------- */
+    body{background:#000;color:#fff;min-height:100vh;font-family:ui-sans-serif,system-ui,sans-serif}
+    .card{background:#0f172a;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+    .input-dark{background:#0b1220;color:#fff;width:100%}
+    .input-dark::placeholder{color:#9ca3af}
 
-    /* ---------------------------------
-       GOOGLE-STYLE DATE POPUP (light)
-    ---------------------------------- */
-    .datepicker[role="dialog"]{
-      position:fixed !important;
-      top:50% !important;
-      left:50% !important;
-      transform:translate(-50%,-50%) !important;
-      z-index:9999 !important;
-      width:90%; max-width:360px;
-      background:#fff !important; color:#111 !important;
-      border-radius:16px !important;
-      box-shadow:0 20px 60px rgba(0,0,0,.35) !important;
-      border:none !important;
+    /* ---------------------------------------------
+       Desktop/tablet POP-OVER (aligned right)
+       We place the datepicker absolutely inside
+       a relative wrapper and snap it to the right.
+    ---------------------------------------------- */
+    .dp-wrap{position:relative}
+    .dp-wrap .datepicker{
+      position:absolute !important;
+      inset-inline-end:0 !important; /* right in LTR */
+      top:calc(100% + 8px) !important;
+      transform:none !important;
+      z-index:50 !important;
+      border-radius:14px !important;
+      box-shadow:0 16px 48px rgba(0,0,0,.35) !important;
     }
+
+    /* Make the grid cells truly centered and circular */
     .datepicker .days .datepicker-cell{
-      width:42px !important; height:42px !important; line-height:42px !important;
-      border-radius:50% !important; margin:3px !important; text-align:center !important;
+      width:42px !important;height:42px !important;line-height:42px !important;
+      border-radius:50% !important;margin:3px !important;text-align:center !important;
     }
-    .datepicker-cell.selected{ background:#22c55e !important; color:#fff !important; }
-    .datepicker-cell:hover{ background:#e5e7eb !important; }
-    .datepicker-controls{ padding:10px 14px !important; }
-    .datepicker-controls button{ color:#111 !important; }
-    .datepicker-footer{ display:none; }
+    .datepicker-cell.selected{background:#22c55e !important;color:#fff !important}
+    .datepicker-cell:hover{background:#e5e7eb !important}
+    .datepicker-controls{padding:10px 14px !important}
+    .datepicker-controls button{color:#111 !important}
+    .datepicker-footer{display:none}
+
+    /* ---------------------------------------------
+       Mobile MODAL (center + dim overlay)
+       We switch the calendar to fixed/centered and
+       show a soft overlay under 640px.
+    ---------------------------------------------- */
+    @media (max-width: 639px){
+      .dp-wrap .datepicker.dp-modal{
+        position:fixed !important; inset:auto !important;
+        top:50% !important; left:50% !important;
+        transform:translate(-50%,-50%) !important;
+        width:92vw; max-width:380px;
+        border-radius:16px !important;
+        z-index:60 !important; /* above overlay */
+      }
+      .dp-overlay{
+        position:fixed; inset:0; background:rgba(0,0,0,.45);
+        backdrop-filter:saturate(120%) blur(1px);
+        z-index:55; display:none;
+      }
+      .dp-overlay.show{display:block}
+    }
   </style>
 </head>
-
 <body class="flex items-start justify-center py-10">
+  <!-- mobile modal overlay (only shows <640px) -->
+  <div id="dpOverlay" class="dp-overlay"></div>
+
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <!-- =========================
-         FROM (date + time)
-    ========================== -->
-    <div class="grid grid-cols-2 gap-4 items-end">
-      <div>
+    <!-- FROM row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="dp-wrap">
         <label class="block text-sm text-gray-300 mb-2">From</label>
-        <input id="fromDate" type="text" readonly
-               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-               placeholder="DD/MM/YYYY" />
+        <input id="fromDate" type="text" readonly placeholder="DD/MM/YYYY"
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" />
       </div>
       <div>
-        <label class="block text-sm text-gray-300 mb-2">Time</label>
+        <label class="block text-sm text-gray-300 mb-2 sm:invisible sm:block">Time</label>
         <select id="fromTime"
                 class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
-    <!-- =========================
-         TO (date + time)
-    ========================== -->
-    <div class="grid grid-cols-2 gap-4 items-end mt-6">
-      <div>
+    <!-- TO row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+      <div class="dp-wrap">
         <label class="block text-sm text-gray-300 mb-2">To</label>
-        <input id="toDate" type="text" readonly
-               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-               placeholder="DD/MM/YYYY" />
+        <input id="toDate" type="text" readonly placeholder="DD/MM/YYYY"
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" />
       </div>
       <div>
-        <label class="block text-sm text-gray-300 mb-2">Time</label>
+        <label class="block text-sm text-gray-300 mb-2 sm:invisible sm:block">Time</label>
         <select id="toTime"
                 class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
-    <!-- =========================
-         REPEAT
-    ========================== -->
+    <!-- Repeat -->
     <div class="mt-6">
       <label class="block text-sm text-gray-300 mb-2">Repeat</label>
       <select id="repeatRule"
@@ -108,102 +126,97 @@
   </div>
 
   <script>
-    /* ---------------------------------
-       HELPERS
-    ---------------------------------- */
-    const formatUK = (d) =>
-      `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    /* Utils */
+    const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const parseUK = v => { const [dd,mm,yy]=v.split('/').map(n=>parseInt(n,10)); return new Date(yy,mm-1,dd); };
+    const isMobile = () => window.matchMedia('(max-width: 639px)').matches;
 
-    const parseUK = (str) => {
-      const [dd, mm, yyyy] = str.split('/').map(v => parseInt(v, 10));
-      return new Date(yyyy, mm - 1, dd);
-    };
-
-    /* ---------------------------------
-       DEFAULT VALUES (today)
-    ---------------------------------- */
+    /* Default dates/times */
     const today = new Date();
     const fromDateEl = document.getElementById('fromDate');
     const toDateEl   = document.getElementById('toDate');
     fromDateEl.value = formatUK(today);
     toDateEl.value   = formatUK(today);
 
-    /* ---------------------------------
-       TIME DROPDOWNS (15-min steps)
-    ---------------------------------- */
+    /* Times (15-min steps) */
     const fromTimeEl = document.getElementById('fromTime');
     const toTimeEl   = document.getElementById('toTime');
-
-    function fillTimes(selectEl) {
-      selectEl.innerHTML = '';
-      for (let m = 0; m < 24 * 60; m += 15) {
-        const hh = Math.floor(m / 60);
-        const mm = m % 60;
-        const d = new Date(2000,0,1,hh,mm);
-        const label = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
-        const value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-        const opt = new Option(label, value);
-        selectEl.add(opt);
+    function fillTimes(sel){
+      sel.innerHTML = '';
+      for(let m=0;m<24*60;m+=15){
+        const hh = String(Math.floor(m/60)).padStart(2,'0');
+        const mm = String(m%60).padStart(2,'0');
+        const label = new Date(2000,0,1,hh,mm).toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
+        sel.add(new Option(label, `${hh}:${mm}`));
       }
     }
+    fillTimes(fromTimeEl); fillTimes(toTimeEl);
+    fromTimeEl.value = '10:00'; toTimeEl.value='11:00';
 
-    fillTimes(fromTimeEl);
-    fillTimes(toTimeEl);
+    /* Flowbite datepickers */
+    const dpOpts = { autohide:true, defaultDate: today, language:'en-GB', format:'dd/mm/yyyy', orientation:'bottom' };
+    const fromPicker = new Datepicker(fromDateEl, dpOpts);
+    const toPicker   = new Datepicker(toDateEl,   dpOpts);
 
-    // sensible defaults (10:00 → 11:00)
-    fromTimeEl.value = '10:00';
-    toTimeEl.value = '11:00';
+    // open on click
+    fromDateEl.addEventListener('click', () => showDP(fromDateEl));
+    toDateEl  .addEventListener('click', () => showDP(toDateEl));
 
-    /* ---------------------------------
-       FLOWBITE DATEPICKERS (DD/MM/YYYY)
-    ---------------------------------- */
-    const fromPicker = new Datepicker(fromDateEl, {
-      autohide: true,
-      defaultDate: today,
-      language: 'en-GB',
-      format: 'dd/mm/yyyy',
-      orientation: 'bottom',
-    });
-
-    const toPicker = new Datepicker(toDateEl, {
-      autohide: true,
-      defaultDate: today,
-      language: 'en-GB',
-      format: 'dd/mm/yyyy',
-      orientation: 'bottom',
-    });
-
-    // open on click/tap
-    fromDateEl.addEventListener('click', () => fromPicker.show());
-    toDateEl  .addEventListener('click',   () => toPicker.show());
-
-    /* ---------------------------------
-       KEEP TO ≥ FROM
-    ---------------------------------- */
+    // keep To >= From
     fromDateEl.addEventListener('changeDate', () => {
-      const f = parseUK(fromDateEl.value);
-      const t = parseUK(toDateEl.value);
-      if (t < f) {
-        toDateEl.value = fromDateEl.value;
-        toPicker.setDate(f);
+      const f=parseUK(fromDateEl.value), t=parseUK(toDateEl.value);
+      if (t < f) { toDateEl.value = fromDateEl.value; toPicker.setDate(f); }
+      hideMobileOverlay();
+    });
+    toDateEl.addEventListener('changeDate', hideMobileOverlay);
+
+    // bump end time if needed
+    fromTimeEl.addEventListener('change', () => {
+      const [fh,fm]=fromTimeEl.value.split(':').map(Number);
+      const [th,tm]=toTimeEl.value.split(':').map(Number);
+      if (th*60+tm <= fh*60+fm){
+        const bumped = (fh*60+fm)+60; const h=String(Math.floor(bumped/60)%24).padStart(2,'0'); const m=String(bumped%60).padStart(2,'0');
+        toTimeEl.value = `${h}:${m}`;
       }
     });
 
-    /* ---------------------------------
-       AUTO ADJUST END TIME
-    ---------------------------------- */
-    fromTimeEl.addEventListener('change', () => {
-      const [fh, fm] = fromTimeEl.value.split(':').map(Number);
-      const [th, tm] = toTimeEl.value.split(':').map(Number);
-      const fmins = fh * 60 + fm;
-      const tmins = th * 60 + tm;
-      if (tmins <= fmins) {
-        const bumped = fmins + 60;
-        const hh = String(Math.floor(bumped / 60) % 24).padStart(2, '0');
-        const mm = String(bumped % 60).padStart(2, '0');
-        toTimeEl.value = `${hh}:${mm}`;
-      }
-    });
+    /* ---------- Desktop popover vs Mobile modal ---------- */
+    const overlayEl = document.getElementById('dpOverlay');
+
+    function showDP(inputEl){
+      // Always show picker
+      (inputEl === fromDateEl ? fromPicker : toPicker).show();
+
+      // Wait for DOM node to exist, then style accordingly
+      setTimeout(() => {
+        const dp = inputEl.parentElement.querySelector('.datepicker');
+        if (!dp) return;
+
+        if (isMobile()){
+          // MOBILE: center modal + dim overlay
+          dp.classList.add('dp-modal');
+          showMobileOverlay(() => {
+            (inputEl === fromDateEl ? fromPicker : toPicker).hide();
+          });
+        } else {
+          // DESKTOP/TABLET: behave as right-aligned popover under field
+          dp.classList.remove('dp-modal');
+          hideMobileOverlay();
+          // Ensure it's inside the wrapper and snapped right (handled via CSS)
+        }
+      }, 0);
+    }
+
+    function showMobileOverlay(onDismiss){
+      overlayEl.classList.add('show');
+      overlayEl.onclick = () => { overlayEl.onclick = null; hideMobileOverlay(); onDismiss && onDismiss(); };
+      document.addEventListener('keydown', escClose, { once:true });
+      function escClose(e){ if (e.key === 'Escape'){ hideMobileOverlay(); onDismiss && onDismiss(); } }
+    }
+    function hideMobileOverlay(){ overlayEl.classList.remove('show'); overlayEl.onclick = null; }
+
+    // Close overlay if viewport crosses the breakpoint while open
+    window.addEventListener('resize', () => { if (!isMobile()) hideMobileOverlay(); });
   </script>
 </body>
 </html>
