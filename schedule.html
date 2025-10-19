@@ -12,8 +12,8 @@
 
   <style>
     /* ------------------------------------
-       FLATPICKR FIX (GOOGLE-LIKE STYLE)
-       Perfect circles + centered alignment
+       FLATPICKR: Google-style calendar
+       Centered grid, perfect circles
     ------------------------------------ */
     .flatpickr-calendar {
       background: #f8f8f8 !important;
@@ -42,7 +42,7 @@
       content: "";
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0,0,0,0.45);
       z-index: -1;
       backdrop-filter: blur(3px);
     }
@@ -56,27 +56,33 @@
       text-align: center;
     }
 
-    .flatpickr-current-month {
-      justify-content: center !important;
-    }
-
+    .flatpickr-current-month { justify-content: center !important; }
     .flatpickr-weekdays {
       margin-top: 10px !important;
       font-size: 15px !important;
-      display: flex !important;
-      justify-content: center !important;
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      text-align: center !important;
+      justify-items: center !important;
     }
 
-    /* Force grid layout without left indent */
+    /* Proper 7xN grid alignment */
     .flatpickr-days, .dayContainer {
       display: grid !important;
       grid-template-columns: repeat(7, 1fr) !important;
       justify-items: center !important;
       align-items: center !important;
-      gap: 6px !important;
-      margin: 0 auto !important;
-      width: fit-content !important;
+      grid-auto-flow: dense !important;
+      gap: 0 !important;
+      width: 100% !important;
       text-align: center !important;
+    }
+
+    /* Keep invisible days in grid to preserve alignment */
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
 
     .flatpickr-day {
@@ -88,16 +94,11 @@
       width: 46px !important;
       height: 46px !important;
       font-size: 16px !important;
-      line-height: 1 !important;
       margin: 0 !important;
       padding: 0 !important;
-      transition: all 0.2s ease;
+      line-height: 1 !important;
       text-align: center !important;
-    }
-
-    /* Completely remove default Flatpickr indentation */
-    .flatpickr-day:nth-child(7n+1) {
-      margin-left: 0 !important;
+      transition: all 0.2s ease;
     }
 
     .flatpickr-day:hover {
@@ -134,16 +135,8 @@
       font-size: 15px;
     }
 
-    .flatpickr-btn-cancel {
-      background: #e5e5e5;
-      color: #333;
-    }
-
-    .flatpickr-btn-ok {
-      background: #22c55e;
-      color: white;
-    }
-
+    .flatpickr-btn-cancel { background: #e5e5e5; color: #333; }
+    .flatpickr-btn-ok { background: #22c55e; color: white; }
     .flatpickr-btn:hover { opacity: 0.9; }
   </style>
 </head>
