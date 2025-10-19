@@ -9,6 +9,90 @@
   <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <style>
+    /* ------------------------------------
+       MATERIAL-STYLE DATEPICKER OVERRIDES
+    ------------------------------------ */
+    .flatpickr-calendar {
+      background: #f6f6f6 !important;
+      border: none !important;
+      border-radius: 16px !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2) !important;
+      font-family: "Inter", system-ui, sans-serif !important;
+      color: #222 !important;
+      overflow: hidden !important;
+    }
+
+    .flatpickr-months {
+      background: #f6f6f6 !important;
+      border-bottom: 1px solid #ddd !important;
+      font-weight: 600 !important;
+    }
+
+    .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year {
+      font-size: 15px !important;
+      color: #333 !important;
+    }
+
+    .flatpickr-prev-month, .flatpickr-next-month {
+      color: #666 !important;
+      fill: #666 !important;
+      transition: all 0.2s ease;
+    }
+    .flatpickr-prev-month:hover, .flatpickr-next-month:hover {
+      color: #22c55e !important;
+      fill: #22c55e !important;
+    }
+
+    .flatpickr-weekday {
+      color: #555 !important;
+      font-weight: 600 !important;
+    }
+
+    .flatpickr-day {
+      border-radius: 50% !important;
+      width: 38px !important;
+      height: 38px !important;
+      line-height: 38px !important;
+      margin: 2px !important;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .flatpickr-day:hover {
+      background: rgba(34,197,94,0.2) !important;
+      color: #000 !important;
+    }
+
+    .flatpickr-day.today {
+      border: 1px solid #22c55e !important;
+      color: #22c55e !important;
+    }
+
+    .flatpickr-day.selected {
+      background: #22c55e !important;
+      color: #fff !important;
+    }
+
+    .flatpickr-day.disabled,
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay {
+      color: #ccc !important;
+    }
+
+    /* Month navigation buttons positioning fix */
+    .flatpickr-current-month {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .flatpickr-months .flatpickr-prev-month,
+    .flatpickr-months .flatpickr-next-month {
+      top: 8px !important;
+    }
+  </style>
 </head>
 
 <body class="bg-black text-white min-h-screen">
@@ -83,13 +167,13 @@
     document.getElementById('toTime').value   = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
 
     /* ---------------------------------
-       FLATPICKR CONFIG (UK DATE FORMAT)
+       FLATPICKR CONFIG (UK FORMAT)
     ---------------------------------- */
     const fromPicker = flatpickr('#fromDate', {
       disableMobile: true,
       altInput: true,
-      altFormat: 'd/m/Y',   // visible to user (UK)
-      dateFormat: 'Y-m-d',  // actual stored value
+      altFormat: 'd/m/Y',
+      dateFormat: 'Y-m-d',
       defaultDate: start,
       onChange: ensureToDate
     });
