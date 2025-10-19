@@ -54,7 +54,7 @@
       <div>
         <label for="fromDate" class="block text-sm font-medium text-gray-700 mb-2">From</label>
         <div class="flex gap-2">
-          <input id="fromDate" name="fromDate" type="text" data-datepicker readonly
+          <input id="fromDate" name="fromDate" type="text" readonly
             class="w-2/3 p-2.5 border border-gray-300 rounded-lg text-gray-800 bg-white focus:ring-green-500 focus:border-green-500"
             placeholder="Select date" />
           <input id="fromTime" type="time"
@@ -66,7 +66,7 @@
       <div>
         <label for="toDate" class="block text-sm font-medium text-gray-700 mb-2">To</label>
         <div class="flex gap-2">
-          <input id="toDate" name="toDate" type="text" data-datepicker readonly
+          <input id="toDate" name="toDate" type="text" readonly
             class="w-2/3 p-2.5 border border-gray-300 rounded-lg text-gray-800 bg-white focus:ring-green-500 focus:border-green-500"
             placeholder="Select date" />
           <input id="toTime" type="time"
@@ -92,7 +92,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
   <script>
-    // Default to today’s date
     const today = new Date();
     const formatDate = (d) => {
       const dd = String(d.getDate()).padStart(2, '0');
@@ -100,10 +99,29 @@
       const yyyy = d.getFullYear();
       return `${dd}/${mm}/${yyyy}`;
     };
-    document.getElementById('fromDate').value = formatDate(today);
-    document.getElementById('toDate').value = formatDate(today);
 
-    // Recenter popup when opened
+    const fromInput = document.getElementById('fromDate');
+    const toInput = document.getElementById('toDate');
+    fromInput.value = formatDate(today);
+    toInput.value = formatDate(today);
+
+    // Initialize Flowbite Datepicker manually (ensures popup works)
+    const fromPicker = new Datepicker(fromInput, {
+      autohide: true,
+      defaultDate: today,
+      minDate: today,
+    });
+    const toPicker = new Datepicker(toInput, {
+      autohide: true,
+      defaultDate: today,
+      minDate: today,
+    });
+
+    // Open calendar when input is clicked
+    fromInput.addEventListener('click', () => fromPicker.show());
+    toInput.addEventListener('click', () => toPicker.show());
+
+    // Center popup calendar when shown
     document.addEventListener('show.datepicker', () => {
       setTimeout(() => {
         const picker = document.querySelector('.datepicker[role="dialog"]');
