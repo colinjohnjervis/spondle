@@ -140,7 +140,7 @@
     );
 
     /* ---------------------------
-       VENUE SEARCH & CREATE
+       VENUE SEARCH & CREATE (FIXED)
     --------------------------- */
     const venueSearch = document.getElementById('venueSearch');
     const venueId = document.getElementById('venueId');
@@ -148,44 +148,70 @@
     const noVenueResults = document.getElementById('noVenueResults');
     const newVenueForm = document.getElementById('newVenueForm');
 
+    let searchTimeout;
+
     async function searchVenues(query) {
+      const cleanQuery = query.replace(/[^a-zA-Z0-9\s'-]/g, '').trim();
+      if (!cleanQuery) return [];
+
       const { data, error } = await supabase
         .from('venues')
         .select('id, venue_name, street_name, postcode')
-        .ilike('venue_name', `%${query}%`)
-        .limit(5);
+        .ilike('venue_name', `%${cleanQuery}%`)
+        .limit(10);
+
       if (error) {
         console.error(error);
         return [];
       }
-      return data;
-    }
 
-    venueSearch.addEventListener('input', async (e) => {
-      const query = e.target.value.trim();
-      venueResults.innerHTML = '';
-      noVenueResults.classList.add('hidden');
-      if (!query) return;
-
-      const venues = await searchVenues(query);
-      if (!venues.length) {
-        noVenueResults.classList.remove('hidden');
-        return;
+      // Deduplicate by ID
+      const unique = [];
+      const seen = new Set();
+      for (const v of data) {
+        if (!seen.has(v.id)) {
+          seen.add(v.id);
+          unique.push(v);
+        }
       }
 
-      venues.forEach(v => {
-        const div = document.createElement('div');
-        div.className = 'venue-card';
-        div.innerHTML = `<strong>${v.venue_name}</strong><br>${v.street_name || ''}${v.postcode ? ', ' + v.postcode : ''}`;
-        div.addEventListener('click', () => {
-          venueSearch.value = v.venue_name;
-          venueId.value = v.id;
-          venueResults.innerHTML = '';
-          noVenueResults.classList.add('hidden');
-          newVenueForm.classList.add('hidden');
+      return unique;
+    }
+
+    venueSearch.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      const query = venueSearch.value.trim();
+
+      searchTimeout = setTimeout(async () => {
+        venueResults.innerHTML = '';
+        noVenueResults.classList.add('hidden');
+        if (!query) return;
+
+        const venues = await searchVenues(query);
+
+        if (!venues.length) {
+          noVenueResults.classList.remove('hidden');
+          return;
+        }
+
+        venues.forEach(v => {
+          const div = document.createElement('div');
+          div.className = 'venue-card';
+          div.innerHTML = `<strong>${v.venue_name}</strong><br>${v.street_name || ''}${v.postcode ? ', ' + v.postcode : ''}`;
+          div.addEventListener('click', () => {
+            venueSearch.value = v.venue_name;
+            venueId.value = v.id;
+            venueResults.innerHTML = '';
+            noVenueResults.classList.add('hidden');
+            newVenueForm.classList.add('hidden');
+            // highlight on selection
+            div.style.background = '#22c55e';
+            div.style.color = '#fff';
+            setTimeout(() => { div.style.background = '#1f2937'; div.style.color = ''; }, 500);
+          });
+          venueResults.appendChild(div);
         });
-        venueResults.appendChild(div);
-      });
+      }, 300); // debounce
     });
 
     document.getElementById('clearVenue').addEventListener('click', () => {
@@ -204,12 +230,16 @@
       const name = document.getElementById('newVenueName').value.trim();
       const street = document.getElementById('newVenueStreet').value.trim();
       const postcode = document.getElementById('newVenuePostcode').value.trim();
+
       if (!name) return alert('Enter a venue name');
+
       const { data, error } = await supabase
         .from('venues')
         .insert([{ venue_name: name, street_name: street, postcode }])
         .select('id');
+
       if (error) return alert('Error creating venue');
+
       venueSearch.value = name;
       venueId.value = data[0].id;
       newVenueForm.classList.add('hidden');
