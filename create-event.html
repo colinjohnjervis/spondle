@@ -1,457 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Event – Spondle</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schedule Setup – Spondle</title>
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + styles -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
-  <link rel="stylesheet" href="./styles.css?v=global-9">
-  <link rel="stylesheet" href="./hearts.css?v=global-9">
+  <!-- Flowbite Core + Datepicker -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <style>
-  /* -----------------------------
-     INLINE PAGE STYLES
-  ----------------------------- */
-  .venue-card{border:1px solid #444;border-radius:12px;padding:12px;margin-bottom:12px;background:#111;cursor:pointer;}
-  .venue-card strong{display:block;margin-bottom:4px;}
-  .no-results{text-align:center;color:#888;margin-top:10px;}
-  .venue-form input,.venue-form button{width:100%;padding:10px;margin-bottom:10px;border-radius:12px;box-sizing:border-box;}
-  .input-wrapper{position:relative;}
-  .clear-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#aaa;font-size:18px;cursor:pointer;}
+    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
+    .input-dark { background:#0b1220; color:#fff; width:100%; }
+    .input-dark::placeholder { color:#9ca3af; }
+    .floating-panel { background:#fff; color:#111; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
 
-  /* -----------------------------------
-     START: IMAGE CAROUSEL STYLES
-  ----------------------------------- */
-  .no-scrollbar::-webkit-scrollbar{display:none;}
-  .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
-  .img-wrapper{border-radius:0.5rem;overflow:hidden;background-clip:padding-box;border:3px solid transparent;transition:border-color .25s ease;}
-  .img-wrapper.selected{border-color:#22c55e;}
-  .arrow-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.4);color:rgba(255,255,255,.9);font-size:22px;width:40px;height:40px;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
-  .arrow-btn:hover{background:rgba(0,0,0,.6);}
-  .placeholder-box{height:24rem;background:#e5e5e5;color:#222;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;border-radius:.5rem;}
-  /* -----------------------------------
-     END: IMAGE CAROUSEL STYLES
-  ----------------------------------- */
+    /* Flowbite datepicker: Google-ish styling */
+    .datepicker[role="dialog"]{
+      position:fixed !important; top:50% !important; left:50% !important;
+      transform:translate(-50%,-50%) !important; z-index:9999 !important;
+      width:min(92vw, 420px); border:none !important;
+    }
+    .datepicker .days .datepicker-cell{
+      width:44px !important; height:44px !important; line-height:44px !important;
+      border-radius:50% !important; margin:3px !important; text-align:center !important;
+    }
+    .datepicker-cell.selected{ background:#22c55e !important; color:#fff !important; }
+    .datepicker-cell:hover{ background:#e5e7eb !important; }
+    .datepicker-footer{ display:none; }
+
+    /* Venue results dropdown */
+    .results-pop { position:absolute; inset-inline:0; top:100%; margin-top:.5rem; z-index:40; }
+    .results-pop .item:hover { background:#0b1220; }
+    .tag { background:#064e3b; color:#d1fae5; }
   </style>
 </head>
+<body class="flex items-start justify-center py-10">
+  <div class="card w-full max-w-xl p-6">
+    <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-<body class="bg-black text-white">
-  <!-- START: HEADER + SIDEBAR -->
-  <div id="layout-root"></div>
-  <!-- END: HEADER + SIDEBAR -->
+    <!-- =========================
+         VENUE (search / select / add)
+    ========================== -->
+    <div class="mb-6">
+      <label class="block text-sm text-gray-300 mb-2">Venue</label>
 
-  <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
-    <h1 class="text-3xl font-bold">Create Event</h1>
+      <!-- search input + clear -->
+      <div class="relative">
+        <input id="venueSearch" type="text" autocomplete="off"
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="Search by venue name..." />
+        <button id="venueClear" type="button"
+                class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                aria-label="Clear">&times;</button>
 
-    <form id="eventForm" class="space-y-6 mt-6">
-      <!-- START: BASIC INFO -->
-      <div>
-        <label class="block mb-2">Event Name</label>
-        <input type="text" name="event_name" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-      </div>
-
-      <div>
-        <label class="block mb-2">Description</label>
-        <textarea name="description" rows="4" class="w-full p-2 bg-gray-800 border border-gray-600 rounded"></textarea>
-      </div>
-
-      <div>
-        <label class="block mb-2">Category</label>
-        <select name="category" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <option value="">Select category</option>
-          <option value="music">Music</option>
-          <option value="comedy">Comedy</option>
-          <option value="theatre">Theatre</option>
-          <option value="sports">Sports</option>
-          <option value="festival">Festival</option>
-          <option value="quiz">Quiz Night</option>
-        </select>
-      </div>
-
-      <!-- Hidden image URL -->
-      <input type="hidden" id="imageUrlInput" name="image_url" />
-
-      <!-- Placeholder shown before category selection -->
-      <div id="placeholderBox" class="placeholder-box">Spondle</div>
-
-      <div>
-        <label class="block mb-2">Publish Status</label>
-        <select name="publish_status" required class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
-      </div>
-      <!-- END: BASIC INFO -->
-
-      <!-- START: SCHEDULE TABS -->
-      <div>
-        <label class="block mb-2 font-medium">Schedule</label>
-        <div class="flex gap-2 mb-4">
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="single">Single</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="recurring">Recurring</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded w-full" data-type="tour">Tour</button>
+        <!-- results dropdown -->
+        <div id="venueResults" class="results-pop hidden">
+          <div class="floating-panel overflow-hidden border border-gray-200">
+            <ul id="venueResultsList" class="max-h-72 overflow-auto divide-y divide-gray-100"></ul>
+            <div class="p-3 flex items-center justify-between">
+              <button id="venueAddBtn" type="button"
+                      class="px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 text-sm">
+                + Add new venue
+              </button>
+              <button type="button" id="venueCloseResults"
+                      class="px-3 py-2 rounded-md border text-sm">Close</button>
+            </div>
+          </div>
         </div>
-        <input type="hidden" name="event_type" id="eventType" value="single">
-        <div id="tabContent"></div>
-      </div>
-      <!-- END: SCHEDULE TABS -->
-
-      <!-- START: SUBMIT + ORGANISER ID -->
-      <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400">Submit Event</button>
-
-      <div>
-        <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
-        <input type="text" id="organiser_id" name="organiser_id" readonly class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 text-sm" placeholder="Fetching..." />
       </div>
 
-      <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
-      <!-- END: SUBMIT + ORGANISER ID -->
-    </form>
-  </main>
-
-  <!-- START: LAYOUT SCRIPT -->
-  <script src="./spondle-layout.js?v=global-9" type="module"></script>
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      window.Layout?.init({ active: "dashboard" });
-    });
-  </script>
-  <!-- END: LAYOUT SCRIPT -->
-
-  <!-- START: PAGE LOGIC -->
-  <script type="module">
-  /* ---------------------------------
-     START: SUPABASE INITIALIZATION
-  ---------------------------------- */
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-  const supabase = createClient(
-    'https://jvuunvnbpdfrttusgelz.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-  );
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    document.getElementById('organiser_id').value = user ? user.id : 'Not logged in';
-  });
-
-  /* ---------------------------------
-     START: IMAGE STOCK PICKER
-  ---------------------------------- */
-  const imageUrlInput = document.getElementById('imageUrlInput');
-  const categorySelect = document.querySelector('select[name="category"]');
-  const placeholderBox = document.getElementById('placeholderBox');
-
-  const stockImages = {
-    music: [
-      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1518364538800-6bae3c1f3a36?auto=format&fit=crop&w=1200&q=80"
-    ],
-    comedy: [
-      "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
-      "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
-      "https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1532636480627-8b785aa5d4b1?auto=format&fit=crop&w=1200&q=80"
-    ],
-    theatre: [
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&w=1200&q=80"
-    ],
-    sports: [
-      "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80"
-    ],
-    festival: [
-      "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff33?auto=format&fit=crop&w=1200&q=80"
-    ],
-    quiz: [
-      "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80"
-    ]
-  };
-
-  const carouselContainer = document.createElement('div');
-  carouselContainer.className = 'relative mt-3 hidden';
-  const carouselTrack = document.createElement('div');
-  carouselTrack.id = 'carousel';
-  carouselTrack.className = 'flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth';
-  carouselContainer.appendChild(carouselTrack);
-  const prevArrow = document.createElement('button');
-  prevArrow.type = 'button';
-  prevArrow.innerHTML = '&lt;';
-  prevArrow.className = 'arrow-btn left-2 hidden';
-  carouselContainer.appendChild(prevArrow);
-  const nextArrow = document.createElement('button');
-  nextArrow.type = 'button';
-  nextArrow.innerHTML = '&gt;';
-  nextArrow.className = 'arrow-btn right-2 hidden';
-  carouselContainer.appendChild(nextArrow);
-
-  // Insert carousel below the placeholder
-  placeholderBox.insertAdjacentElement('afterend', carouselContainer);
-
-  let slides = [], currentIndex = 0;
-  function updateArrows(){
-    if(!slides.length){prevArrow.classList.add('hidden');nextArrow.classList.add('hidden');return;}
-    prevArrow.classList.remove('hidden');nextArrow.classList.remove('hidden');
-    prevArrow.disabled=currentIndex<=0;nextArrow.disabled=currentIndex>=slides.length-1;
-  }
-  function scrollToIndex(i){
-    if(!slides[i])return;
-    currentIndex=Math.max(0,Math.min(i,slides.length-1));
-    carouselTrack.scrollTo({left:slides[currentIndex].offsetLeft,behavior:'smooth'});
-    updateArrows();
-  }
-
-  categorySelect.addEventListener('change',()=>{
-    const cat=categorySelect.value;
-    carouselTrack.innerHTML='';
-    if(!cat){carouselContainer.classList.add('hidden');placeholderBox.classList.remove('hidden');imageUrlInput.value='';return;}
-    placeholderBox.classList.add('hidden');
-    carouselContainer.classList.remove('hidden');
-    stockImages[cat].forEach(url=>{
-      const wrapper=document.createElement('div');
-      wrapper.className='img-wrapper w-full h-96 shrink-0 snap-center';
-      const img=document.createElement('img');
-      img.src=url;
-      img.className='w-full h-full object-cover cursor-pointer';
-      img.alt=`${cat} image`;
-      img.addEventListener('click',()=>{
-        carouselTrack.querySelectorAll('.img-wrapper').forEach(w=>w.classList.remove('selected'));
-        wrapper.classList.add('selected');
-        imageUrlInput.value=url;
-      });
-      wrapper.appendChild(img);
-      carouselTrack.appendChild(wrapper);
-    });
-    slides=Array.from(carouselTrack.children);
-    currentIndex=0;
-    updateArrows();
-  });
-  prevArrow.addEventListener('click',()=>scrollToIndex(currentIndex-1));
-  nextArrow.addEventListener('click',()=>scrollToIndex(currentIndex+1));
-  /* ---------------------------------
-     END: IMAGE STOCK PICKER
-  ---------------------------------- */
-
-/* ---------------------------------
-     START: TAB & SCHEDULE LOGIC
-  ---------------------------------- */
-  const tabBtns = document.querySelectorAll('.tab-btn');
-  const tabContent = document.getElementById('tabContent');
-  const eventTypeInput = document.getElementById('eventType');
-  const banner = document.getElementById('banner');
-  const form = document.getElementById('eventForm');
-
-  const venueSearchBlock = () => `
-    <div>
-      <div class="input-wrapper">
-        <input type="text" placeholder="Search by venue name..." class="search w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <button type="button" class="clear-btn" title="Clear">&times;</button>
+      <!-- selected venue pill + hidden id -->
+      <div id="venueSelectedWrap" class="mt-3 hidden">
+        <span id="venuePill" class="inline-flex items-center gap-2 px-3 py-1 rounded-full tag text-sm">
+          <span id="venuePillName"></span>
+          <button id="venuePillRemove" type="button" class="text-emerald-200 hover:text-white" aria-label="Remove">&times;</button>
+        </span>
+        <input type="hidden" id="venueId" />
       </div>
-      <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="venue-id w-full p-2 bg-gray-700 border border-gray-600 rounded text-green-400 mt-2">
-      <div class="venue-list mt-2"></div>
-      <div class="no-results" style="display:none;">
-        No results — <a href="#" class="create-venue-link text-green-500">Create a new venue</a>
-      </div>
-      <div class="venue-form mt-4" style="display:none;">
-        <input type="text" placeholder="Venue name" class="venue-name bg-gray-800 border border-gray-600">
-        <input type="text" placeholder="Street address" class="venue-street bg-gray-800 border border-gray-600">
-        <input type="text" placeholder="Postcode" class="venue-postcode bg-gray-800 border border-gray-600">
-        <button type="button" class="venue-submit bg-green-500 text-black">Create Venue</button>
+
+      <!-- auto-filled town/city -->
+      <div class="mt-4 grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Town / City</label>
+          <input id="venueCity" type="text" readonly class="input-dark p-3 rounded-lg border border-gray-800 text-gray-300" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Postcode</label>
+          <input id="venuePostcode" type="text" readonly class="input-dark p-3 rounded-lg border border-gray-800 text-gray-300" />
+        </div>
       </div>
     </div>
-  `;
 
-  const views = {
-    single: () => `
-      <div class="space-y-2">
-        ${venueSearchBlock()}
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>
-        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+    <!-- =========================
+         FROM (date + time)
+    ========================== -->
+    <div class="grid grid-cols-2 gap-4 items-end">
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">From</label>
+        <input id="fromDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
-    `,
-    recurring: () => `
-      <div class="space-y-2">
-        ${venueSearchBlock()}
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>
-        <label class="block text-sm">Recurring Dates:</label>
-        <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
+        <select id="fromTime"
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
-    `,
-    tour: () => `
-      <div id="scheduleSection" class="space-y-4">
-        ${venueSearchBlock()}
-        <div class="flex gap-4">
-          <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-          <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
-        </div>
-        <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
-        <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+    </div>
+
+    <!-- =========================
+         TO (date + time)
+    ========================== -->
+    <div class="grid grid-cols-2 gap-4 items-end mt-6">
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">To</label>
+        <input id="toDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
-    `
-  };
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
+        <select id="toTime"
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+      </div>
+    </div>
 
-  /* ---------------------------------
-     START: VENUE SEARCH / CREATE LOGIC
-  ---------------------------------- */
-  function wireVenueSearch(scope=document){
-    scope.querySelectorAll('.input-wrapper').forEach(wrapper=>{
-      const searchInput=wrapper.querySelector('.search');
-      const parent=wrapper.closest('div');
-      const venueIdInput=parent.parentElement.querySelector('.venue-id');
-      const venueList=parent.parentElement.querySelector('.venue-list');
-      const noResults=parent.parentElement.querySelector('.no-results');
-      const venueForm=parent.parentElement.querySelector('.venue-form');
-      const clearBtn=wrapper.querySelector('.clear-btn');
+    <!-- =========================
+         REPEAT
+    ========================== -->
+    <div class="mt-6">
+      <label class="block text-sm text-gray-300 mb-2">Repeat</label>
+      <select id="repeatRule"
+              class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+        <option value="none">Does not repeat</option>
+        <option value="daily">Every day</option>
+        <option value="weekly">Every week</option>
+        <option value="biweekly">Every 2 weeks</option>
+        <option value="monthly">Every month</option>
+        <option value="yearly">Every year</option>
+      </select>
+    </div>
+  </div>
 
-      searchInput.addEventListener('input',async()=>{
-        const q=searchInput.value.trim();
-        venueList.innerHTML='';
-        noResults.style.display='none';
-        if(!q)return;
-        const{data:venues,error}=await supabase
-          .from('venues')
-          .select('id,venue_name,street_name,postcode')
-          .ilike('venue_name',`%${q}%`)
-          .limit(5);
-        if(error)return;
-        if(!venues||venues.length===0){noResults.style.display='block';return;}
-        venues.forEach(v=>{
-          const card=document.createElement('div');
-          card.className='venue-card';
-          card.innerHTML=`<strong>${v.venue_name}</strong>${v.street_name||''}${v.postcode?', '+v.postcode:''}`;
-          card.addEventListener('click',()=>{
-            searchInput.value=v.venue_name;
-            venueIdInput.value=v.id;
-            venueList.innerHTML='';
-            noResults.style.display='none';
-          });
-          venueList.appendChild(card);
-        });
-      });
+  <!-- ADD VENUE MODAL -->
+  <div id="addVenueModal" class="hidden fixed inset-0 z-[10000] flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="relative w-[92vw] max-w-md floating-panel p-5">
+      <h3 class="text-lg font-semibold mb-3">Add new venue</h3>
 
-      clearBtn.addEventListener('click',()=>{
-        searchInput.value='';
-        venueIdInput.value='';
-        venueList.innerHTML='';
-        venueForm.style.display='none';
-        noResults.style.display='none';
-      });
+      <div class="grid gap-3">
+        <input id="nvName" class="w-full border rounded-md p-2" placeholder="Venue name" />
+        <input id="nvAddr1" class="w-full border rounded-md p-2" placeholder="Address line 1" />
+        <input id="nvCity" class="w-full border rounded-md p-2" placeholder="Town / City" />
+        <input id="nvPostcode" class="w-full border rounded-md p-2" placeholder="Postcode" />
+        <input id="nvCountry" class="w-full border rounded-md p-2" placeholder="Country (e.g. UK)" />
+      </div>
 
-      parent.parentElement.querySelector('.create-venue-link')?.addEventListener('click',e=>{
-        e.preventDefault();
-        venueForm.style.display='block';
-      });
+      <div class="mt-4 flex items-center justify-end gap-3">
+        <button id="nvCancel" class="px-4 py-2 rounded-md border">Cancel</button>
+        <button id="nvSave" class="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-500">Save</button>
+      </div>
+    </div>
+  </div>
 
-      parent.parentElement.querySelector('.venue-submit')?.addEventListener('click',async()=>{
-        const name=parent.parentElement.querySelector('.venue-name').value.trim();
-        const street=parent.parentElement.querySelector('.venue-street').value.trim();
-        const postcode=parent.parentElement.querySelector('.venue-postcode').value.trim();
-        if(!name)return alert('Enter a venue name');
-        const{data,error}=await supabase.from('venues').insert([{venue_name:name,street_name:street,postcode}]).select('id');
-        if(error)return alert('Error creating venue');
-        searchInput.value=name;
-        venueIdInput.value=data[0].id;
-        venueForm.style.display='none';
-        venueList.innerHTML='';
-        noResults.style.display='none';
-      });
-    });
-  }
-  /* ---------------------------------
-     END: VENUE SEARCH / CREATE LOGIC
-  ---------------------------------- */
+  <script>
+    // -------------------------------
+    // Endpoints (match create-event)
+    // -------------------------------
+    const SEARCH_URL = "/api/venues/search?q="; // <-- replace
+    const CREATE_URL = "/api/venues";           // <-- replace
 
-  /* ---------------------------------
-     START: TAB SWITCHING LOGIC
-  ---------------------------------- */
-  function createScheduleInput(){
-    const section=document.getElementById('scheduleSection');
-    const wrapper=document.createElement('div');
-    wrapper.className='space-y-2 border-t border-gray-700 pt-4';
-    wrapper.innerHTML=views.single();
-    section.insertBefore(wrapper,section.querySelector('#addScheduleBtn'));
-    wireVenueSearch(wrapper);
-  }
+    // -------------------------------
+    // Small utils
+    // -------------------------------
+    const qs  = (s, sc=document) => sc.querySelector(s);
+    const qsa = (s, sc=document) => Array.from(sc.querySelectorAll(s));
+    const debounce = (fn, wait=250) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; };
 
-  tabBtns.forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      tabBtns.forEach(b=>b.classList.remove('bg-green-600'));
-      btn.classList.add('bg-green-600');
-      const type=btn.dataset.type;
-      eventTypeInput.value=type;
-      tabContent.innerHTML=views[type]();
-      if(type==='tour'){
-        const addBtn=document.getElementById('addScheduleBtn');
-        addBtn?.addEventListener('click',createScheduleInput);
+    // -------------------------------
+    // Date/time setup (same as before)
+    // -------------------------------
+    const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const parseUK  = str => { const [dd,mm,yyyy] = str.split('/').map(x=>parseInt(x,10)); return new Date(yyyy,mm-1,dd); };
+    const today    = new Date();
+
+    const fromDateEl = qs('#fromDate');
+    const toDateEl   = qs('#toDate');
+    fromDateEl.value = formatUK(today);
+    toDateEl.value   = formatUK(today);
+
+    const fromTimeEl = qs('#fromTime');
+    const toTimeEl   = qs('#toTime');
+
+    function fillTimes(sel){
+      sel.innerHTML = '';
+      for (let m=0; m<24*60; m+=15){
+        const hh = String(Math.floor(m/60)).padStart(2,'0');
+        const mm = String(m%60).padStart(2,'0');
+        const d  = new Date(2000,0,1,hh,mm);
+        const label = d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
+        sel.add(new Option(label, `${hh}:${mm}`));
       }
-      wireVenueSearch(tabContent);
-    });
-  });
-  tabBtns[0].click();
-  /* ---------------------------------
-     END: TAB SWITCHING LOGIC
-  ---------------------------------- */
-
-  /* ---------------------------------
-     START: FORM SUBMISSION
-  ---------------------------------- */
-  form.addEventListener('submit',async e=>{
-    e.preventDefault();
-    const formData=new FormData(form);
-    const entries=Array.from(formData.entries());
-    const grouped={};
-    entries.forEach(([k,v])=>{
-      if(k.endsWith('[]')){const key=k.slice(0,-2);(grouped[key]=grouped[key]||[]).push(v);}
-      else grouped[k]=v;
-    });
-
-    const organiser_id=document.getElementById('organiser_id').value;
-    const eventType=grouped.event_type;
-    const dates=grouped.event_date||[];
-    const times=grouped.event_time||[];
-    const venues=grouped.venue_id||[];
-    const tickets=grouped.ticket_url||[];
-
-    for(let i=0;i<dates.length;i++){
-      const{error}=await supabase.from('events').insert([{
-        event_name:grouped.event_name,
-        description:grouped.description,
-        category:grouped.category,
-        image_url:grouped.image_url,
-        publish_status:grouped.publish_status,
-        event_type:eventType,
-        event_date:dates[i],
-        event_time:times[i],
-        venue_id:venues[i]||null,
-        ticket_url:tickets[i]||null,
-        organiser_id
-      }]);
-      if(error){banner.textContent='Error submitting event';banner.className='mt-4 text-red-500';banner.classList.remove('hidden');return;}
     }
-    banner.textContent='Event submitted successfully';
-    banner.className='mt-4 text-green-500';
-    banner.classList.remove('hidden');
-    form.reset();
-    tabBtns[0].click();
-  });
-  /* ---------------------------------
-     END: FORM SUBMISSION
-  ---------------------------------- */
+    fillTimes(fromTimeEl); fillTimes(toTimeEl);
+    fromTimeEl.value = '10:00'; toTimeEl.value = '11:00';
+
+    const fromPicker = new Datepicker(fromDateEl,{ autohide:true, defaultDate:today, language:'en-GB', format:'dd/mm/yyyy', orientation:'bottom' });
+    const toPicker   = new Datepicker(toDateEl  ,{ autohide:true, defaultDate:today, language:'en-GB', format:'dd/mm/yyyy', orientation:'bottom' });
+    fromDateEl.addEventListener('click', ()=>fromPicker.show());
+    toDateEl  .addEventListener('click', ()=>toPicker.show());
+
+    fromDateEl.addEventListener('changeDate', ()=>{
+      const f = parseUK(fromDateEl.value);
+      const t = parseUK(toDateEl.value);
+      if (t < f) { toDateEl.value = fromDateEl.value; toPicker.setDate(f); }
+    });
+
+    fromTimeEl.addEventListener('change', ()=>{
+      const [fh,fm] = fromTimeEl.value.split(':').map(Number);
+      const [th,tm] = toTimeEl.value.split(':').map(Number);
+      const fmins = fh*60+fm, tmins = th*60+tm;
+      if (tmins <= fmins){
+        const bumped = (fmins+60) % (24*60);
+        const hh = String(Math.floor(bumped/60)).padStart(2,'0');
+        const mm = String(bumped%60).padStart(2,'0');
+        toTimeEl.value = `${hh}:${mm}`;
+      }
+    });
+
+    // -------------------------------
+    // Venue: search / select / add
+    // -------------------------------
+    const venueSearch   = qs('#venueSearch');
+    const venueResults  = qs('#venueResults');
+    const venueList     = qs('#venueResultsList');
+    const venueClearBtn = qs('#venueClear');
+    const venueCloseBtn = qs('#venueCloseResults');
+    const venueAddBtn   = qs('#venueAddBtn');
+
+    const venueIdEl     = qs('#venueId');
+    const venueCityEl   = qs('#venueCity');
+    const venuePCEel    = qs('#venuePostcode');
+    const pillWrap      = qs('#venueSelectedWrap');
+    const pillName      = qs('#venuePillName');
+    const pillRemove    = qs('#venuePillRemove');
+
+    function openResults(){ venueResults.classList.remove('hidden'); }
+    function closeResults(){ venueResults.classList.add('hidden'); }
+
+    function renderResults(items){
+      venueList.innerHTML = '';
+      if (!items || items.length===0){
+        venueList.innerHTML = `<li class="p-3 text-sm text-gray-500">No matches</li>`;
+        return;
+      }
+      items.forEach(v=>{
+        const li = document.createElement('li');
+        li.className = "item p-3 cursor-pointer";
+        li.innerHTML = `
+          <div class="flex flex-col">
+            <span class="font-medium">${v.name}</span>
+            <span class="text-xs text-gray-500">${[v.address1, v.city, v.postcode].filter(Boolean).join(', ')}</span>
+          </div>`;
+        li.addEventListener('click', ()=>selectVenue(v));
+        venueList.appendChild(li);
+      });
+    }
+
+    async function searchVenues(q){
+      if (!q || q.trim().length<2){ renderResults([]); return; }
+      try{
+        const res = await fetch(SEARCH_URL + encodeURIComponent(q.trim()));
+        const data = await res.json();
+        renderResults(data.venues || data || []); // adapt to your API shape
+      }catch(e){
+        renderResults([]);
+      }
+    }
+
+    const debouncedSearch = debounce(searchVenues, 250);
+
+    venueSearch.addEventListener('input', (e)=>{
+      const val = e.target.value;
+      venueClearBtn.classList.toggle('hidden', !val);
+      openResults();
+      debouncedSearch(val);
+    });
+
+    venueSearch.addEventListener('focus', ()=>{
+      if (venueSearch.value) { openResults(); debouncedSearch(venueSearch.value); }
+    });
+
+    venueClearBtn.addEventListener('click', ()=>{
+      venueSearch.value = '';
+      venueClearBtn.classList.add('hidden');
+      renderResults([]); closeResults();
+      clearSelectedVenue();
+    });
+
+    venueCloseBtn.addEventListener('click', closeResults);
+
+    function selectVenue(v){
+      pillWrap.classList.remove('hidden');
+      pillName.textContent = v.name;
+      venueIdEl.value   = v.id || v._id || '';
+      venueSearch.value = v.name;
+      venueCityEl.value = v.city || '';
+      venuePCEel.value  = v.postcode || '';
+      closeResults();
+    }
+
+    function clearSelectedVenue(){
+      pillWrap.classList.add('hidden');
+      pillName.textContent = '';
+      venueIdEl.value = '';
+      venueCityEl.value = '';
+      venuePCEel.value = '';
+    }
+
+    pillRemove.addEventListener('click', ()=>{
+      clearSelectedVenue();
+      venueSearch.focus();
+    });
+
+    // ----- Add new venue modal -----
+    const modal = qs('#addVenueModal');
+    const nv = {
+      name: qs('#nvName'),
+      addr1: qs('#nvAddr1'),
+      city: qs('#nvCity'),
+      pc: qs('#nvPostcode'),
+      country: qs('#nvCountry'),
+      cancel: qs('#nvCancel'),
+      save: qs('#nvSave'),
+    };
+
+    function openModal(){ modal.classList.remove('hidden'); setTimeout(()=>nv.name.focus(), 0); }
+    function closeModal(){ modal.classList.add('hidden'); }
+    function resetModal(){ Object.values(nv).forEach(el=>{ if(el.tagName==='INPUT') el.value=''; }); }
+
+    venueAddBtn.addEventListener('click', ()=>{ closeResults(); openModal(); });
+    nv.cancel.addEventListener('click', ()=>{ closeModal(); resetModal(); });
+
+    nv.save.addEventListener('click', async ()=>{
+      const payload = {
+        name: nv.name.value.trim(),
+        address1: nv.addr1.value.trim(),
+        city: nv.city.value.trim(),
+        postcode: nv.pc.value.trim(),
+        country: nv.country.value.trim(),
+      };
+      if (!payload.name){ nv.name.focus(); return; }
+      try{
+        const res = await fetch(CREATE_URL, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        });
+        const data = await res.json();
+        const created = data.venue || data; // adapt to API
+        selectVenue(created);
+        closeModal(); resetModal();
+      }catch(e){
+        // Minimal fallback: close modal but keep typed name in search
+        venueSearch.value = payload.name;
+        closeModal(); resetModal();
+      }
+    });
+
+    // click-away to close results
+    document.addEventListener('click', (e)=>{
+      if (!venueResults.contains(e.target) && e.target!==venueSearch){
+        closeResults();
+      }
+    });
   </script>
 </body>
 </html>
