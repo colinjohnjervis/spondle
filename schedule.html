@@ -1,211 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Schedule Setup – Spondle</title>
-  <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flatpickr -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <!-- Tailwind + Flowbite -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/datepicker.min.js"></script>
 
   <style>
-    /* ===============================
-       CORE CALENDAR LAYOUT FIX
-    =============================== */
-    .flatpickr-calendar {
-      background: #f8f8f8 !important;
-      border: none !important;
-      border-radius: 20px !important;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
-      font-family: "Inter", system-ui, sans-serif !important;
-      color: #222 !important;
-      width: 360px !important;
-      max-width: 92vw !important;
+    body {
+      background-color: #f4f5f7; /* light tone like Google Calendar */
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      color: #111;
+      min-height: 100vh;
+    }
+    .calendar-modal {
       position: fixed !important;
       top: 50% !important;
       left: 50% !important;
-      transform: translate(-50%, -50%) scale(1.05) !important;
-      z-index: 9999 !important;
-      overflow: hidden !important;
+      transform: translate(-50%, -50%) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      border-radius: 12px;
+      z-index: 9999;
     }
-
-    .flatpickr-calendar::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: -1;
-      backdrop-filter: blur(3px);
+    .datepicker {
+      border-radius: 12px !important;
+      padding: 8px !important;
     }
-
-    .flatpickr-months {
-      background: #f8f8f8 !important;
-      border-bottom: 1px solid #ddd !important;
-      font-weight: 600 !important;
-      padding: 16px 0 !important;
-      font-size: 18px !important;
-      text-align: center;
-    }
-
-    .flatpickr-weekdays {
-      background: #f8f8f8 !important;
-      border-bottom: 1px solid #ddd !important;
-      font-size: 15px !important;
-      padding: 8px 0 !important;
-      display: grid !important;
-      grid-template-columns: repeat(7, 1fr) !important;
-      text-align: center !important;
-      color: #555 !important;
-      font-weight: 500 !important;
-    }
-
-    .flatpickr-days {
-      display: block !important;
-      padding: 10px !important;
-    }
-
-    .dayContainer {
-      display: grid !important;
-      grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
-      gap: 4px !important;
-      justify-items: center !important;
-      align-items: center !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    .flatpickr-day {
-      width: 42px !important;
-      height: 42px !important;
-      line-height: 42px !important;
-      margin: 0 auto !important;
+    .datepicker-cell.selected {
+      background-color: #22c55e !important; /* Spondle green */
+      color: white !important;
       border-radius: 50% !important;
-      font-size: 16px !important;
-      text-align: center !important;
-      display: flex !important;
-      justify-content: center !important;
-      align-items: center !important;
-      transition: all 0.2s ease;
     }
-
-    .flatpickr-day:hover {
-      background: rgba(34, 197, 94, 0.25) !important;
-      color: #000 !important;
+    .datepicker-cell:hover {
+      background-color: #e5e7eb !important;
     }
-
-    .flatpickr-day.today {
-      border: 2px solid #22c55e !important;
-      color: #22c55e !important;
-      font-weight: 600 !important;
-    }
-
-    .flatpickr-day.selected {
-      background: #22c55e !important;
-      color: #fff !important;
-      font-weight: 600 !important;
-      transform: scale(1.05);
-    }
-
-    .flatpickr-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      padding: 14px 20px;
-      border-top: 1px solid #ddd;
-      background: #f8f8f8;
-    }
-
-    .flatpickr-btn {
-      padding: 8px 18px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 15px;
-    }
-
-    .flatpickr-btn-cancel { background: #e5e5e5; color: #333; }
-    .flatpickr-btn-ok { background: #22c55e; color: white; }
-    .flatpickr-btn:hover { opacity: 0.9; }
   </style>
 </head>
 
-<body class="bg-black text-white min-h-screen">
-  <main class="max-w-xl mx-auto p-4 space-y-6">
-    <h1 class="text-2xl font-bold">Schedule Setup</h1>
+<body class="flex flex-col items-center py-10">
+  <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Schedule Setup</h1>
 
-    <!-- FROM -->
-    <section class="space-y-3">
-      <h2 class="text-lg font-semibold text-gray-200">From</h2>
-      <input id="fromDate" type="text" placeholder="DD/MM/YYYY"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white"
-             autocomplete="off" />
-      <input id="fromTime" type="time"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white" />
-    </section>
+    <!-- FROM & TO FIELDS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- FROM -->
+      <div>
+        <label for="fromDate" class="block text-sm font-medium text-gray-700 mb-2">From</label>
+        <div class="flex gap-2">
+          <input id="fromDate" datepicker datepicker-autohide type="text"
+            class="w-2/3 p-2.5 border border-gray-300 rounded-lg text-gray-800 bg-white focus:ring-green-500 focus:border-green-500"
+            placeholder="Select date">
+          <input id="fromTime" type="time"
+            class="w-1/3 p-2.5 border border-gray-300 rounded-lg text-gray-800 bg-white focus:ring-green-500 focus:border-green-500">
+        </div>
+      </div>
 
-    <!-- TO -->
-    <section class="space-y-3">
-      <h2 class="text-lg font-semibold text-gray-200">To</h2>
-      <input id="toDate" type="text" placeholder="DD/MM/YYYY"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white"
-             autocomplete="off" />
-      <input id="toTime" type="time"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white" />
-    </section>
-  </main>
+      <!-- TO -->
+      <div>
+        <label for="toDate" class="block text-sm font-medium text-gray-700 mb-2">To</label>
+        <div class="flex gap-2">
+          <input id="toDate" datepicker datepicker-autohide type="text"
+            class="w-2/3 p-2.5 border border-gray-300 rounded-lg text-gray-800 bg-white focus:ring-green-500 focus:border-green-500"
+            placeholder="Select date">
+          <input id="toTime" type="time"
+            class="w-1/3 p-2.5 border border-gray-300 rounded-lg text-gray-800 bg-white focus:ring-green-500 focus:border-green-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- REPEAT DROPDOWN -->
+    <div class="mt-10">
+      <label for="repeat" class="block text-sm font-medium text-gray-700 mb-2">Repeat</label>
+      <select id="repeat"
+        class="w-full p-2.5 border border-gray-300 rounded-lg text-gray-800 bg-white focus:ring-green-500 focus:border-green-500">
+        <option>Does not repeat</option>
+        <option>Daily</option>
+        <option>Weekly</option>
+        <option>Every 2 weeks</option>
+        <option>Monthly</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Flowbite JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
   <script>
-    const pad = n => String(n).padStart(2,'0');
-    const now = new Date();
-    const start = new Date(now);
-    start.setMinutes(0,0,0); start.setHours(now.getHours()+1);
-    const end = new Date(start); end.setHours(start.getHours()+1);
+    // Default both datepickers to today's date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('fromDate').value = today;
+    document.getElementById('toDate').value = today;
 
-    document.getElementById('fromTime').value = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
-    document.getElementById('toTime').value   = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
-
-    function enhanceWithFooter(instance) {
-      const calendar = instance.calendarContainer;
-      if (calendar && !calendar.querySelector('.flatpickr-footer')) {
-        const footer = document.createElement('div');
-        footer.className = 'flatpickr-footer';
-        footer.innerHTML = `
-          <button class="flatpickr-btn flatpickr-btn-cancel">Cancel</button>
-          <button class="flatpickr-btn flatpickr-btn-ok">OK</button>`;
-        calendar.appendChild(footer);
-        footer.querySelector('.flatpickr-btn-cancel').addEventListener('click', () => instance.close());
-        footer.querySelector('.flatpickr-btn-ok').addEventListener('click', () => instance.close());
-      }
-    }
-
-    const fromPicker = flatpickr('#fromDate', {
-      disableMobile: true,
-      altInput: true,
-      altFormat: 'd/m/Y',
-      dateFormat: 'Y-m-d',
-      defaultDate: start,
-      onOpen: enhanceWithFooter,
-      onChange: ensureToDate
+    // Force Flowbite calendar popup to appear centered
+    document.addEventListener('show.datepicker', (event) => {
+      const picker = document.querySelector('.datepicker[role="dialog"]');
+      if (picker) picker.classList.add('calendar-modal');
     });
-
-    const toPicker = flatpickr('#toDate', {
-      disableMobile: true,
-      altInput: true,
-      altFormat: 'd/m/Y',
-      dateFormat: 'Y-m-d',
-      defaultDate: end,
-      onOpen: enhanceWithFooter
-    });
-
-    function ensureToDate(selectedDates) {
-      const fromDate = selectedDates?.[0] || fromPicker.selectedDates[0];
-      const toDate = toPicker.selectedDates[0];
-      if (toDate && toDate < fromDate) {
-        toPicker.setDate(fromDate, true);
-      }
-    }
   </script>
 </body>
 </html>
