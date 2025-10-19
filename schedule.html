@@ -8,131 +8,137 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flowbite -->
+  <!-- Flowbite Core + Datepicker -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
-
-  <!-- Flowbite Datepicker -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <style>
-    body {
-      background: #000;
-      color: #fff;
-      font-family: ui-sans-serif, system-ui, sans-serif;
-      min-height: 100vh;
-    }
+    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
+    .input-dark { background:#0b1220; color:#fff; width:100%; }
+    .input-dark::placeholder { color:#9ca3af; }
+    .floating-panel { background:#fff; color:#111; border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
 
-    .card {
-      background: #0f172a;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    /* Flowbite datepicker: Google-ish styling */
+    .datepicker[role="dialog"]{
+      position:fixed !important; top:50% !important; left:50% !important;
+      transform:translate(-50%,-50%) !important; z-index:9999 !important;
+      width:min(92vw, 420px); border:none !important;
     }
+    .datepicker .days .datepicker-cell{
+      width:44px !important; height:44px !important; line-height:44px !important;
+      border-radius:50% !important; margin:3px !important; text-align:center !important;
+    }
+    .datepicker-cell.selected{ background:#22c55e !important; color:#fff !important; }
+    .datepicker-cell:hover{ background:#e5e7eb !important; }
+    .datepicker-footer{ display:none; }
 
-    .input-dark {
-      background: #0b1220;
-      color: #fff;
-      width: 100%;
-    }
-
-    .input-dark::placeholder {
-      color: #9ca3af;
-    }
-
-    /* calendar styling */
-    .datepicker .days .datepicker-cell {
-      width: 44px !important;
-      height: 44px !important;
-      line-height: 44px !important;
-      border-radius: 50% !important;
-      margin: 4px !important;
-      text-align: center !important;
-    }
-
-    .datepicker-cell.selected {
-      background: #22c55e !important;
-      color: #fff !important;
-    }
-
-    .datepicker-cell:hover {
-      background: #e5e7eb !important;
-    }
-
-    .datepicker-controls {
-      padding: 12px 16px !important;
-      font-size: 1.1rem !important;
-    }
-
-    .datepicker-footer {
-      display: none;
-    }
-
-    @media (max-width: 640px) {
-      .datepicker[role="dialog"] {
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 90vw !important;
-        border-radius: 20px !important;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35) !important;
-        border: none !important;
-        background: #fff !important;
-        color: #111 !important;
-        z-index: 10001 !important;
-      }
-      body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.6);
-        z-index: 10000;
-        display: none;
-      }
-      body.show-calendar::before {
-        display: block;
-      }
-    }
+    /* Venue results dropdown */
+    .results-pop { position:absolute; inset-inline:0; top:100%; margin-top:.5rem; z-index:40; }
+    .results-pop .item:hover { background:#0b1220; }
+    .tag { background:#064e3b; color:#d1fae5; }
   </style>
 </head>
-
 <body class="flex items-start justify-center py-10">
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
+    <!-- =========================
+         VENUE (search / select / add)
+    ========================== -->
+    <div class="mb-6">
+      <label class="block text-sm text-gray-300 mb-2">Venue</label>
+
+      <!-- search input + clear -->
+      <div class="relative">
+        <input id="venueSearch" type="text" autocomplete="off"
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="Search by venue name..." />
+        <button id="venueClear" type="button"
+                class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                aria-label="Clear">&times;</button>
+
+        <!-- results dropdown -->
+        <div id="venueResults" class="results-pop hidden">
+          <div class="floating-panel overflow-hidden border border-gray-200">
+            <ul id="venueResultsList" class="max-h-72 overflow-auto divide-y divide-gray-100"></ul>
+            <div class="p-3 flex items-center justify-between">
+              <button id="venueAddBtn" type="button"
+                      class="px-3 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 text-sm">
+                + Add new venue
+              </button>
+              <button type="button" id="venueCloseResults"
+                      class="px-3 py-2 rounded-md border text-sm">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- selected venue pill + hidden id -->
+      <div id="venueSelectedWrap" class="mt-3 hidden">
+        <span id="venuePill" class="inline-flex items-center gap-2 px-3 py-1 rounded-full tag text-sm">
+          <span id="venuePillName"></span>
+          <button id="venuePillRemove" type="button" class="text-emerald-200 hover:text-white" aria-label="Remove">&times;</button>
+        </span>
+        <input type="hidden" id="venueId" />
+      </div>
+
+      <!-- auto-filled town/city -->
+      <div class="mt-4 grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Town / City</label>
+          <input id="venueCity" type="text" readonly class="input-dark p-3 rounded-lg border border-gray-800 text-gray-300" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-400 mb-1">Postcode</label>
+          <input id="venuePostcode" type="text" readonly class="input-dark p-3 rounded-lg border border-gray-800 text-gray-300" />
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================
+         FROM (date + time)
+    ========================== -->
     <div class="grid grid-cols-2 gap-4 items-end">
       <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
         <input id="fromDate" type="text" readonly
-          class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-          placeholder="DD/MM/YYYY" />
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
       <div>
         <label class="block text-sm text-gray-300 mb-2">Time</label>
         <select id="fromTime"
-          class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
+    <!-- =========================
+         TO (date + time)
+    ========================== -->
     <div class="grid grid-cols-2 gap-4 items-end mt-6">
       <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
         <input id="toDate" type="text" readonly
-          class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-          placeholder="DD/MM/YYYY" />
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
       <div>
         <label class="block text-sm text-gray-300 mb-2">Time</label>
         <select id="toTime"
-          class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
+    <!-- =========================
+         REPEAT
+    ========================== -->
     <div class="mt-6">
       <label class="block text-sm text-gray-300 mb-2">Repeat</label>
       <select id="repeatRule"
-        class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+              class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
         <option value="none">Does not repeat</option>
         <option value="daily">Every day</option>
         <option value="weekly">Every week</option>
@@ -143,70 +149,235 @@
     </div>
   </div>
 
+  <!-- ADD VENUE MODAL -->
+  <div id="addVenueModal" class="hidden fixed inset-0 z-[10000] flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="relative w-[92vw] max-w-md floating-panel p-5">
+      <h3 class="text-lg font-semibold mb-3">Add new venue</h3>
+
+      <div class="grid gap-3">
+        <input id="nvName" class="w-full border rounded-md p-2" placeholder="Venue name" />
+        <input id="nvAddr1" class="w-full border rounded-md p-2" placeholder="Address line 1" />
+        <input id="nvCity" class="w-full border rounded-md p-2" placeholder="Town / City" />
+        <input id="nvPostcode" class="w-full border rounded-md p-2" placeholder="Postcode" />
+        <input id="nvCountry" class="w-full border rounded-md p-2" placeholder="Country (e.g. UK)" />
+      </div>
+
+      <div class="mt-4 flex items-center justify-end gap-3">
+        <button id="nvCancel" class="px-4 py-2 rounded-md border">Cancel</button>
+        <button id="nvSave" class="px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-500">Save</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const formatUK = (d) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-    const parseUK = (str) => {
-      const [dd, mm, yyyy] = str.split('/').map(v => parseInt(v, 10));
-      return new Date(yyyy, mm - 1, dd);
-    };
+    // -------------------------------
+    // Endpoints (match create-event)
+    // -------------------------------
+    const SEARCH_URL = "/api/venues/search?q="; // <-- replace
+    const CREATE_URL = "/api/venues";           // <-- replace
 
-    const today = new Date();
-    const fromDateEl = document.getElementById('fromDate');
-    const toDateEl = document.getElementById('toDate');
+    // -------------------------------
+    // Small utils
+    // -------------------------------
+    const qs  = (s, sc=document) => sc.querySelector(s);
+    const qsa = (s, sc=document) => Array.from(sc.querySelectorAll(s));
+    const debounce = (fn, wait=250) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; };
+
+    // -------------------------------
+    // Date/time setup (same as before)
+    // -------------------------------
+    const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const parseUK  = str => { const [dd,mm,yyyy] = str.split('/').map(x=>parseInt(x,10)); return new Date(yyyy,mm-1,dd); };
+    const today    = new Date();
+
+    const fromDateEl = qs('#fromDate');
+    const toDateEl   = qs('#toDate');
     fromDateEl.value = formatUK(today);
-    toDateEl.value = formatUK(today);
+    toDateEl.value   = formatUK(today);
 
-    const fromTimeEl = document.getElementById('fromTime');
-    const toTimeEl = document.getElementById('toTime');
+    const fromTimeEl = qs('#fromTime');
+    const toTimeEl   = qs('#toTime');
 
-    function fillTimes(selectEl) {
-      selectEl.innerHTML = '';
-      for (let m = 0; m < 24 * 60; m += 15) {
-        const hh = Math.floor(m / 60);
-        const mm = m % 60;
-        const label = new Date(2000, 0, 1, hh, mm)
-          .toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
-        const value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-        const opt = new Option(label, value);
-        selectEl.add(opt);
+    function fillTimes(sel){
+      sel.innerHTML = '';
+      for (let m=0; m<24*60; m+=15){
+        const hh = String(Math.floor(m/60)).padStart(2,'0');
+        const mm = String(m%60).padStart(2,'0');
+        const d  = new Date(2000,0,1,hh,mm);
+        const label = d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
+        sel.add(new Option(label, `${hh}:${mm}`));
       }
     }
     fillTimes(fromTimeEl); fillTimes(toTimeEl);
     fromTimeEl.value = '10:00'; toTimeEl.value = '11:00';
 
-    const fromPicker = new Datepicker(fromDateEl, { autohide: true, defaultDate: today, language: 'en-GB', format: 'dd/mm/yyyy' });
-    const toPicker = new Datepicker(toDateEl, { autohide: true, defaultDate: today, language: 'en-GB', format: 'dd/mm/yyyy' });
+    const fromPicker = new Datepicker(fromDateEl,{ autohide:true, defaultDate:today, language:'en-GB', format:'dd/mm/yyyy', orientation:'bottom' });
+    const toPicker   = new Datepicker(toDateEl  ,{ autohide:true, defaultDate:today, language:'en-GB', format:'dd/mm/yyyy', orientation:'bottom' });
+    fromDateEl.addEventListener('click', ()=>fromPicker.show());
+    toDateEl  .addEventListener('click', ()=>toPicker.show());
 
-    function showPicker(picker) {
-      picker.show();
-      if (window.innerWidth <= 640) {
-        document.body.classList.add('show-calendar');
-        setTimeout(() => {
-          const pickerEl = document.querySelector('.datepicker[role="dialog"]');
-          if (pickerEl) {
-            pickerEl.style.width = '90vw';
-            pickerEl.style.maxWidth = 'none';
-            pickerEl.style.left = '50%';
-            pickerEl.style.transform = 'translateX(-50%)';
-          }
-          const main = pickerEl?.querySelector('.datepicker-main');
-          if (main) {
-            main.style.width = '90vw';
-            main.style.maxWidth = 'none';
-          }
-        }, 10);
+    fromDateEl.addEventListener('changeDate', ()=>{
+      const f = parseUK(fromDateEl.value);
+      const t = parseUK(toDateEl.value);
+      if (t < f) { toDateEl.value = fromDateEl.value; toPicker.setDate(f); }
+    });
+
+    fromTimeEl.addEventListener('change', ()=>{
+      const [fh,fm] = fromTimeEl.value.split(':').map(Number);
+      const [th,tm] = toTimeEl.value.split(':').map(Number);
+      const fmins = fh*60+fm, tmins = th*60+tm;
+      if (tmins <= fmins){
+        const bumped = (fmins+60) % (24*60);
+        const hh = String(Math.floor(bumped/60)).padStart(2,'0');
+        const mm = String(bumped%60).padStart(2,'0');
+        toTimeEl.value = `${hh}:${mm}`;
+      }
+    });
+
+    // -------------------------------
+    // Venue: search / select / add
+    // -------------------------------
+    const venueSearch   = qs('#venueSearch');
+    const venueResults  = qs('#venueResults');
+    const venueList     = qs('#venueResultsList');
+    const venueClearBtn = qs('#venueClear');
+    const venueCloseBtn = qs('#venueCloseResults');
+    const venueAddBtn   = qs('#venueAddBtn');
+
+    const venueIdEl     = qs('#venueId');
+    const venueCityEl   = qs('#venueCity');
+    const venuePCEel    = qs('#venuePostcode');
+    const pillWrap      = qs('#venueSelectedWrap');
+    const pillName      = qs('#venuePillName');
+    const pillRemove    = qs('#venuePillRemove');
+
+    function openResults(){ venueResults.classList.remove('hidden'); }
+    function closeResults(){ venueResults.classList.add('hidden'); }
+
+    function renderResults(items){
+      venueList.innerHTML = '';
+      if (!items || items.length===0){
+        venueList.innerHTML = `<li class="p-3 text-sm text-gray-500">No matches</li>`;
+        return;
+      }
+      items.forEach(v=>{
+        const li = document.createElement('li');
+        li.className = "item p-3 cursor-pointer";
+        li.innerHTML = `
+          <div class="flex flex-col">
+            <span class="font-medium">${v.name}</span>
+            <span class="text-xs text-gray-500">${[v.address1, v.city, v.postcode].filter(Boolean).join(', ')}</span>
+          </div>`;
+        li.addEventListener('click', ()=>selectVenue(v));
+        venueList.appendChild(li);
+      });
+    }
+
+    async function searchVenues(q){
+      if (!q || q.trim().length<2){ renderResults([]); return; }
+      try{
+        const res = await fetch(SEARCH_URL + encodeURIComponent(q.trim()));
+        const data = await res.json();
+        renderResults(data.venues || data || []); // adapt to your API shape
+      }catch(e){
+        renderResults([]);
       }
     }
 
-    function hidePicker() {
-      document.body.classList.remove('show-calendar');
+    const debouncedSearch = debounce(searchVenues, 250);
+
+    venueSearch.addEventListener('input', (e)=>{
+      const val = e.target.value;
+      venueClearBtn.classList.toggle('hidden', !val);
+      openResults();
+      debouncedSearch(val);
+    });
+
+    venueSearch.addEventListener('focus', ()=>{
+      if (venueSearch.value) { openResults(); debouncedSearch(venueSearch.value); }
+    });
+
+    venueClearBtn.addEventListener('click', ()=>{
+      venueSearch.value = '';
+      venueClearBtn.classList.add('hidden');
+      renderResults([]); closeResults();
+      clearSelectedVenue();
+    });
+
+    venueCloseBtn.addEventListener('click', closeResults);
+
+    function selectVenue(v){
+      pillWrap.classList.remove('hidden');
+      pillName.textContent = v.name;
+      venueIdEl.value   = v.id || v._id || '';
+      venueSearch.value = v.name;
+      venueCityEl.value = v.city || '';
+      venuePCEel.value  = v.postcode || '';
+      closeResults();
     }
 
-    fromDateEl.addEventListener('click', () => showPicker(fromPicker));
-    toDateEl.addEventListener('click', () => showPicker(toPicker));
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('.datepicker')) return;
-      hidePicker();
+    function clearSelectedVenue(){
+      pillWrap.classList.add('hidden');
+      pillName.textContent = '';
+      venueIdEl.value = '';
+      venueCityEl.value = '';
+      venuePCEel.value = '';
+    }
+
+    pillRemove.addEventListener('click', ()=>{
+      clearSelectedVenue();
+      venueSearch.focus();
+    });
+
+    // ----- Add new venue modal -----
+    const modal = qs('#addVenueModal');
+    const nv = {
+      name: qs('#nvName'),
+      addr1: qs('#nvAddr1'),
+      city: qs('#nvCity'),
+      pc: qs('#nvPostcode'),
+      country: qs('#nvCountry'),
+      cancel: qs('#nvCancel'),
+      save: qs('#nvSave'),
+    };
+
+    function openModal(){ modal.classList.remove('hidden'); setTimeout(()=>nv.name.focus(), 0); }
+    function closeModal(){ modal.classList.add('hidden'); }
+    function resetModal(){ Object.values(nv).forEach(el=>{ if(el.tagName==='INPUT') el.value=''; }); }
+
+    venueAddBtn.addEventListener('click', ()=>{ closeResults(); openModal(); });
+    nv.cancel.addEventListener('click', ()=>{ closeModal(); resetModal(); });
+
+    nv.save.addEventListener('click', async ()=>{
+      const payload = {
+        name: nv.name.value.trim(),
+        address1: nv.addr1.value.trim(),
+        city: nv.city.value.trim(),
+        postcode: nv.pc.value.trim(),
+        country: nv.country.value.trim(),
+      };
+      if (!payload.name){ nv.name.focus(); return; }
+      try{
+        const res = await fetch(CREATE_URL, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+        });
+        const data = await res.json();
+        const created = data.venue || data; // adapt to API
+        selectVenue(created);
+        closeModal(); resetModal();
+      }catch(e){
+        // Minimal fallback: close modal but keep typed name in search
+        venueSearch.value = payload.name;
+        closeModal(); resetModal();
+      }
+    });
+
+    // click-away to close results
+    document.addEventListener('click', (e)=>{
+      if (!venueResults.contains(e.target) && e.target!==venueSearch){
+        closeResults();
+      }
     });
   </script>
 </body>
