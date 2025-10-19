@@ -1,198 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Schedule Setup</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Schedule Setup – Spondle</title>
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flowbite CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css"
-    rel="stylesheet"
-  />
+  <!-- Flowbite Core -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
+
+  <!-- Flowbite Datepicker -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <style>
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: system-ui, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 2rem;
-      min-height: 100vh;
-    }
+    /* ---------------------------------
+       PAGE THEME (Spondle dark shell)
+    ---------------------------------- */
+    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
+    .input-dark { background:#0b1220; color:#fff; width:100%; }
+    .input-dark::placeholder { color:#9ca3af; }
 
-    .container {
-      background-color: #0f172a;
-      padding: 2rem;
-      border-radius: 1rem;
-      width: 100%;
-      max-width: 600px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    /* ---------------------------------
+       GOOGLE-STYLE DATE POPUP (light)
+    ---------------------------------- */
+    .datepicker[role="dialog"]{
+      position:fixed !important;
+      top:50% !important;
+      left:50% !important;
+      transform:translate(-50%,-50%) !important;
+      z-index:9999 !important;
+      width:90%; max-width:360px;
+      background:#fff !important; color:#111 !important;
+      border-radius:16px !important;
+      box-shadow:0 20px 60px rgba(0,0,0,.35) !important;
+      border:none !important;
     }
-
-    /* Align calendar popup neatly under date input */
-    .datepicker-dropdown {
-      margin-top: 0.5rem !important;
-      border-radius: 12px !important;
-      background-color: #fff !important;
-      color: #111 !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-      width: 100% !important;
-      left: 0 !important;
-      right: 0 !important;
-      transform: none !important;
-      z-index: 9999 !important;
+    .datepicker .days .datepicker-cell{
+      width:42px !important; height:42px !important; line-height:42px !important;
+      border-radius:50% !important; margin:3px !important; text-align:center !important;
     }
-
-    /* When inside two-column grid, align popup to the right of container */
-    .grid-cols-2 > div:first-child .datepicker-dropdown {
-      width: auto !important;
-      left: auto !important;
-      right: 0 !important;
-    }
-
-    @media (max-width: 640px) {
-      .grid-cols-2 > div:first-child .datepicker-dropdown {
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        right: auto !important;
-        width: 90% !important;
-      }
-    }
-
-    input,
-    select {
-      font-size: 1rem;
-    }
-
-    label {
-      color: #cbd5e1;
-    }
+    .datepicker-cell.selected{ background:#22c55e !important; color:#fff !important; }
+    .datepicker-cell:hover{ background:#e5e7eb !important; }
+    .datepicker-controls{ padding:10px 14px !important; }
+    .datepicker-controls button{ color:#111 !important; }
+    .datepicker-footer{ display:none; }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h1 class="text-3xl font-bold mb-6">Schedule Setup</h1>
 
-    <!-- FROM row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div class="flex flex-col">
-        <label for="fromDate" class="block text-sm font-medium mb-1">From</label>
-        <input
-          id="fromDate"
-          type="text"
-          datepicker
-          datepicker-autohide
-          class="w-full rounded-md bg-[#0b1221] border border-gray-700 text-white px-3 py-2"
-        />
+<body class="flex items-start justify-center py-10">
+  <div class="card w-full max-w-xl p-6">
+    <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
+
+    <!-- =========================
+         FROM (date + time)
+    ========================== -->
+    <div class="grid grid-cols-2 gap-4 items-end">
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">From</label>
+        <input id="fromDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
-      <div class="flex flex-col">
-        <label for="fromTime" class="block text-sm font-medium mb-1">Time</label>
-        <select
-          id="fromTime"
-          class="w-full rounded-md bg-[#0b1221] border border-gray-700 text-white px-3 py-2"
-        >
-          <option>00:00</option>
-          <option>01:00</option>
-          <option>02:00</option>
-          <option>03:00</option>
-          <option>04:00</option>
-          <option>05:00</option>
-          <option>06:00</option>
-          <option>07:00</option>
-          <option>08:00</option>
-          <option>09:00</option>
-          <option selected>10:00</option>
-          <option>11:00</option>
-          <option>12:00</option>
-          <option>13:00</option>
-          <option>14:00</option>
-          <option>15:00</option>
-          <option>16:00</option>
-          <option>17:00</option>
-          <option>18:00</option>
-          <option>19:00</option>
-          <option>20:00</option>
-          <option>21:00</option>
-          <option>22:00</option>
-          <option>23:00</option>
-        </select>
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
+        <select id="fromTime"
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
-    <!-- TO row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div class="flex flex-col">
-        <label for="toDate" class="block text-sm font-medium mb-1">To</label>
-        <input
-          id="toDate"
-          type="text"
-          datepicker
-          datepicker-autohide
-          class="w-full rounded-md bg-[#0b1221] border border-gray-700 text-white px-3 py-2"
-        />
+    <!-- =========================
+         TO (date + time)
+    ========================== -->
+    <div class="grid grid-cols-2 gap-4 items-end mt-6">
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">To</label>
+        <input id="toDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
-      <div class="flex flex-col">
-        <label for="toTime" class="block text-sm font-medium mb-1">Time</label>
-        <select
-          id="toTime"
-          class="w-full rounded-md bg-[#0b1221] border border-gray-700 text-white px-3 py-2"
-        >
-          <option>00:00</option>
-          <option>01:00</option>
-          <option>02:00</option>
-          <option>03:00</option>
-          <option>04:00</option>
-          <option>05:00</option>
-          <option>06:00</option>
-          <option>07:00</option>
-          <option>08:00</option>
-          <option>09:00</option>
-          <option>10:00</option>
-          <option selected>11:00</option>
-          <option>12:00</option>
-          <option>13:00</option>
-          <option>14:00</option>
-          <option>15:00</option>
-          <option>16:00</option>
-          <option>17:00</option>
-          <option>18:00</option>
-          <option>19:00</option>
-          <option>20:00</option>
-          <option>21:00</option>
-          <option>22:00</option>
-          <option>23:00</option>
-        </select>
+      <div>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
+        <select id="toTime"
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
-    <!-- REPEAT -->
-    <div class="mb-4">
-      <label for="repeat" class="block text-sm font-medium mb-1">Repeat</label>
-      <select
-        id="repeat"
-        class="w-full rounded-md bg-[#0b1221] border border-gray-700 text-white px-3 py-2"
-      >
-        <option>Does not repeat</option>
-        <option>Daily</option>
-        <option>Weekly</option>
-        <option>Monthly</option>
+    <!-- =========================
+         REPEAT
+    ========================== -->
+    <div class="mt-6">
+      <label class="block text-sm text-gray-300 mb-2">Repeat</label>
+      <select id="repeatRule"
+              class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+        <option value="none">Does not repeat</option>
+        <option value="daily">Every day</option>
+        <option value="weekly">Every week</option>
+        <option value="biweekly">Every 2 weeks</option>
+        <option value="monthly">Every month</option>
+        <option value="yearly">Every year</option>
       </select>
     </div>
   </div>
 
-  <!-- Flowbite JS -->
-  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
-
   <script>
-    // Set both pickers to today's date (UK format)
+    /* ---------------------------------
+       HELPERS
+    ---------------------------------- */
+    const formatUK = (d) =>
+      `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+
+    const parseUK = (str) => {
+      const [dd, mm, yyyy] = str.split('/').map(v => parseInt(v, 10));
+      return new Date(yyyy, mm - 1, dd);
+    };
+
+    /* ---------------------------------
+       DEFAULT VALUES (today)
+    ---------------------------------- */
     const today = new Date();
-    const formatted = today.toLocaleDateString('en-GB');
-    document.getElementById('fromDate').value = formatted;
-    document.getElementById('toDate').value = formatted;
+    const fromDateEl = document.getElementById('fromDate');
+    const toDateEl   = document.getElementById('toDate');
+    fromDateEl.value = formatUK(today);
+    toDateEl.value   = formatUK(today);
+
+    /* ---------------------------------
+       TIME DROPDOWNS (15-min steps)
+    ---------------------------------- */
+    const fromTimeEl = document.getElementById('fromTime');
+    const toTimeEl   = document.getElementById('toTime');
+
+    function fillTimes(selectEl) {
+      selectEl.innerHTML = '';
+      for (let m = 0; m < 24 * 60; m += 15) {
+        const hh = Math.floor(m / 60);
+        const mm = m % 60;
+        const d = new Date(2000,0,1,hh,mm);
+        const label = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
+        const value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+        const opt = new Option(label, value);
+        selectEl.add(opt);
+      }
+    }
+
+    fillTimes(fromTimeEl);
+    fillTimes(toTimeEl);
+
+    // sensible defaults (10:00 → 11:00)
+    fromTimeEl.value = '10:00';
+    toTimeEl.value = '11:00';
+
+    /* ---------------------------------
+       FLOWBITE DATEPICKERS (DD/MM/YYYY)
+    ---------------------------------- */
+    const fromPicker = new Datepicker(fromDateEl, {
+      autohide: true,
+      defaultDate: today,
+      language: 'en-GB',
+      format: 'dd/mm/yyyy',
+      orientation: 'bottom',
+    });
+
+    const toPicker = new Datepicker(toDateEl, {
+      autohide: true,
+      defaultDate: today,
+      language: 'en-GB',
+      format: 'dd/mm/yyyy',
+      orientation: 'bottom',
+    });
+
+    // open on click/tap
+    fromDateEl.addEventListener('click', () => fromPicker.show());
+    toDateEl  .addEventListener('click',   () => toPicker.show());
+
+    /* ---------------------------------
+       KEEP TO ≥ FROM
+    ---------------------------------- */
+    fromDateEl.addEventListener('changeDate', () => {
+      const f = parseUK(fromDateEl.value);
+      const t = parseUK(toDateEl.value);
+      if (t < f) {
+        toDateEl.value = fromDateEl.value;
+        toPicker.setDate(f);
+      }
+    });
+
+    /* ---------------------------------
+       AUTO ADJUST END TIME
+    ---------------------------------- */
+    fromTimeEl.addEventListener('change', () => {
+      const [fh, fm] = fromTimeEl.value.split(':').map(Number);
+      const [th, tm] = toTimeEl.value.split(':').map(Number);
+      const fmins = fh * 60 + fm;
+      const tmins = th * 60 + tm;
+      if (tmins <= fmins) {
+        const bumped = fmins + 60;
+        const hh = String(Math.floor(bumped / 60) % 24).padStart(2, '0');
+        const mm = String(bumped % 60).padStart(2, '0');
+        toTimeEl.value = `${hh}:${mm}`;
+      }
+    });
   </script>
 </body>
 </html>
