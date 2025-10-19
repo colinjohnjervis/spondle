@@ -8,7 +8,7 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flowbite -->
+  <!-- Flowbite Core -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
 
@@ -17,28 +17,21 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <style>
-    body {
-      background:#000;
-      color:#fff;
-      font-family:ui-sans-serif,system-ui,sans-serif;
-      min-height:100vh;
-    }
-    .card {
-      background:#0f172a;
-      border-radius:16px;
-      box-shadow:0 10px 30px rgba(0,0,0,.45);
-    }
-    .input-dark {
-      background:#0b1220;
-      color:#fff;
-      width:100%;
-    }
+    /* -----------------------------
+       PAGE THEME (Spondle dark shell)
+    ------------------------------ */
+    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
+    .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
 
-    /* calendar appearance */
-    .datepicker {
+    /* -----------------------------
+       FLOWBITE DATEPICKER OVERRIDES
+    ------------------------------ */
+    .datepicker[role="dialog"] {
       border-radius:16px !important;
       box-shadow:0 20px 60px rgba(0,0,0,.35) !important;
+      border:none !important;
       background:#fff !important;
       color:#111 !important;
     }
@@ -46,62 +39,54 @@
       width:42px !important; height:42px !important; line-height:42px !important;
       border-radius:50% !important; margin:3px !important; text-align:center !important;
     }
-    .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
-    .datepicker-cell:hover { background:#e5e7eb !important; }
-    .datepicker-controls { padding:10px 14px !important; }
-    .datepicker-controls button { color:#111 !important; }
-    .datepicker-footer { display:none; }
+    .datepicker-cell.selected{ background:#22c55e !important; color:#fff !important; }
+    .datepicker-cell:hover{ background:#e5e7eb !important; }
+    .datepicker-controls{ padding:10px 14px !important; }
+    .datepicker-controls button{ color:#111 !important; }
+    .datepicker-footer{ display:none; }
 
-    /* grid (always side by side) */
-    .fixed-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-
-    /* overlay for mobile modal */
-    .dp-overlay {
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.45);
-      backdrop-filter:blur(1px);
-      z-index:9998;
-      display:none;
-    }
-    .dp-overlay.show { display:block; }
-
-    /* centered modal style for mobile */
-    .datepicker.dp-modal {
-      position:fixed !important;
-      top:50% !important;
-      left:50% !important;
-      transform:translate(-50%,-50%) !important;
-      z-index:9999 !important;
-      width:90%;
-      max-width:380px;
-    }
-
-    /* desktop pop-under */
-    @media (min-width:640px){
-      .datepicker {
-        position:absolute !important;
-        top:calc(100% + 8px) !important;
-        inset-inline-end:0 !important;
-        transform:none !important;
-        z-index:50 !important;
+    /* -----------------------------
+       MOBILE-CENTERED CALENDAR
+    ------------------------------ */
+    @media (max-width:640px) {
+      .datepicker[role="dialog"] {
+        position:fixed !important;
+        top:50% !important;
+        left:50% !important;
+        transform:translate(-50%,-50%) !important;
+        width:90vw !important;
+        max-width:420px !important;
+        height:auto !important;
+        z-index:10001 !important;
       }
+
+      /* dimmed overlay */
+      body::before {
+        content:'';
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.6);
+        z-index:10000;
+        display:none;
+      }
+      body.show-calendar::before { display:block; }
     }
   </style>
 </head>
 
 <body class="flex items-start justify-center py-10">
-  <div id="dpOverlay" class="dp-overlay"></div>
-
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <!-- FROM -->
-    <div class="fixed-grid">
-      <div class="relative">
+    <!-- =========================
+         FROM (date + time)
+    ========================== -->
+    <div class="grid grid-cols-2 gap-4 items-end">
+      <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
-        <input id="fromDate" type="text" readonly placeholder="DD/MM/YYYY"
-               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" />
+        <input id="fromDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
       <div>
         <label class="block text-sm text-gray-300 mb-2">Time</label>
@@ -110,12 +95,15 @@
       </div>
     </div>
 
-    <!-- TO -->
-    <div class="fixed-grid mt-6">
-      <div class="relative">
+    <!-- =========================
+         TO (date + time)
+    ========================== -->
+    <div class="grid grid-cols-2 gap-4 items-end mt-6">
+      <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
-        <input id="toDate" type="text" readonly placeholder="DD/MM/YYYY"
-               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" />
+        <input id="toDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
       <div>
         <label class="block text-sm text-gray-300 mb-2">Time</label>
@@ -124,7 +112,9 @@
       </div>
     </div>
 
-    <!-- REPEAT -->
+    <!-- =========================
+         REPEAT
+    ========================== -->
     <div class="mt-6">
       <label class="block text-sm text-gray-300 mb-2">Repeat</label>
       <select id="repeatRule"
@@ -140,83 +130,106 @@
   </div>
 
   <script>
-    const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-    const parseUK = s => { const [dd,mm,yy]=s.split('/').map(Number); return new Date(yy,mm-1,dd); };
-    const isMobile = () => window.matchMedia('(max-width:639px)').matches;
+    /* ---------------------------------
+       HELPERS
+    ---------------------------------- */
+    const formatUK = (d) =>
+      `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const parseUK = (str) => {
+      const [dd, mm, yyyy] = str.split('/').map(v => parseInt(v, 10));
+      return new Date(yyyy, mm - 1, dd);
+    };
 
+    /* ---------------------------------
+       DEFAULT VALUES (today)
+    ---------------------------------- */
     const today = new Date();
     const fromDateEl = document.getElementById('fromDate');
     const toDateEl   = document.getElementById('toDate');
     fromDateEl.value = formatUK(today);
     toDateEl.value   = formatUK(today);
 
+    /* ---------------------------------
+       TIME DROPDOWNS (15-min steps)
+    ---------------------------------- */
     const fromTimeEl = document.getElementById('fromTime');
     const toTimeEl   = document.getElementById('toTime');
-
-    // fill 15-min times
-    function fillTimes(sel){
-      sel.innerHTML = '';
-      for(let m=0;m<24*60;m+=15){
-        const hh = String(Math.floor(m/60)).padStart(2,'0');
-        const mm = String(m%60).padStart(2,'0');
-        const label = new Date(2000,0,1,hh,mm).toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
-        sel.add(new Option(label, `${hh}:${mm}`));
+    function fillTimes(selectEl) {
+      selectEl.innerHTML = '';
+      for (let m = 0; m < 24 * 60; m += 15) {
+        const hh = Math.floor(m / 60);
+        const mm = m % 60;
+        const d = new Date(2000,0,1,hh,mm);
+        const label = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
+        const value = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+        const opt = new Option(label, value);
+        selectEl.add(opt);
       }
     }
     fillTimes(fromTimeEl); fillTimes(toTimeEl);
-    fromTimeEl.value='10:00'; toTimeEl.value='11:00';
+    fromTimeEl.value = '10:00'; toTimeEl.value = '11:00';
 
-    // init Flowbite
-    const dpOpts = { autohide:true, defaultDate:today, language:'en-GB', format:'dd/mm/yyyy', orientation:'bottom' };
-    const fromPicker = new Datepicker(fromDateEl, dpOpts);
-    const toPicker   = new Datepicker(toDateEl, dpOpts);
-
-    const overlayEl = document.getElementById('dpOverlay');
-
-    function showDatepicker(inputEl, picker){
-      picker.show();
-      setTimeout(() => {
-        const dp = document.querySelector('.datepicker');
-        if(!dp) return;
-
-        if(isMobile()){
-          // move popup to body so it can center
-          document.body.appendChild(dp);
-          dp.classList.add('dp-modal');
-          overlayEl.classList.add('show');
-          overlayEl.onclick = () => { picker.hide(); overlayEl.classList.remove('show'); };
-          document.addEventListener('keydown', e=>{
-            if(e.key==='Escape'){ picker.hide(); overlayEl.classList.remove('show'); }
-          }, { once:true });
-        } else {
-          dp.classList.remove('dp-modal');
-          overlayEl.classList.remove('show');
-        }
-      }, 0);
-    }
-
-    fromDateEl.addEventListener('click', ()=>showDatepicker(fromDateEl, fromPicker));
-    toDateEl.addEventListener('click', ()=>showDatepicker(toDateEl, toPicker));
-
-    fromDateEl.addEventListener('changeDate', ()=>{
-      const f=parseUK(fromDateEl.value), t=parseUK(toDateEl.value);
-      if(t < f){ toDateEl.value = fromDateEl.value; toPicker.setDate(f); }
-      overlayEl.classList.remove('show');
+    /* ---------------------------------
+       FLOWBITE DATEPICKERS (DD/MM/YYYY)
+    ---------------------------------- */
+    const fromPicker = new Datepicker(fromDateEl, {
+      autohide: true,
+      defaultDate: today,
+      language: 'en-GB',
+      format: 'dd/mm/yyyy',
+      orientation: 'bottom',
     });
-    toDateEl.addEventListener('changeDate', ()=>overlayEl.classList.remove('show'));
+    const toPicker = new Datepicker(toDateEl, {
+      autohide: true,
+      defaultDate: today,
+      language: 'en-GB',
+      format: 'dd/mm/yyyy',
+      orientation: 'bottom',
+    });
 
-    fromTimeEl.addEventListener('change', ()=>{
-      const [fh,fm]=fromTimeEl.value.split(':').map(Number);
-      const [th,tm]=toTimeEl.value.split(':').map(Number);
-      if(th*60+tm <= fh*60+fm){
-        const bump = fh*60+fm+60;
-        const h=String(Math.floor(bump/60)%24).padStart(2,'0');
-        const m=String(bump%60).padStart(2,'0');
-        toTimeEl.value=`${h}:${m}`;
+    // open on click/tap + toggle overlay on mobile
+    function showPicker(picker) {
+      picker.show();
+      if (window.innerWidth <= 640) document.body.classList.add('show-calendar');
+    }
+    function hidePicker() {
+      document.body.classList.remove('show-calendar');
+    }
+    fromDateEl.addEventListener('click', () => showPicker(fromPicker));
+    toDateEl.addEventListener('click',   () => showPicker(toPicker));
+    document.addEventListener('click', e => {
+      if (e.target.closest('.datepicker')) return;
+      hidePicker();
+    });
+
+    /* ---------------------------------
+       KEEP TO ≥ FROM
+    ---------------------------------- */
+    fromDateEl.addEventListener('changeDate', () => {
+      const f = parseUK(fromDateEl.value);
+      const t = parseUK(toDateEl.value);
+      if (t < f) {
+        toDateEl.value = fromDateEl.value;
+        toPicker.setDate(f);
+      }
+      hidePicker();
+    });
+
+    /* ---------------------------------
+       AUTO ADJUST END TIME
+    ---------------------------------- */
+    fromTimeEl.addEventListener('change', () => {
+      const [fh, fm] = fromTimeEl.value.split(':').map(Number);
+      const [th, tm] = toTimeEl.value.split(':').map(Number);
+      const fmins = fh * 60 + fm;
+      const tmins = th * 60 + tm;
+      if (tmins <= fmins) {
+        const bumped = fmins + 60;
+        const hh = String(Math.floor(bumped / 60) % 24).padStart(2, '0');
+        const mm = String(bumped % 60).padStart(2, '0');
+        toTimeEl.value = `${hh}:${mm}`;
       }
     });
-
-    window.addEventListener('resize',()=>{ if(!isMobile()) overlayEl.classList.remove('show'); });
   </script>
 </body>
 </html>
