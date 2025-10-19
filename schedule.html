@@ -40,19 +40,7 @@
       color: #9ca3af;
     }
 
-    /* -----------------------------
-       DATEPICKER OVERRIDES
-    ------------------------------ */
-    .datepicker[role="dialog"],
-    .datepicker[role="dialog"] .datepicker-main {
-      border-radius: 20px !important;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35) !important;
-      border: none !important;
-      background: #fff !important;
-      color: #111 !important;
-      font-size: 1rem !important;
-    }
-
+    /* calendar styling */
     .datepicker .days .datepicker-cell {
       width: 44px !important;
       height: 44px !important;
@@ -76,17 +64,10 @@
       font-size: 1.1rem !important;
     }
 
-    .datepicker-controls button {
-      color: #111 !important;
-    }
-
     .datepicker-footer {
       display: none;
     }
 
-    /* -----------------------------
-       MOBILE-CENTERED CALENDAR
-    ------------------------------ */
     @media (max-width: 640px) {
       .datepicker[role="dialog"] {
         position: fixed !important;
@@ -94,28 +75,13 @@
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         width: 90vw !important;
-        min-width: 90vw !important;
-        max-width: none !important;
+        border-radius: 20px !important;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35) !important;
+        border: none !important;
+        background: #fff !important;
+        color: #111 !important;
         z-index: 10001 !important;
       }
-
-      .datepicker[role="dialog"] .datepicker-main {
-        width: 90vw !important;
-        min-width: 90vw !important;
-        max-width: none !important;
-      }
-
-      .datepicker .days .datepicker-cell {
-        width: 52px !important;
-        height: 52px !important;
-        line-height: 52px !important;
-        font-size: 1.1rem !important;
-      }
-
-      .datepicker-controls {
-        font-size: 1.25rem !important;
-      }
-
       body::before {
         content: '';
         position: fixed;
@@ -124,7 +90,6 @@
         z-index: 10000;
         display: none;
       }
-
       body.show-calendar::before {
         display: block;
       }
@@ -199,8 +164,8 @@
       for (let m = 0; m < 24 * 60; m += 15) {
         const hh = Math.floor(m / 60);
         const mm = m % 60;
-        const d = new Date(2000, 0, 1, hh, mm);
-        const label = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
+        const label = new Date(2000, 0, 1, hh, mm)
+          .toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
         const value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
         const opt = new Option(label, value);
         selectEl.add(opt);
@@ -214,7 +179,23 @@
 
     function showPicker(picker) {
       picker.show();
-      if (window.innerWidth <= 640) document.body.classList.add('show-calendar');
+      if (window.innerWidth <= 640) {
+        document.body.classList.add('show-calendar');
+        setTimeout(() => {
+          const pickerEl = document.querySelector('.datepicker[role="dialog"]');
+          if (pickerEl) {
+            pickerEl.style.width = '90vw';
+            pickerEl.style.maxWidth = 'none';
+            pickerEl.style.left = '50%';
+            pickerEl.style.transform = 'translateX(-50%)';
+          }
+          const main = pickerEl?.querySelector('.datepicker-main');
+          if (main) {
+            main.style.width = '90vw';
+            main.style.maxWidth = 'none';
+          }
+        }, 10);
+      }
     }
 
     function hidePicker() {
@@ -223,33 +204,9 @@
 
     fromDateEl.addEventListener('click', () => showPicker(fromPicker));
     toDateEl.addEventListener('click', () => showPicker(toPicker));
-
     document.addEventListener('click', (e) => {
       if (e.target.closest('.datepicker')) return;
       hidePicker();
-    });
-
-    fromDateEl.addEventListener('changeDate', () => {
-      const f = parseUK(fromDateEl.value);
-      const t = parseUK(toDateEl.value);
-      if (t < f) {
-        toDateEl.value = fromDateEl.value;
-        toPicker.setDate(f);
-      }
-      hidePicker();
-    });
-
-    fromTimeEl.addEventListener('change', () => {
-      const [fh, fm] = fromTimeEl.value.split(':').map(Number);
-      const [th, tm] = toTimeEl.value.split(':').map(Number);
-      const fmins = fh * 60 + fm;
-      const tmins = th * 60 + tm;
-      if (tmins <= fmins) {
-        const bumped = fmins + 60;
-        const hh = String(Math.floor(bumped / 60) % 24).padStart(2, '0');
-        const mm = String(bumped % 60).padStart(2, '0');
-        toTimeEl.value = `${hh}:${mm}`;
-      }
     });
   </script>
 </body>
