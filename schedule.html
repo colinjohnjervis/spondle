@@ -5,75 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Schedule Setup – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Flatpickr (lightweight date picker) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 
 <body class="bg-black text-white min-h-screen">
   <main class="max-w-xl mx-auto p-4 space-y-6">
     <h1 class="text-2xl font-bold">Schedule Setup</h1>
 
-    <!-- FROM SECTION -->
-    <div class="space-y-3">
+    <!-- FROM -->
+    <section class="space-y-3">
       <h2 class="text-lg font-semibold text-gray-200">From</h2>
-      <div class="flex items-center gap-3">
-        <div class="flex-1">
-          <input id="fromDate" type="date"
-                 class="w-full rounded border border-gray-700 bg-gray-900 p-2 text-white" />
-        </div>
-        <div class="text-sm text-gray-400" id="fromDateDisplay">--/--/----</div>
-      </div>
+      <input id="fromDate" type="text" placeholder="DD/MM/YYYY"
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3"
+             autocomplete="off" />
       <input id="fromTime" type="time"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-2 text-white" />
-    </div>
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3" />
+      <!-- hidden ISO for saving -->
+      <input id="fromDateIso" type="hidden" />
+    </section>
 
-    <!-- TO SECTION -->
-    <div class="space-y-3">
+    <!-- TO -->
+    <section class="space-y-3">
       <h2 class="text-lg font-semibold text-gray-200">To</h2>
-      <div class="flex items-center gap-3">
-        <div class="flex-1">
-          <input id="toDate" type="date"
-                 class="w-full rounded border border-gray-700 bg-gray-900 p-2 text-white" />
-        </div>
-        <div class="text-sm text-gray-400" id="toDateDisplay">--/--/----</div>
-      </div>
+      <input id="toDate" type="text" placeholder="DD/MM/YYYY"
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3"
+             autocomplete="off" />
       <input id="toTime" type="time"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-2 text-white" />
-    </div>
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3" />
+      <!-- hidden ISO for saving -->
+      <input id="toDateIso" type="hidden" />
+    </section>
 
-    <!-- REPEAT SECTION -->
-    <div class="space-y-2">
+    <!-- REPEAT -->
+    <section class="space-y-2">
       <label class="block text-sm text-gray-300">Repeat</label>
       <button id="repeatBtn"
               class="w-full text-left rounded border border-gray-700 bg-gray-900 p-3 hover:bg-gray-800">
         <span id="repeatLabel">Does not repeat</span>
       </button>
       <input type="hidden" id="recurrenceRule" value="">
-    </div>
+    </section>
 
-    <!-- OVERLAY -->
-    <div id="overlay"
-         class="fixed inset-0 hidden items-center justify-center bg-black/60 p-4 z-50">
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 hidden items-center justify-center bg-black/60 p-4 z-50">
       <div class="w-full max-w-sm rounded-2xl bg-gray-900 border border-gray-700 shadow-xl">
         <div class="p-4 border-b border-gray-800 flex items-center justify-between">
           <h2 class="font-semibold">Repeat</h2>
-          <button id="closeOverlay"
-                  class="rounded px-2 py-1 text-sm bg-gray-800 hover:bg-gray-700">Close</button>
+          <button id="closeOverlay" class="rounded px-2 py-1 text-sm bg-gray-800 hover:bg-gray-700">Close</button>
         </div>
         <div class="p-2">
           <ul class="divide-y divide-gray-800">
-            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
-                        data-rule="NONE">Does not repeat</button></li>
-            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
-                        data-rule="DAILY">Every day</button></li>
-            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
-                        data-rule="WEEKLY">Every week</button></li>
-            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
-                        data-rule="BIWEEKLY">Every 2 weeks</button></li>
-            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
-                        data-rule="MONTHLY">Every month</button></li>
-            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
-                        data-rule="YEARLY">Every year</button></li>
-            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800"
-                        data-rule="CUSTOM" disabled>Custom… (soon)</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800" data-rule="NONE">Does not repeat</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800" data-rule="DAILY">Every day</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800" data-rule="WEEKLY">Every week</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800" data-rule="BIWEEKLY">Every 2 weeks</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800" data-rule="MONTHLY">Every month</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800" data-rule="YEARLY">Every year</button></li>
+            <li><button class="repeat-option w-full text-left p-3 hover:bg-gray-800" data-rule="CUSTOM" disabled>Custom… (soon)</button></li>
           </ul>
         </div>
       </div>
@@ -81,50 +72,54 @@
   </main>
 
   <script>
-    // --- UK DATE PREVIEW HANDLER ---
-    function formatUKDate(iso) {
-      if (!iso) return '--/--/----';
-      const [y, m, d] = iso.split('-');
-      return `${d}/${m}/${y}`;
+    // Utilities
+    const pad = n => String(n).padStart(2,'0');
+    const toIsoYmd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+    // Default: today, next full hour to +1h
+    const now = new Date();
+    const start = new Date(now);
+    start.setMinutes(0,0,0); start.setHours(now.getHours()+1);
+    const end = new Date(start); end.setHours(start.getHours()+1);
+
+    document.getElementById('fromTime').value = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
+    document.getElementById('toTime').value   = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
+
+    // Flatpickr config (forces DD/MM/YYYY display)
+    let fromPicker = flatpickr('#fromDate', {
+      dateFormat: 'd/m/Y',
+      defaultDate: start,
+      onChange: syncFrom,
+      onReady: syncFrom
+    });
+
+    let toPicker = flatpickr('#toDate', {
+      dateFormat: 'd/m/Y',
+      defaultDate: end,
+      onChange: syncTo,
+      onReady: syncTo
+    });
+
+    function syncFrom(selectedDates) {
+      const d = selectedDates?.[0] || fromPicker.selectedDates[0];
+      if (!d) return;
+      document.getElementById('fromDateIso').value = toIsoYmd(d);
+
+      // keep To date >= From date
+      const toDate = toPicker.selectedDates[0];
+      if (!toDate || toDate < d) {
+        toPicker.setDate(d, true);
+        document.getElementById('toDateIso').value = toIsoYmd(d);
+      }
     }
 
-    function updateDateDisplay(idInput, idDisplay) {
-      const input = document.getElementById(idInput);
-      const display = document.getElementById(idDisplay);
-      input.addEventListener('change', () => {
-        display.textContent = formatUKDate(input.value);
-      });
+    function syncTo(selectedDates) {
+      const d = selectedDates?.[0] || toPicker.selectedDates[0];
+      if (!d) return;
+      document.getElementById('toDateIso').value = toIsoYmd(d);
     }
 
-    updateDateDisplay('fromDate', 'fromDateDisplay');
-    updateDateDisplay('toDate', 'toDateDisplay');
-
-    // --- DEFAULT VALUES ---
-    (function setDefaults() {
-      const now = new Date();
-      const pad = n => String(n).padStart(2, '0');
-      const yyyy = now.getFullYear();
-      const mm = pad(now.getMonth() + 1);
-      const dd = pad(now.getDate());
-      const isoDate = `${yyyy}-${mm}-${dd}`;
-
-      const fromDate = document.getElementById('fromDate');
-      const toDate = document.getElementById('toDate');
-      fromDate.value = isoDate;
-      toDate.value = isoDate;
-      document.getElementById('fromDateDisplay').textContent = formatUKDate(isoDate);
-      document.getElementById('toDateDisplay').textContent = formatUKDate(isoDate);
-
-      const start = new Date(now);
-      start.setMinutes(0, 0, 0);
-      start.setHours(now.getHours() + 1);
-      const end = new Date(start);
-      end.setHours(start.getHours() + 1);
-      document.getElementById('fromTime').value = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
-      document.getElementById('toTime').value = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
-    })();
-
-    // --- RECURRENCE LOGIC ---
+    // Repeat overlay wiring
     const overlay = document.getElementById('overlay');
     const repeatBtn = document.getElementById('repeatBtn');
     const closeOverlay = document.getElementById('closeOverlay');
@@ -132,48 +127,36 @@
     const recurrenceRule = document.getElementById('recurrenceRule');
 
     repeatBtn.addEventListener('click', () => {
-      overlay.classList.remove('hidden');
-      overlay.classList.add('flex');
+      overlay.classList.remove('hidden'); overlay.classList.add('flex');
     });
-
-    function hideOverlay() {
-      overlay.classList.add('hidden');
-      overlay.classList.remove('flex');
-    }
-
+    function hideOverlay(){ overlay.classList.add('hidden'); overlay.classList.remove('flex'); }
     closeOverlay.addEventListener('click', hideOverlay);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) hideOverlay();
-    });
+    overlay.addEventListener('click', e => { if (e.target === overlay) hideOverlay(); });
 
-    function ruleFor(kind) {
-      switch (kind) {
+    function ruleFor(kind){
+      switch(kind){
         case 'NONE': return '';
         case 'DAILY': return 'FREQ=DAILY';
         case 'WEEKLY': return 'FREQ=WEEKLY';
         case 'BIWEEKLY': return 'FREQ=WEEKLY;INTERVAL=2';
         case 'MONTHLY': return 'FREQ=MONTHLY';
         case 'YEARLY': return 'FREQ=YEARLY';
-        case 'CUSTOM': return '';
         default: return '';
       }
     }
-
-    function humanLabel(kind) {
-      switch (kind) {
+    function humanLabel(kind){
+      switch(kind){
         case 'NONE': return 'Does not repeat';
         case 'DAILY': return 'Every day';
         case 'WEEKLY': return 'Every week';
         case 'BIWEEKLY': return 'Every 2 weeks';
         case 'MONTHLY': return 'Every month';
         case 'YEARLY': return 'Every year';
-        case 'CUSTOM': return 'Custom…';
         default: return 'Does not repeat';
       }
     }
-
-    document.querySelectorAll('.repeat-option').forEach(btn => {
-      btn.addEventListener('click', () => {
+    document.querySelectorAll('.repeat-option').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
         const kind = btn.dataset.rule;
         recurrenceRule.value = ruleFor(kind);
         repeatLabel.textContent = humanLabel(kind);
