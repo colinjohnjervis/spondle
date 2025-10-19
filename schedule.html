@@ -68,7 +68,7 @@
 
     /* -----------------------------
        MOBILE-CENTERED CALENDAR
-       Larger, bit inset look
+       Wider + centered + larger
     ------------------------------ */
     @media (max-width:640px) {
       .datepicker[role="dialog"] {
@@ -77,21 +77,20 @@
         left:50% !important;
         transform:translate(-50%,-50%) !important;
         width:90vw !important;
-        max-width:420px !important;
-        height:480px !important;
+        min-width:90vw !important;
+        max-width:none !important;
+        height:auto !important;
         z-index:10001 !important;
         border-radius:20px !important;
       }
       .datepicker .days .datepicker-cell {
-        width:48px !important;
-        height:48px !important;
-        line-height:48px !important;
+        width:52px !important;
+        height:52px !important;
+        line-height:52px !important;
         font-size:1.1rem !important;
       }
-      .datepicker-controls {
-        font-size:1.2rem !important;
-      }
-      /* dimmed overlay */
+      .datepicker-controls { font-size:1.25rem !important; }
+      /* dark overlay when open */
       body::before {
         content:'';
         position:fixed;
@@ -161,9 +160,6 @@
   </div>
 
   <script>
-    /* ---------------------------------
-       HELPERS
-    ---------------------------------- */
     const formatUK = (d) =>
       `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     const parseUK = (str) => {
@@ -171,18 +167,12 @@
       return new Date(yyyy, mm - 1, dd);
     };
 
-    /* ---------------------------------
-       DEFAULT VALUES (today)
-    ---------------------------------- */
     const today = new Date();
     const fromDateEl = document.getElementById('fromDate');
     const toDateEl   = document.getElementById('toDate');
     fromDateEl.value = formatUK(today);
     toDateEl.value   = formatUK(today);
 
-    /* ---------------------------------
-       TIME DROPDOWNS (15-min steps)
-    ---------------------------------- */
     const fromTimeEl = document.getElementById('fromTime');
     const toTimeEl   = document.getElementById('toTime');
     function fillTimes(selectEl) {
@@ -200,9 +190,6 @@
     fillTimes(fromTimeEl); fillTimes(toTimeEl);
     fromTimeEl.value = '10:00'; toTimeEl.value = '11:00';
 
-    /* ---------------------------------
-       FLOWBITE DATEPICKERS (DD/MM/YYYY)
-    ---------------------------------- */
     const fromPicker = new Datepicker(fromDateEl, {
       autohide: true,
       defaultDate: today,
@@ -232,9 +219,6 @@
       hidePicker();
     });
 
-    /* ---------------------------------
-       KEEP TO ≥ FROM
-    ---------------------------------- */
     fromDateEl.addEventListener('changeDate', () => {
       const f = parseUK(fromDateEl.value);
       const t = parseUK(toDateEl.value);
@@ -245,9 +229,6 @@
       hidePicker();
     });
 
-    /* ---------------------------------
-       AUTO ADJUST END TIME
-    ---------------------------------- */
     fromTimeEl.addEventListener('change', () => {
       const [fh, fm] = fromTimeEl.value.split(':').map(Number);
       const [th, tm] = toTimeEl.value.split(':').map(Number);
