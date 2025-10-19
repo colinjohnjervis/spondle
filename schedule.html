@@ -12,64 +12,72 @@
 
   <style>
     /* ------------------------------------
-       MATERIAL-STYLE MODAL DATEPICKER
+       MATERIAL-STYLE MODAL DATEPICKER (v2)
+       Scaled to match Google Calendar
     ------------------------------------ */
     .flatpickr-calendar {
       background: #f8f8f8 !important;
       border: none !important;
-      border-radius: 16px !important;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
       font-family: "Inter", system-ui, sans-serif !important;
       color: #222 !important;
-      overflow: hidden !important;
-      width: 320px !important;
-      max-width: 90vw !important;
+      width: 360px !important;
+      max-width: 92vw !important;
       position: fixed !important;
       top: 50% !important;
       left: 50% !important;
-      transform: translate(-50%, -50%) !important;
+      transform: translate(-50%, -50%) scale(1.05) !important;
       z-index: 9999 !important;
-      animation: fadeIn 0.2s ease;
+      overflow: hidden !important;
+      animation: materialFadeIn 0.25s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translate(-50%, -45%) scale(0.98); }
-      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    @keyframes materialFadeIn {
+      from { opacity: 0; transform: translate(-50%, -45%) scale(0.96); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
     }
 
-    /* Dark overlay behind modal */
+    /* Dark overlay backdrop */
     .flatpickr-calendar::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.45);
       z-index: -1;
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(3px);
     }
 
     .flatpickr-months {
       background: #f8f8f8 !important;
       border-bottom: 1px solid #ddd !important;
       font-weight: 600 !important;
-      padding-top: 8px;
+      padding: 16px 0 !important;
+      font-size: 18px !important;
+    }
+
+    .flatpickr-monthDropdown-months, .numInputWrapper input {
+      font-size: 17px !important;
+      font-weight: 500 !important;
     }
 
     .flatpickr-weekdays {
-      margin-top: 8px !important;
+      margin-top: 10px !important;
+      font-size: 15px !important;
     }
 
     .flatpickr-day {
       border-radius: 50% !important;
-      width: 42px !important;
-      height: 42px !important;
-      line-height: 42px !important;
-      margin: 2px !important;
+      width: 46px !important;
+      height: 46px !important;
+      line-height: 46px !important;
+      margin: 4px !important;
       transition: all 0.2s ease;
-      font-size: 15px;
+      font-size: 16px !important;
     }
 
     .flatpickr-day:hover {
-      background: rgba(34,197,94,0.2) !important;
+      background: rgba(34,197,94,0.25) !important;
       color: #000 !important;
     }
 
@@ -83,21 +91,21 @@
       color: #fff !important;
     }
 
-    /* Footer buttons */
+    /* Footer buttons (larger, Google style) */
     .flatpickr-footer {
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
-      padding: 10px 16px;
+      gap: 12px;
+      padding: 14px 20px;
       border-top: 1px solid #ddd;
       background: #f8f8f8;
     }
 
     .flatpickr-btn {
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-weight: 500;
-      font-size: 14px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
     }
 
     .flatpickr-btn-cancel {
@@ -173,9 +181,7 @@
   </main>
 
   <script>
-    /* ---------------------------------
-       DEFAULT TIMES
-    ---------------------------------- */
+    /* Default times */
     const pad = n => String(n).padStart(2,'0');
     const now = new Date();
     const start = new Date(now);
@@ -185,9 +191,7 @@
     document.getElementById('fromTime').value = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
     document.getElementById('toTime').value   = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
 
-    /* ---------------------------------
-       FLATPICKR CONFIG (UK FORMAT)
-    ---------------------------------- */
+    /* Add OK/Cancel footer */
     function enhanceWithFooter(instance) {
       const calendar = instance.calendarContainer;
       if (calendar && !calendar.querySelector('.flatpickr-footer')) {
@@ -230,9 +234,7 @@
       }
     }
 
-    /* ---------------------------------
-       REPEAT OVERLAY LOGIC
-    ---------------------------------- */
+    /* Repeat overlay logic */
     const overlay = document.getElementById('overlay');
     const repeatBtn = document.getElementById('repeatBtn');
     const closeOverlay = document.getElementById('closeOverlay');
