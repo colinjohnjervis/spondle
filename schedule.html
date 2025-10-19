@@ -22,7 +22,7 @@
     ---------------------------------- */
     body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
-    .input-dark { background:#0b1220; color:#fff; }
+    .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
 
     /* ---------------------------------
@@ -30,7 +30,8 @@
     ---------------------------------- */
     .datepicker[role="dialog"]{
       position:fixed !important;
-      top:50% !important; left:50% !important;
+      top:50% !important;
+      left:50% !important;
       transform:translate(-50%,-50%) !important;
       z-index:9999 !important;
       width:90%; max-width:360px;
@@ -47,7 +48,7 @@
     .datepicker-cell:hover{ background:#e5e7eb !important; }
     .datepicker-controls{ padding:10px 14px !important; }
     .datepicker-controls button{ color:#111 !important; }
-    .datepicker-footer{ display:none; } /* keep it simple */
+    .datepicker-footer{ display:none; }
   </style>
 </head>
 
@@ -58,34 +59,34 @@
     <!-- =========================
          FROM (date + time)
     ========================== -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-2 gap-4 items-end">
       <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
         <input id="fromDate" type="text" readonly
-               class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
                placeholder="DD/MM/YYYY" />
       </div>
       <div>
-        <label class="block text-sm text-gray-300 mb-2 invisible md:visible">Start time</label>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
         <select id="fromTime"
-                class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
     <!-- =========================
          TO (date + time)
     ========================== -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+    <div class="grid grid-cols-2 gap-4 items-end mt-6">
       <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
         <input id="toDate" type="text" readonly
-               class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
                placeholder="DD/MM/YYYY" />
       </div>
       <div>
-        <label class="block text-sm text-gray-300 mb-2 invisible md:visible">End time</label>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
         <select id="toTime"
-                class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
@@ -95,7 +96,7 @@
     <div class="mt-6">
       <label class="block text-sm text-gray-300 mb-2">Repeat</label>
       <select id="repeatRule"
-              class="input-dark w-full p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+              class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
         <option value="none">Does not repeat</option>
         <option value="daily">Every day</option>
         <option value="weekly">Every week</option>
@@ -133,7 +134,7 @@
     const fromTimeEl = document.getElementById('fromTime');
     const toTimeEl   = document.getElementById('toTime');
 
-    function fillTimes(selectEl, startMinutes = 0) {
+    function fillTimes(selectEl) {
       selectEl.innerHTML = '';
       for (let m = 0; m < 24 * 60; m += 15) {
         const hh = Math.floor(m / 60);
@@ -150,12 +151,8 @@
     fillTimes(toTimeEl);
 
     // sensible defaults (10:00 → 11:00)
-    const setSelectValue = (el, val) => {
-      const opt = Array.from(el.options).find(o => o.value === val);
-      if (opt) el.value = val;
-    };
-    setSelectValue(fromTimeEl, '10:00');
-    setSelectValue(toTimeEl,   '11:00');
+    fromTimeEl.value = '10:00';
+    toTimeEl.value = '11:00';
 
     /* ---------------------------------
        FLOWBITE DATEPICKERS (DD/MM/YYYY)
@@ -181,19 +178,19 @@
     toDateEl  .addEventListener('click',   () => toPicker.show());
 
     /* ---------------------------------
-       BASIC LINKAGE (keep To >= From)
+       KEEP TO ≥ FROM
     ---------------------------------- */
     fromDateEl.addEventListener('changeDate', () => {
       const f = parseUK(fromDateEl.value);
       const t = parseUK(toDateEl.value);
       if (t < f) {
-        toDateEl.value = fromDateEl.value; // snap “to” date forward
+        toDateEl.value = fromDateEl.value;
         toPicker.setDate(f);
       }
     });
 
     /* ---------------------------------
-       OPTIONAL: keep end time after start
+       AUTO ADJUST END TIME
     ---------------------------------- */
     fromTimeEl.addEventListener('change', () => {
       const [fh, fm] = fromTimeEl.value.split(':').map(Number);
@@ -201,11 +198,10 @@
       const fmins = fh * 60 + fm;
       const tmins = th * 60 + tm;
       if (tmins <= fmins) {
-        // bump end time to +60 mins
         const bumped = fmins + 60;
         const hh = String(Math.floor(bumped / 60) % 24).padStart(2, '0');
         const mm = String(bumped % 60).padStart(2, '0');
-        setSelectValue(toTimeEl, `${hh}:${mm}`);
+        toTimeEl.value = `${hh}:${mm}`;
       }
     });
   </script>
