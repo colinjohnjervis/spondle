@@ -11,9 +11,9 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
   <style>
-    /* ------------------------------------
-       GOOGLE-STYLE FLATPICKR POPUP
-    ------------------------------------ */
+    /* -------------------------------
+       GOOGLE-STYLE CALENDAR OVERLAY
+    ------------------------------- */
     .flatpickr-calendar {
       background: #f8f8f8 !important;
       border: none !important;
@@ -60,18 +60,25 @@
       border-bottom: 1px solid #ddd !important;
       font-size: 15px !important;
       padding: 10px 0 !important;
-      display: flex !important;
-      justify-content: space-around !important;
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      text-align: center !important;
       color: #555 !important;
       font-weight: 500 !important;
     }
 
     .flatpickr-days {
-      padding: 10px 0 !important;
       display: flex !important;
-      flex-wrap: wrap !important;
       justify-content: center !important;
+      padding: 12px 10px !important;
+    }
+
+    .dayContainer {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
       gap: 6px !important;
+      justify-items: center !important;
+      width: 100% !important;
     }
 
     .flatpickr-day {
