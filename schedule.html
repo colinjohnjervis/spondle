@@ -12,52 +12,60 @@
 
   <style>
     /* ------------------------------------
-       MATERIAL-STYLE DATEPICKER OVERRIDES
+       MATERIAL-STYLE MODAL DATEPICKER
     ------------------------------------ */
     .flatpickr-calendar {
-      background: #f6f6f6 !important;
+      background: #f8f8f8 !important;
       border: none !important;
       border-radius: 16px !important;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
       font-family: "Inter", system-ui, sans-serif !important;
       color: #222 !important;
       overflow: hidden !important;
+      width: 320px !important;
+      max-width: 90vw !important;
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      z-index: 9999 !important;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -45%) scale(0.98); }
+      to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    /* Dark overlay behind modal */
+    .flatpickr-calendar::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: -1;
+      backdrop-filter: blur(2px);
     }
 
     .flatpickr-months {
-      background: #f6f6f6 !important;
+      background: #f8f8f8 !important;
       border-bottom: 1px solid #ddd !important;
       font-weight: 600 !important;
+      padding-top: 8px;
     }
 
-    .flatpickr-monthDropdown-months,
-    .flatpickr-current-month input.cur-year {
-      font-size: 15px !important;
-      color: #333 !important;
-    }
-
-    .flatpickr-prev-month, .flatpickr-next-month {
-      color: #666 !important;
-      fill: #666 !important;
-      transition: all 0.2s ease;
-    }
-    .flatpickr-prev-month:hover, .flatpickr-next-month:hover {
-      color: #22c55e !important;
-      fill: #22c55e !important;
-    }
-
-    .flatpickr-weekday {
-      color: #555 !important;
-      font-weight: 600 !important;
+    .flatpickr-weekdays {
+      margin-top: 8px !important;
     }
 
     .flatpickr-day {
       border-radius: 50% !important;
-      width: 38px !important;
-      height: 38px !important;
-      line-height: 38px !important;
+      width: 42px !important;
+      height: 42px !important;
+      line-height: 42px !important;
       margin: 2px !important;
-      transition: background 0.2s ease, color 0.2s ease;
+      transition: all 0.2s ease;
+      font-size: 15px;
     }
 
     .flatpickr-day:hover {
@@ -75,23 +83,34 @@
       color: #fff !important;
     }
 
-    .flatpickr-day.disabled,
-    .flatpickr-day.prevMonthDay,
-    .flatpickr-day.nextMonthDay {
-      color: #ccc !important;
+    /* Footer buttons */
+    .flatpickr-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 10px 16px;
+      border-top: 1px solid #ddd;
+      background: #f8f8f8;
     }
 
-    /* Month navigation buttons positioning fix */
-    .flatpickr-current-month {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
+    .flatpickr-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 14px;
     }
 
-    .flatpickr-months .flatpickr-prev-month,
-    .flatpickr-months .flatpickr-next-month {
-      top: 8px !important;
+    .flatpickr-btn-cancel {
+      background: #e5e5e5;
+      color: #333;
     }
+
+    .flatpickr-btn-ok {
+      background: #22c55e;
+      color: white;
+    }
+
+    .flatpickr-btn:hover { opacity: 0.9; }
   </style>
 </head>
 
@@ -169,12 +188,28 @@
     /* ---------------------------------
        FLATPICKR CONFIG (UK FORMAT)
     ---------------------------------- */
+    function enhanceWithFooter(instance) {
+      const calendar = instance.calendarContainer;
+      if (calendar && !calendar.querySelector('.flatpickr-footer')) {
+        const footer = document.createElement('div');
+        footer.className = 'flatpickr-footer';
+        footer.innerHTML = `
+          <button class="flatpickr-btn flatpickr-btn-cancel">Cancel</button>
+          <button class="flatpickr-btn flatpickr-btn-ok">OK</button>`;
+        calendar.appendChild(footer);
+
+        footer.querySelector('.flatpickr-btn-cancel').addEventListener('click', () => instance.close());
+        footer.querySelector('.flatpickr-btn-ok').addEventListener('click', () => instance.close());
+      }
+    }
+
     const fromPicker = flatpickr('#fromDate', {
       disableMobile: true,
       altInput: true,
       altFormat: 'd/m/Y',
       dateFormat: 'Y-m-d',
       defaultDate: start,
+      onOpen: enhanceWithFooter,
       onChange: ensureToDate
     });
 
@@ -183,7 +218,8 @@
       altInput: true,
       altFormat: 'd/m/Y',
       dateFormat: 'Y-m-d',
-      defaultDate: end
+      defaultDate: end,
+      onOpen: enhanceWithFooter
     });
 
     function ensureToDate(selectedDates) {
