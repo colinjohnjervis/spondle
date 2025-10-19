@@ -20,20 +20,31 @@
     /* --------------------------
        Spondle dark shell
     --------------------------- */
-    body{background:#000;color:#fff;min-height:100vh;font-family:ui-sans-serif,system-ui,sans-serif}
-    .card{background:#0f172a;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
-    .input-dark{background:#0b1220;color:#fff;width:100%}
-    .input-dark::placeholder{color:#9ca3af}
+    body {
+      background:#000;
+      color:#fff;
+      min-height:100vh;
+      font-family:ui-sans-serif,system-ui,sans-serif;
+    }
+    .card {
+      background:#0f172a;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.45);
+    }
+    .input-dark {
+      background:#0b1220;
+      color:#fff;
+      width:100%;
+    }
+    .input-dark::placeholder { color:#9ca3af; }
 
     /* ---------------------------------------------
-       Desktop/tablet POP-OVER (aligned right)
-       We place the datepicker absolutely inside
-       a relative wrapper and snap it to the right.
+       POP-OVER (aligned right)
     ---------------------------------------------- */
-    .dp-wrap{position:relative}
-    .dp-wrap .datepicker{
+    .dp-wrap { position:relative; }
+    .dp-wrap .datepicker {
       position:absolute !important;
-      inset-inline-end:0 !important; /* right in LTR */
+      inset-inline-end:0 !important; /* right align */
       top:calc(100% + 8px) !important;
       transform:none !important;
       z-index:50 !important;
@@ -41,70 +52,81 @@
       box-shadow:0 16px 48px rgba(0,0,0,.35) !important;
     }
 
-    /* Make the grid cells truly centered and circular */
-    .datepicker .days .datepicker-cell{
-      width:42px !important;height:42px !important;line-height:42px !important;
-      border-radius:50% !important;margin:3px !important;text-align:center !important;
+    .datepicker .days .datepicker-cell {
+      width:42px !important;
+      height:42px !important;
+      line-height:42px !important;
+      border-radius:50% !important;
+      margin:3px !important;
+      text-align:center !important;
     }
-    .datepicker-cell.selected{background:#22c55e !important;color:#fff !important}
-    .datepicker-cell:hover{background:#e5e7eb !important}
-    .datepicker-controls{padding:10px 14px !important}
-    .datepicker-controls button{color:#111 !important}
-    .datepicker-footer{display:none}
+    .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
+    .datepicker-cell:hover { background:#e5e7eb !important; }
+    .datepicker-controls { padding:10px 14px !important; }
+    .datepicker-controls button { color:#111 !important; }
+    .datepicker-footer { display:none; }
 
     /* ---------------------------------------------
-       Mobile MODAL (center + dim overlay)
-       We switch the calendar to fixed/centered and
-       show a soft overlay under 640px.
+       MOBILE MODAL (center + dim overlay)
     ---------------------------------------------- */
+    @media (max-width: 9999px){ /* always allow both side by side */
+      .fixed-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    }
+
     @media (max-width: 639px){
-      .dp-wrap .datepicker.dp-modal{
-        position:fixed !important; inset:auto !important;
-        top:50% !important; left:50% !important;
+      .dp-wrap .datepicker.dp-modal {
+        position:fixed !important;
+        inset:auto !important;
+        top:50% !important;
+        left:50% !important;
         transform:translate(-50%,-50%) !important;
-        width:92vw; max-width:380px;
+        width:92vw;
+        max-width:380px;
         border-radius:16px !important;
-        z-index:60 !important; /* above overlay */
+        z-index:60 !important;
       }
-      .dp-overlay{
-        position:fixed; inset:0; background:rgba(0,0,0,.45);
+      .dp-overlay {
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.45);
         backdrop-filter:saturate(120%) blur(1px);
-        z-index:55; display:none;
+        z-index:55;
+        display:none;
       }
-      .dp-overlay.show{display:block}
+      .dp-overlay.show { display:block; }
     }
   </style>
 </head>
 <body class="flex items-start justify-center py-10">
-  <!-- mobile modal overlay (only shows <640px) -->
+  <!-- mobile modal overlay -->
   <div id="dpOverlay" class="dp-overlay"></div>
 
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
     <!-- FROM row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="fixed-grid">
       <div class="dp-wrap">
         <label class="block text-sm text-gray-300 mb-2">From</label>
         <input id="fromDate" type="text" readonly placeholder="DD/MM/YYYY"
                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" />
       </div>
       <div>
-        <label class="block text-sm text-gray-300 mb-2 sm:invisible sm:block">Time</label>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
         <select id="fromTime"
                 class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
     <!-- TO row -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+    <div class="fixed-grid mt-6">
       <div class="dp-wrap">
         <label class="block text-sm text-gray-300 mb-2">To</label>
         <input id="toDate" type="text" readonly placeholder="DD/MM/YYYY"
                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" />
       </div>
       <div>
-        <label class="block text-sm text-gray-300 mb-2 sm:invisible sm:block">Time</label>
+        <label class="block text-sm text-gray-300 mb-2">Time</label>
         <select id="toTime"
                 class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
@@ -126,21 +148,19 @@
   </div>
 
   <script>
-    /* Utils */
     const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     const parseUK = v => { const [dd,mm,yy]=v.split('/').map(n=>parseInt(n,10)); return new Date(yy,mm-1,dd); };
     const isMobile = () => window.matchMedia('(max-width: 639px)').matches;
 
-    /* Default dates/times */
     const today = new Date();
     const fromDateEl = document.getElementById('fromDate');
     const toDateEl   = document.getElementById('toDate');
     fromDateEl.value = formatUK(today);
     toDateEl.value   = formatUK(today);
 
-    /* Times (15-min steps) */
     const fromTimeEl = document.getElementById('fromTime');
     const toTimeEl   = document.getElementById('toTime');
+
     function fillTimes(sel){
       sel.innerHTML = '';
       for(let m=0;m<24*60;m+=15){
@@ -153,16 +173,13 @@
     fillTimes(fromTimeEl); fillTimes(toTimeEl);
     fromTimeEl.value = '10:00'; toTimeEl.value='11:00';
 
-    /* Flowbite datepickers */
     const dpOpts = { autohide:true, defaultDate: today, language:'en-GB', format:'dd/mm/yyyy', orientation:'bottom' };
     const fromPicker = new Datepicker(fromDateEl, dpOpts);
     const toPicker   = new Datepicker(toDateEl,   dpOpts);
 
-    // open on click
     fromDateEl.addEventListener('click', () => showDP(fromDateEl));
     toDateEl  .addEventListener('click', () => showDP(toDateEl));
 
-    // keep To >= From
     fromDateEl.addEventListener('changeDate', () => {
       const f=parseUK(fromDateEl.value), t=parseUK(toDateEl.value);
       if (t < f) { toDateEl.value = fromDateEl.value; toPicker.setDate(f); }
@@ -170,7 +187,6 @@
     });
     toDateEl.addEventListener('changeDate', hideMobileOverlay);
 
-    // bump end time if needed
     fromTimeEl.addEventListener('change', () => {
       const [fh,fm]=fromTimeEl.value.split(':').map(Number);
       const [th,tm]=toTimeEl.value.split(':').map(Number);
@@ -180,29 +196,19 @@
       }
     });
 
-    /* ---------- Desktop popover vs Mobile modal ---------- */
     const overlayEl = document.getElementById('dpOverlay');
 
     function showDP(inputEl){
-      // Always show picker
       (inputEl === fromDateEl ? fromPicker : toPicker).show();
-
-      // Wait for DOM node to exist, then style accordingly
       setTimeout(() => {
         const dp = inputEl.parentElement.querySelector('.datepicker');
         if (!dp) return;
-
         if (isMobile()){
-          // MOBILE: center modal + dim overlay
           dp.classList.add('dp-modal');
-          showMobileOverlay(() => {
-            (inputEl === fromDateEl ? fromPicker : toPicker).hide();
-          });
+          showMobileOverlay(() => { (inputEl === fromDateEl ? fromPicker : toPicker).hide(); });
         } else {
-          // DESKTOP/TABLET: behave as right-aligned popover under field
           dp.classList.remove('dp-modal');
           hideMobileOverlay();
-          // Ensure it's inside the wrapper and snapped right (handled via CSS)
         }
       }, 0);
     }
@@ -214,8 +220,6 @@
       function escClose(e){ if (e.key === 'Escape'){ hideMobileOverlay(); onDismiss && onDismiss(); } }
     }
     function hideMobileOverlay(){ overlayEl.classList.remove('show'); overlayEl.onclick = null; }
-
-    // Close overlay if viewport crosses the breakpoint while open
     window.addEventListener('resize', () => { if (!isMobile()) hideMobileOverlay(); });
   </script>
 </body>
