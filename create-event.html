@@ -327,4 +327,60 @@
           </div>
           <label class="block text-sm">Recurring Dates:</label>
           <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-          <input
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+        </div>
+      `,
+      tour: () => `
+        <div id="scheduleSection" class="space-y-4">
+          ${venueSearchBlock()}
+          <div class="flex gap-4">
+            <input type="date" name="event_date[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+            <input type="time" name="event_time[]" required class="w-1/2 p-2 bg-gray-800 border border-gray-600 rounded">
+          </div>
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="w-full p-2 bg-gray-800 border border-gray-600 rounded">
+          <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+        </div>
+      `
+    };
+
+    // Default tab load
+    tabContent.innerHTML = views.single();
+    wireVenueSearch(tabContent);
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('bg-green-600'));
+        btn.classList.add('bg-green-600');
+        const type = btn.dataset.type;
+        eventTypeInput.value = type;
+        tabContent.innerHTML = views[type]();
+        wireVenueSearch(tabContent);
+
+        if (type === 'recurring') {
+          const addDateBtn = document.getElementById('addRecurringDate');
+          addDateBtn.addEventListener('click', () => {
+            const newField = document.createElement('input');
+            newField.type = 'date';
+            newField.name = 'event_date[]';
+            newField.required = true;
+            newField.className = 'w-full p-2 bg-gray-800 border border-gray-600 rounded mt-2';
+            addDateBtn.insertAdjacentElement('beforebegin', newField);
+          });
+        }
+
+        if (type === 'tour') {
+          const addScheduleBtn = document.getElementById('addScheduleBtn');
+          addScheduleBtn.addEventListener('click', () => {
+            const section = document.getElementById('scheduleSection');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'space-y-2 border-t border-gray-700 pt-4';
+            wrapper.innerHTML = views.single();
+            section.appendChild(wrapper);
+            wireVenueSearch(wrapper);
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
