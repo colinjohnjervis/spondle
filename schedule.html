@@ -33,24 +33,43 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
 
+    /* Align calendar popup neatly under date input */
     .datepicker-dropdown {
-      margin-top: 0.75rem !important; /* spacing under input */
+      margin-top: 0.5rem !important;
       border-radius: 12px !important;
-      right: 0 !important;
-      left: auto !important;
       background-color: #fff !important;
       color: #111 !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 9999;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      width: 100% !important;
+      left: 0 !important;
+      right: 0 !important;
+      transform: none !important;
+      z-index: 9999 !important;
+    }
+
+    /* When inside two-column grid, align popup to the right of container */
+    .grid-cols-2 > div:first-child .datepicker-dropdown {
+      width: auto !important;
+      left: auto !important;
+      right: 0 !important;
     }
 
     @media (max-width: 640px) {
-      .datepicker-dropdown {
+      .grid-cols-2 > div:first-child .datepicker-dropdown {
         left: 50% !important;
         transform: translateX(-50%) !important;
         right: auto !important;
         width: 90% !important;
       }
+    }
+
+    input,
+    select {
+      font-size: 1rem;
+    }
+
+    label {
+      color: #cbd5e1;
     }
   </style>
 </head>
@@ -60,7 +79,7 @@
 
     <!-- FROM row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
+      <div class="flex flex-col">
         <label for="fromDate" class="block text-sm font-medium mb-1">From</label>
         <input
           id="fromDate"
@@ -70,7 +89,7 @@
           class="w-full rounded-md bg-[#0b1221] border border-gray-700 text-white px-3 py-2"
         />
       </div>
-      <div>
+      <div class="flex flex-col">
         <label for="fromTime" class="block text-sm font-medium mb-1">Time</label>
         <select
           id="fromTime"
@@ -106,7 +125,7 @@
 
     <!-- TO row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-      <div>
+      <div class="flex flex-col">
         <label for="toDate" class="block text-sm font-medium mb-1">To</label>
         <input
           id="toDate"
@@ -116,7 +135,7 @@
           class="w-full rounded-md bg-[#0b1221] border border-gray-700 text-white px-3 py-2"
         />
       </div>
-      <div>
+      <div class="flex flex-col">
         <label for="toTime" class="block text-sm font-medium mb-1">Time</label>
         <select
           id="toTime"
@@ -169,10 +188,11 @@
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
 
   <script>
-    // Set both pickers to today by default
-    const today = new Date().toLocaleDateString('en-GB');
-    document.getElementById('fromDate').value = today;
-    document.getElementById('toDate').value = today;
+    // Set both pickers to today's date (UK format)
+    const today = new Date();
+    const formatted = today.toLocaleDateString('en-GB');
+    document.getElementById('fromDate').value = formatted;
+    document.getElementById('toDate').value = formatted;
   </script>
 </body>
 </html>
