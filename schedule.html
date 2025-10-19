@@ -6,7 +6,7 @@
   <title>Schedule Setup – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flatpickr (lightweight date picker) -->
+  <!-- Flatpickr -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
@@ -19,24 +19,20 @@
     <section class="space-y-3">
       <h2 class="text-lg font-semibold text-gray-200">From</h2>
       <input id="fromDate" type="text" placeholder="DD/MM/YYYY"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3"
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white"
              autocomplete="off" />
       <input id="fromTime" type="time"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3" />
-      <!-- hidden ISO for saving -->
-      <input id="fromDateIso" type="hidden" />
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white" />
     </section>
 
     <!-- TO -->
     <section class="space-y-3">
       <h2 class="text-lg font-semibold text-gray-200">To</h2>
       <input id="toDate" type="text" placeholder="DD/MM/YYYY"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3"
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white"
              autocomplete="off" />
       <input id="toTime" type="time"
-             class="w-full rounded border border-gray-700 bg-gray-900 p-3" />
-      <!-- hidden ISO for saving -->
-      <input id="toDateIso" type="hidden" />
+             class="w-full rounded border border-gray-700 bg-gray-900 p-3 text-white" />
     </section>
 
     <!-- REPEAT -->
@@ -49,12 +45,14 @@
       <input type="hidden" id="recurrenceRule" value="">
     </section>
 
-    <!-- Overlay -->
-    <div id="overlay" class="fixed inset-0 hidden items-center justify-center bg-black/60 p-4 z-50">
+    <!-- OVERLAY -->
+    <div id="overlay"
+         class="fixed inset-0 hidden items-center justify-center bg-black/60 p-4 z-50">
       <div class="w-full max-w-sm rounded-2xl bg-gray-900 border border-gray-700 shadow-xl">
         <div class="p-4 border-b border-gray-800 flex items-center justify-between">
           <h2 class="font-semibold">Repeat</h2>
-          <button id="closeOverlay" class="rounded px-2 py-1 text-sm bg-gray-800 hover:bg-gray-700">Close</button>
+          <button id="closeOverlay"
+                  class="rounded px-2 py-1 text-sm bg-gray-800 hover:bg-gray-700">Close</button>
         </div>
         <div class="p-2">
           <ul class="divide-y divide-gray-800">
@@ -72,11 +70,10 @@
   </main>
 
   <script>
-    // Utilities
+    /* ---------------------------------
+       DEFAULT TIMES
+    ---------------------------------- */
     const pad = n => String(n).padStart(2,'0');
-    const toIsoYmd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-
-    // Default: today, next full hour to +1h
     const now = new Date();
     const start = new Date(now);
     start.setMinutes(0,0,0); start.setHours(now.getHours()+1);
@@ -85,41 +82,37 @@
     document.getElementById('fromTime').value = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
     document.getElementById('toTime').value   = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
 
-    // Flatpickr config (forces DD/MM/YYYY display)
-    let fromPicker = flatpickr('#fromDate', {
-      dateFormat: 'd/m/Y',
+    /* ---------------------------------
+       FLATPICKR CONFIG (UK DATE FORMAT)
+    ---------------------------------- */
+    const fromPicker = flatpickr('#fromDate', {
+      disableMobile: true,
+      altInput: true,
+      altFormat: 'd/m/Y',   // visible to user (UK)
+      dateFormat: 'Y-m-d',  // actual stored value
       defaultDate: start,
-      onChange: syncFrom,
-      onReady: syncFrom
+      onChange: ensureToDate
     });
 
-    let toPicker = flatpickr('#toDate', {
-      dateFormat: 'd/m/Y',
-      defaultDate: end,
-      onChange: syncTo,
-      onReady: syncTo
+    const toPicker = flatpickr('#toDate', {
+      disableMobile: true,
+      altInput: true,
+      altFormat: 'd/m/Y',
+      dateFormat: 'Y-m-d',
+      defaultDate: end
     });
 
-    function syncFrom(selectedDates) {
-      const d = selectedDates?.[0] || fromPicker.selectedDates[0];
-      if (!d) return;
-      document.getElementById('fromDateIso').value = toIsoYmd(d);
-
-      // keep To date >= From date
+    function ensureToDate(selectedDates) {
+      const fromDate = selectedDates?.[0] || fromPicker.selectedDates[0];
       const toDate = toPicker.selectedDates[0];
-      if (!toDate || toDate < d) {
-        toPicker.setDate(d, true);
-        document.getElementById('toDateIso').value = toIsoYmd(d);
+      if (toDate && toDate < fromDate) {
+        toPicker.setDate(fromDate, true);
       }
     }
 
-    function syncTo(selectedDates) {
-      const d = selectedDates?.[0] || toPicker.selectedDates[0];
-      if (!d) return;
-      document.getElementById('toDateIso').value = toIsoYmd(d);
-    }
-
-    // Repeat overlay wiring
+    /* ---------------------------------
+       REPEAT OVERLAY LOGIC
+    ---------------------------------- */
     const overlay = document.getElementById('overlay');
     const repeatBtn = document.getElementById('repeatBtn');
     const closeOverlay = document.getElementById('closeOverlay');
@@ -127,14 +120,20 @@
     const recurrenceRule = document.getElementById('recurrenceRule');
 
     repeatBtn.addEventListener('click', () => {
-      overlay.classList.remove('hidden'); overlay.classList.add('flex');
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
     });
-    function hideOverlay(){ overlay.classList.add('hidden'); overlay.classList.remove('flex'); }
+
+    function hideOverlay() {
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+    }
+
     closeOverlay.addEventListener('click', hideOverlay);
     overlay.addEventListener('click', e => { if (e.target === overlay) hideOverlay(); });
 
-    function ruleFor(kind){
-      switch(kind){
+    const ruleFor = kind => {
+      switch(kind) {
         case 'NONE': return '';
         case 'DAILY': return 'FREQ=DAILY';
         case 'WEEKLY': return 'FREQ=WEEKLY';
@@ -143,9 +142,10 @@
         case 'YEARLY': return 'FREQ=YEARLY';
         default: return '';
       }
-    }
-    function humanLabel(kind){
-      switch(kind){
+    };
+
+    const humanLabel = kind => {
+      switch(kind) {
         case 'NONE': return 'Does not repeat';
         case 'DAILY': return 'Every day';
         case 'WEEKLY': return 'Every week';
@@ -154,9 +154,10 @@
         case 'YEARLY': return 'Every year';
         default: return 'Does not repeat';
       }
-    }
-    document.querySelectorAll('.repeat-option').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
+    };
+
+    document.querySelectorAll('.repeat-option').forEach(btn => {
+      btn.addEventListener('click', () => {
         const kind = btn.dataset.rule;
         recurrenceRule.value = ruleFor(kind);
         repeatLabel.textContent = humanLabel(kind);
