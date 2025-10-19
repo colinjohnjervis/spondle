@@ -12,14 +12,14 @@
 
   <style>
     /* ------------------------------------
-       GOOGLE-LIKE DATEPICKER (v5)
-       Perfectly centered & circular days
+       FLATPICKR FIX (GOOGLE-LIKE STYLE)
+       Perfect circles + centered alignment
     ------------------------------------ */
     .flatpickr-calendar {
       background: #f8f8f8 !important;
       border: none !important;
       border-radius: 20px !important;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
       font-family: "Inter", system-ui, sans-serif !important;
       color: #222 !important;
       width: 360px !important;
@@ -30,10 +30,10 @@
       transform: translate(-50%, -50%) scale(1.05) !important;
       z-index: 9999 !important;
       overflow: hidden !important;
-      animation: materialFadeIn 0.25s ease;
+      animation: fadeIn 0.25s ease;
     }
 
-    @keyframes materialFadeIn {
+    @keyframes fadeIn {
       from { opacity: 0; transform: translate(-50%, -45%) scale(0.96); }
       to { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
     }
@@ -56,12 +56,8 @@
       text-align: center;
     }
 
-    .flatpickr-current-month { justify-content: center !important; }
-
-    .flatpickr-monthDropdown-months,
-    .numInputWrapper input {
-      font-size: 17px !important;
-      font-weight: 500 !important;
+    .flatpickr-current-month {
+      justify-content: center !important;
     }
 
     .flatpickr-weekdays {
@@ -71,7 +67,7 @@
       justify-content: center !important;
     }
 
-    /* Override internal table with full grid centering */
+    /* Force grid layout without left indent */
     .flatpickr-days, .dayContainer {
       display: grid !important;
       grid-template-columns: repeat(7, 1fr) !important;
@@ -89,13 +85,19 @@
       align-items: center !important;
       border-radius: 50% !important;
       aspect-ratio: 1 / 1 !important;
-      width: 50px !important;
-      height: 50px !important;
+      width: 46px !important;
+      height: 46px !important;
       font-size: 16px !important;
       line-height: 1 !important;
       margin: 0 !important;
+      padding: 0 !important;
       transition: all 0.2s ease;
       text-align: center !important;
+    }
+
+    /* Completely remove default Flatpickr indentation */
+    .flatpickr-day:nth-child(7n+1) {
+      margin-left: 0 !important;
     }
 
     .flatpickr-day:hover {
