@@ -49,23 +49,24 @@
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
 
-    /* --- VENUE DROPDOWN (floating overlay) --- */
+    /* --- VENUE DROPDOWN (6px gap, matching card background) --- */
     .results-pop {
       position:absolute;
       left:0;
       top:calc(100% + 6px);
       width:100%;
       z-index:8000;
-      background:#0f172a; /* ✅ solid background prevents text bleed */
+      background:#0f172a; /* matches card background */
       border-radius:12px;
+      overflow:hidden;
     }
     .venue-card {
-      border-bottom:1px solid #374151;
+      border-bottom:1px solid #1f2937;
       padding:10px;
       transition:background .15s ease;
     }
     .venue-card:last-child { border-bottom:none; }
-    .venue-card:hover { background:#1f2937; cursor:pointer; }
+    .venue-card:hover { background:#1e293b; cursor:pointer; }
     .no-results {
       padding:10px;
       text-align:center;
