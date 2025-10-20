@@ -91,6 +91,7 @@
       <button id="tabTour" class="tab-btn">Tour</button>
     </div>
 
+    <!-- Single / Recurring -->
     <div id="panelMain">
       <div class="mb-6 relative">
         <label class="block text-sm text-gray-300 mb-2">Venue</label>
@@ -169,6 +170,7 @@
       </div>
     </div>
 
+    <!-- Tour -->
     <div id="panelTour" class="hidden">
       <div id="tourBlocks" class="space-y-8"></div>
 
@@ -241,7 +243,7 @@
   <script>
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dWVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
     const tabMain = document.getElementById('tabMain');
@@ -258,7 +260,6 @@
         panelTour.classList.remove('hidden'); panelMain.classList.add('hidden');
       }
     }
-
     tabMain.onclick = () => setTab('main');
     tabTour.onclick = () => setTab('tour');
 
@@ -353,9 +354,7 @@
       venueId.value=data.id;
       venueSearch.value=name;
       newVenueForm.classList.add('hidden');
-      newVenueName.value='';
-      newVenueStreet.value='';
-      newVenuePostcode.value='';
+      newVenueName.value=''; newVenueStreet.value=''; newVenuePostcode.value='';
     };
 
     const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
@@ -452,4 +451,4 @@
         const seen=new Set(); const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
         const lower=clean.toLowerCase();
         const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
-        const contains=unique.filter(v=>!v.venue_name?.toL
+        const contain
