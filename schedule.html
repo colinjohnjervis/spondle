@@ -5,14 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Schedule Setup – Spondle</title>
 
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
 
+  <!-- Flowbite Datepicker -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -21,7 +25,6 @@
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
 
-    /* Datepicker popup */
     .datepicker[role="dialog"] {
       position: fixed !important;
       top: 50% !important;
@@ -44,36 +47,30 @@
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
 
-    /* --- Venue dropdown --- */
     .results-pop {
       position:absolute;
-      left:-6px;
-      right:-6px;
-      top:calc(100% + 6px);
+      left:50%;
+      transform:translateX(-50%);
+      top:calc(100% + 4px);
+      width:108%;
       z-index:60;
-      background:#0f172a;
-      border-radius:12px;
-      padding:2px 10px 10px; /* reduced top padding */
     }
     .venue-card {
       background:#111827;
       border:1px solid #374151;
       border-radius:12px;
-      padding:12px 14px;
+      padding:10px;
+      margin-top:6px;
       width:100%;
-      box-sizing:border-box;
-      margin:8px 0;
     }
-    .venue-card:hover { background:#1b2433; cursor:pointer; }
+    .venue-card:hover { background:#1f2937; cursor:pointer; }
     .no-results {
-      padding:12px 14px;
-      background:#111827;
-      border:1px solid #374151;
+      padding:10px;
+      background:#0f172a;
       border-radius:12px;
       text-align:center;
-      font-size:0.95rem;
+      font-size:0.9rem;
       color:#9ca3af;
-      margin:8px 0;
     }
   </style>
 </head>
@@ -83,7 +80,7 @@
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
     <!-- Venue Search -->
-    <div class="mb-6 relative">
+    <div class="mb-6">
       <label class="block text-sm text-gray-300 mb-2">Venue</label>
       <div class="input-wrapper relative">
         <input id="venueSearch" type="text" placeholder="Search by venue name..."
@@ -152,8 +149,8 @@
         <option value="daily">Every day</option>
         <option value="weekly">Every week</option>
         <option value="biweekly">Every 2 weeks</option>
-        <option value="monthly">Every month</option>
-        <option value="yearly">Every year</option>
+        <option value="fourweekly">Every 4 weeks</option>
+        <option value="monthly">Every calendar month</option>
       </select>
     </div>
   </div>
@@ -189,8 +186,7 @@
       const lower=clean.toLowerCase();
       const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
       const contains=unique.filter(v=>!v.venue_name?.toLowerCase().startsWith(lower));
-      const sorted=[...starts,...contains];
-      return sorted.slice(0,5);
+      return[...starts,...contains].slice(0,5);
     }
 
     function renderVenues(items){
@@ -200,8 +196,7 @@
       items.forEach(v=>{
         const div=document.createElement('div');
         div.className='venue-card';
-        div.innerHTML=`<div class="font-semibold">${v.venue_name}</div>
-                       <div class="text-gray-300">${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>`;
+        div.innerHTML=`<strong>${v.venue_name}</strong><br>${v.street_name||''}${v.postcode?', '+v.postcode:''}`;
         div.onclick=()=>{
           venueSearch.value=v.venue_name;
           venueId.value=v.id;
@@ -238,16 +233,12 @@
     const fromTimeEl=document.getElementById('fromTime');
     const toTimeEl=document.getElementById('toTime');
 
-    function fillTimes(sel){
-      sel.innerHTML='';
-      for(let m=0;m<24*60;m+=15){
-        const hh=Math.floor(m/60), mm=m%60;
-        const d=new Date(2000,0,1,hh,mm);
-        const label=d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
-        const val=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-        sel.add(new Option(label,val));
-      }
-    }
+    function fillTimes(sel){sel.innerHTML='';for(let m=0;m<24*60;m+=15){const hh=Math.floor(m/60);const mm=m%60;
+      const d=new Date(2000,0,1,hh,mm);
+      const label=d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
+      const val=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+      sel.add(new Option(label,val));
+    }}
     fillTimes(fromTimeEl);fillTimes(toTimeEl);
     fromTimeEl.value='10:00';toTimeEl.value='11:00';
 
@@ -263,12 +254,7 @@
       const[fh,fm]=fromTimeEl.value.split(':').map(Number);
       const[th,tm]=toTimeEl.value.split(':').map(Number);
       const fmins=fh*60+fm,tmins=th*60+tm;
-      if(tmins<=fmins){
-        const bump=fmins+60;
-        const hh=String(Math.floor(bump/60)%24).padStart(2,'0');
-        const mm=String(bump%60).padStart(2,'0');
-        toTimeEl.value=`${hh}:${mm}`;
-      }
+      if(tmins<=fmins){const bump=fmins+60;const hh=String(Math.floor(bump/60)%24).padStart(2,'0');const mm=String(bump%60).padStart(2,'0');toTimeEl.value=`${hh}:${mm}`;}
     };
   </script>
 </body>
