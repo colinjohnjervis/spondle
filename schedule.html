@@ -153,6 +153,14 @@
         <option value="monthly">Every calendar month</option>
       </select>
     </div>
+
+    <!-- Repeat until (new) -->
+    <div id="repeatUntilWrap" class="mt-6 hidden">
+      <label class="block text-sm text-gray-300 mb-2">Repeat until</label>
+      <input id="repeatUntil" type="text" readonly
+             class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+             placeholder="DD/MM/YYYY" />
+    </div>
   </div>
 
   <script>
@@ -256,6 +264,32 @@
       const fmins=fh*60+fm,tmins=th*60+tm;
       if(tmins<=fmins){const bump=fmins+60;const hh=String(Math.floor(bump/60)%24).padStart(2,'0');const mm=String(bump%60).padStart(2,'0');toTimeEl.value=`${hh}:${mm}`;}
     };
+
+    /* ---------- Repeat Until Logic ---------- */
+    const repeatSelect=document.getElementById('repeatRule');
+    const repeatUntilWrap=document.getElementById('repeatUntilWrap');
+    const repeatUntilInput=document.getElementById('repeatUntil');
+
+    const repeatUntilPicker=new Datepicker(repeatUntilInput,{
+      autohide:true,
+      language:'en-GB',
+      format:'dd/mm/yyyy',
+      minDate: today,
+      maxDate: new Date(today.getFullYear()+1, today.getMonth(), today.getDate())
+    });
+
+    repeatUntilInput.onclick=()=>repeatUntilPicker.show();
+
+    repeatSelect.addEventListener('change',()=>{
+      const val=repeatSelect.value;
+      if(val!=='none'){
+        repeatUntilWrap.classList.remove('hidden');
+      } else {
+        repeatUntilWrap.classList.add('hidden');
+        repeatUntilInput.value='';
+      }
+    });
+    /* ---------------------------------------- */
   </script>
 </body>
 </html>
