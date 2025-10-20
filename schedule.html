@@ -20,11 +20,20 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* ---------------------------------
+       START: PAGE THEME (Spondle)
+    ---------------------------------- */
     body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
+    /* ---------------------------------
+       END: PAGE THEME (Spondle)
+    ---------------------------------- */
 
+    /* ---------------------------------
+       START: DATEPICKER POPUP (Google-ish)
+    ---------------------------------- */
     .datepicker[role="dialog"] {
       position: fixed !important;
       top: 50% !important;
@@ -51,7 +60,14 @@
     .datepicker-controls { padding: 10px 14px !important; }
     .datepicker-controls button { color:#111 !important; }
     .datepicker-footer { display:none; }
+    /* ---------------------------------
+       END: DATEPICKER POPUP (Google-ish)
+    ---------------------------------- */
 
+    /* ---------------------------------
+       START: VENUE RESULTS LOOK & FEEL
+       (visuals same as before)
+    ---------------------------------- */
     .venue-card {
       background:#111827;
       border:1px solid #374151;
@@ -59,10 +75,27 @@
       padding:10px;
       margin-top:6px;
     }
-    .venue-card:hover {
-      background:#1f2937;
-      cursor:pointer;
+    .venue-card:hover { background:#1f2937; cursor:pointer; }
+    /* Floating dropdown container */
+    .results-pop {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 6px); /* slight gap under input */
+      width: 100%;
+      z-index: 60;           /* above form elements */
     }
+    .results-panel {
+      background:#0f172a;
+      border:1px solid #374151;
+      border-radius:12px;
+      padding:10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.45);
+      max-height: 18rem;     /* prevent huge lists */
+      overflow: auto;
+    }
+    /* ---------------------------------
+       END: VENUE RESULTS LOOK & FEEL
+    ---------------------------------- */
   </style>
 </head>
 
@@ -70,20 +103,37 @@
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <!-- VENUE SECTION -->
+    <!-- =========================
+         VENUE (search / results float)
+    ========================== -->
     <div class="mb-6">
       <label class="block text-sm text-gray-300 mb-2">Venue</label>
+
+      <!-- The wrapper is relative so the floating results can anchor to it -->
       <div class="input-wrapper relative">
-        <input id="venueSearch" type="text" placeholder="Search by venue name..." class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
-        <button id="clearVenue" type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
-      </div>
-      <input id="venueId" type="text" readonly placeholder="Venue ID will appear here"
-             class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
-      <div id="venueResults" class="mt-2"></div>
-      <div id="noVenueResults" class="hidden text-sm text-gray-400 mt-2">
-        No matches found. <button id="showNewVenueForm" class="text-green-500 underline">+ Add new venue</button>
+        <input id="venueSearch" type="text" placeholder="Search by venue name..."
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+        <button id="clearVenue" type="button"
+                class="absolute right-3 top-3 text-gray-400 hover:text-gray-200"
+                aria-label="Clear">&times;</button>
+
+        <!-- Floating results (moved inside wrapper so it pins under field) -->
+        <div id="resultsPop" class="results-pop hidden">
+          <div class="results-panel">
+            <div id="venueResults"></div>
+            <div id="noVenueResults" class="hidden text-sm text-gray-400">
+              No matches found.
+              <button id="showNewVenueForm" class="text-green-500 underline">+ Add new venue</button>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <!-- Selected venue ID (kept as-is) -->
+      <input id="venueId" type="text" readonly placeholder="Venue ID will appear here"
+             class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
+      
+      <!-- Inline "Add new venue" form -->
       <div id="newVenueForm" class="hidden mt-4 space-y-2">
         <input id="newVenueName" type="text" placeholder="Venue name" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
         <input id="newVenueStreet" type="text" placeholder="Street address" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
@@ -92,34 +142,47 @@
       </div>
     </div>
 
-    <!-- FROM -->
+    <!-- =========================
+         FROM (date + time)
+    ========================== -->
     <div class="grid grid-cols-2 gap-4 items-end">
       <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
-        <input id="fromDate" type="text" readonly class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" placeholder="DD/MM/YYYY" />
+        <input id="fromDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
       <div>
         <label class="block text-sm text-gray-300 mb-2">Time</label>
-        <select id="fromTime" class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+        <select id="fromTime"
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
-    <!-- TO -->
+    <!-- =========================
+         TO (date + time)
+    ========================== -->
     <div class="grid grid-cols-2 gap-4 items-end mt-6">
       <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
-        <input id="toDate" type="text" readonly class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" placeholder="DD/MM/YYYY" />
+        <input id="toDate" type="text" readonly
+               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+               placeholder="DD/MM/YYYY" />
       </div>
       <div>
         <label class="block text-sm text-gray-300 mb-2">Time</label>
-        <select id="toTime" class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+        <select id="toTime"
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
       </div>
     </div>
 
-    <!-- REPEAT -->
+    <!-- =========================
+         REPEAT
+    ========================== -->
     <div class="mt-6">
       <label class="block text-sm text-gray-300 mb-2">Repeat</label>
-      <select id="repeatRule" class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+      <select id="repeatRule"
+              class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
         <option value="none">Does not repeat</option>
         <option value="daily">Every day</option>
         <option value="weekly">Every week</option>
@@ -131,23 +194,35 @@
   </div>
 
   <script>
-    /* ---------------------------
-       SUPABASE INIT
-    --------------------------- */
+    /* ---------------------------------
+       START: SUPABASE INIT
+    ---------------------------------- */
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
+    /* ---------------------------------
+       END: SUPABASE INIT
+    ---------------------------------- */
 
-    /* ---------------------------
-       VENUE SEARCH & CREATE (LIMITED + STARTS WITH PRIORITY)
-    --------------------------- */
-    const venueSearch = document.getElementById('venueSearch');
-    const venueId = document.getElementById('venueId');
-    const venueResults = document.getElementById('venueResults');
-    const noVenueResults = document.getElementById('noVenueResults');
-    const newVenueForm = document.getElementById('newVenueForm');
+    /* ---------------------------------
+       START: VENUE SEARCH LOGIC
+       (limit 5, starts-with priority,
+        floating dropdown, auto-close)
+    ---------------------------------- */
+    const venueSearch      = document.getElementById('venueSearch');
+    const venueId          = document.getElementById('venueId');
+    const resultsPop       = document.getElementById('resultsPop');
+    const venueResults     = document.getElementById('venueResults');
+    const noVenueResults   = document.getElementById('noVenueResults');
+    const newVenueForm     = document.getElementById('newVenueForm');
+    const clearBtn         = document.getElementById('clearVenue');
+    const addNewBtn        = document.getElementById('showNewVenueForm');
+
     let searchTimeout;
+
+    function openResults()  { resultsPop.classList.remove('hidden'); }
+    function closeResults() { resultsPop.classList.add('hidden'); }
 
     async function searchVenues(query) {
       const cleanQuery = query.replace(/[^a-zA-Z0-9\s'-]/g, '').trim();
@@ -157,14 +232,14 @@
         .from('venues')
         .select('id, venue_name, street_name, postcode')
         .ilike('venue_name', `%${cleanQuery}%`)
-        .limit(25); // fetch more, filter client-side
+        .limit(25); // fetch more; we’ll prioritise client-side
 
       if (error) {
         console.error(error);
         return [];
       }
 
-      // Deduplicate and prioritise starts-with matches
+      // Deduplicate and prioritise starts-with
       const seen = new Set();
       const unique = data.filter(v => {
         if (seen.has(v.id)) return false;
@@ -173,60 +248,90 @@
       });
 
       const lower = cleanQuery.toLowerCase();
-      const starts = unique.filter(v => v.venue_name.toLowerCase().startsWith(lower));
-      const contains = unique.filter(v => !v.venue_name.toLowerCase().startsWith(lower));
+      const starts = unique.filter(v => v.venue_name?.toLowerCase().startsWith(lower));
+      const contains = unique.filter(v => !v.venue_name?.toLowerCase().startsWith(lower));
       const sorted = [...starts, ...contains];
 
       return sorted.slice(0, 5);
     }
 
+    function renderVenues(items) {
+      venueResults.innerHTML = '';
+      noVenueResults.classList.add('hidden');
+
+      if (!items || items.length === 0) {
+        noVenueResults.classList.remove('hidden');
+        return;
+      }
+
+      items.forEach(v => {
+        const row = document.createElement('div');
+        row.className = 'venue-card';
+        row.innerHTML = `
+          <strong>${v.venue_name}</strong><br>
+          ${v.street_name || ''}${v.postcode ? ', ' + v.postcode : ''}
+        `;
+        row.addEventListener('click', () => {
+          venueSearch.value = v.venue_name;
+          venueId.value = v.id;
+          closeResults();
+          newVenueForm.classList.add('hidden');
+
+          // brief highlight feedback
+          row.style.background = '#22c55e';
+          row.style.color = '#111';
+          setTimeout(() => { row.style.background = '#1f2937'; row.style.color = ''; }, 450);
+        });
+        venueResults.appendChild(row);
+      });
+    }
+
     venueSearch.addEventListener('input', () => {
       clearTimeout(searchTimeout);
       const query = venueSearch.value.trim();
+      if (!query) {
+        venueResults.innerHTML = '';
+        closeResults();
+        noVenueResults.classList.add('hidden');
+        return;
+      }
 
       searchTimeout = setTimeout(async () => {
-        venueResults.innerHTML = '';
-        noVenueResults.classList.add('hidden');
-        if (!query) return;
-
         const venues = await searchVenues(query);
-
-        if (!venues.length) {
-          noVenueResults.classList.remove('hidden');
-          return;
-        }
-
-        venues.forEach(v => {
-          const div = document.createElement('div');
-          div.className = 'venue-card';
-          div.innerHTML = `<strong>${v.venue_name}</strong><br>${v.street_name || ''}${v.postcode ? ', ' + v.postcode : ''}`;
-          div.addEventListener('click', () => {
-            venueSearch.value = v.venue_name;
-            venueId.value = v.id;
-            venueResults.innerHTML = '';
-            noVenueResults.classList.add('hidden');
-            newVenueForm.classList.add('hidden');
-            div.style.background = '#22c55e';
-            div.style.color = '#fff';
-            setTimeout(() => { div.style.background = '#1f2937'; div.style.color = ''; }, 500);
-          });
-          venueResults.appendChild(div);
-        });
-      }, 300);
+        renderVenues(venues);
+        openResults();
+      }, 250);
     });
 
-    document.getElementById('clearVenue').addEventListener('click', () => {
+    venueSearch.addEventListener('focus', () => {
+      if (venueResults.children.length || !noVenueResults.classList.contains('hidden')) openResults();
+    });
+
+    clearBtn.addEventListener('click', () => {
       venueSearch.value = '';
       venueId.value = '';
       venueResults.innerHTML = '';
       noVenueResults.classList.add('hidden');
       newVenueForm.classList.add('hidden');
+      closeResults();
+      venueSearch.focus();
     });
 
-    document.getElementById('showNewVenueForm').addEventListener('click', () => {
+    addNewBtn.addEventListener('click', () => {
       newVenueForm.classList.toggle('hidden');
     });
 
+    // Click-away / Escape to close
+    document.addEventListener('click', (e) => {
+      const wrapper = e.target.closest('.input-wrapper');
+      if (!wrapper) closeResults();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeResults();
+    });
+
+    // Create venue
     document.getElementById('createVenueBtn').addEventListener('click', async () => {
       const name = document.getElementById('newVenueName').value.trim();
       const street = document.getElementById('newVenueStreet').value.trim();
@@ -246,11 +351,15 @@
       newVenueForm.classList.add('hidden');
       venueResults.innerHTML = '';
       noVenueResults.classList.add('hidden');
+      closeResults();
     });
+    /* ---------------------------------
+       END: VENUE SEARCH LOGIC
+    ---------------------------------- */
 
-    /* ---------------------------
-       DATE & TIME LOGIC (unchanged)
-    --------------------------- */
+    /* ---------------------------------
+       START: DATE & TIME LOGIC (UK)
+    ---------------------------------- */
     const formatUK = (d) =>
       `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 
@@ -261,12 +370,12 @@
 
     const today = new Date();
     const fromDateEl = document.getElementById('fromDate');
-    const toDateEl = document.getElementById('toDate');
+    const toDateEl   = document.getElementById('toDate');
     fromDateEl.value = formatUK(today);
-    toDateEl.value = formatUK(today);
+    toDateEl.value   = formatUK(today);
 
     const fromTimeEl = document.getElementById('fromTime');
-    const toTimeEl = document.getElementById('toTime');
+    const toTimeEl   = document.getElementById('toTime');
 
     function fillTimes(selectEl) {
       selectEl.innerHTML = '';
@@ -283,7 +392,7 @@
     fillTimes(fromTimeEl);
     fillTimes(toTimeEl);
     fromTimeEl.value = '10:00';
-    toTimeEl.value = '11:00';
+    toTimeEl.value   = '11:00';
 
     const fromPicker = new Datepicker(fromDateEl, {
       autohide: true,
@@ -302,7 +411,7 @@
     });
 
     fromDateEl.addEventListener('click', () => fromPicker.show());
-    toDateEl.addEventListener('click', () => toPicker.show());
+    toDateEl  .addEventListener('click', () => toPicker.show());
 
     fromDateEl.addEventListener('changeDate', () => {
       const f = parseUK(fromDateEl.value);
@@ -325,6 +434,9 @@
         toTimeEl.value = `${hh}:${mm}`;
       }
     });
+    /* ---------------------------------
+       END: DATE & TIME LOGIC (UK)
+    ---------------------------------- */
   </script>
 </body>
 </html>
