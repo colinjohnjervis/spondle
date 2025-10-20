@@ -8,7 +8,7 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flowbite Core -->
+  <!-- Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
 
@@ -20,13 +20,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* --- GENERAL THEME --- */
+    /* --- THEME --- */
     body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
 
-    /* --- DATE PICKER --- */
+    /* --- DATEPICKER POPUP --- */
     .datepicker[role="dialog"] {
       position: fixed !important;
       top: 50% !important;
@@ -48,19 +48,8 @@
       text-align: center !important;
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
-    .datepicker-cell:hover { background:#e5e7eb !important; }
-    .datepicker-controls { padding: 10px 14px !important; }
-    .datepicker-footer { display:none; }
 
     /* --- VENUE DROPDOWN --- */
-    .venue-card {
-      background:#111827;
-      border:1px solid #374151;
-      border-radius:12px;
-      padding:10px;
-      margin-top:6px;
-    }
-    .venue-card:hover { background:#1f2937; cursor:pointer; }
     .results-pop {
       position:absolute;
       left:0;
@@ -68,14 +57,22 @@
       width:100%;
       z-index:60;
     }
-    .results-panel {
-      background:#0f172a;
+    .venue-card {
+      background:#111827;
       border:1px solid #374151;
       border-radius:12px;
       padding:10px;
-      box-shadow:0 10px 30px rgba(0,0,0,.45);
-      overflow:visible;     /* expand naturally */
-      max-height:none;      /* no scroll restriction */
+      margin-top:6px;
+      width:100%;
+    }
+    .venue-card:hover { background:#1f2937; cursor:pointer; }
+    .no-results {
+      padding:10px;
+      background:#0f172a;
+      border-radius:12px;
+      text-align:center;
+      font-size:0.9rem;
+      color:#9ca3af;
     }
   </style>
 </head>
@@ -96,12 +93,10 @@
 
         <!-- Floating Results -->
         <div id="resultsPop" class="results-pop hidden">
-          <div class="results-panel">
-            <div id="venueResults"></div>
-            <div id="noVenueResults" class="hidden text-sm text-gray-400">
-              No matches found.
-              <button id="showNewVenueForm" class="text-green-500 underline">+ Add new venue</button>
-            </div>
+          <div id="venueResults"></div>
+          <div id="noVenueResults" class="no-results hidden">
+            No matches found.
+            <button id="showNewVenueForm" class="text-green-500 underline ml-1">+ Add new venue</button>
           </div>
         </div>
       </div>
