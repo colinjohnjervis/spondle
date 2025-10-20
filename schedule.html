@@ -140,14 +140,13 @@
     );
 
     /* ---------------------------
-       VENUE SEARCH & CREATE (FIXED)
+       VENUE SEARCH & CREATE (LIMITED + STARTS WITH PRIORITY)
     --------------------------- */
     const venueSearch = document.getElementById('venueSearch');
     const venueId = document.getElementById('venueId');
     const venueResults = document.getElementById('venueResults');
     const noVenueResults = document.getElementById('noVenueResults');
     const newVenueForm = document.getElementById('newVenueForm');
-
     let searchTimeout;
 
     async function searchVenues(query) {
@@ -158,24 +157,27 @@
         .from('venues')
         .select('id, venue_name, street_name, postcode')
         .ilike('venue_name', `%${cleanQuery}%`)
-        .limit(10);
+        .limit(25); // fetch more, filter client-side
 
       if (error) {
         console.error(error);
         return [];
       }
 
-      // Deduplicate by ID
-      const unique = [];
+      // Deduplicate and prioritise starts-with matches
       const seen = new Set();
-      for (const v of data) {
-        if (!seen.has(v.id)) {
-          seen.add(v.id);
-          unique.push(v);
-        }
-      }
+      const unique = data.filter(v => {
+        if (seen.has(v.id)) return false;
+        seen.add(v.id);
+        return true;
+      });
 
-      return unique;
+      const lower = cleanQuery.toLowerCase();
+      const starts = unique.filter(v => v.venue_name.toLowerCase().startsWith(lower));
+      const contains = unique.filter(v => !v.venue_name.toLowerCase().startsWith(lower));
+      const sorted = [...starts, ...contains];
+
+      return sorted.slice(0, 5);
     }
 
     venueSearch.addEventListener('input', () => {
@@ -204,14 +206,13 @@
             venueResults.innerHTML = '';
             noVenueResults.classList.add('hidden');
             newVenueForm.classList.add('hidden');
-            // highlight on selection
             div.style.background = '#22c55e';
             div.style.color = '#fff';
             setTimeout(() => { div.style.background = '#1f2937'; div.style.color = ''; }, 500);
           });
           venueResults.appendChild(div);
         });
-      }, 300); // debounce
+      }, 300);
     });
 
     document.getElementById('clearVenue').addEventListener('click', () => {
@@ -248,7 +249,7 @@
     });
 
     /* ---------------------------
-       DATE & TIME LOGIC
+       DATE & TIME LOGIC (unchanged)
     --------------------------- */
     const formatUK = (d) =>
       `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
