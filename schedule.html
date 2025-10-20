@@ -21,6 +21,7 @@
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
 
+    /* Datepicker popup */
     .datepicker[role="dialog"] {
       position: fixed !important;
       top: 50% !important;
@@ -43,15 +44,16 @@
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
 
+    /* --- Venue dropdown --- */
     .results-pop {
       position:absolute;
-      left:0;
-      right:0;
+      left:-6px;
+      right:-6px;
       top:calc(100% + 6px);
       z-index:60;
       background:#0f172a;
       border-radius:12px;
-      padding:10px;
+      padding:10px 10px;
     }
     .venue-card {
       background:#111827;
@@ -80,7 +82,8 @@
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <div class="mb-6">
+    <!-- Venue Search -->
+    <div class="mb-6 relative">
       <label class="block text-sm text-gray-300 mb-2">Venue</label>
       <div class="input-wrapper relative">
         <input id="venueSearch" type="text" placeholder="Search by venue name..."
@@ -89,6 +92,7 @@
                 class="absolute right-3 top-3 text-gray-400 hover:text-gray-200"
                 aria-label="Clear">&times;</button>
 
+        <!-- Floating Results -->
         <div id="resultsPop" class="results-pop hidden">
           <div id="venueResults"></div>
           <div id="noVenueResults" class="no-results hidden">
@@ -109,6 +113,7 @@
       </div>
     </div>
 
+    <!-- From Date + Time -->
     <div class="grid grid-cols-2 gap-4 items-end">
       <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
@@ -123,6 +128,7 @@
       </div>
     </div>
 
+    <!-- To Date + Time -->
     <div class="grid grid-cols-2 gap-4 items-end mt-6">
       <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
@@ -137,6 +143,7 @@
       </div>
     </div>
 
+    <!-- Repeat -->
     <div class="mt-6">
       <label class="block text-sm text-gray-300 mb-2">Repeat</label>
       <select id="repeatRule"
