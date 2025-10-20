@@ -26,8 +26,7 @@
       transform: translate(-50%, -50%) !important;
       z-index: 9999 !important;
       width: 92%; max-width: 420px;
-      background: #fff !important;
-      color: #111 !important;
+      background: #fff !important; color: #111 !important;
       border-radius: 16px !important;
       box-shadow: 0 20px 60px rgba(0,0,0,.35) !important;
     }
@@ -37,7 +36,7 @@
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
 
-    /* --- Venue dropdown (shared) --- */
+    /* Venue dropdown */
     .results-pop {
       position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
       z-index:60; background:#0f172a; border-radius:12px; padding:10px 10px;
@@ -59,12 +58,12 @@
     .tab-btn { padding:8px 14px; border-radius:9999px; border:1px solid #374151; background:#0f172a; color:#e5e7eb; }
     .tab-btn.active { background:#16a34a; color:#000; border-color:#16a34a; }
 
-    /* Tour block */
-    .tour-block { background:#0f172a; border:1px solid #374151; border-radius:14px; padding:16px; position:relative; }
+    /* Tour: remove button + divider between blocks */
     .x-circle { position:absolute; right:10px; top:10px; width:28px; height:28px; border-radius:9999px;
       border:1px solid #374151; display:flex; align-items:center; justify-content:center;
       color:#e5e7eb; background:#0b1220; line-height:1; }
     .x-circle:hover { background:#1b2433; }
+    .tour-divider { border-top:1px solid #374151; margin:22px 0; }
   </style>
 </head>
 
@@ -109,7 +108,7 @@
         </div>
       </div>
 
-      <!-- From + To Dates/Times -->
+      <!-- From Date + Time -->
       <div class="grid grid-cols-2 gap-4 items-end">
         <div>
           <label class="block text-sm text-gray-300 mb-2">From</label>
@@ -124,6 +123,7 @@
         </div>
       </div>
 
+      <!-- To Date + Time -->
       <div class="grid grid-cols-2 gap-4 items-end mt-6">
         <div>
           <label class="block text-sm text-gray-300 mb-2">To</label>
@@ -138,6 +138,7 @@
         </div>
       </div>
 
+      <!-- Repeat -->
       <div class="mt-6">
         <label class="block text-sm text-gray-300 mb-2">Repeat</label>
         <select id="repeatRule"
@@ -151,6 +152,7 @@
         </select>
       </div>
 
+      <!-- Repeat until -->
       <div id="repeatUntilWrap" class="mt-6 hidden">
         <label class="block text-sm text-gray-300 mb-2">Repeat until</label>
         <input id="repeatUntil" type="text" readonly
@@ -159,19 +161,24 @@
       </div>
     </div>
 
-    <!-- Tour Panel -->
+    <!-- Tour Panel (blocks identical to above but without repeat fields) -->
     <div id="panelTour" class="hidden">
-      <div id="tourBlocks" class="space-y-6 mb-6"></div>
-      <button id="addTourBtn" class="bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">
+      <!-- Where blocks will be appended -->
+      <div id="tourBlocks" class="space-y-6"></div>
+
+      <!-- Add another -->
+      <button id="addTourBtn" class="mt-6 bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">
         + Add another venue/date
       </button>
     </div>
   </div>
 
-  <!-- Template for Tour Blocks -->
+  <!-- Template for a tour block (NO IDs inside; classes only) -->
   <template id="tourBlockTemplate">
-    <div class="tour-block">
+    <div class="relative">
       <button type="button" class="x-circle removeBlock" title="Remove">×</button>
+
+      <!-- Venue Search -->
       <div class="mb-6 relative">
         <label class="block text-sm text-gray-300 mb-2">Venue</label>
         <div class="input-wrapper relative">
@@ -180,6 +187,7 @@
           <button type="button"
                   class="clearVenue absolute right-3 top-3 text-gray-400 hover:text-gray-200"
                   aria-label="Clear">&times;</button>
+
           <div class="results-pop hidden">
             <div class="venueResults"></div>
             <div class="noVenueResults no-results hidden">
@@ -187,8 +195,10 @@
             </div>
           </div>
         </div>
+
         <input type="text" readonly placeholder="Venue ID will appear here"
                class="venueId input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
+
         <div class="newVenueForm hidden mt-4 space-y-2">
           <input type="text" placeholder="Venue name" class="newVenueName input-dark p-3 rounded-lg border border-gray-700 w-full">
           <input type="text" placeholder="Street address" class="newVenueStreet input-dark p-3 rounded-lg border border-gray-700 w-full">
@@ -197,6 +207,7 @@
         </div>
       </div>
 
+      <!-- From Date + Time -->
       <div class="grid grid-cols-2 gap-4 items-end">
         <div>
           <label class="block text-sm text-gray-300 mb-2">From</label>
@@ -210,6 +221,7 @@
         </div>
       </div>
 
+      <!-- To Date + Time -->
       <div class="grid grid-cols-2 gap-4 items-end mt-6">
         <div>
           <label class="block text-sm text-gray-300 mb-2">To</label>
@@ -222,6 +234,9 @@
           <select class="toTime input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
         </div>
       </div>
+
+      <!-- Divider -->
+      <div class="tour-divider"></div>
     </div>
   </template>
   
@@ -255,7 +270,7 @@
     tabSingle.onclick=()=>setTab('single');
     tabTour.onclick=()=>setTab('tour');
 
-    /* ---------- Single / Recurring logic ---------- */
+    /* ---------- Venue Search (Single/Recurring) ---------- */
     const venueSearch=document.getElementById('venueSearch');
     const venueId=document.getElementById('venueId');
     const resultsPop=document.getElementById('resultsPop');
@@ -349,6 +364,7 @@
       newVenuePostcode.value='';
     };
 
+    /* ---------- Shared Helpers ---------- */
     const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     const parseUK=s=>{const[dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10));return new Date(yyyy,mm-1,dd);};
     const today=new Date();
@@ -363,8 +379,10 @@
       sel.innerHTML='';
       for(let m=0;m<24*60;m+=15){
         const hh=Math.floor(m/60), mm=m%60;
-        const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-        sel.add(new Option(label,label));
+        const d=new Date(2000,0,1,hh,mm);
+        const label=d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
+        const val=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+        sel.add(new Option(label,val));
       }
     }
     fillTimes(fromTimeEl);fillTimes(toTimeEl);
@@ -390,18 +408,20 @@
       }
     };
 
+    /* ---- Repeat Until Logic ---- */
     const repeatSelect=document.getElementById('repeatRule');
     const repeatUntilWrap=document.getElementById('repeatUntilWrap');
     const repeatUntilInput=document.getElementById('repeatUntil');
     const repeatUntilPicker=new Datepicker(repeatUntilInput,{
       autohide:true,language:'en-GB',format:'dd/mm/yyyy',
-      minDate:today,maxDate:new Date(today.getFullYear()+1,today.getMonth(),today.getDate())
+      minDate: today,
+      maxDate: new Date(today.getFullYear()+1, today.getMonth(), today.getDate())
     });
     repeatUntilInput.onclick=()=>repeatUntilPicker.show();
     repeatSelect.addEventListener('change',()=>{
       if(repeatSelect.value!=='none'){
         repeatUntilWrap.classList.remove('hidden');
-      }else{
+      } else {
         repeatUntilWrap.classList.add('hidden');
         repeatUntilInput.value='';
       }
