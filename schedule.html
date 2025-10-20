@@ -91,7 +91,7 @@
       <button id="tabTour" class="tab-btn">Tour</button>
     </div>
 
-    <!-- Single / Recurring tab -->
+    <!-- Single / Recurring -->
     <div id="panelMain">
       <div class="mb-6 relative">
         <label class="block text-sm text-gray-300 mb-2">Venue</label>
@@ -170,7 +170,7 @@
       </div>
     </div>
 
-    <!-- Tour tab -->
+    <!-- Tour -->
     <div id="panelTour" class="hidden">
       <div id="tourBlocks" class="space-y-8"></div>
       <button id="addTourBlock" class="mt-6 w-full bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg">
@@ -179,7 +179,6 @@
     </div>
   </div>
 
-  <!-- Template for a tour block (venue + dates/times; no repeat fields) -->
   <template id="tourBlockTemplate">
     <div class="relative p-4 rounded-xl border border-gray-700 bg-[#0f172a]">
       <button type="button" class="x-circle tour-remove" title="Remove">×</button>
@@ -241,213 +240,212 @@
   </template>
 
   <script>
-    const supabase = window.supabase.createClient(
-      'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
-    );
+    document.addEventListener('DOMContentLoaded', () => {
+      const supabase = window.supabase.createClient(
+        'https://jvuunvnbpdfrttusgelz.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+      );
 
-    const tabMain = document.getElementById('tabMain');
-    const tabTour = document.getElementById('tabTour');
-    const panelMain = document.getElementById('panelMain');
-    const panelTour = document.getElementById('panelTour');
+      const tabMain = document.getElementById('tabMain');
+      const tabTour = document.getElementById('tabTour');
+      const panelMain = document.getElementById('panelMain');
+      const panelTour = document.getElementById('panelTour');
 
-    function setTab(active) {
-      if (active === 'main') {
-        tabMain.classList.add('active'); tabTour.classList.remove('active');
-        panelMain.classList.remove('hidden'); panelTour.classList.add('hidden');
-      } else {
-        tabTour.classList.add('active'); tabMain.classList.remove('active');
-        panelTour.classList.remove('hidden'); panelMain.classList.add('hidden');
+      function setTab(active) {
+        if (active === 'main') {
+          tabMain.classList.add('active'); tabTour.classList.remove('active');
+          panelMain.classList.remove('hidden'); panelTour.classList.add('hidden');
+        } else {
+          tabTour.classList.add('active'); tabMain.classList.remove('active');
+          panelTour.classList.remove('hidden'); panelMain.classList.add('hidden');
+        }
       }
-    }
-    tabMain.onclick = () => setTab('main');
-    tabTour.onclick = () => setTab('tour');
+      tabMain.onclick = () => setTab('main');
+      tabTour.onclick = () => setTab('tour');
 
-    /* ===== Single / Recurring logic (unchanged) ===== */
-    const venueSearch=document.getElementById('venueSearch');
-    const venueId=document.getElementById('venueId');
-    const resultsPop=document.getElementById('resultsPop');
-    const venueResults=document.getElementById('venueResults');
-    const noVenueResults=document.getElementById('noVenueResults');
-    const newVenueForm=document.getElementById('newVenueForm');
-    const clearBtn=document.getElementById('clearVenue');
-    const createVenueBtn=document.getElementById('createVenueBtn');
-    const newVenueName=document.getElementById('newVenueName');
-    const newVenueStreet=document.getElementById('newVenueStreet');
-    const newVenuePostcode=document.getElementById('newVenuePostcode');
-    let searchTimeout;
+      const venueSearch=document.getElementById('venueSearch');
+      const venueId=document.getElementById('venueId');
+      const resultsPop=document.getElementById('resultsPop');
+      const venueResults=document.getElementById('venueResults');
+      const noVenueResults=document.getElementById('noVenueResults');
+      const newVenueForm=document.getElementById('newVenueForm');
+      const clearBtn=document.getElementById('clearVenue');
+      const createVenueBtn=document.getElementById('createVenueBtn');
+      const newVenueName=document.getElementById('newVenueName');
+      const newVenueStreet=document.getElementById('newVenueStreet');
+      const newVenuePostcode=document.getElementById('newVenuePostcode');
 
-    function openResults(){resultsPop.classList.remove('hidden');}
-    function closeResults(){resultsPop.classList.add('hidden');}
+      let searchTimeout;
 
-    async function searchVenues(query){
-      const clean=query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
-      if(!clean)return[];
-      const{data,error}=await supabase.from('venues')
-        .select('id,venue_name,street_name,postcode')
-        .ilike('venue_name',`%${clean}%`).limit(25);
-      if(error){console.error(error);return[];}
-      const seen=new Set();
-      const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
-      const lower=clean.toLowerCase();
-      const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
-      const contains=unique.filter(v=>!v.venue_name?.toLowerCase().startsWith(lower));
-      return[...starts,...contains].slice(0,5);
-    }
+      function openResults(){resultsPop.classList.remove('hidden');}
+      function closeResults(){resultsPop.classList.add('hidden');}
 
-    function renderVenues(items){
-      venueResults.innerHTML='';
-      noVenueResults.classList.add('hidden');
-      if(!items.length){noVenueResults.classList.remove('hidden');return;}
-      items.forEach(v=>{
-        const div=document.createElement('div');
-        div.className='venue-card';
-        div.innerHTML=`<div class="font-semibold">${v.venue_name}</div>
-                       <div class="text-gray-300">${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>`;
-        div.onclick=()=>{
-          venueSearch.value=v.venue_name;
-          venueId.value=v.id;
-          closeResults();
-          newVenueForm.classList.add('hidden');
-        };
-        venueResults.appendChild(div);
-      });
-    }
-
-    venueSearch.oninput=()=>{
-      clearTimeout(searchTimeout);
-      const q=venueSearch.value.trim();
-      if(!q){venueResults.innerHTML='';closeResults();return;}
-      searchTimeout=setTimeout(async()=>{
-        const list=await searchVenues(q);
-        renderVenues(list);
-        openResults();
-      },250);
-    };
-    venueSearch.onfocus=()=>{if(venueResults.children.length)openResults();};
-
-    clearBtn.onclick=()=>{
-      venueSearch.value='';
-      venueId.value='';
-      venueResults.innerHTML='';
-      closeResults();
-      newVenueForm.classList.add('hidden');
-    };
-
-    document.addEventListener('click',e=>{ if(!e.target.closest('.input-wrapper')) closeResults(); });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeResults(); });
-
-    noVenueResults.onclick=()=>{
-      closeResults();
-      newVenueForm.classList.remove('hidden');
-    };
-
-    createVenueBtn.onclick=async()=>{
-      const name=newVenueName.value.trim();
-      const street=newVenueStreet.value.trim();
-      const postcode=newVenuePostcode.value.trim();
-      if(!name)return;
-      const{data,error}=await supabase.from('venues')
-        .insert([{venue_name:name,street_name:street,postcode:postcode}])
-        .select('id')
-        .single();
-      if(error){console.error(error);return;}
-      venueId.value=data.id;
-      venueSearch.value=name;
-      newVenueForm.classList.add('hidden');
-      newVenueName.value=''; newVenueStreet.value=''; newVenuePostcode.value='';
-    };
-
-    const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-    const parseUK=s=>{const[dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10));return new Date(yyyy,mm-1,dd);};
-    const today=new Date();
-    const fromDateEl=document.getElementById('fromDate');
-    const toDateEl=document.getElementById('toDate');
-    fromDateEl.value=formatUK(today);
-    toDateEl.value=formatUK(today);
-    const fromTimeEl=document.getElementById('fromTime');
-    const toTimeEl=document.getElementById('toTime');
-
-    function fillTimes(sel){
-      sel.innerHTML='';
-      for(let m=0;m<24*60;m+=15){
-        const hh=Math.floor(m/60), mm=m%60;
-        const d=new Date(2000,0,1,hh,mm);
-        const label=d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
-        const val=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-        sel.add(new Option(label,val));
-      }
-    }
-    fillTimes(fromTimeEl);fillTimes(toTimeEl);
-    fromTimeEl.value='10:00';toTimeEl.value='11:00';
-
-    const fromPicker=new Datepicker(fromDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-    const toPicker=new Datepicker(toDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-    fromDateEl.onclick=()=>fromPicker.show();toDateEl.onclick=()=>toPicker.show();
-
-    fromDateEl.addEventListener('changeDate',()=>{
-      const f=parseUK(fromDateEl.value);const t=parseUK(toDateEl.value);
-      if(t<f){toDateEl.value=fromDateEl.value;toPicker.setDate(f);}
-    });
-    fromTimeEl.onchange=()=>{
-      const[fh,fm]=fromTimeEl.value.split(':').map(Number);
-      const[th,tm]=toTimeEl.value.split(':').map(Number);
-      const fmins=fh*60+fm,tmins=th*60+tm;
-      if(tmins<=fmins){
-        const bump=fmins+60;
-        const hh=String(Math.floor(bump/60)%24).padStart(2,'0');
-        const mm=String(bump%60).padStart(2,'0');
-        toTimeEl.value=`${hh}:${mm}`;
-      }
-    };
-
-    const repeatSelect=document.getElementById('repeatRule');
-    const repeatUntilWrap=document.getElementById('repeatUntilWrap');
-    const repeatUntilInput=document.getElementById('repeatUntil');
-
-    const repeatUntilPicker=new Datepicker(repeatUntilInput,{
-      autohide:true,
-      language:'en-GB',
-      format:'dd/mm/yyyy',
-      minDate: today,
-      maxDate: new Date(today.getFullYear()+1, today.getMonth(), today.getDate())
-    });
-    repeatUntilInput.onclick=()=>repeatUntilPicker.show();
-
-    repeatSelect.addEventListener('change',()=>{
-      if(repeatSelect.value!=='none'){
-        repeatUntilWrap.classList.remove('hidden');
-      } else {
-        repeatUntilWrap.classList.add('hidden');
-        repeatUntilInput.value='';
-      }
-    });
-
-    /* ===== Tour logic (add/remove blocks; each with fully working venue/date logic) ===== */
-    const tourBlocks = document.getElementById('tourBlocks');
-    const addTourBlock = document.getElementById('addTourBlock');
-    const tpl = document.getElementById('tourBlockTemplate');
-
-    function initTourBlock(root){
-      const vSearch = root.querySelector('.venueSearch');
-      const vId = root.querySelector('.venueId');
-      const results = root.querySelector('.results-pop');
-      const vResults = root.querySelector('.venueResults');
-      const noResults = root.querySelector('.noVenueResults');
-      const newForm = root.querySelector('.newVenueForm');
-      const clearBtn = root.querySelector('.clearVenue');
-      const removeBtn = root.querySelector('.tour-remove');
-
-      let timeout;
-
-      function open(){results.classList.remove('hidden');}
-      function close(){results.classList.add('hidden');}
-
-      async function doSearch(q){
-        const clean=q.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
+      async function searchVenues(query){
+        const clean=query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
         if(!clean)return[];
-        const {data,error}=await supabase.from('venues')
+        const{data,error}=await supabase.from('venues')
           .select('id,venue_name,street_name,postcode')
           .ilike('venue_name',`%${clean}%`).limit(25);
         if(error){console.error(error);return[];}
-        const seen=new Set(); c
+        const seen=new Set();
+        const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
+        const lower=clean.toLowerCase();
+        const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
+        const contains=unique.filter(v=>!v.venue_name?.toLowerCase().startsWith(lower));
+        return[...starts,...contains].slice(0,5);
+      }
+
+      function renderVenues(items){
+        venueResults.innerHTML='';
+        noVenueResults.classList.add('hidden');
+        if(!items.length){noVenueResults.classList.remove('hidden');return;}
+        items.forEach(v=>{
+          const div=document.createElement('div');
+          div.className='venue-card';
+          div.innerHTML=`<div class="font-semibold">${v.venue_name}</div>
+                         <div class="text-gray-300">${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>`;
+          div.onclick=()=>{
+            venueSearch.value=v.venue_name;
+            venueId.value=v.id;
+            closeResults();
+            newVenueForm.classList.add('hidden');
+          };
+          venueResults.appendChild(div);
+        });
+      }
+
+      venueSearch.oninput=()=>{
+        clearTimeout(searchTimeout);
+        const q=venueSearch.value.trim();
+        if(!q){venueResults.innerHTML='';closeResults();return;}
+        searchTimeout=setTimeout(async()=>{
+          const list=await searchVenues(q);
+          renderVenues(list);
+          openResults();
+        },250);
+      };
+      venueSearch.onfocus=()=>{if(venueResults.children.length)openResults();};
+
+      clearBtn.onclick=()=>{
+        venueSearch.value='';
+        venueId.value='';
+        venueResults.innerHTML='';
+        closeResults();
+        newVenueForm.classList.add('hidden');
+      };
+
+      document.addEventListener('click',e=>{ if(!e.target.closest('.input-wrapper')) closeResults(); });
+      document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeResults(); });
+
+      noVenueResults.onclick=()=>{
+        closeResults();
+        newVenueForm.classList.remove('hidden');
+      };
+
+      createVenueBtn.onclick=async()=>{
+        const name=newVenueName.value.trim();
+        const street=newVenueStreet.value.trim();
+        const postcode=newVenuePostcode.value.trim();
+        if(!name)return;
+        const{data,error}=await supabase.from('venues')
+          .insert([{venue_name:name,street_name:street,postcode:postcode}])
+          .select('id')
+          .single();
+        if(error){console.error(error);return;}
+        venueId.value=data.id;
+        venueSearch.value=name;
+        newVenueForm.classList.add('hidden');
+        newVenueName.value=''; newVenueStreet.value=''; newVenuePostcode.value='';
+      };
+
+      const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+      const parseUK=s=>{const[dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10));return new Date(yyyy,mm-1,dd);};
+      const today=new Date();
+      const fromDateEl=document.getElementById('fromDate');
+      const toDateEl=document.getElementById('toDate');
+      fromDateEl.value=formatUK(today);
+      toDateEl.value=formatUK(today);
+      const fromTimeEl=document.getElementById('fromTime');
+      const toTimeEl=document.getElementById('toTime');
+
+      function fillTimes(sel){
+        sel.innerHTML='';
+        for(let m=0;m<24*60;m+=15){
+          const hh=Math.floor(m/60), mm=m%60;
+          const d=new Date(2000,0,1,hh,mm);
+          const label=d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
+          const val=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+          sel.add(new Option(label,val));
+        }
+      }
+      fillTimes(fromTimeEl);fillTimes(toTimeEl);
+      fromTimeEl.value='10:00';toTimeEl.value='11:00';
+
+      if (window.Datepicker) {
+        const fromPicker=new Datepicker(fromDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
+        const toPicker=new Datepicker(toDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
+        fromDateEl.onclick=()=>fromPicker.show();toDateEl.onclick=()=>toPicker.show();
+
+        fromDateEl.addEventListener('changeDate',()=>{
+          const f=parseUK(fromDateEl.value);const t=parseUK(toDateEl.value);
+          if(t<f){toDateEl.value=fromDateEl.value;toPicker.setDate(f);}
+        });
+      }
+
+      fromTimeEl.onchange=()=>{
+        const[fh,fm]=fromTimeEl.value.split(':').map(Number);
+        const[th,tm]=toTimeEl.value.split(':').map(Number);
+        const fmins=fh*60+fm,tmins=th*60+tm;
+        if(tmins<=fmins){
+          const bump=fmins+60;
+          const hh=String(Math.floor(bump/60)%24).padStart(2,'0');
+          const mm=String(bump%60).padStart(2,'0');
+          toTimeEl.value=`${hh}:${mm}`;
+        }
+      };
+
+      const repeatSelect=document.getElementById('repeatRule');
+      const repeatUntilWrap=document.getElementById('repeatUntilWrap');
+      const repeatUntilInput=document.getElementById('repeatUntil');
+
+      if (window.Datepicker) {
+        const repeatUntilPicker=new Datepicker(repeatUntilInput,{
+          autohide:true,
+          language:'en-GB',
+          format:'dd/mm/yyyy',
+          minDate: today,
+          maxDate: new Date(today.getFullYear()+1, today.getMonth(), today.getDate())
+        });
+        repeatUntilInput.onclick=()=>repeatUntilPicker.show();
+      }
+
+      repeatSelect.addEventListener('change',()=>{
+        if(repeatSelect.value!=='none'){
+          repeatUntilWrap.classList.remove('hidden');
+        } else {
+          repeatUntilWrap.classList.add('hidden');
+          repeatUntilInput.value='';
+        }
+      });
+
+      const tourBlocks = document.getElementById('tourBlocks');
+      const addTourBlock = document.getElementById('addTourBlock');
+      const tpl = document.getElementById('tourBlockTemplate');
+
+      function initTourBlock(root){
+        const vSearch = root.querySelector('.venueSearch');
+        const vId = root.querySelector('.venueId');
+        const results = root.querySelector('.results-pop');
+        const vResults = root.querySelector('.venueResults');
+        const noResults = root.querySelector('.noVenueResults');
+        const newForm = root.querySelector('.newVenueForm');
+        const clearBtn = root.querySelector('.clearVenue');
+        const removeBtn = root.querySelector('.tour-remove');
+
+        let timeout;
+
+        function open(){results.classList.remove('hidden');}
+        function close(){results.classList.add('hidden');}
+
+        async function doSearch(q){
+          const clean=q.replace(/[^a-zA-Z0-9\s'-]/g,''
