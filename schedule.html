@@ -49,27 +49,33 @@
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
 
-    /* --- VENUE DROPDOWN --- */
-    .results-pop {
+    /* --- VENUE DROPDOWN (overlay, solid backdrop, no shadow) --- */
+    .results-pop{
       position:absolute;
       left:0;
       top:calc(100% + 6px);
       width:100%;
-      z-index:60;
-    }
-    .venue-card {
-      background:#111827;
+      z-index:8000;
+      background:#0f172a;
       border:1px solid #374151;
       border-radius:12px;
-      padding:10px;
-      margin-top:6px;
-      width:100%;
+      padding:8px;
+      overflow:hidden;
     }
-    .venue-card:hover { background:#1f2937; cursor:pointer; }
-    .no-results {
+    .venue-card{
+      background:#111827;
+      border:1px solid #374151;
+      border-radius:10px;
       padding:10px;
+      width:100%;
+      transition:background .15s ease;
+    }
+    .venue-card + .venue-card{ margin-top:8px; }
+    .venue-card:hover{ background:#1f2937; cursor:pointer; }
+    .no-results{
+      padding:14px;
       background:#0f172a;
-      border-radius:12px;
+      border-radius:10px;
       text-align:center;
       font-size:0.9rem;
       color:#9ca3af;
