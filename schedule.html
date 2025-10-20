@@ -6,13 +6,10 @@
   <title>Schedule Setup – Spondle</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
-
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -180,6 +177,10 @@
     const noVenueResults=document.getElementById('noVenueResults');
     const newVenueForm=document.getElementById('newVenueForm');
     const clearBtn=document.getElementById('clearVenue');
+    const createVenueBtn=document.getElementById('createVenueBtn');
+    const newVenueName=document.getElementById('newVenueName');
+    const newVenueStreet=document.getElementById('newVenueStreet');
+    const newVenuePostcode=document.getElementById('newVenuePostcode');
     let searchTimeout;
 
     function openResults(){resultsPop.classList.remove('hidden');}
@@ -247,6 +248,22 @@
     noVenueResults.onclick=()=>{
       closeResults();
       newVenueForm.classList.remove('hidden');
+    };
+
+    // Create Venue (insert into Supabase instantly)
+    createVenueBtn.onclick=async()=>{
+      const name=newVenueName.value.trim();
+      const street=newVenueStreet.value.trim();
+      const postcode=newVenuePostcode.value.trim();
+      if(!name)return;
+      const{data,error}=await supabase.from('venues')
+        .insert([{venue_name:name,street_name:street,postcode:postcode}])
+        .select('id')
+        .single();
+      if(error){console.error(error);return;}
+      venueId.value=data.id;
+      venueSearch.value=name;
+      newVenueForm.classList.add('hidden');
     };
 
     const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
@@ -317,4 +334,4 @@
     /* ---------------------------- */
   </script>
 </body>
-</html>
+  </html>
