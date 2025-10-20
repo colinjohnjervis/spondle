@@ -73,24 +73,25 @@
     }
     .no-results:hover { background:#1b2433; }
 
-    .tabs { display:flex; gap:8px; background:#0b1220; padding:6px; border-radius:9999px; width:max-content; margin-bottom:16px; }
+    .tabs { display:flex; gap:8px; background:#0b1220; padding:6px; border-radius:9999px; width:max-content; }
     .tab-btn { padding:8px 14px; border-radius:9999px; border:1px solid #374151; background:#0f172a; color:#e5e7eb; }
     .tab-btn.active { background:#16a34a; color:#000; border-color:#16a34a; }
+
     .x-circle { position:absolute; right:8px; top:8px; width:28px; height:28px; border-radius:9999px; border:1px solid #374151; display:flex; align-items:center; justify-content:center; color:#e5e7eb; background:#0b1220; }
     .x-circle:hover { background:#1b2433; }
   </style>
 </head>
 
 <body class="flex items-start justify-center py-10">
-  <div class="w-full max-w-3xl">
-    <div class="tabs">
+  <div class="card w-full max-w-3xl p-6">
+    <h1 class="text-3xl font-bold text-white mb-4">Schedule Setup</h1>
+
+    <div class="tabs mb-6">
       <button id="tabMain" class="tab-btn active">Single / Recurring</button>
       <button id="tabTour" class="tab-btn">Tour</button>
     </div>
 
-    <div id="panelMain" class="card w-full p-6">
-      <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
-
+    <div id="panelMain">
       <div class="mb-6 relative">
         <label class="block text-sm text-gray-300 mb-2">Venue</label>
         <div class="input-wrapper relative">
@@ -168,9 +169,7 @@
       </div>
     </div>
 
-    <div id="panelTour" class="card w-full p-6 mt-6 hidden">
-      <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup – Tour</h1>
-
+    <div id="panelTour" class="hidden">
       <div id="tourBlocks" class="space-y-8"></div>
 
       <button id="addTourBlock" class="mt-6 w-full bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg">
@@ -333,8 +332,8 @@
       newVenueForm.classList.add('hidden');
     };
 
-    document.onclick=e=>{if(!e.target.closest('.input-wrapper'))closeResults();};
-    document.onkeydown=e=>{if(e.key==='Escape')closeResults();};
+    document.addEventListener('click',e=>{ if(!e.target.closest('.input-wrapper')) closeResults(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeResults(); });
 
     noVenueResults.onclick=()=>{
       closeResults();
@@ -429,27 +428,28 @@
     const tpl = document.getElementById('tourBlockTemplate');
 
     function initTourBlock(root){
-      const venueSearch = root.querySelector('.venueSearch');
-      const venueId = root.querySelector('.venueId');
-      const resultsPop = root.querySelector('.results-pop');
-      const venueResults = root.querySelector('.venueResults');
-      const noVenueResults = root.querySelector('.noVenueResults');
-      const newVenueForm = root.querySelector('.newVenueForm');
+      const vSearch = root.querySelector('.venueSearch');
+      const vId = root.querySelector('.venueId');
+      const results = root.querySelector('.results-pop');
+      const vResults = root.querySelector('.venueResults');
+      const noResults = root.querySelector('.noVenueResults');
+      const newForm = root.querySelector('.newVenueForm');
       const clearBtn = root.querySelector('.clearVenue');
       const removeBtn = root.querySelector('.tour-remove');
 
-      let searchTimeout;
+      let timeout;
 
-      function openResults(){resultsPop.classList.remove('hidden');}
-      function closeResults(){resultsPop.classList.add('hidden');}
+      function open(){results.classList.remove('hidden');}
+      function close(){results.classList.add('hidden');}
 
-      async function searchVenuesScoped(query){
-        const clean=query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
+      async function doSearch(q){
+        const clean=q.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
         if(!clean)return[];
-        const{data,error}=await supabase.from('venues')
+        const {data,error}=await supabase.from('venues')
           .select('id,venue_name,street_name,postcode')
           .ilike('venue_name',`%${clean}%`).limit(25);
         if(error){console.error(error);return[];}
-        const seen=new Set();
-        const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
-        const lowe
+        const seen=new Set(); const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
+        const lower=clean.toLowerCase();
+        const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
+        const contains=unique.filter(v=>!v.venue_name?.toL
