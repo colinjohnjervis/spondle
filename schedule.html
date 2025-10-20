@@ -91,7 +91,7 @@
       <button id="tabTour" class="tab-btn">Tour</button>
     </div>
 
-    <!-- Single / Recurring -->
+    <!-- Single / Recurring tab -->
     <div id="panelMain">
       <div class="mb-6 relative">
         <label class="block text-sm text-gray-300 mb-2">Venue</label>
@@ -170,16 +170,16 @@
       </div>
     </div>
 
-    <!-- Tour -->
+    <!-- Tour tab -->
     <div id="panelTour" class="hidden">
       <div id="tourBlocks" class="space-y-8"></div>
-
       <button id="addTourBlock" class="mt-6 w-full bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg">
         + Add another venue/date
       </button>
     </div>
   </div>
 
+  <!-- Template for a tour block (venue + dates/times; no repeat fields) -->
   <template id="tourBlockTemplate">
     <div class="relative p-4 rounded-xl border border-gray-700 bg-[#0f172a]">
       <button type="button" class="x-circle tour-remove" title="Remove">×</button>
@@ -243,7 +243,7 @@
   <script>
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dWVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
     const tabMain = document.getElementById('tabMain');
@@ -263,6 +263,7 @@
     tabMain.onclick = () => setTab('main');
     tabTour.onclick = () => setTab('tour');
 
+    /* ===== Single / Recurring logic (unchanged) ===== */
     const venueSearch=document.getElementById('venueSearch');
     const venueId=document.getElementById('venueId');
     const resultsPop=document.getElementById('resultsPop');
@@ -422,6 +423,7 @@
       }
     });
 
+    /* ===== Tour logic (add/remove blocks; each with fully working venue/date logic) ===== */
     const tourBlocks = document.getElementById('tourBlocks');
     const addTourBlock = document.getElementById('addTourBlock');
     const tpl = document.getElementById('tourBlockTemplate');
@@ -448,7 +450,4 @@
           .select('id,venue_name,street_name,postcode')
           .ilike('venue_name',`%${clean}%`).limit(25);
         if(error){console.error(error);return[];}
-        const seen=new Set(); const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
-        const lower=clean.toLowerCase();
-        const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
-        const contain
+        const seen=new Set(); c
