@@ -17,150 +17,126 @@
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
-
-    /* Datepicker popup */
-    .datepicker[role="dialog"] {
-      position: fixed !important;
-      top: 50% !important;
-      left: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      z-index: 9999 !important;
-      width: 92%; max-width: 420px;
-      background: #fff !important;
-      color: #111 !important;
-      border-radius: 16px !important;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35) !important;
-    }
-    .datepicker .days .datepicker-cell {
-      width: 44px !important;
-      height: 44px !important;
-      line-height: 44px !important;
-      border-radius: 50% !important;
-      margin: 4px !important;
-      text-align: center !important;
-    }
-    .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
-
-    /* --- Venue dropdown --- */
     .results-pop {
-      position:absolute;
-      left:-6px;
-      right:-6px;
-      top:calc(100% + 6px);
-      z-index:60;
-      background:#0f172a;
-      border-radius:12px;
-      padding:10px 10px;
+      position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
+      z-index:60; background:#0f172a; border-radius:12px; padding:10px 10px;
     }
     .venue-card {
-      background:#111827;
-      border:1px solid #374151;
-      border-radius:12px;
-      padding:12px 14px;
-      width:100%;
-      box-sizing:border-box;
-      margin:8px 0;
+      background:#111827; border:1px solid #374151; border-radius:12px;
+      padding:12px 14px; width:100%; box-sizing:border-box; margin:8px 0;
     }
     .venue-card:hover { background:#1b2433; cursor:pointer; }
     .no-results {
-      padding:12px 14px;
-      background:#111827;
-      border:1px solid #374151;
-      border-radius:12px;
-      text-align:center;
-      font-size:0.95rem;
-      color:#9ca3af;
-      margin:8px 0;
-      cursor:pointer;
+      padding:12px 14px; background:#111827; border:1px solid #374151;
+      border-radius:12px; text-align:center; font-size:0.95rem;
+      color:#9ca3af; margin:8px 0; cursor:pointer;
     }
     .no-results:hover { background:#1b2433; }
+    .tabs { display:flex; gap:8px; background:#0b1220; padding:6px; border-radius:9999px; width:max-content; margin-bottom:1.5rem; }
+    .tab-btn { padding:8px 14px; border-radius:9999px; border:1px solid #374151; background:#0f172a; color:#e5e7eb; }
+    .tab-btn.active { background:#16a34a; color:#000; border-color:#16a34a; }
   </style>
 </head>
 
 <body class="flex items-start justify-center py-10">
   <div class="card w-full max-w-xl p-6">
-    <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
+    <h1 class="text-3xl font-bold text-white mb-4">Schedule Setup</h1>
 
-    <!-- Venue Search -->
-    <div class="mb-6 relative">
-      <label class="block text-sm text-gray-300 mb-2">Venue</label>
-      <div class="input-wrapper relative">
-        <input id="venueSearch" type="text" placeholder="Search by venue name..."
-               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
-        <button id="clearVenue" type="button"
-                class="absolute right-3 top-3 text-gray-400 hover:text-gray-200"
-                aria-label="Clear">&times;</button>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button id="tabSingle" class="tab-btn active">Single / Recurring</button>
+      <button id="tabTour" class="tab-btn">Tour</button>
+    </div>
 
-        <!-- Floating Results -->
-        <div id="resultsPop" class="results-pop hidden">
-          <div id="venueResults"></div>
-          <div id="noVenueResults" class="no-results hidden">
-            No matches found.<br><span class="text-green-500 underline">+ Add new venue</span>
+    <!-- Single / Recurring Panel -->
+    <div id="panelSingle">
+      <!-- Venue Search -->
+      <div class="mb-6 relative">
+        <label class="block text-sm text-gray-300 mb-2">Venue</label>
+        <div class="input-wrapper relative">
+          <input id="venueSearch" type="text" placeholder="Search by venue name..."
+                 class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+          <button id="clearVenue" type="button"
+                  class="absolute right-3 top-3 text-gray-400 hover:text-gray-200"
+                  aria-label="Clear">&times;</button>
+          <div id="resultsPop" class="results-pop hidden">
+            <div id="venueResults"></div>
+            <div id="noVenueResults" class="no-results hidden">
+              No matches found.<br><span class="text-green-500 underline">+ Add new venue</span>
+            </div>
           </div>
+        </div>
+
+        <input id="venueId" type="text" readonly placeholder="Venue ID will appear here"
+               class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
+
+        <div id="newVenueForm" class="hidden mt-4 space-y-2">
+          <input id="newVenueName" type="text" placeholder="Venue name" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
+          <input id="newVenueStreet" type="text" placeholder="Street address" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
+          <input id="newVenuePostcode" type="text" placeholder="Postcode" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
+          <button id="createVenueBtn" class="bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
         </div>
       </div>
 
-      <input id="venueId" type="text" readonly placeholder="Venue ID will appear here"
-             class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
-
-      <div id="newVenueForm" class="hidden mt-4 space-y-2">
-        <input id="newVenueName" type="text" placeholder="Venue name" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
-        <input id="newVenueStreet" type="text" placeholder="Street address" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
-        <input id="newVenuePostcode" type="text" placeholder="Postcode" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
-        <button id="createVenueBtn" class="bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+      <!-- From Date + Time -->
+      <div class="grid grid-cols-2 gap-4 items-end">
+        <div>
+          <label class="block text-sm text-gray-300 mb-2">From</label>
+          <input id="fromDate" type="text" readonly
+                 class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+                 placeholder="DD/MM/YYYY" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-2">Time</label>
+          <select id="fromTime"
+                  class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+        </div>
       </div>
-    </div>
 
-    <!-- From Date + Time -->
-    <div class="grid grid-cols-2 gap-4 items-end">
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">From</label>
-        <input id="fromDate" type="text" readonly
+      <!-- To Date + Time -->
+      <div class="grid grid-cols-2 gap-4 items-end mt-6">
+        <div>
+          <label class="block text-sm text-gray-300 mb-2">To</label>
+          <input id="toDate" type="text" readonly
+                 class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
+                 placeholder="DD/MM/YYYY" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-2">Time</label>
+          <select id="toTime"
+                  class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+        </div>
+      </div>
+
+      <!-- Repeat -->
+      <div class="mt-6">
+        <label class="block text-sm text-gray-300 mb-2">Repeat</label>
+        <select id="repeatRule"
+                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+          <option value="none">Does not repeat</option>
+          <option value="daily">Every day</option>
+          <option value="weekly">Every week</option>
+          <option value="biweekly">Every 2 weeks</option>
+          <option value="monthly">Every month</option>
+          <option value="yearly">Every year</option>
+        </select>
+      </div>
+
+      <!-- Repeat until -->
+      <div id="repeatUntilWrap" class="mt-6 hidden">
+        <label class="block text-sm text-gray-300 mb-2">Repeat until</label>
+        <input id="repeatUntil" type="text" readonly
                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
                placeholder="DD/MM/YYYY" />
       </div>
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">Time</label>
-        <select id="fromTime"
-                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
-      </div>
     </div>
 
-    <!-- To Date + Time -->
-    <div class="grid grid-cols-2 gap-4 items-end mt-6">
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">To</label>
-        <input id="toDate" type="text" readonly
-               class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-               placeholder="DD/MM/YYYY" />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">Time</label>
-        <select id="toTime"
-                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
-      </div>
-    </div>
-
-    <!-- Repeat -->
-    <div class="mt-6">
-      <label class="block text-sm text-gray-300 mb-2">Repeat</label>
-      <select id="repeatRule"
-              class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
-        <option value="none">Does not repeat</option>
-        <option value="daily">Every day</option>
-        <option value="weekly">Every week</option>
-        <option value="biweekly">Every 2 weeks</option>
-        <option value="monthly">Every month</option>
-        <option value="yearly">Every year</option>
-      </select>
-    </div>
-
-    <!-- Repeat until -->
-    <div id="repeatUntilWrap" class="mt-6 hidden">
-      <label class="block text-sm text-gray-300 mb-2">Repeat until</label>
-      <input id="repeatUntil" type="text" readonly
-             class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"
-             placeholder="DD/MM/YYYY" />
+    <!-- Tour Panel -->
+    <div id="panelTour" class="hidden">
+      <p class="text-gray-400 mb-4">Add venues and dates for tour stops here.</p>
+      <button id="addTourBtn" class="bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">
+        + Add another venue/date
+      </button>
     </div>
   </div>
 
@@ -170,6 +146,30 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
+    /* --- Tabs --- */
+    const tabSingle=document.getElementById('tabSingle');
+    const tabTour=document.getElementById('tabTour');
+    const panelSingle=document.getElementById('panelSingle');
+    const panelTour=document.getElementById('panelTour');
+    function setTab(active){
+      if(active==='single'){
+        tabSingle.classList.add('active');
+        tabTour.classList.remove('active');
+        panelSingle.classList.remove('hidden');
+        panelTour.classList.add('hidden');
+      }else{
+        tabTour.classList.add('active');
+        tabSingle.classList.remove('active');
+        panelTour.classList.remove('hidden');
+        panelSingle.classList.add('hidden');
+      }
+    }
+    tabSingle.onclick=()=>setTab('single');
+    tabTour.onclick=()=>setTab('tour');
+    setTab('single');
+    /* ------------- */
+
+    /* --- Original JS preserved --- */
     const venueSearch=document.getElementById('venueSearch');
     const venueId=document.getElementById('venueId');
     const resultsPop=document.getElementById('resultsPop');
@@ -187,7 +187,7 @@
     function closeResults(){resultsPop.classList.add('hidden');}
 
     async function searchVenues(query){
-      const clean=query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
+      const clean=query.replace(/[^a-zA-Z0-9\\s'-]/g,'').trim();
       if(!clean)return[];
       const{data,error}=await supabase.from('venues')
         .select('id,venue_name,street_name,postcode')
@@ -231,8 +231,6 @@
       },250);
     };
     venueSearch.onfocus=()=>{if(venueResults.children.length)openResults();};
-
-    // Clear search + close new venue form
     clearBtn.onclick=()=>{
       venueSearch.value='';
       venueId.value='';
@@ -240,17 +238,13 @@
       closeResults();
       newVenueForm.classList.add('hidden');
     };
-
     document.onclick=e=>{if(!e.target.closest('.input-wrapper'))closeResults();};
     document.onkeydown=e=>{if(e.key==='Escape')closeResults();};
-
-    // Fully clickable "no results" box
     noVenueResults.onclick=()=>{
       closeResults();
       newVenueForm.classList.remove('hidden');
     };
 
-    // ✅ Create Venue (instant insert + clear form on success)
     createVenueBtn.onclick=async()=>{
       const name=newVenueName.value.trim();
       const street=newVenueStreet.value.trim();
@@ -264,7 +258,6 @@
       venueId.value=data.id;
       venueSearch.value=name;
       newVenueForm.classList.add('hidden');
-      // Clear form fields after successful insert
       newVenueName.value='';
       newVenueStreet.value='';
       newVenuePostcode.value='';
@@ -279,7 +272,6 @@
     toDateEl.value=formatUK(today);
     const fromTimeEl=document.getElementById('fromTime');
     const toTimeEl=document.getElementById('toTime');
-
     function fillTimes(sel){
       sel.innerHTML='';
       for(let m=0;m<24*60;m+=15){
@@ -292,11 +284,9 @@
     }
     fillTimes(fromTimeEl);fillTimes(toTimeEl);
     fromTimeEl.value='10:00';toTimeEl.value='11:00';
-
     const fromPicker=new Datepicker(fromDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
     const toPicker=new Datepicker(toDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
     fromDateEl.onclick=()=>fromPicker.show();toDateEl.onclick=()=>toPicker.show();
-
     fromDateEl.addEventListener('changeDate',()=>{
       const f=parseUK(fromDateEl.value);const t=parseUK(toDateEl.value);
       if(t<f){toDateEl.value=fromDateEl.value;toPicker.setDate(f);}
@@ -312,12 +302,9 @@
         toTimeEl.value=`${hh}:${mm}`;
       }
     };
-
-    /* ---- Repeat Until Logic ---- */
     const repeatSelect=document.getElementById('repeatRule');
     const repeatUntilWrap=document.getElementById('repeatUntilWrap');
     const repeatUntilInput=document.getElementById('repeatUntil');
-
     const repeatUntilPicker=new Datepicker(repeatUntilInput,{
       autohide:true,
       language:'en-GB',
@@ -326,7 +313,6 @@
       maxDate: new Date(today.getFullYear()+1, today.getMonth(), today.getDate())
     });
     repeatUntilInput.onclick=()=>repeatUntilPicker.show();
-
     repeatSelect.addEventListener('change',()=>{
       if(repeatSelect.value!=='none'){
         repeatUntilWrap.classList.remove('hidden');
