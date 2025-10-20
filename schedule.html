@@ -20,20 +20,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ---------------------------------
-       START: PAGE THEME (Spondle)
-    ---------------------------------- */
-    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    /* --- GENERAL THEME --- */
+    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
-    /* ---------------------------------
-       END: PAGE THEME (Spondle)
-    ---------------------------------- */
 
-    /* ---------------------------------
-       START: DATEPICKER POPUP (Google-ish)
-    ---------------------------------- */
+    /* --- DATE PICKER --- */
     .datepicker[role="dialog"] {
       position: fixed !important;
       top: 50% !important;
@@ -45,7 +38,6 @@
       color: #111 !important;
       border-radius: 16px !important;
       box-shadow: 0 20px 60px rgba(0,0,0,.35) !important;
-      border: none !important;
     }
     .datepicker .days .datepicker-cell {
       width: 44px !important;
@@ -58,16 +50,9 @@
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
     .datepicker-cell:hover { background:#e5e7eb !important; }
     .datepicker-controls { padding: 10px 14px !important; }
-    .datepicker-controls button { color:#111 !important; }
     .datepicker-footer { display:none; }
-    /* ---------------------------------
-       END: DATEPICKER POPUP (Google-ish)
-    ---------------------------------- */
 
-    /* ---------------------------------
-       START: VENUE RESULTS LOOK & FEEL
-       (visuals same as before)
-    ---------------------------------- */
+    /* --- VENUE DROPDOWN --- */
     .venue-card {
       background:#111827;
       border:1px solid #374151;
@@ -76,26 +61,22 @@
       margin-top:6px;
     }
     .venue-card:hover { background:#1f2937; cursor:pointer; }
-    /* Floating dropdown container */
     .results-pop {
-      position: absolute;
-      left: 0;
-      top: calc(100% + 6px); /* slight gap under input */
-      width: 100%;
-      z-index: 60;           /* above form elements */
+      position:absolute;
+      left:0;
+      top:calc(100% + 6px);
+      width:100%;
+      z-index:60;
     }
     .results-panel {
       background:#0f172a;
       border:1px solid #374151;
       border-radius:12px;
       padding:10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.45);
-      max-height: 18rem;     /* prevent huge lists */
-      overflow: auto;
+      box-shadow:0 10px 30px rgba(0,0,0,.45);
+      overflow:visible;     /* expand naturally */
+      max-height:none;      /* remove scroll restriction */
     }
-    /* ---------------------------------
-       END: VENUE RESULTS LOOK & FEEL
-    ---------------------------------- */
   </style>
 </head>
 
@@ -103,13 +84,9 @@
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <!-- =========================
-         VENUE (search / results float)
-    ========================== -->
+    <!-- Venue Search -->
     <div class="mb-6">
       <label class="block text-sm text-gray-300 mb-2">Venue</label>
-
-      <!-- The wrapper is relative so the floating results can anchor to it -->
       <div class="input-wrapper relative">
         <input id="venueSearch" type="text" placeholder="Search by venue name..."
                class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
@@ -117,7 +94,7 @@
                 class="absolute right-3 top-3 text-gray-400 hover:text-gray-200"
                 aria-label="Clear">&times;</button>
 
-        <!-- Floating results (moved inside wrapper so it pins under field) -->
+        <!-- Floating Results -->
         <div id="resultsPop" class="results-pop hidden">
           <div class="results-panel">
             <div id="venueResults"></div>
@@ -129,11 +106,9 @@
         </div>
       </div>
 
-      <!-- Selected venue ID (kept as-is) -->
       <input id="venueId" type="text" readonly placeholder="Venue ID will appear here"
              class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
-      
-      <!-- Inline "Add new venue" form -->
+
       <div id="newVenueForm" class="hidden mt-4 space-y-2">
         <input id="newVenueName" type="text" placeholder="Venue name" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
         <input id="newVenueStreet" type="text" placeholder="Street address" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
@@ -142,9 +117,7 @@
       </div>
     </div>
 
-    <!-- =========================
-         FROM (date + time)
-    ========================== -->
+    <!-- Schedule From -->
     <div class="grid grid-cols-2 gap-4 items-end">
       <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
@@ -159,9 +132,7 @@
       </div>
     </div>
 
-    <!-- =========================
-         TO (date + time)
-    ========================== -->
+    <!-- Schedule To -->
     <div class="grid grid-cols-2 gap-4 items-end mt-6">
       <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
@@ -176,9 +147,7 @@
       </div>
     </div>
 
-    <!-- =========================
-         REPEAT
-    ========================== -->
+    <!-- Repeat -->
     <div class="mt-6">
       <label class="block text-sm text-gray-300 mb-2">Repeat</label>
       <select id="repeatRule"
@@ -194,249 +163,81 @@
   </div>
 
   <script>
-    /* ---------------------------------
-       START: SUPABASE INIT
-    ---------------------------------- */
+    /* --- Supabase --- */
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
-    /* ---------------------------------
-       END: SUPABASE INIT
-    ---------------------------------- */
 
-    /* ---------------------------------
-       START: VENUE SEARCH LOGIC
-       (limit 5, starts-with priority,
-        floating dropdown, auto-close)
-    ---------------------------------- */
-    const venueSearch      = document.getElementById('venueSearch');
-    const venueId          = document.getElementById('venueId');
-    const resultsPop       = document.getElementById('resultsPop');
-    const venueResults     = document.getElementById('venueResults');
-    const noVenueResults   = document.getElementById('noVenueResults');
-    const newVenueForm     = document.getElementById('newVenueForm');
-    const clearBtn         = document.getElementById('clearVenue');
-    const addNewBtn        = document.getElementById('showNewVenueForm');
-
+    const venueSearch = document.getElementById('venueSearch');
+    const venueId = document.getElementById('venueId');
+    const resultsPop = document.getElementById('resultsPop');
+    const venueResults = document.getElementById('venueResults');
+    const noVenueResults = document.getElementById('noVenueResults');
+    const newVenueForm = document.getElementById('newVenueForm');
+    const clearBtn = document.getElementById('clearVenue');
+    const addNewBtn = document.getElementById('showNewVenueForm');
     let searchTimeout;
 
-    function openResults()  { resultsPop.classList.remove('hidden'); }
-    function closeResults() { resultsPop.classList.add('hidden'); }
+    function openResults(){ resultsPop.classList.remove('hidden'); }
+    function closeResults(){ resultsPop.classList.add('hidden'); }
 
-    async function searchVenues(query) {
-      const cleanQuery = query.replace(/[^a-zA-Z0-9\s'-]/g, '').trim();
-      if (!cleanQuery) return [];
+    async function searchVenues(query){
+      const clean = query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
+      if(!clean) return [];
 
       const { data, error } = await supabase
         .from('venues')
         .select('id, venue_name, street_name, postcode')
-        .ilike('venue_name', `%${cleanQuery}%`)
-        .limit(25); // fetch more; we’ll prioritise client-side
+        .ilike('venue_name', `%${clean}%`)
+        .limit(25);
 
-      if (error) {
-        console.error(error);
-        return [];
-      }
+      if(error){ console.error(error); return []; }
 
-      // Deduplicate and prioritise starts-with
-      const seen = new Set();
-      const unique = data.filter(v => {
-        if (seen.has(v.id)) return false;
-        seen.add(v.id);
-        return true;
-      });
-
-      const lower = cleanQuery.toLowerCase();
-      const starts = unique.filter(v => v.venue_name?.toLowerCase().startsWith(lower));
-      const contains = unique.filter(v => !v.venue_name?.toLowerCase().startsWith(lower));
-      const sorted = [...starts, ...contains];
-
-      return sorted.slice(0, 5);
+      const seen=new Set();
+      const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
+      const lower=clean.toLowerCase();
+      const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
+      const contains=unique.filter(v=>!v.venue_name?.toLowerCase().startsWith(lower));
+      const sorted=[...starts,...contains];
+      return sorted.slice(0,5);
     }
 
-    function renderVenues(items) {
-      venueResults.innerHTML = '';
+    function renderVenues(items){
+      venueResults.innerHTML='';
       noVenueResults.classList.add('hidden');
+      if(!items.length){ noVenueResults.classList.remove('hidden'); return; }
 
-      if (!items || items.length === 0) {
-        noVenueResults.classList.remove('hidden');
-        return;
-      }
-
-      items.forEach(v => {
-        const row = document.createElement('div');
-        row.className = 'venue-card';
-        row.innerHTML = `
-          <strong>${v.venue_name}</strong><br>
-          ${v.street_name || ''}${v.postcode ? ', ' + v.postcode : ''}
-        `;
-        row.addEventListener('click', () => {
-          venueSearch.value = v.venue_name;
-          venueId.value = v.id;
+      items.forEach(v=>{
+        const div=document.createElement('div');
+        div.className='venue-card';
+        div.innerHTML=`<strong>${v.venue_name}</strong><br>${v.street_name||''}${v.postcode?', '+v.postcode:''}`;
+        div.onclick=()=>{
+          venueSearch.value=v.venue_name;
+          venueId.value=v.id;
           closeResults();
           newVenueForm.classList.add('hidden');
-
-          // brief highlight feedback
-          row.style.background = '#22c55e';
-          row.style.color = '#111';
-          setTimeout(() => { row.style.background = '#1f2937'; row.style.color = ''; }, 450);
-        });
-        venueResults.appendChild(row);
+        };
+        venueResults.appendChild(div);
       });
     }
 
-    venueSearch.addEventListener('input', () => {
+    venueSearch.oninput=()=>{
       clearTimeout(searchTimeout);
-      const query = venueSearch.value.trim();
-      if (!query) {
-        venueResults.innerHTML = '';
-        closeResults();
-        noVenueResults.classList.add('hidden');
-        return;
-      }
-
-      searchTimeout = setTimeout(async () => {
-        const venues = await searchVenues(query);
-        renderVenues(venues);
+      const q=venueSearch.value.trim();
+      if(!q){venueResults.innerHTML='';closeResults();return;}
+      searchTimeout=setTimeout(async()=>{
+        const list=await searchVenues(q);
+        renderVenues(list);
         openResults();
-      }, 250);
-    });
-
-    venueSearch.addEventListener('focus', () => {
-      if (venueResults.children.length || !noVenueResults.classList.contains('hidden')) openResults();
-    });
-
-    clearBtn.addEventListener('click', () => {
-      venueSearch.value = '';
-      venueId.value = '';
-      venueResults.innerHTML = '';
-      noVenueResults.classList.add('hidden');
-      newVenueForm.classList.add('hidden');
-      closeResults();
-      venueSearch.focus();
-    });
-
-    addNewBtn.addEventListener('click', () => {
-      newVenueForm.classList.toggle('hidden');
-    });
-
-    // Click-away / Escape to close
-    document.addEventListener('click', (e) => {
-      const wrapper = e.target.closest('.input-wrapper');
-      if (!wrapper) closeResults();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeResults();
-    });
-
-    // Create venue
-    document.getElementById('createVenueBtn').addEventListener('click', async () => {
-      const name = document.getElementById('newVenueName').value.trim();
-      const street = document.getElementById('newVenueStreet').value.trim();
-      const postcode = document.getElementById('newVenuePostcode').value.trim();
-
-      if (!name) return alert('Enter a venue name');
-
-      const { data, error } = await supabase
-        .from('venues')
-        .insert([{ venue_name: name, street_name: street, postcode }])
-        .select('id');
-
-      if (error) return alert('Error creating venue');
-
-      venueSearch.value = name;
-      venueId.value = data[0].id;
-      newVenueForm.classList.add('hidden');
-      venueResults.innerHTML = '';
-      noVenueResults.classList.add('hidden');
-      closeResults();
-    });
-    /* ---------------------------------
-       END: VENUE SEARCH LOGIC
-    ---------------------------------- */
-
-    /* ---------------------------------
-       START: DATE & TIME LOGIC (UK)
-    ---------------------------------- */
-    const formatUK = (d) =>
-      `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-
-    const parseUK = (str) => {
-      const [dd, mm, yyyy] = str.split('/').map(v => parseInt(v, 10));
-      return new Date(yyyy, mm - 1, dd);
+      },250);
     };
+    venueSearch.onfocus=()=>{ if(venueResults.children.length) openResults(); };
+    clearBtn.onclick=()=>{ venueSearch.value=''; venueId.value=''; venueResults.innerHTML=''; closeResults(); };
 
-    const today = new Date();
-    const fromDateEl = document.getElementById('fromDate');
-    const toDateEl   = document.getElementById('toDate');
-    fromDateEl.value = formatUK(today);
-    toDateEl.value   = formatUK(today);
-
-    const fromTimeEl = document.getElementById('fromTime');
-    const toTimeEl   = document.getElementById('toTime');
-
-    function fillTimes(selectEl) {
-      selectEl.innerHTML = '';
-      for (let m = 0; m < 24 * 60; m += 15) {
-        const hh = Math.floor(m / 60);
-        const mm = m % 60;
-        const d = new Date(2000, 0, 1, hh, mm);
-        const label = d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' });
-        const value = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
-        const opt = new Option(label, value);
-        selectEl.add(opt);
-      }
-    }
-    fillTimes(fromTimeEl);
-    fillTimes(toTimeEl);
-    fromTimeEl.value = '10:00';
-    toTimeEl.value   = '11:00';
-
-    const fromPicker = new Datepicker(fromDateEl, {
-      autohide: true,
-      defaultDate: today,
-      language: 'en-GB',
-      format: 'dd/mm/yyyy',
-      orientation: 'bottom',
-    });
-
-    const toPicker = new Datepicker(toDateEl, {
-      autohide: true,
-      defaultDate: today,
-      language: 'en-GB',
-      format: 'dd/mm/yyyy',
-      orientation: 'bottom',
-    });
-
-    fromDateEl.addEventListener('click', () => fromPicker.show());
-    toDateEl  .addEventListener('click', () => toPicker.show());
-
-    fromDateEl.addEventListener('changeDate', () => {
-      const f = parseUK(fromDateEl.value);
-      const t = parseUK(toDateEl.value);
-      if (t < f) {
-        toDateEl.value = fromDateEl.value;
-        toPicker.setDate(f);
-      }
-    });
-
-    fromTimeEl.addEventListener('change', () => {
-      const [fh, fm] = fromTimeEl.value.split(':').map(Number);
-      const [th, tm] = toTimeEl.value.split(':').map(Number);
-      const fmins = fh * 60 + fm;
-      const tmins = th * 60 + tm;
-      if (tmins <= fmins) {
-        const bumped = fmins + 60;
-        const hh = String(Math.floor(bumped / 60) % 24).padStart(2, '0');
-        const mm = String(bumped % 60).padStart(2, '0');
-        toTimeEl.value = `${hh}:${mm}`;
-      }
-    });
-    /* ---------------------------------
-       END: DATE & TIME LOGIC (UK)
-    ---------------------------------- */
+    addNewBtn.onclick=()=>{ newVenueForm.classList.toggle('hidden'); };
+    document.onclick=e=>{ if(!e.target.closest('.input-wrapper')) closeResults(); };
+    document.onkeydown=e=>{ if(e.key==='Escape') closeResults(); };
   </script>
 </body>
 </html>
