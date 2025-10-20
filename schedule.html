@@ -75,7 +75,7 @@
       padding:10px;
       box-shadow:0 10px 30px rgba(0,0,0,.45);
       overflow:visible;     /* expand naturally */
-      max-height:none;      /* remove scroll restriction */
+      max-height:none;      /* no scroll restriction */
     }
   </style>
 </head>
@@ -117,7 +117,7 @@
       </div>
     </div>
 
-    <!-- Schedule From -->
+    <!-- From Date + Time -->
     <div class="grid grid-cols-2 gap-4 items-end">
       <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
@@ -132,7 +132,7 @@
       </div>
     </div>
 
-    <!-- Schedule To -->
+    <!-- To Date + Time -->
     <div class="grid grid-cols-2 gap-4 items-end mt-6">
       <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
@@ -163,37 +163,33 @@
   </div>
 
   <script>
-    /* --- Supabase --- */
+    /* --- Supabase Init --- */
     const supabase = window.supabase.createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
-    const venueSearch = document.getElementById('venueSearch');
-    const venueId = document.getElementById('venueId');
-    const resultsPop = document.getElementById('resultsPop');
-    const venueResults = document.getElementById('venueResults');
-    const noVenueResults = document.getElementById('noVenueResults');
-    const newVenueForm = document.getElementById('newVenueForm');
-    const clearBtn = document.getElementById('clearVenue');
-    const addNewBtn = document.getElementById('showNewVenueForm');
+    /* --- Venue Search --- */
+    const venueSearch=document.getElementById('venueSearch');
+    const venueId=document.getElementById('venueId');
+    const resultsPop=document.getElementById('resultsPop');
+    const venueResults=document.getElementById('venueResults');
+    const noVenueResults=document.getElementById('noVenueResults');
+    const newVenueForm=document.getElementById('newVenueForm');
+    const clearBtn=document.getElementById('clearVenue');
+    const addNewBtn=document.getElementById('showNewVenueForm');
     let searchTimeout;
 
-    function openResults(){ resultsPop.classList.remove('hidden'); }
-    function closeResults(){ resultsPop.classList.add('hidden'); }
+    function openResults(){resultsPop.classList.remove('hidden');}
+    function closeResults(){resultsPop.classList.add('hidden');}
 
     async function searchVenues(query){
-      const clean = query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
-      if(!clean) return [];
-
-      const { data, error } = await supabase
-        .from('venues')
-        .select('id, venue_name, street_name, postcode')
-        .ilike('venue_name', `%${clean}%`)
-        .limit(25);
-
-      if(error){ console.error(error); return []; }
-
+      const clean=query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
+      if(!clean)return[];
+      const{data,error}=await supabase.from('venues')
+        .select('id,venue_name,street_name,postcode')
+        .ilike('venue_name',`%${clean}%`).limit(25);
+      if(error){console.error(error);return[];}
       const seen=new Set();
       const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
       const lower=clean.toLowerCase();
@@ -206,8 +202,7 @@
     function renderVenues(items){
       venueResults.innerHTML='';
       noVenueResults.classList.add('hidden');
-      if(!items.length){ noVenueResults.classList.remove('hidden'); return; }
-
+      if(!items.length){noVenueResults.classList.remove('hidden');return;}
       items.forEach(v=>{
         const div=document.createElement('div');
         div.className='venue-card';
@@ -232,12 +227,46 @@
         openResults();
       },250);
     };
-    venueSearch.onfocus=()=>{ if(venueResults.children.length) openResults(); };
-    clearBtn.onclick=()=>{ venueSearch.value=''; venueId.value=''; venueResults.innerHTML=''; closeResults(); };
+    venueSearch.onfocus=()=>{if(venueResults.children.length)openResults();};
+    clearBtn.onclick=()=>{venueSearch.value='';venueId.value='';venueResults.innerHTML='';closeResults();};
+    addNewBtn.onclick=()=>{newVenueForm.classList.toggle('hidden');};
+    document.onclick=e=>{if(!e.target.closest('.input-wrapper'))closeResults();};
+    document.onkeydown=e=>{if(e.key==='Escape')closeResults();};
 
-    addNewBtn.onclick=()=>{ newVenueForm.classList.toggle('hidden'); };
-    document.onclick=e=>{ if(!e.target.closest('.input-wrapper')) closeResults(); };
-    document.onkeydown=e=>{ if(e.key==='Escape') closeResults(); };
+    /* --- Date & Time --- */
+    const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const parseUK=s=>{const[dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10));return new Date(yyyy,mm-1,dd);};
+    const today=new Date();
+    const fromDateEl=document.getElementById('fromDate');
+    const toDateEl=document.getElementById('toDate');
+    fromDateEl.value=formatUK(today);
+    toDateEl.value=formatUK(today);
+    const fromTimeEl=document.getElementById('fromTime');
+    const toTimeEl=document.getElementById('toTime');
+
+    function fillTimes(sel){sel.innerHTML='';for(let m=0;m<24*60;m+=15){const hh=Math.floor(m/60);const mm=m%60;
+      const d=new Date(2000,0,1,hh,mm);
+      const label=d.toLocaleTimeString('en-GB',{hour:'numeric',minute:'2-digit'});
+      const val=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+      sel.add(new Option(label,val));
+    }}
+    fillTimes(fromTimeEl);fillTimes(toTimeEl);
+    fromTimeEl.value='10:00';toTimeEl.value='11:00';
+
+    const fromPicker=new Datepicker(fromDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
+    const toPicker=new Datepicker(toDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
+    fromDateEl.onclick=()=>fromPicker.show();toDateEl.onclick=()=>toPicker.show();
+
+    fromDateEl.addEventListener('changeDate',()=>{
+      const f=parseUK(fromDateEl.value);const t=parseUK(toDateEl.value);
+      if(t<f){toDateEl.value=fromDateEl.value;toPicker.setDate(f);}
+    });
+    fromTimeEl.onchange=()=>{
+      const[fh,fm]=fromTimeEl.value.split(':').map(Number);
+      const[th,tm]=toTimeEl.value.split(':').map(Number);
+      const fmins=fh*60+fm,tmins=th*60+tm;
+      if(tmins<=fmins){const bump=fmins+60;const hh=String(Math.floor(bump/60)%24).padStart(2,'0');const mm=String(bump%60).padStart(2,'0');toTimeEl.value=`${hh}:${mm}`;}
+    };
   </script>
 </body>
 </html>
