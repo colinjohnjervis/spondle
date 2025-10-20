@@ -230,7 +230,16 @@
       },250);
     };
     venueSearch.onfocus=()=>{if(venueResults.children.length)openResults();};
-    clearBtn.onclick=()=>{venueSearch.value='';venueId.value='';venueResults.innerHTML='';closeResults();};
+
+    // Clear search + close new venue form
+    clearBtn.onclick=()=>{
+      venueSearch.value='';
+      venueId.value='';
+      venueResults.innerHTML='';
+      closeResults();
+      newVenueForm.classList.add('hidden');
+    };
+
     document.onclick=e=>{if(!e.target.closest('.input-wrapper'))closeResults();};
     document.onkeydown=e=>{if(e.key==='Escape')closeResults();};
 
