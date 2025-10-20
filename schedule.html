@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
@@ -20,7 +21,7 @@
       const venueResults = document.getElementById("venueResults");
       const venueIdField = document.getElementById("venueId");
 
-      // Fetch venues from Supabase
+      // Venue search
       venueSearch.addEventListener("input", async (e) => {
         const query = e.target.value.trim();
         venueResults.innerHTML = "";
@@ -45,23 +46,18 @@
           return;
         }
 
-        venueResults.innerHTML = data
-          .map(
-            (v) => `
+        venueResults.innerHTML = data.map(v => `
           <div class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 cursor-pointer transition"
                data-id="${v.id}" data-name="${v.venue_name}">
             <p class="font-semibold text-white">${v.venue_name}</p>
-            <p class="text-sm text-gray-300">${v.street_name || ""}${
-              v.postcode ? ", " + v.postcode : ""
-            }</p>
-          </div>`
-          )
-          .join("");
+            <p class="text-sm text-gray-300">${v.street_name || ""}${v.postcode ? ", " + v.postcode : ""}</p>
+          </div>
+        `).join("");
 
         venueResults.classList.remove("hidden");
       });
 
-      // Handle selection
+      // Venue select
       venueResults.addEventListener("click", (e) => {
         const card = e.target.closest("[data-id]");
         if (!card) return;
@@ -70,7 +66,7 @@
         venueResults.classList.add("hidden");
       });
 
-      // Hide results when clicking elsewhere
+      // Click outside
       document.addEventListener("click", (e) => {
         if (!venueResults.contains(e.target) && e.target !== venueSearch) {
           venueResults.classList.add("hidden");
@@ -102,10 +98,24 @@
       });
     });
   </script>
+
+  <style>
+    /* Dropdown styling pinned to input, full width, no shadow */
+    #venueResults {
+      background-color: #0f172a;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 6px;
+      border-radius: 0.75rem;
+      z-index: 50;
+    }
+  </style>
 </head>
 
-<body class="bg-black text-white min-h-screen flex justify-center p-4">
-  <div class="w-full max-w-md bg-slate-900 rounded-2xl p-6">
+<body class="bg-black text-white min-h-screen p-4">
+  <div class="bg-slate-900 rounded-2xl p-6">
     <h1 class="text-3xl font-bold mb-4">Schedule Setup</h1>
 
     <!-- Venue -->
@@ -118,13 +128,14 @@
         class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 focus:border-green-500 focus:ring-0"
         autocomplete="off"
       />
-      <input id="venueId" type="text" class="w-full p-3 rounded-xl bg-slate-800 mt-2 text-gray-400" readonly value="Venue ID will appear here" />
-
-      <!-- Results Dropdown -->
-      <div
-        id="venueResults"
-        class="absolute w-full bg-[#0f172a] rounded-xl mt-2 z-50 hidden"
-      ></div>
+      <input
+        id="venueId"
+        type="text"
+        class="w-full p-3 rounded-xl bg-slate-800 mt-2 text-gray-400"
+        readonly
+        value="Venue ID will appear here"
+      />
+      <div id="venueResults" class="hidden"></div>
     </div>
 
     <!-- Dates -->
