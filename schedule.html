@@ -74,7 +74,9 @@
       font-size:0.95rem;
       color:#9ca3af;
       margin:8px 0;
+      cursor:pointer;
     }
+    .no-results:hover { background:#1b2433; }
   </style>
 </head>
 
@@ -96,8 +98,7 @@
         <div id="resultsPop" class="results-pop hidden">
           <div id="venueResults"></div>
           <div id="noVenueResults" class="no-results hidden">
-            No matches found.
-            <button id="showNewVenueForm" class="text-green-500 underline ml-1">+ Add new venue</button>
+            No matches found.<br><span class="text-green-500 underline">+ Add new venue</span>
           </div>
         </div>
       </div>
@@ -179,7 +180,6 @@
     const noVenueResults=document.getElementById('noVenueResults');
     const newVenueForm=document.getElementById('newVenueForm');
     const clearBtn=document.getElementById('clearVenue');
-    const addNewBtn=document.getElementById('showNewVenueForm');
     let searchTimeout;
 
     function openResults(){resultsPop.classList.remove('hidden');}
@@ -197,8 +197,7 @@
       const lower=clean.toLowerCase();
       const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
       const contains=unique.filter(v=>!v.venue_name?.toLowerCase().startsWith(lower));
-      const sorted=[...starts,...contains];
-      return sorted.slice(0,5);
+      return[...starts,...contains].slice(0,5);
     }
 
     function renderVenues(items){
@@ -232,9 +231,14 @@
     };
     venueSearch.onfocus=()=>{if(venueResults.children.length)openResults();};
     clearBtn.onclick=()=>{venueSearch.value='';venueId.value='';venueResults.innerHTML='';closeResults();};
-    addNewBtn.onclick=()=>{newVenueForm.classList.toggle('hidden');};
     document.onclick=e=>{if(!e.target.closest('.input-wrapper'))closeResults();};
     document.onkeydown=e=>{if(e.key==='Escape')closeResults();};
+
+    // Fully clickable "no results" box
+    noVenueResults.onclick=()=>{
+      closeResults();
+      newVenueForm.classList.remove('hidden');
+    };
 
     const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
     const parseUK=s=>{const[dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10));return new Date(yyyy,mm-1,dd);};
