@@ -17,73 +17,31 @@
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
-
-    /* Datepicker popup */
     .datepicker[role="dialog"] {
       position: fixed !important;
-      top: 50% !important;
-      left: 50% !important;
+      top: 50% !important; left: 50% !important;
       transform: translate(-50%, -50%) !important;
-      z-index: 9999 !important;
-      width: 92%; max-width: 420px;
-      background: #fff !important;
-      color: #111 !important;
-      border-radius: 16px !important;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35) !important;
+      z-index: 9999 !important; width: 92%; max-width: 420px;
+      background: #fff !important; color: #111 !important;
+      border-radius: 16px !important; box-shadow: 0 20px 60px rgba(0,0,0,.35) !important;
     }
     .datepicker .days .datepicker-cell {
-      width: 44px !important;
-      height: 44px !important;
-      line-height: 44px !important;
-      border-radius: 50% !important;
-      margin: 4px !important;
-      text-align: center !important;
+      width: 44px !important; height: 44px !important;
+      line-height: 44px !important; border-radius: 50% !important;
+      margin: 4px !important; text-align: center !important;
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
-
-    /* Venue search dropdown */
-    .results-pop {
-      position:absolute;
-      left:-6px; right:-6px;
-      top:calc(100% + 6px);
-      z-index:60;
-      background:#0f172a;
-      border-radius:12px;
-      padding:10px 10px;
-    }
-    .venue-card {
-      background:#111827;
-      border:1px solid #374151;
-      border-radius:12px;
-      padding:12px 14px;
-      width:100%;
-      box-sizing:border-box;
-      margin:8px 0;
-    }
+    .results-pop { position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
+      z-index:60; background:#0f172a; border-radius:12px; padding:10px; }
+    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px;
+      padding:12px 14px; width:100%; box-sizing:border-box; margin:8px 0; }
     .venue-card:hover { background:#1b2433; cursor:pointer; }
-    .no-results {
-      padding:12px 14px;
-      background:#111827;
-      border:1px solid #374151;
-      border-radius:12px;
-      text-align:center;
-      font-size:0.95rem;
-      color:#9ca3af;
-      margin:8px 0;
-      cursor:pointer;
-    }
+    .no-results { padding:12px 14px; background:#111827; border:1px solid #374151;
+      border-radius:12px; text-align:center; font-size:0.95rem; color:#9ca3af; margin:8px 0; cursor:pointer; }
     .no-results:hover { background:#1b2433; }
-
-    .remove-block {
-      position:absolute; top:10px; right:10px;
-      background:#1f2937; color:#ccc;
-      border:none; border-radius:50%;
-      width:28px; height:28px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:18px; line-height:1;
-    }
-    .remove-block:hover { background:#374151; color:#fff; }
-    .divider { border-top:1px solid #334155; margin:20px 0; }
+    .remove-block { position:absolute; right:10px; top:10px; font-size:20px; color:#ccc; }
+    .remove-block:hover { color:#fff; }
+    .divider { height:1px; background:#1e293b; margin:20px 0; }
   </style>
 </head>
 
@@ -91,99 +49,70 @@
   <div class="card w-full max-w-xl p-6">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <!-- Tab buttons -->
     <div class="flex space-x-2 mb-6">
-      <button id="tabSingle" class="px-5 py-2 rounded-full bg-green-600 text-black font-semibold focus:outline-none">Single / Recurring</button>
-      <button id="tabTour" class="px-5 py-2 rounded-full bg-gray-700 text-white focus:outline-none">Tour</button>
+      <button id="tabSingle" class="bg-green-600 text-black px-4 py-2 rounded-full font-semibold">Single / Recurring</button>
+      <button id="tabTour" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold">Tour</button>
     </div>
 
-    <!-- Single / Recurring Panel -->
-    <div id="panelSingle" class="block">
-      <!-- (existing working single/recurring markup identical to before) -->
-      <div id="singleContent"></div>
+    <!-- Single/Recurring Panel -->
+    <div id="panelSingle">
+      <!-- All of your existing working single/recurring form code goes here exactly as before -->
+      <!-- No changes made here -->
     </div>
 
     <!-- Tour Panel -->
     <div id="panelTour" class="hidden">
       <div id="tourBlocksContainer" class="space-y-8"></div>
-      <button id="addTourBlockBtn"
-              class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-3 rounded-lg mt-4">
-        + Add another venue/date
-      </button>
+      <button id="addTourBlockBtn" class="mt-6 bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-3 rounded-lg w-full">+ Add another venue/date</button>
     </div>
   </div>
 
 <script>
-/* ---------- Supabase Init ---------- */
 const supabase = window.supabase.createClient(
   "https://jvuunvnbpdfrttusgelz.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
 );
 
-/* ---------- Helper Functions ---------- */
-const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-const parseUK  = s => { const [dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10)); return new Date(yyyy,mm-1,dd); };
-const today    = new Date();
-function fillTimes(sel){
-  sel.innerHTML='';
-  for(let m=0;m<24*60;m+=15){
-    const hh=Math.floor(m/60),mm=m%60;
-    const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-    sel.add(new Option(label,label));
-  }
-}
+const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+const parseUK=s=>{const[dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10));return new Date(yyyy,mm-1,dd);};
+const today=new Date();
+function fillTimes(sel){sel.innerHTML='';for(let m=0;m<24*60;m+=15){const hh=Math.floor(m/60),mm=m%60;const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;sel.add(new Option(label,label));}}
 
-/* ---------- Tabs ---------- */
-const tabSingle = document.getElementById("tabSingle");
-const tabTour   = document.getElementById("tabTour");
-const panelSingle = document.getElementById("panelSingle");
-const panelTour   = document.getElementById("panelTour");
+const tabSingle=document.getElementById('tabSingle');
+const tabTour=document.getElementById('tabTour');
+const panelSingle=document.getElementById('panelSingle');
+const panelTour=document.getElementById('panelTour');
+const tourContainer=document.getElementById('tourBlocksContainer');
+const addBtn=document.getElementById('addTourBlockBtn');
 
-tabSingle.onclick = () => setTab("single");
-tabTour.onclick   = () => setTab("tour");
+tabSingle.onclick=()=>setTab('single');
+tabTour.onclick=()=>setTab('tour');
 
 function setTab(which){
-  if(which==="single"){
-    tabSingle.classList.add("bg-green-600","text-black");
-    tabTour.classList.remove("bg-green-600","text-black");
-    panelSingle.classList.remove("hidden");
-    panelTour.classList.add("hidden");
+  if(which==='single'){
+    tabSingle.classList.add('bg-green-600','text-black');
+    tabTour.classList.remove('bg-green-600','text-black');
+    panelSingle.classList.remove('hidden');
+    panelTour.classList.add('hidden');
   }else{
-    tabTour.classList.add("bg-green-600","text-black");
-    tabSingle.classList.remove("bg-green-600","text-black");
-    panelTour.classList.remove("hidden");
-    panelSingle.classList.add("hidden");
-    if(!panelTour.dataset.initialised){
-      addTourBlock(); // one default block
-      panelTour.dataset.initialised="1";
-    }
+    tabTour.classList.add('bg-green-600','text-black');
+    tabSingle.classList.remove('bg-green-600','text-black');
+    panelTour.classList.remove('hidden');
+    panelSingle.classList.add('hidden');
+    if(!panelTour.dataset.init){addTourBlock();panelTour.dataset.init='1';}
   }
 }
 
-/* ---------- Inject Working Single/Recurring Form ---------- */
-const singleContent = document.getElementById("singleContent");
-singleContent.innerHTML = `
-  <!-- venue/date/repeat section identical to your current working version -->
-  ${document.querySelector('.card')?.dataset.placeholder || `
-  <div class='text-gray-400 text-sm'>Your existing form will appear here (identical fields preserved by script)</div>`}
-`;
-
-/* ---------- TOUR LOGIC ---------- */
-const tourContainer = document.getElementById("tourBlocksContainer");
-const addBtn = document.getElementById("addTourBlockBtn");
-
 function addTourBlock(){
-  const block = document.createElement("div");
-  block.className="relative tour-block";
-  block.innerHTML = `
+  const block=document.createElement('div');
+  block.innerHTML=`
     <button type="button" class="remove-block" title="Remove">×</button>
 
-    <!-- Venue Search -->
     <div class="mb-6 relative">
       <label class="block text-sm text-gray-300 mb-2">Venue</label>
       <div class="input-wrapper relative">
         <input type="text" placeholder="Search by venue name..." class="venueSearch input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
-        <button type="button" class="clearVenue absolute right-3 top-3 text-gray-400 hover:text-gray-200" aria-label="Clear">&times;</button>
+        <button type="button" class="clearVenue absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
         <div class="results-pop hidden">
           <div class="venueResults"></div>
           <div class="noVenueResults no-results hidden">No matches found.<br><span class="text-green-500 underline">+ Add new venue</span></div>
@@ -198,7 +127,6 @@ function addTourBlock(){
       </div>
     </div>
 
-    <!-- From Date + Time -->
     <div class="grid grid-cols-2 gap-4 items-end">
       <div>
         <label class="block text-sm text-gray-300 mb-2">From</label>
@@ -210,7 +138,6 @@ function addTourBlock(){
       </div>
     </div>
 
-    <!-- To Date + Time -->
     <div class="grid grid-cols-2 gap-4 items-end mt-6">
       <div>
         <label class="block text-sm text-gray-300 mb-2">To</label>
@@ -227,7 +154,7 @@ function addTourBlock(){
   initTourBlock(block);
 }
 
-addBtn.onclick = () => addTourBlock();
+addBtn.onclick=()=>addTourBlock();
 
 function initTourBlock(root){
   const vSearch=root.querySelector('.venueSearch');
@@ -250,30 +177,25 @@ function initTourBlock(root){
 
   function open(){results.classList.remove('hidden');}
   function close(){results.classList.add('hidden');}
-
-  async function doSearch(q){
+  async function search(q){
     const clean=q.replace(/[^a-zA-Z0-9\\s'-]/g,'').trim();
     if(!clean)return[];
-    const{data,error}=await supabase.from('venues')
-      .select('id,venue_name,street_name,postcode')
-      .ilike('venue_name',`%${clean}%`).limit(25);
+    const{data,error}=await supabase.from('venues').select('id,venue_name,street_name,postcode').ilike('venue_name',\`%\${clean}%\`).limit(25);
     if(error){console.error(error);return[];}
-    const seen=new Set();
-    const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
+    const seen=new Set();const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
     const lower=clean.toLowerCase();
     const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
     const contains=unique.filter(v=>!v.venue_name?.toLowerCase().startsWith(lower));
     return[...starts,...contains].slice(0,5);
   }
-
   function render(list){
     vResults.innerHTML='';noResults.classList.add('hidden');
     if(!list.length){noResults.classList.remove('hidden');return;}
     list.forEach(v=>{
       const div=document.createElement('div');
       div.className='venue-card';
-      div.innerHTML=`<div class="font-semibold">${v.venue_name}</div>
-                     <div class="text-gray-300">${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>`;
+      div.innerHTML=\`<div class="font-semibold">\${v.venue_name}</div>
+      <div class="text-gray-300">\${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>\`;
       div.onclick=()=>{vSearch.value=v.venue_name;vId.value=v.id;close();newForm.classList.add('hidden');};
       vResults.appendChild(div);
     });
@@ -283,53 +205,31 @@ function initTourBlock(root){
     clearTimeout(timeout);
     const q=vSearch.value.trim();
     if(!q){vResults.innerHTML='';close();return;}
-    timeout=setTimeout(async()=>{const list=await doSearch(q);render(list);open();},250);
+    timeout=setTimeout(async()=>{const list=await search(q);render(list);open();},250);
   };
   vSearch.onfocus=()=>{if(vResults.children.length)open();};
   clearBtn.onclick=()=>{vSearch.value='';vId.value='';vResults.innerHTML='';close();newForm.classList.add('hidden');};
   document.addEventListener('click',e=>{if(!root.contains(e.target)||!e.target.closest('.input-wrapper'))close();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
   noResults.onclick=()=>{close();newForm.classList.remove('hidden');};
-
   createBtn.onclick=async()=>{
     const name=nName.value.trim(),street=nStreet.value.trim(),pc=nPost.value.trim();
     if(!name)return;
-    const{data,error}=await supabase.from('venues')
-      .insert([{venue_name:name,street_name:street,postcode:pc}])
-      .select('id').single();
+    const{data,error}=await supabase.from('venues').insert([{venue_name:name,street_name:street,postcode:pc}]).select('id').single();
     if(error){console.error(error);return;}
     vId.value=data.id;vSearch.value=name;newForm.classList.add('hidden');
     nName.value='';nStreet.value='';nPost.value='';
   };
-
-  fromDate.value=formatUK(today);
-  toDate.value=formatUK(today);
-  fillTimes(fromTime);fillTimes(toTime);
-  fromTime.value='10:00';toTime.value='11:00';
+  fromDate.value=formatUK(today);toDate.value=formatUK(today);
+  fillTimes(fromTime);fillTimes(toTime);fromTime.value='10:00';toTime.value='11:00';
   const fp=new Datepicker(fromDate,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
   const tp=new Datepicker(toDate,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
   fromDate.onclick=()=>fp.show();toDate.onclick=()=>tp.show();
-  fromDate.addEventListener('changeDate',()=>{
-    const f=parseUK(fromDate.value);const t=parseUK(toDate.value);
-    if(t<f){toDate.value=fromDate.value;tp.setDate(f);}
-  });
-  fromTime.onchange=()=>{
-    const[fh,fm]=fromTime.value.split(':').map(Number);
-    const[th,tm]=toTime.value.split(':').map(Number);
-    const fmins=fh*60+fm,tmins=th*60+tm;
-    if(tmins<=fmins){
-      const bump=fmins+60;
-      const hh=String(Math.floor(bump/60)%24).padStart(2,'0');
-      const mm=String(bump%60).padStart(2,'0');
-      toTime.value=\`\${hh}:\${mm}\`;
-    }
-  };
-
+  fromDate.addEventListener('changeDate',()=>{const f=parseUK(fromDate.value);const t=parseUK(toDate.value);if(t<f){toDate.value=fromDate.value;tp.setDate(f);}});
+  fromTime.onchange=()=>{const[fh,fm]=fromTime.value.split(':').map(Number);const[th,tm]=toTime.value.split(':').map(Number);const fmins=fh*60+fm,tmins=th*60+tm;if(tmins<=fmins){const bump=fmins+60;const hh=String(Math.floor(bump/60)%24).padStart(2,'0');const mm=String(bump%60).padStart(2,'0');toTime.value=\`\${hh}:\${mm}\`;}};  
   removeBtn.onclick=()=>root.remove();
 }
-
-/* Initialise default tab */
-setTab("single");
+setTab('single');
 </script>
 </body>
 </html>
