@@ -17,6 +17,7 @@
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
+
     .datepicker[role="dialog"] {
       position: fixed !important;
       top: 50% !important; left: 50% !important;
@@ -31,6 +32,7 @@
       margin: 4px !important; text-align: center !important;
     }
     .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
+
     .results-pop { position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
       z-index:60; background:#0f172a; border-radius:12px; padding:10px; }
     .venue-card { background:#111827; border:1px solid #374151; border-radius:12px;
@@ -39,9 +41,23 @@
     .no-results { padding:12px 14px; background:#111827; border:1px solid #374151;
       border-radius:12px; text-align:center; font-size:0.95rem; color:#9ca3af; margin:8px 0; cursor:pointer; }
     .no-results:hover { background:#1b2433; }
+
     .remove-block { position:absolute; right:10px; top:10px; font-size:20px; color:#ccc; }
     .remove-block:hover { color:#fff; }
     .divider { height:1px; background:#1e293b; margin:20px 0; }
+
+    /* ✅ FIX: make Tour blocks visually flat (no container look) */
+    #panelTour,
+    #panelTour .tour-block {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+    }
+    #panelTour .divider {
+      margin: 24px 0;
+    }
   </style>
 </head>
 
@@ -105,6 +121,7 @@ function setTab(which){
 
 function addTourBlock(){
   const block=document.createElement('div');
+  block.className='tour-block';
   block.innerHTML=`
     <button type="button" class="remove-block" title="Remove">×</button>
 
