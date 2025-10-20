@@ -13,240 +13,385 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
-    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
-    .input-dark { background:#0b1220; color:#fff; width:100%; }
-    .input-dark::placeholder { color:#9ca3af; }
-
-    .datepicker[role="dialog"] {
-      position: fixed !important;
-      top: 50% !important; left: 50% !important;
-      transform: translate(-50%, -50%) !important;
-      z-index: 9999 !important; width: 92%; max-width: 420px;
-      background: #fff !important; color: #111 !important;
-      border-radius: 16px !important; box-shadow: 0 20px 60px rgba(0,0,0,.35) !important;
+    body {
+      background: #000;
+      color: #fff;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 2rem 1rem;
     }
-    .datepicker .days .datepicker-cell {
-      width: 44px !important; height: 44px !important;
-      line-height: 44px !important; border-radius: 50% !important;
-      margin: 4px !important; text-align: center !important;
+    .top-header {
+      background: #0f172a;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      max-width: 640px;
+      margin: 0 auto 2rem auto;
+      padding: 1.5rem;
     }
-    .datepicker-cell.selected { background:#22c55e !important; color:#fff !important; }
-
-    .results-pop { position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
-      z-index:60; background:#0f172a; border-radius:12px; padding:10px; }
-    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px;
-      padding:12px 14px; width:100%; box-sizing:border-box; margin:8px 0; }
-    .venue-card:hover { background:#1b2433; cursor:pointer; }
-    .no-results { padding:12px 14px; background:#111827; border:1px solid #374151;
-      border-radius:12px; text-align:center; font-size:0.95rem; color:#9ca3af; margin:8px 0; cursor:pointer; }
-    .no-results:hover { background:#1b2433; }
-
-    .remove-block { position:absolute; right:10px; top:10px; font-size:20px; color:#ccc; }
-    .remove-block:hover { color:#fff; }
-    .divider { height:1px; background:#1e293b; margin:20px 0; }
-
-    /* ✅ FIX: make Tour blocks visually flat (no container look) */
-    #panelTour,
-    #panelTour .tour-block {
-      background: transparent !important;
-      border: none !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      padding: 0 !important;
+    .input-dark {
+      background: #0b1220;
+      color: #fff;
+      width: 100%;
     }
-    #panelTour .divider {
-      margin: 24px 0;
+    .input-dark::placeholder {
+      color: #9ca3af;
+    }
+    .results-pop {
+      position: absolute;
+      left: -6px;
+      right: -6px;
+      top: calc(100% + 6px);
+      z-index: 60;
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .venue-card {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 12px 14px;
+      width: 100%;
+      box-sizing: border-box;
+      margin: 8px 0;
+    }
+    .venue-card:hover {
+      background: #1b2433;
+      cursor: pointer;
+    }
+    .no-results {
+      padding: 12px 14px;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 0.95rem;
+      color: #9ca3af;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    .no-results:hover {
+      background: #1b2433;
+    }
+    .remove-block {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      font-size: 20px;
+      color: #ccc;
+    }
+    .remove-block:hover {
+      color: #fff;
+    }
+    .divider {
+      height: 1px;
+      background: #1e293b;
+      margin: 20px 0;
     }
   </style>
 </head>
 
-<body class="flex items-start justify-center py-10">
-  <div class="card w-full max-w-xl p-6">
+<body>
+  <div class="top-header text-center">
     <h1 class="text-3xl font-bold text-white mb-6">Schedule Setup</h1>
 
-    <div class="flex space-x-2 mb-6">
-      <button id="tabSingle" class="bg-green-600 text-black px-4 py-2 rounded-full font-semibold">Single / Recurring</button>
-      <button id="tabTour" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold">Tour</button>
-    </div>
-
-    <!-- Single/Recurring Panel -->
-    <div id="panelSingle">
-      <!-- All of your existing working single/recurring form code goes here exactly as before -->
-      <!-- No changes made here -->
-    </div>
-
-    <!-- Tour Panel -->
-    <div id="panelTour" class="hidden">
-      <div id="tourBlocksContainer" class="space-y-8"></div>
-      <button id="addTourBlockBtn" class="mt-6 bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-3 rounded-lg w-full">+ Add another venue/date</button>
+    <div class="flex justify-center space-x-2 mb-2">
+      <button id="tabSingle" class="bg-green-600 text-black px-4 py-2 rounded-full font-semibold">
+        Single / Recurring
+      </button>
+      <button id="tabTour" class="bg-gray-700 text-white px-4 py-2 rounded-full font-semibold">
+        Tour
+      </button>
     </div>
   </div>
 
-<script>
-const supabase = window.supabase.createClient(
-  "https://jvuunvnbpdfrttusgelz.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-);
+  <!-- Panels (flat, full width) -->
+  <div id="panelSingle" class="max-w-xl mx-auto mb-10">
+    <!-- Your existing Single/Recurring form goes here exactly as before -->
+  </div>
 
-const formatUK=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-const parseUK=s=>{const[dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10));return new Date(yyyy,mm-1,dd);};
-const today=new Date();
-function fillTimes(sel){sel.innerHTML='';for(let m=0;m<24*60;m+=15){const hh=Math.floor(m/60),mm=m%60;const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;sel.add(new Option(label,label));}}
+  <div id="panelTour" class="hidden max-w-xl mx-auto">
+    <div id="tourBlocksContainer" class="space-y-8"></div>
+    <button
+      id="addTourBlockBtn"
+      class="mt-6 bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-3 rounded-lg w-full"
+    >
+      + Add another venue/date
+    </button>
+  </div>
 
-const tabSingle=document.getElementById('tabSingle');
-const tabTour=document.getElementById('tabTour');
-const panelSingle=document.getElementById('panelSingle');
-const panelTour=document.getElementById('panelTour');
-const tourContainer=document.getElementById('tourBlocksContainer');
-const addBtn=document.getElementById('addTourBlockBtn');
+  <script>
+    const supabase = window.supabase.createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
 
-tabSingle.onclick=()=>setTab('single');
-tabTour.onclick=()=>setTab('tour');
+    const formatUK = (d) =>
+      `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+    const parseUK = (s) => {
+      const [dd, mm, yyyy] = s.split("/").map((n) => parseInt(n, 10));
+      return new Date(yyyy, mm - 1, dd);
+    };
+    const today = new Date();
+    function fillTimes(sel) {
+      sel.innerHTML = "";
+      for (let m = 0; m < 24 * 60; m += 15) {
+        const hh = Math.floor(m / 60),
+          mm = m % 60;
+        const label = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+        sel.add(new Option(label, label));
+      }
+    }
 
-function setTab(which){
-  if(which==='single'){
-    tabSingle.classList.add('bg-green-600','text-black');
-    tabTour.classList.remove('bg-green-600','text-black');
-    panelSingle.classList.remove('hidden');
-    panelTour.classList.add('hidden');
-  }else{
-    tabTour.classList.add('bg-green-600','text-black');
-    tabSingle.classList.remove('bg-green-600','text-black');
-    panelTour.classList.remove('hidden');
-    panelSingle.classList.add('hidden');
-    if(!panelTour.dataset.init){addTourBlock();panelTour.dataset.init='1';}
-  }
-}
+    const tabSingle = document.getElementById("tabSingle");
+    const tabTour = document.getElementById("tabTour");
+    const panelSingle = document.getElementById("panelSingle");
+    const panelTour = document.getElementById("panelTour");
+    const tourContainer = document.getElementById("tourBlocksContainer");
+    const addBtn = document.getElementById("addTourBlockBtn");
 
-function addTourBlock(){
-  const block=document.createElement('div');
-  block.className='tour-block';
-  block.innerHTML=`
-    <button type="button" class="remove-block" title="Remove">×</button>
+    tabSingle.onclick = () => setTab("single");
+    tabTour.onclick = () => setTab("tour");
 
-    <div class="mb-6 relative">
-      <label class="block text-sm text-gray-300 mb-2">Venue</label>
-      <div class="input-wrapper relative">
-        <input type="text" placeholder="Search by venue name..." class="venueSearch input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
-        <button type="button" class="clearVenue absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
-        <div class="results-pop hidden">
-          <div class="venueResults"></div>
-          <div class="noVenueResults no-results hidden">No matches found.<br><span class="text-green-500 underline">+ Add new venue</span></div>
+    function setTab(which) {
+      if (which === "single") {
+        tabSingle.classList.add("bg-green-600", "text-black");
+        tabTour.classList.remove("bg-green-600", "text-black");
+        panelSingle.classList.remove("hidden");
+        panelTour.classList.add("hidden");
+      } else {
+        tabTour.classList.add("bg-green-600", "text-black");
+        tabSingle.classList.remove("bg-green-600", "text-black");
+        panelTour.classList.remove("hidden");
+        panelSingle.classList.add("hidden");
+        if (!panelTour.dataset.init) {
+          addTourBlock();
+          panelTour.dataset.init = "1";
+        }
+      }
+    }
+
+    function addTourBlock() {
+      const block = document.createElement("div");
+      block.innerHTML = `
+        <button type="button" class="remove-block" title="Remove">×</button>
+
+        <div class="mb-6 relative">
+          <label class="block text-sm text-gray-300 mb-2">Venue</label>
+          <div class="input-wrapper relative">
+            <input type="text" placeholder="Search by venue name..." class="venueSearch input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+            <button type="button" class="clearVenue absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
+            <div class="results-pop hidden">
+              <div class="venueResults"></div>
+              <div class="noVenueResults no-results hidden">No matches found.<br><span class="text-green-500 underline">+ Add new venue</span></div>
+            </div>
+          </div>
+          <input type="text" readonly placeholder="Venue ID will appear here" class="venueId input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
+          <div class="newVenueForm hidden mt-4 space-y-2">
+            <input type="text" placeholder="Venue name" class="newVenueName input-dark p-3 rounded-lg border border-gray-700 w-full">
+            <input type="text" placeholder="Street address" class="newVenueStreet input-dark p-3 rounded-lg border border-gray-700 w-full">
+            <input type="text" placeholder="Postcode" class="newVenuePostcode input-dark p-3 rounded-lg border border-gray-700 w-full">
+            <button class="createVenueBtn bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+          </div>
         </div>
-      </div>
-      <input type="text" readonly placeholder="Venue ID will appear here" class="venueId input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
-      <div class="newVenueForm hidden mt-4 space-y-2">
-        <input type="text" placeholder="Venue name" class="newVenueName input-dark p-3 rounded-lg border border-gray-700 w-full">
-        <input type="text" placeholder="Street address" class="newVenueStreet input-dark p-3 rounded-lg border border-gray-700 w-full">
-        <input type="text" placeholder="Postcode" class="newVenuePostcode input-dark p-3 rounded-lg border border-gray-700 w-full">
-        <button class="createVenueBtn bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
-      </div>
-    </div>
 
-    <div class="grid grid-cols-2 gap-4 items-end">
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">From</label>
-        <input type="text" readonly class="fromDate input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" placeholder="DD/MM/YYYY" />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">Time</label>
-        <select class="fromTime input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
-      </div>
-    </div>
+        <div class="grid grid-cols-2 gap-4 items-end">
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">From</label>
+            <input type="text" readonly class="fromDate input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" placeholder="DD/MM/YYYY" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Time</label>
+            <select class="fromTime input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+          </div>
+        </div>
 
-    <div class="grid grid-cols-2 gap-4 items-end mt-6">
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">To</label>
-        <input type="text" readonly class="toDate input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" placeholder="DD/MM/YYYY" />
-      </div>
-      <div>
-        <label class="block text-sm text-gray-300 mb-2">Time</label>
-        <select class="toTime input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
-      </div>
-    </div>
-    <div class="divider"></div>
-  `;
-  tourContainer.appendChild(block);
-  initTourBlock(block);
-}
+        <div class="grid grid-cols-2 gap-4 items-end mt-6">
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">To</label>
+            <input type="text" readonly class="toDate input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500" placeholder="DD/MM/YYYY" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Time</label>
+            <select class="toTime input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500"></select>
+          </div>
+        </div>
+        <div class="divider"></div>
+      `;
+      tourContainer.appendChild(block);
+      initTourBlock(block);
+    }
 
-addBtn.onclick=()=>addTourBlock();
+    addBtn.onclick = () => addTourBlock();
 
-function initTourBlock(root){
-  const vSearch=root.querySelector('.venueSearch');
-  const vId=root.querySelector('.venueId');
-  const results=root.querySelector('.results-pop');
-  const vResults=root.querySelector('.venueResults');
-  const noResults=root.querySelector('.noVenueResults');
-  const newForm=root.querySelector('.newVenueForm');
-  const clearBtn=root.querySelector('.clearVenue');
-  const removeBtn=root.querySelector('.remove-block');
-  const nName=root.querySelector('.newVenueName');
-  const nStreet=root.querySelector('.newVenueStreet');
-  const nPost=root.querySelector('.newVenuePostcode');
-  const createBtn=root.querySelector('.createVenueBtn');
-  const fromDate=root.querySelector('.fromDate');
-  const toDate=root.querySelector('.toDate');
-  const fromTime=root.querySelector('.fromTime');
-  const toTime=root.querySelector('.toTime');
-  let timeout;
+    function initTourBlock(root) {
+      const vSearch = root.querySelector(".venueSearch");
+      const vId = root.querySelector(".venueId");
+      const results = root.querySelector(".results-pop");
+      const vResults = root.querySelector(".venueResults");
+      const noResults = root.querySelector(".noVenueResults");
+      const newForm = root.querySelector(".newVenueForm");
+      const clearBtn = root.querySelector(".clearVenue");
+      const removeBtn = root.querySelector(".remove-block");
+      const nName = root.querySelector(".newVenueName");
+      const nStreet = root.querySelector(".newVenueStreet");
+      const nPost = root.querySelector(".newVenuePostcode");
+      const createBtn = root.querySelector(".createVenueBtn");
+      const fromDate = root.querySelector(".fromDate");
+      const toDate = root.querySelector(".toDate");
+      const fromTime = root.querySelector(".fromTime");
+      const toTime = root.querySelector(".toTime");
+      let timeout;
 
-  function open(){results.classList.remove('hidden');}
-  function close(){results.classList.add('hidden');}
-  async function search(q){
-    const clean=q.replace(/[^a-zA-Z0-9\\s'-]/g,'').trim();
-    if(!clean)return[];
-    const{data,error}=await supabase.from('venues').select('id,venue_name,street_name,postcode').ilike('venue_name',\`%\${clean}%\`).limit(25);
-    if(error){console.error(error);return[];}
-    const seen=new Set();const unique=data.filter(v=>{if(seen.has(v.id))return false;seen.add(v.id);return true;});
-    const lower=clean.toLowerCase();
-    const starts=unique.filter(v=>v.venue_name?.toLowerCase().startsWith(lower));
-    const contains=unique.filter(v=>!v.venue_name?.toLowerCase().startsWith(lower));
-    return[...starts,...contains].slice(0,5);
-  }
-  function render(list){
-    vResults.innerHTML='';noResults.classList.add('hidden');
-    if(!list.length){noResults.classList.remove('hidden');return;}
-    list.forEach(v=>{
-      const div=document.createElement('div');
-      div.className='venue-card';
-      div.innerHTML=\`<div class="font-semibold">\${v.venue_name}</div>
-      <div class="text-gray-300">\${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>\`;
-      div.onclick=()=>{vSearch.value=v.venue_name;vId.value=v.id;close();newForm.classList.add('hidden');};
-      vResults.appendChild(div);
-    });
-  }
+      function open() {
+        results.classList.remove("hidden");
+      }
+      function close() {
+        results.classList.add("hidden");
+      }
+      async function search(q) {
+        const clean = q.replace(/[^a-zA-Z0-9\s'-]/g, "").trim();
+        if (!clean) return [];
+        const { data, error } = await supabase
+          .from("venues")
+          .select("id,venue_name,street_name,postcode")
+          .ilike("venue_name", `%${clean}%`)
+          .limit(25);
+        if (error) {
+          console.error(error);
+          return [];
+        }
+        const seen = new Set();
+        const unique = data.filter((v) => {
+          if (seen.has(v.id)) return false;
+          seen.add(v.id);
+          return true;
+        });
+        const lower = clean.toLowerCase();
+        const starts = unique.filter((v) => v.venue_name?.toLowerCase().startsWith(lower));
+        const contains = unique.filter((v) => !v.venue_name?.toLowerCase().startsWith(lower));
+        return [...starts, ...contains].slice(0, 5);
+      }
+      function render(list) {
+        vResults.innerHTML = "";
+        noResults.classList.add("hidden");
+        if (!list.length) {
+          noResults.classList.remove("hidden");
+          return;
+        }
+        list.forEach((v) => {
+          const div = document.createElement("div");
+          div.className = "venue-card";
+          div.innerHTML = `<div class="font-semibold">${v.venue_name}</div>
+          <div class="text-gray-300">${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
+          div.onclick = () => {
+            vSearch.value = v.venue_name;
+            vId.value = v.id;
+            close();
+            newForm.classList.add("hidden");
+          };
+          vResults.appendChild(div);
+        });
+      }
 
-  vSearch.oninput=()=>{
-    clearTimeout(timeout);
-    const q=vSearch.value.trim();
-    if(!q){vResults.innerHTML='';close();return;}
-    timeout=setTimeout(async()=>{const list=await search(q);render(list);open();},250);
-  };
-  vSearch.onfocus=()=>{if(vResults.children.length)open();};
-  clearBtn.onclick=()=>{vSearch.value='';vId.value='';vResults.innerHTML='';close();newForm.classList.add('hidden');};
-  document.addEventListener('click',e=>{if(!root.contains(e.target)||!e.target.closest('.input-wrapper'))close();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
-  noResults.onclick=()=>{close();newForm.classList.remove('hidden');};
-  createBtn.onclick=async()=>{
-    const name=nName.value.trim(),street=nStreet.value.trim(),pc=nPost.value.trim();
-    if(!name)return;
-    const{data,error}=await supabase.from('venues').insert([{venue_name:name,street_name:street,postcode:pc}]).select('id').single();
-    if(error){console.error(error);return;}
-    vId.value=data.id;vSearch.value=name;newForm.classList.add('hidden');
-    nName.value='';nStreet.value='';nPost.value='';
-  };
-  fromDate.value=formatUK(today);toDate.value=formatUK(today);
-  fillTimes(fromTime);fillTimes(toTime);fromTime.value='10:00';toTime.value='11:00';
-  const fp=new Datepicker(fromDate,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-  const tp=new Datepicker(toDate,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-  fromDate.onclick=()=>fp.show();toDate.onclick=()=>tp.show();
-  fromDate.addEventListener('changeDate',()=>{const f=parseUK(fromDate.value);const t=parseUK(toDate.value);if(t<f){toDate.value=fromDate.value;tp.setDate(f);}});
-  fromTime.onchange=()=>{const[fh,fm]=fromTime.value.split(':').map(Number);const[th,tm]=toTime.value.split(':').map(Number);const fmins=fh*60+fm,tmins=th*60+tm;if(tmins<=fmins){const bump=fmins+60;const hh=String(Math.floor(bump/60)%24).padStart(2,'0');const mm=String(bump%60).padStart(2,'0');toTime.value=\`\${hh}:\${mm}\`;}};  
-  removeBtn.onclick=()=>root.remove();
-}
-setTab('single');
-</script>
+      vSearch.oninput = () => {
+        clearTimeout(timeout);
+        const q = vSearch.value.trim();
+        if (!q) {
+          vResults.innerHTML = "";
+          close();
+          return;
+        }
+        timeout = setTimeout(async () => {
+          const list = await search(q);
+          render(list);
+          open();
+        }, 250);
+      };
+      vSearch.onfocus = () => {
+        if (vResults.children.length) open();
+      };
+      clearBtn.onclick = () => {
+        vSearch.value = "";
+        vId.value = "";
+        vResults.innerHTML = "";
+        close();
+        newForm.classList.add("hidden");
+      };
+      document.addEventListener("click", (e) => {
+        if (!root.contains(e.target) || !e.target.closest(".input-wrapper")) close();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") close();
+      });
+      noResults.onclick = () => {
+        close();
+        newForm.classList.remove("hidden");
+      };
+      createBtn.onclick = async () => {
+        const name = nName.value.trim(),
+          street = nStreet.value.trim(),
+          pc = nPost.value.trim();
+        if (!name) return;
+        const { data, error } = await supabase
+          .from("venues")
+          .insert([{ venue_name: name, street_name: street, postcode: pc }])
+          .select("id")
+          .single();
+        if (error) {
+          console.error(error);
+          return;
+        }
+        vId.value = data.id;
+        vSearch.value = name;
+        newForm.classList.add("hidden");
+        nName.value = "";
+        nStreet.value = "";
+        nPost.value = "";
+      };
+      fromDate.value = formatUK(today);
+      toDate.value = formatUK(today);
+      fillTimes(fromTime);
+      fillTimes(toTime);
+      fromTime.value = "10:00";
+      toTime.value = "11:00";
+      const fp = new Datepicker(fromDate, {
+        autohide: true,
+        defaultDate: today,
+        language: "en-GB",
+        format: "dd/mm/yyyy",
+      });
+      const tp = new Datepicker(toDate, {
+        autohide: true,
+        defaultDate: today,
+        language: "en-GB",
+        format: "dd/mm/yyyy",
+      });
+      fromDate.onclick = () => fp.show();
+      toDate.onclick = () => tp.show();
+      fromDate.addEventListener("changeDate", () => {
+        const f = parseUK(fromDate.value);
+        const t = parseUK(toDate.value);
+        if (t < f) {
+          toDate.value = fromDate.value;
+          tp.setDate(f);
+        }
+      });
+      fromTime.onchange = () => {
+        const [fh, fm] = fromTime.value.split(":").map(Number);
+        const [th, tm] = toTime.value.split(":").map(Number);
+        const fmins = fh * 60 + fm,
+          tmins = th * 60 + tm;
+        if (tmins <= fmins) {
+          const bump = fmins + 60;
+          const hh = String(Math.floor(bump / 60) % 24).padStart(2, "0");
+          const mm = String(bump % 60).padStart(2, "0");
+          toTime.value = `${hh}:${mm}`;
+        }
+      };
+      removeBtn.onclick = () => root.remove();
+    }
+    setTab("single");
+  </script>
 </body>
 </html>
