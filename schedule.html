@@ -17,18 +17,15 @@
     .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
-
     .results-pop { position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
       z-index:60; background:#0f172a; border-radius:12px; padding:10px; }
     .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; }
     .venue-card:hover { background:#1b2433; cursor:pointer; }
     .no-results { padding:12px 14px; background:#111827; border:1px solid #374151; border-radius:12px; text-align:center; color:#9ca3af; margin:8px 0; cursor:pointer; }
     .no-results:hover { background:#1b2433; }
-
     .pill { border-radius:9999px; padding:.5rem 1rem; font-weight:600; }
     .pill-on { background:#22c55e; color:#000; }
     .pill-off { background:#374151; color:#e5e7eb; }
-
     #debugBox { background:#111827; color:#9ca3af; font-size:.85rem; padding:.75rem; border-radius:8px; margin-top:1rem; border:1px solid #374151; }
   </style>
 </head>
@@ -44,7 +41,6 @@
 
     <!-- SINGLE / RECURRING -->
     <div id="panelSingle">
-      <!-- Venue Search -->
       <div class="mb-6 relative">
         <label class="block text-sm text-gray-300 mb-2">Venue</label>
         <div class="input-wrapper relative">
@@ -56,8 +52,6 @@
           </div>
         </div>
         <input id="srVenueId" type="text" readonly placeholder="Venue ID will appear here" class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
-
-        <!-- Inline new venue form -->
         <div id="srNewVenueForm" class="hidden mt-4 space-y-2">
           <input id="srNewName"   type="text" placeholder="Venue name"     class="input-dark p-3 rounded-lg border border-gray-700 w-full">
           <input id="srNewStreet" type="text" placeholder="Street address" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
@@ -66,7 +60,6 @@
         </div>
       </div>
 
-      <!-- From / To -->
       <div class="grid grid-cols-2 gap-4 items-end mb-4">
         <div>
           <label class="block text-sm text-gray-300 mb-2">From</label>
@@ -89,7 +82,6 @@
         </div>
       </div>
 
-      <!-- Repeat -->
       <div class="mb-4">
         <label class="block text-sm text-gray-300 mb-2">Repeat</label>
         <select id="repeatType" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
@@ -102,7 +94,6 @@
         </select>
       </div>
 
-      <!-- Repeat until (only visible when repeating) -->
       <div id="repeatUntilWrap" class="hidden mb-2">
         <label class="block text-sm text-gray-300 mb-2">Repeat until</label>
         <input id="repeatUntil" type="text" readonly class="input-dark p-3 rounded-lg border border-gray-700" placeholder="DD/MM/YYYY">
@@ -119,35 +110,30 @@
       </button>
     </div>
 
-    <!-- On-screen debug box (no DevTools needed) -->
     <div id="debugBox">Debug output will appear here...</div>
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  /* ---------- Debug helper ---------- */
-  const debug = (msg) => {
+  const debug = msg => {
     const box = document.getElementById('debugBox');
     const line = document.createElement('div');
     line.textContent = msg;
     box.prepend(line);
   };
 
-  /* ---------- Supabase ---------- */
   const supabase = window.supabase.createClient(
     "https://jvuunvnbpdfrttusgelz.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
   );
   debug("✅ Supabase initialised");
 
-  /* ---------- Helpers ---------- */
   const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   const parseUK = s => { const [dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10)); return new Date(yyyy,mm-1,dd); };
   const today = new Date();
   function fillTimes(sel){ sel.innerHTML=''; for(let m=0;m<24*60;m+=15){ const hh=Math.floor(m/60),mm=m%60;
     const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; sel.add(new Option(label,label)); }}
 
-  /* ---------- Venue search ---------- */
   async function searchVenues(q){
     const clean=q.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
     if(!clean){ return []; }
@@ -162,18 +148,20 @@ document.addEventListener('DOMContentLoaded', () => {
     return data || [];
   }
 
-  /* ---------- Tabs ---------- */
+  /* Tabs setup */
   const tabSingle=document.getElementById('tabSingle');
   const tabTour=document.getElementById('tabTour');
   const panelSingle=document.getElementById('panelSingle');
   const panelTour=document.getElementById('panelTour');
+  const tourRoot=document.getElementById('tourRoot');
+  const addTourBtn=document.getElementById('addTourBlockBtn');
 
   function setTab(which){
     if(which==='single'){
       tabSingle.classList.add('pill-on'); tabSingle.classList.remove('pill-off');
       tabTour.classList.add('pill-off'); tabTour.classList.remove('pill-on');
       panelSingle.classList.remove('hidden'); panelTour.classList.add('hidden');
-    }else{
+    } else {
       tabTour.classList.add('pill-on'); tabTour.classList.remove('pill-off');
       tabSingle.classList.add('pill-off'); tabSingle.classList.remove('pill-on');
       panelTour.classList.remove('hidden'); panelSingle.classList.add('hidden');
@@ -183,24 +171,22 @@ document.addEventListener('DOMContentLoaded', () => {
   tabSingle.onclick=()=>setTab('single');
   tabTour.onclick=()=>setTab('tour');
 
-  /* ---------- Single/Recurring initialisation ---------- */
+  /* -------------- Single/Recurring -------------- */
   (function initSingleRecurring(){
-    // Venue
     const vSearch=document.getElementById('srVenueSearch');
-    const vClear =document.getElementById('srVenueClear');
-    const vPop  =document.getElementById('srResultsPop');
-    const vList =document.getElementById('srVenueResults');
-    const vNone =document.getElementById('srNoVenueResults');
-    const vForm =document.getElementById('srNewVenueForm');
-    const vId   =document.getElementById('srVenueId');
-    const nName =document.getElementById('srNewName');
+    const vClear=document.getElementById('srVenueClear');
+    const vPop=document.getElementById('srResultsPop');
+    const vList=document.getElementById('srVenueResults');
+    const vNone=document.getElementById('srNoVenueResults');
+    const vForm=document.getElementById('srNewVenueForm');
+    const vId=document.getElementById('srVenueId');
+    const nName=document.getElementById('srNewName');
     const nStreet=document.getElementById('srNewStreet');
-    const nPost =document.getElementById('srNewPC');
+    const nPost=document.getElementById('srNewPC');
     const nCreate=document.getElementById('srCreateVenue');
 
-    function openPop(){ vPop.classList.remove('hidden'); }
-    function closePop(){ vPop.classList.add('hidden'); }
-
+    function openPop(){vPop.classList.remove('hidden');}
+    function closePop(){vPop.classList.add('hidden');}
     let tmr;
     function render(list){
       vList.innerHTML=''; vNone.classList.add('hidden');
@@ -219,9 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(tmr);
       const q=vSearch.value.trim();
       if(!q){ vList.innerHTML=''; closePop(); return; }
-      tmr=setTimeout(async()=>{ render(await searchVenues(q)); openPop(); }, 200);
+      tmr=setTimeout(async()=>{ render(await searchVenues(q)); openPop(); },250);
     };
-    vSearch.onfocus=()=>{ if(vList.children.length || !vForm.classList.contains('hidden')) openPop(); };
     vClear.onclick=()=>{ vSearch.value=''; vId.value=''; vList.innerHTML=''; closePop(); vForm.classList.add('hidden'); };
     vNone.onclick=()=>{ closePop(); vForm.classList.remove('hidden'); };
 
@@ -236,39 +221,17 @@ document.addEventListener('DOMContentLoaded', () => {
       debug(`✅ Venue created: ${data.id}`);
     };
 
-    // Dates & times
     const fromDateEl=document.getElementById('fromDate');
-    const toDateEl  =document.getElementById('toDate');
+    const toDateEl=document.getElementById('toDate');
     const fromTimeEl=document.getElementById('fromTime');
-    const toTimeEl  =document.getElementById('toTime');
-
+    const toTimeEl=document.getElementById('toTime');
     fillTimes(fromTimeEl); fillTimes(toTimeEl);
     fromTimeEl.value='10:00'; toTimeEl.value='11:00';
-
-    fromDateEl.value=formatUK(today);
-    toDateEl.value=formatUK(today);
-
+    fromDateEl.value=formatUK(today); toDateEl.value=formatUK(today);
     const fromDP=new Datepicker(fromDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-    const toDP  =new Datepicker(toDateEl,  {autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-    fromDateEl.onclick=()=>fromDP.show();
-    toDateEl.onclick=()=>toDP.show();
+    const toDP=new Datepicker(toDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
+    fromDateEl.onclick=()=>fromDP.show(); toDateEl.onclick=()=>toDP.show();
 
-    fromDateEl.addEventListener('changeDate',()=>{
-      const f=parseUK(fromDateEl.value), t=parseUK(toDateEl.value);
-      if(t<f){ toDateEl.value=fromDateEl.value; toDP.setDate(f); }
-    });
-
-    fromTimeEl.onchange=()=>{
-      const [fh,fm]=fromTimeEl.value.split(':').map(Number);
-      const [th,tm]=toTimeEl.value.split(':').map(Number);
-      const f=fh*60+fm, t=th*60+tm;
-      if(t<=f){
-        const bump=f+60;
-        toTimeEl.value=`${String(Math.floor(bump/60)%24).padStart(2,'0')}:${String(bump%60).padStart(2,'0')}`;
-      }
-    };
-
-    // Repeat
     const repeatTypeEl=document.getElementById('repeatType');
     const repeatUntilWrap=document.getElementById('repeatUntilWrap');
     const repeatUntilEl=document.getElementById('repeatUntil');
@@ -277,63 +240,55 @@ document.addEventListener('DOMContentLoaded', () => {
     repeatUntilEl.onclick=()=>untilDP.show();
 
     function updateRepeatUI(){
-      const repeating = repeatTypeEl.value!=='none';
-      repeatUntilWrap.classList.toggle('hidden', !repeating);
-      if(repeating && !repeatUntilEl.value) repeatUntilEl.value = formatUK(parseUK(fromDateEl.value));
+      const repeating=repeatTypeEl.value!=='none';
+      repeatUntilWrap.classList.toggle('hidden',!repeating);
+      if(repeating&&!repeatUntilEl.value) repeatUntilEl.value=formatUK(parseUK(fromDateEl.value));
       updatePreview();
     }
-    repeatTypeEl.addEventListener('change', updateRepeatUI);
+    repeatTypeEl.addEventListener('change',updateRepeatUI);
 
     function generateOccurrences(){
       const start=parseUK(fromDateEl.value);
-      const end = repeatTypeEl.value==='none' ? parseUK(toDateEl.value) : parseUK(repeatUntilEl.value || fromDateEl.value);
-      if(isNaN(start)||isNaN(end) || end<start) return [];
-
+      const end=repeatTypeEl.value==='none'?parseUK(toDateEl.value):parseUK(repeatUntilEl.value||fromDateEl.value);
+      if(isNaN(start)||isNaN(end)||end<start)return[];
       const list=[];
-      const stepDays=(d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x; };
-
+      const step=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
       switch(repeatTypeEl.value){
-        case 'none': list.push(start); break;
-        case 'everyday':
-          for(let d=new Date(start); d<=end && list.length<100; d=stepDays(d,1)) list.push(new Date(d)); break;
-        case 'everyweek':
-          for(let d=new Date(start); d<=end && list.length<100; d=stepDays(d,7)) list.push(new Date(d)); break;
-        case 'every2weeks':
-          for(let d=new Date(start); d<=end && list.length<100; d=stepDays(d,14)) list.push(new Date(d)); break;
-        case 'everymonth':
-          for(let d=new Date(start); d<=end && list.length<100; d.setMonth(d.getMonth()+1)) list.push(new Date(d)); break;
-        case 'everyyear':
-          for(let d=new Date(start); d<=end && list.length<100; d.setFullYear(d.getFullYear()+1)) list.push(new Date(d)); break;
-      }
-      return list;
+        case'none':list.push(start);break;
+        case'everyday':for(let d=new Date(start);d<=end&&list.length<100;d=step(d,1))list.push(new Date(d));break;
+        case'everyweek':for(let d=new Date(start);d<=end&&list.length<100;d=step(d,7))list.push(new Date(d));break;
+        case'every2weeks':for(let d=new Date(start);d<=end&&list.length<100;d=step(d,14))list.push(new Date(d));break;
+        case'everymonth':for(let d=new Date(start);d<=end&&list.length<100;d.setMonth(d.getMonth()+1))list.push(new Date(d));break;
+        case'everyyear':for(let d=new Date(start);d<=end&&list.length<100;d.setFullYear(d.getFullYear()+1))list.push(new Date(d));break;
+      }return list;
     }
-
+    
     function updatePreview(){
-      const occ=generateOccurrences();
-      if(!occ.length){ repeatPreview.classList.add('hidden'); repeatPreview.innerHTML=''; return; }
-      repeatPreview.innerHTML = occ.map(d=>`<div>${formatUK(d)}</div>`).join('');
+      const occ = generateOccurrences();
+      if (!occ.length) {
+        repeatPreview.classList.add('hidden');
+        repeatPreview.innerHTML = '';
+        return;
+      }
+      repeatPreview.innerHTML = occ.map(d => `<div>${formatUK(d)}</div>`).join('');
       repeatPreview.classList.remove('hidden');
     }
 
     repeatUntilEl.addEventListener('changeDate', updatePreview);
     fromDateEl.addEventListener('changeDate', updatePreview);
-
-    updateRepeatUI(); // initialise
+    updateRepeatUI();
   })();
 
-  /* ---------- TOUR (preserved working version) ---------- */
-  const tourRoot=document.getElementById('tourRoot');
-  const addTourBtn=document.getElementById('addTourBlockBtn');
-
-  function addTourBlock(){
-    if(tourRoot.children.length){
-      const sep=document.createElement('div');
-      sep.className='h-px bg-slate-700 my-6';
+  /* -------------- TOUR (working copy) -------------- */
+  function addTourBlock() {
+    if (tourRoot.children.length) {
+      const sep = document.createElement('div');
+      sep.className = 'h-px bg-slate-700 my-6';
       tourRoot.appendChild(sep);
     }
 
-    const root=document.createElement('div');
-    root.innerHTML=`
+    const root = document.createElement('div');
+    root.innerHTML = `
       <div class="mb-6 relative">
         <div class="flex items-center justify-between mb-2">
           <label class="block text-sm text-gray-300">Venue</label>
@@ -382,29 +337,29 @@ document.addEventListener('DOMContentLoaded', () => {
     initTourBlock(root);
   }
 
-  addTourBtn.onclick=()=>addTourBlock();
+  addTourBtn.onclick = () => addTourBlock();
 
-  function initTourBlock(scope){
-    const vSearch=scope.querySelector('.venueSearch');
-    const vId=scope.querySelector('.venueId');
-    const results=scope.querySelector('.results-pop');
-    const vResults=scope.querySelector('.venueResults');
-    const noResults=scope.querySelector('.noVenueResults');
-    const newForm=scope.querySelector('.newVenueForm');
-    const clearBtn=scope.querySelector('.clearVenue');
-    const removeBtn=scope.querySelector('.removeBtn');
-    const nName=scope.querySelector('.newVenueName');
-    const nStreet=scope.querySelector('.newVenueStreet');
-    const nPost=scope.querySelector('.newVenuePostcode');
-    const createBtn=scope.querySelector('.createVenueBtn');
-    const fromDate=scope.querySelector('.fromDate');
-    const toDate=scope.querySelector('.toDate');
-    const fromTime=scope.querySelector('.fromTime');
-    const toTime=scope.querySelector('.toTime');
+  function initTourBlock(scope) {
+    const vSearch = scope.querySelector('.venueSearch');
+    const vId = scope.querySelector('.venueId');
+    const results = scope.querySelector('.results-pop');
+    const vResults = scope.querySelector('.venueResults');
+    const noResults = scope.querySelector('.noVenueResults');
+    const newForm = scope.querySelector('.newVenueForm');
+    const clearBtn = scope.querySelector('.clearVenue');
+    const removeBtn = scope.querySelector('.removeBtn');
+    const nName = scope.querySelector('.newVenueName');
+    const nStreet = scope.querySelector('.newVenueStreet');
+    const nPost = scope.querySelector('.newVenuePostcode');
+    const createBtn = scope.querySelector('.createVenueBtn');
+    const fromDate = scope.querySelector('.fromDate');
+    const toDate = scope.querySelector('.toDate');
+    const fromTime = scope.querySelector('.fromTime');
+    const toTime = scope.querySelector('.toTime');
     let timeout;
 
-    function open(){results.classList.remove('hidden');}
-    function close(){results.classList.add('hidden');}
+    function open(){ results.classList.remove('hidden'); }
+    function close(){ results.classList.add('hidden'); }
 
     function render(list){
       vResults.innerHTML=''; noResults.classList.add('hidden');
@@ -413,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const div=document.createElement('div');
         div.className='venue-card';
         div.innerHTML=`<div class="font-semibold">${v.venue_name}</div>
-          <div class="text-gray-300">${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>`;
+                       <div class="text-gray-300">${[v.street_name,v.postcode].filter(Boolean).join(', ')}</div>`;
         div.onclick=()=>{ vSearch.value=v.venue_name; vId.value=v.id; close(); newForm.classList.add('hidden'); };
         vResults.appendChild(div);
       });
@@ -455,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     removeBtn.onclick=()=>{const prev=scope.previousElementSibling;if(prev&&prev.classList.contains('h-px'))prev.remove();scope.remove();};
   }
 
-  /* ---------- Default tab ---------- */
+  /* Default tab */
   setTab('single');
 });
 </script>
