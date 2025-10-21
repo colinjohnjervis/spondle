@@ -18,6 +18,14 @@
     .input-dark { background:#0b1220; color:#fff; width:100%; }
     .input-dark::placeholder { color:#9ca3af; }
 
+    /* Blue focus highlight */
+    .input-dark:focus {
+      border-color:#3b82f6 !important;
+      ring-color:#3b82f6 !important;
+      outline:none;
+      box-shadow:0 0 0 1.5px #3b82f6;
+    }
+
     .results-pop { position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
       z-index:60; background:#0f172a; border-radius:12px; padding:10px; }
     .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; }
@@ -52,19 +60,19 @@
       <div class="mb-6 relative">
         <label class="block text-sm text-gray-300 mb-2">Venue</label>
         <div class="input-wrapper relative">
-          <input id="srVenueSearch" type="text" placeholder="Search by venue name..." class="input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+          <input id="srVenueSearch" type="text" placeholder="Search by venue name..." class="input-dark p-3 rounded-lg border border-gray-700">
           <button id="srVenueClear" type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
           <div id="srResultsPop" class="results-pop hidden">
             <div id="srVenueResults"></div>
-            <div id="srNoVenueResults" class="no-results hidden">No matches found.<br><span class="text-green-500 underline">+ Add new venue</span></div>
+            <div id="srNoVenueResults" class="no-results hidden">No matches found.<br><span class="text-blue-400 underline">+ Add new venue</span></div>
           </div>
         </div>
-        <input id="srVenueId" type="text" readonly placeholder="Venue ID will appear here" class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
+        <input id="srVenueId" type="text" readonly placeholder="Venue ID will appear here" class="input-dark p-3 rounded-lg border border-gray-700 text-blue-400 mt-2">
         <div id="srNewVenueForm" class="hidden mt-4 space-y-2">
           <input id="srNewName"   type="text" placeholder="Venue name"     class="input-dark p-3 rounded-lg border border-gray-700 w-full">
           <input id="srNewStreet" type="text" placeholder="Street address" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
           <input id="srNewPC"     type="text" placeholder="Postcode"       class="input-dark p-3 rounded-lg border border-gray-700 w-full">
-          <button id="srCreateVenue" class="bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+          <button id="srCreateVenue" class="bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
         </div>
       </div>
 
@@ -111,7 +119,7 @@
     <!-- TOUR -->
     <div id="panelTour" class="hidden">
       <div id="tourRoot"></div>
-      <button id="addTourBlockBtn" class="mt-6 bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-3 rounded-lg w-full">
+      <button id="addTourBlockBtn" class="mt-6 bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-3 rounded-lg w-full">
         + Add another venue/date
       </button>
     </div>
@@ -124,14 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
   );
 
-  /* Helpers */
+  /* Utility helpers */
   const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   const parseUK  = s => { const [dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10)); return new Date(yyyy,mm-1,dd); };
   const today = new Date();
   const addMonths = (d,n)=>{const x=new Date(d);x.setMonth(x.getMonth()+n);return x;};
   const fillTimes = sel => { sel.innerHTML=''; for(let m=0;m<24*60;m+=15){ const hh=Math.floor(m/60),mm=m%60; const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; sel.add(new Option(label,label)); }};
 
-  /* ========== VENUE SEARCH (Single / Recurring) ========== */
+  /* ===== Venue search (Single / Recurring) ===== */
   const srSearch = document.getElementById('srVenueSearch');
   const srClear = document.getElementById('srVenueClear');
   const srResultsPop = document.getElementById('srResultsPop');
@@ -154,11 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
       .ilike('venue_name', `%${clean}%`);
     if (!data) return [];
 
-    // sort: starts-with first
     const startsWith = data.filter(v => v.venue_name.toLowerCase().startsWith(clean.toLowerCase()));
     const others = data.filter(v => !v.venue_name.toLowerCase().startsWith(clean.toLowerCase()));
-    const sorted = [...startsWith, ...others];
-    return sorted.slice(0, 5);
+    return [...startsWith, ...others].slice(0, 5);
   }
 
   function renderSrVenues(list) {
@@ -198,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     srNewName.value=''; srNewStreet.value=''; srNewPC.value='';
   };
 
-  /* ========== DATE/TIME SETUP (Single / Recurring) ========== */
+  /* ===== Dates & Times (Single / Recurring) ===== */
   const fromDateEl=document.getElementById('fromDate');
   const toDateEl=document.getElementById('toDate');
   const fromTimeEl=document.getElementById('fromTime');
@@ -229,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
   repeatTypeEl.addEventListener('change',toggleRepeatUntil);
   toggleRepeatUntil();
 
-  /* ========== TAB SWITCHING & TOUR LOGIC ========== */
+  /* ===== Tab switching & Tour logic ===== */
   const tabSingle=document.getElementById('tabSingle');
   const tabTour=document.getElementById('tabTour');
   const panelSingle=document.getElementById('panelSingle');
@@ -252,6 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
   tabSingle.onclick=()=>setTab('single');
   tabTour.onclick=()=>setTab('tour');
 
+  /* ===== Tour blocks ===== */
   function addTourBlock(isFirst=false){
     if(tourRoot.children.length){
       const sep=document.createElement('div');
@@ -267,16 +274,16 @@ document.addEventListener('DOMContentLoaded', () => {
           ${!isFirst ? '<button type="button" class="tour-inline-remove removeBtn" title="Remove">×</button>' : ''}
         </div>
         <div class="input-wrapper relative">
-          <input type="text" placeholder="Search by venue name..." class="venueSearch input-dark p-3 rounded-lg border border-gray-700 focus:border-green-500 focus:ring-green-500">
+          <input type="text" placeholder="Search by venue name..." class="venueSearch input-dark p-3 rounded-lg border border-gray-700 focus:border-blue-500 focus:ring-blue-500">
           <button type="button" class="clearVenue absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
-          <div class="results-pop hidden"><div class="venueResults"></div><div class="noVenueResults no-results hidden">No matches found.<br><span class="text-green-500 underline">+ Add new venue</span></div></div>
+          <div class="results-pop hidden"><div class="venueResults"></div><div class="noVenueResults no-results hidden">No matches found.<br><span class="text-blue-400 underline">+ Add new venue</span></div></div>
         </div>
-        <input type="text" readonly placeholder="Venue ID will appear here" class="venueId input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
+        <input type="text" readonly placeholder="Venue ID will appear here" class="venueId input-dark p-3 rounded-lg border border-gray-700 text-blue-400 mt-2">
         <div class="newVenueForm hidden mt-4 space-y-2">
           <input type="text" placeholder="Venue name" class="newVenueName input-dark p-3 rounded-lg border border-gray-700 w-full">
           <input type="text" placeholder="Street address" class="newVenueStreet input-dark p-3 rounded-lg border border-gray-700 w-full">
           <input type="text" placeholder="Postcode" class="newVenuePostcode input-dark p-3 rounded-lg border border-gray-700 w-full">
-          <button class="createVenueBtn bg-green-500 hover:bg-green-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+          <button class="createVenueBtn bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-4 items-end">
