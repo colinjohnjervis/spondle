@@ -61,13 +61,12 @@
         </select>
       </div>
 
-      <!-- 🟢 Placeholder Image (disappears on category selection) -->
-      <div id="placeholderImageWrapper" class="mt-3">
-        <img
-          src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/spondle-placeholder.png"
-          alt="Spondle placeholder"
-          class="w-full h-96 object-cover rounded-lg opacity-90"
-        />
+      <!-- Placeholder Image (static) -->
+      <div id="placeholderImageWrapper" class="mt-4">
+        <img 
+          src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
+          alt="Spondle placeholder" 
+          class="w-full h-96 object-cover rounded-lg">
       </div>
 
       <!-- Carousel (auto from category) -->
@@ -162,9 +161,9 @@
       ]
     };
 
-    const placeholderImageWrapper = document.getElementById('placeholderImageWrapper');
     const carouselWrapper = document.getElementById('carouselWrapper');
     const categorySelect = document.querySelector('select[name="category"]');
+    const placeholderImageWrapper = document.getElementById('placeholderImageWrapper');
     const imageUrlInput = document.createElement('input');
     imageUrlInput.type = "hidden";
     imageUrlInput.name = "image_url";
@@ -208,7 +207,6 @@
       carouselWrapper.appendChild(container);
     }
 
-    // Toggle placeholder vs. carousel
     categorySelect.addEventListener('change', () => {
       const cat = categorySelect.value;
       if (stockImages[cat]) {
@@ -361,6 +359,7 @@
       `
     };
 
+    // Default tab load
     tabContent.innerHTML = views.single();
     wireVenueSearch(tabContent);
 
