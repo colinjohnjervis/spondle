@@ -33,6 +33,13 @@
       border: 1px solid #374151;
       border-radius: 12px;
       padding: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .input-dark:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
     }
 
     .input-dark::placeholder {
@@ -65,10 +72,12 @@
       border-radius: 12px;
       padding: 12px 14px;
       margin: 8px 0;
+      transition: all 0.2s ease;
     }
 
     .venue-card:hover {
       background: #1b2433;
+      border-color: #3b82f6;
       cursor: pointer;
     }
 
@@ -86,6 +95,7 @@
 
     .no-results:hover {
       background: #1b2433;
+      border-color: #3b82f6;
     }
 
     .input-wrapper {
@@ -191,7 +201,7 @@
         <div id="tabContent"></div>
       </div>
 
-      <!-- Event Visibility (new) -->
+      <!-- Event Visibility -->
       <div>
         <label>Event Visibility</label>
         <select name="event_visibility" class="input-dark">
@@ -296,15 +306,6 @@
       track.className = 'flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth';
       container.appendChild(track);
 
-      const prev = document.createElement('button');
-      prev.innerHTML = '&lt;';
-      prev.className = 'arrow-btn left-2 hidden';
-      const next = document.createElement('button');
-      next.innerHTML = '&gt;';
-      next.className = 'arrow-btn right-2 hidden';
-      container.appendChild(prev);
-      container.appendChild(next);
-
       images.forEach(url => {
         const wrap = document.createElement('div');
         wrap.className = 'img-wrapper w-full h-96 shrink-0 snap-center';
@@ -361,11 +362,11 @@
         searchInput.addEventListener('input', async () => {
           const q = searchInput.value.trim();
           venueList.innerHTML = '';
-          noResults.style.display = 'none';
+          noResults.classList.add('hidden');
           if (!q) return;
           const venues = await searchVenues(q);
           if (!venues.length) {
-            noResults.style.display = 'block';
+            noResults.classList.remove('hidden');
             return;
           }
           venues.forEach(v => {
@@ -377,7 +378,7 @@
               searchInput.value = v.venue_name;
               venueIdInput.value = v.id;
               venueList.innerHTML = '';
-              noResults.style.display = 'none';
+              noResults.classList.add('hidden');
             });
             venueList.appendChild(card);
           });
@@ -387,13 +388,13 @@
           searchInput.value = '';
           venueIdInput.value = '';
           venueList.innerHTML = '';
-          venueForm.style.display = 'none';
-          noResults.style.display = 'none';
+          venueForm.classList.add('hidden');
+          noResults.classList.add('hidden');
         });
 
         parent.parentElement.querySelector('.create-venue-link')?.addEventListener('click', (e) => {
           e.preventDefault();
-          venueForm.style.display = 'block';
+          venueForm.classList.remove('hidden');
         });
 
         parent.parentElement.querySelector('.venue-submit')?.addEventListener('click', async () => {
@@ -408,9 +409,9 @@
           if (error) return alert('Error creating venue');
           searchInput.value = name;
           venueIdInput.value = data[0].id;
-          venueForm.style.display = 'none';
+          venueForm.classList.add('hidden');
           venueList.innerHTML = '';
-          noResults.style.display = 'none';
+          noResults.classList.add('hidden');
         });
       });
     }
@@ -476,7 +477,6 @@
       `
     };
 
-    // Default tab load
     tabContent.innerHTML = views.single();
     wireVenueSearch(tabContent);
 
