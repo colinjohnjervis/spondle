@@ -58,8 +58,13 @@
       display: block;
     }
 
-    .tab-btn { transition: all 0.25s; }
-    .tab-btn.bg-green-600 { color: #000; }
+    .tab-btn {
+      transition: all 0.25s;
+    }
+
+    .tab-btn.bg-green-600 {
+      color: #000;
+    }
 
     .venue-card {
       background: #111827;
@@ -69,6 +74,7 @@
       margin: 8px 0;
       transition: all 0.2s ease;
     }
+
     .venue-card:hover {
       background: #1b2433;
       border-color: #3b82f6;
@@ -86,12 +92,16 @@
       margin: 8px 0;
       cursor: pointer;
     }
+
     .no-results:hover {
       background: #1b2433;
       border-color: #3b82f6;
     }
 
-    .input-wrapper { position: relative; }
+    .input-wrapper {
+      position: relative;
+    }
+
     .clear-btn {
       position: absolute;
       right: 12px;
@@ -110,14 +120,17 @@
       border: 3px solid transparent;
       transition: border-color 0.25s ease;
     }
-    .img-wrapper.selected { border-color: #3b82f6; }
+
+    .img-wrapper.selected {
+      border-color: #3b82f6;
+    }
 
     .arrow-btn {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(0,0,0,0.4);
-      color: rgba(255,255,255,0.9);
+      background: rgba(0, 0, 0, 0.4);
+      color: rgba(255, 255, 255, 0.9);
       font-size: 22px;
       width: 40px;
       height: 40px;
@@ -129,7 +142,10 @@
       justify-content: center;
       transition: background 0.2s;
     }
-    .arrow-btn:hover { background: rgba(0,0,0,0.6); }
+
+    .arrow-btn:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
   </style>
 </head>
 
@@ -170,14 +186,14 @@
           class="w-full h-96 object-cover rounded-lg">
       </div>
 
-      <!-- Carousel -->
+      <!-- Carousel (auto from category) -->
       <div id="carouselWrapper" class="hidden"></div>
 
       <!-- Schedule Tabs -->
       <div>
         <label class="font-medium">Schedule</label>
         <div class="flex gap-2 mb-4 mt-2">
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
+          <button type="button" class="tab-btn bg-green-600 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
           <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="recurring">Recurring</button>
           <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="tour">Tour</button>
         </div>
@@ -223,29 +239,27 @@
     });
   </script>
 
-<!-- PAGE LOGIC -->
+  <!-- PAGE LOGIC -->
   <script type="module">
-    /* ----------------------------------------------------
-       SUPABASE INITIALIZATION
-    ----------------------------------------------------- */
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    /* ----------------------------------------------
+       SUPABASE INITIALIZATION
+    ---------------------------------------------- */
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    /* ----------------------------------------------------
-       AUTOFILL ORGANISER ID
-    ----------------------------------------------------- */
+    // Autofill organiser_id
     supabase.auth.getUser().then(({ data: { user } }) => {
       const organiserInput = document.getElementById("organiser_id");
       organiserInput.value = user ? user.id : "Not logged in";
     });
 
-    /* ----------------------------------------------------
+    /* ----------------------------------------------
        STOCK IMAGES BY CATEGORY
-    ----------------------------------------------------- */
+    ---------------------------------------------- */
     const stockImages = {
       music: [
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
@@ -278,6 +292,7 @@
     imageUrlInput.name = "image_url";
     document.getElementById("eventForm").appendChild(imageUrlInput);
 
+    // Build carousel
     function buildCarousel(images = []) {
       carouselWrapper.innerHTML = "";
       if (!images.length) return;
@@ -286,7 +301,8 @@
       container.className = "relative mt-3";
 
       const track = document.createElement("div");
-      track.className = "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
+      track.className =
+        "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
       container.appendChild(track);
 
       images.forEach((url, index) => {
@@ -302,6 +318,8 @@
         });
         wrap.appendChild(img);
         track.appendChild(wrap);
+
+        // Auto-select first
         if (index === 0) {
           wrap.classList.add("selected");
           imageUrlInput.value = url;
@@ -323,9 +341,9 @@
       }
     });
 
-    /* ----------------------------------------------------
+    /* ----------------------------------------------
        VENUE SEARCH / CREATE LOGIC
-    ----------------------------------------------------- */
+    ---------------------------------------------- */
     async function searchVenues(query) {
       if (!query.trim()) return [];
       const { data, error } = await supabase
@@ -403,9 +421,9 @@
       });
     }
 
-    /* ----------------------------------------------------
-       TABS & SCHEDULE LOGIC
-    ----------------------------------------------------- */
+    /* ----------------------------------------------
+       TABS / EVENT SCHEDULE
+    ---------------------------------------------- */
     const tabBtns = document.querySelectorAll(".tab-btn");
     const tabContent = document.getElementById("tabContent");
     const eventTypeInput = document.getElementById("eventType");
@@ -428,7 +446,7 @@
       </div>
     `;
 
-const views = {
+    const views = {
       single: () => `
         <div class="space-y-2">
           ${venueSearchBlock()}
@@ -502,20 +520,25 @@ const views = {
       });
     });
 
-    /* ----------------------------------------------------
-       EVENT FORM SUBMISSION  →  SUPABASE.INSERT()
-    ----------------------------------------------------- */
-    const eventForm = document.getElementById("eventForm");
+    /* ----------------------------------------------
+       FORM SUBMISSION TO SUPABASE
+    ---------------------------------------------- */
+    const form = document.getElementById("eventForm");
     const banner = document.getElementById("banner");
 
-    eventForm.addEventListener("submit", async (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
       banner.classList.add("hidden");
 
-      const formData = new FormData(eventForm);
+      const formData = new FormData(form);
       const values = Object.fromEntries(formData.entries());
-      const { data: userData } = await supabase.auth.getUser();
-      const organiser_id = userData?.user?.id || null;
+      const organiser_id = document.getElementById("organiser_id").value;
+
+      // Correct handling for array fields
+      const venueId = formData.getAll("venue_id[]")[0] || null;
+      const eventDate = formData.getAll("event_date[]")[0] || null;
+      const eventTime = formData.getAll("event_time[]")[0] || null;
+      const ticketUrl = formData.getAll("ticket_url[]")[0] || null;
 
       const payload = {
         organiser_id,
@@ -523,30 +546,28 @@ const views = {
         description: values.description,
         category: values.category,
         image_url: values.image_url,
-        event_type: values.event_type,
         event_visibility: values.event_visibility,
         publish_status: values.publish_status,
-        venue_id: values["venue_id[]"] || null,
-        event_date: values["event_date[]"] || null,
-        event_time: values["event_time[]"] || null,
-        ticket_url: values["ticket_url[]"] || null,
+        venue_id: venueId,
+        event_date: eventDate,
+        event_time: eventTime,
+        ticket_url: ticketUrl,
       };
+
+      console.log("Uploading:", payload);
 
       const { error } = await supabase.from("events").insert([payload]);
 
-      banner.classList.remove("hidden");
       if (error) {
         console.error("Supabase insert error:", error);
         banner.textContent = "❌ Failed to upload event. Please try again.";
-        banner.className =
-          "mt-4 text-center px-4 py-2 rounded text-sm bg-red-700 text-white";
+        banner.className = "mt-4 text-center px-4 py-2 rounded text-sm bg-red-900 text-red-200";
+        banner.classList.remove("hidden");
       } else {
         banner.textContent = "✅ Event uploaded successfully!";
-        banner.className =
-          "mt-4 text-center px-4 py-2 rounded text-sm bg-green-500 text-black";
-        eventForm.reset();
-        carouselWrapper.classList.add("hidden");
-        placeholderImageWrapper.classList.remove("hidden");
+        banner.className = "mt-4 text-center px-4 py-2 rounded text-sm bg-green-900 text-green-200";
+        banner.classList.remove("hidden");
+        form.reset();
       }
     });
   </script>
