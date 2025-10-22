@@ -12,171 +12,110 @@
   <link rel="stylesheet" href="./hearts.css?v=global-9">
 
   <style>
-    body {
-      background: #000;
-      color: #fff;
-      font-family: ui-sans-serif, system-ui, sans-serif;
-      min-height: 100vh;
-    }
-
-    .form-card {
-      background: #0f172a;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
-      padding: 1.5rem;
-    }
+    body { background:#000; color:#fff; }
 
     .input-dark {
-      background: #0b1220;
-      color: #fff;
       width: 100%;
-      border: 1px solid #374151;
+      padding: 10px;
       border-radius: 12px;
-      padding: 12px;
-      transition: all 0.2s ease;
-    }
-
-    .input-dark:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 2px rgba(59,130,246,0.3);
-    }
-
-    .input-dark::placeholder {
-      color: #9ca3af;
-    }
-
-    select.input-dark option {
-      background: #0b1220;
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
       color: #fff;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-dark:focus {
+      border-color: #3b82f6;
     }
 
-    label {
-      font-size: 0.95rem;
-      color: #e5e7eb;
-      margin-bottom: 6px;
-      display: block;
-    }
+    .venue-card { border:1px solid #334155; border-radius:12px; padding:12px; margin-bottom:12px; background:#111; cursor:pointer; }
+    .venue-card strong { display:block; margin-bottom:4px; }
+    .no-results { text-align:center; color:#888; margin-top:10px; }
+    .venue-form input, .venue-form button { width:100%; padding:10px; margin-bottom:10px; border-radius:12px; box-sizing:border-box; }
+    .input-wrapper { position:relative; }
+    .clear-btn { position:absolute; right:10px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#aaa; font-size:18px; cursor:pointer; }
 
     .tab-btn {
-      transition: all 0.25s;
-    }
-
-    .tab-btn.bg-green-600 {
-      color: #000;
-    }
-
-    .venue-card {
-      background: #111827;
-      border: 1px solid #374151;
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin: 8px 0;
-      transition: all 0.2s ease;
-    }
-
-    .venue-card:hover {
-      background: #1b2433;
-      border-color: #3b82f6;
-      cursor: pointer;
-    }
-
-    .no-results {
-      padding: 12px 14px;
-      background: #111827;
-      border: 1px solid #374151;
-      border-radius: 12px;
+      flex: 1;
+      padding: 10px 0;
       text-align: center;
-      font-size: 0.95rem;
-      color: #9ca3af;
-      margin: 8px 0;
-      cursor: pointer;
+      border-radius: 12px;
+      background-color: #1e293b;
+      color: #fff;
+      font-weight: 500;
+      transition: background 0.2s;
     }
-
-    .no-results:hover {
-      background: #1b2433;
-      border-color: #3b82f6;
-    }
-
-    .input-wrapper {
-      position: relative;
-    }
-
-    .clear-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
-      border: none;
-      color: #9ca3af;
-      font-size: 20px;
-      cursor: pointer;
-    }
+    .tab-btn:hover { background-color: #334155; }
+    .tab-btn.active { background-color: #22c55e; color: #000; }
   </style>
 </head>
 
-<body class="flex items-start justify-center py-10">
-  <div class="form-card w-full max-w-xl">
-    <h1 class="text-3xl font-bold text-white mb-6">Create Event</h1>
+<body class="bg-black text-white">
+  <div id="layout-root"></div>
 
-    <form id="eventForm" class="space-y-6">
+  <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
+    <h1 class="text-3xl font-bold">Create Event</h1>
+
+    <form id="eventForm" class="space-y-6 mt-6">
       <!-- BASIC INFO -->
-      <div>
-        <label>Event Name</label>
-        <input type="text" name="event_name" required class="input-dark" placeholder="Enter event name">
-      </div>
+      <section>
+        <label class="block mb-2">Event Name</label>
+        <input type="text" name="event_name" required class="input-dark">
+      </section>
 
-      <div>
-        <label>Description</label>
-        <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
-      </div>
+      <section>
+        <label class="block mb-2">Description</label>
+        <textarea name="description" rows="4" class="input-dark"></textarea>
+      </section>
 
-      <!-- IMAGE CAROUSEL MODULE MOUNT POINT -->
-      <div id="imageCarouselSection"></div>
+      <!-- IMAGE CAROUSEL SECTION -->
+      <section id="imageCarouselSection"></section>
 
-      <!-- Schedule Tabs -->
-      <div>
-        <label class="font-medium">Schedule</label>
-        <div class="flex gap-2 mb-4 mt-2">
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="recurring">Recurring</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="tour">Tour</button>
+      <!-- SCHEDULE -->
+      <section>
+        <label class="block mb-2 font-medium">Schedule</label>
+        <div class="flex gap-2 mb-4">
+          <button type="button" class="tab-btn active" data-type="single">Single</button>
+          <button type="button" class="tab-btn" data-type="recurring">Recurring</button>
+          <button type="button" class="tab-btn" data-type="tour">Tour</button>
         </div>
         <input type="hidden" name="event_type" id="eventType" value="single">
         <div id="tabContent"></div>
-      </div>
+      </section>
 
-      <!-- Event Visibility -->
-      <div>
-        <label>Event Visibility</label>
-        <select name="event_visibility" class="input-dark">
+      <!-- EVENT VISIBILITY -->
+      <section>
+        <label class="block mb-2">Event Visibility</label>
+        <select name="visibility" class="input-dark">
           <option value="public">Public</option>
         </select>
-      </div>
+      </section>
 
-      <!-- Publish Status -->
-      <div>
-        <label>Publish Status</label>
+      <!-- PUBLISH STATUS -->
+      <section>
+        <label class="block mb-2">Publish Status</label>
         <select name="publish_status" required class="input-dark">
           <option value="draft">Draft</option>
           <option value="published">Published</option>
         </select>
-      </div>
+      </section>
 
-      <!-- Submit -->
-      <button type="submit" class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg">Submit Event</button>
+      <!-- SUBMIT -->
+      <section>
+        <button type="submit" class="px-6 py-2 bg-green-500 text-black font-semibold rounded hover:bg-green-400 w-full">Submit Event</button>
+      </section>
 
-      <div>
+      <!-- ORGANISER ID -->
+      <section>
         <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
         <input type="text" id="organiser_id" name="organiser_id" readonly
           class="input-dark text-green-400 text-sm"
           placeholder="Fetching..." />
-      </div>
+      </section>
 
       <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
     </form>
-  </div>
+  </main>
 
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script>
@@ -185,10 +124,10 @@
     });
   </script>
 
-<!-- PAGE LOGIC -->
+  <!-- PAGE LOGIC -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    import { initImageCarousel } from "./components/image-carousel.js";
+    import { initImageCarousel } from "./image-carousel.js";
 
     // Initialize the category + image carousel section
     initImageCarousel("#imageCarouselSection");
@@ -350,8 +289,8 @@
 
     tabBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
-        tabBtns.forEach((b) => b.classList.remove("bg-green-600"));
-        btn.classList.add("bg-green-600");
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
         const type = btn.dataset.type;
         eventTypeInput.value = type;
         tabContent.innerHTML = views[type]();
