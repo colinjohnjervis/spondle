@@ -12,23 +12,23 @@
   <link rel="stylesheet" href="./hearts.css?v=global-9">
 
   <style>
-    body{background:#000;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif;min-height:100vh;}
-    .form-card{background:#0f172a;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:1.5rem;}
-    .input-dark{background:#0b1220;color:#fff;width:100%;border:1px solid #374151;border-radius:12px;padding:12px;transition:all .2s}
-    .input-dark:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.3)}
-    .input-dark::placeholder{color:#9ca3af}
-    select.input-dark option{background:#0b1220;color:#fff}
-    label{font-size:.95rem;color:#e5e7eb;margin-bottom:6px;display:block}
-    .tab-btn{transition:all .25s}
-    .tab-btn.bg-green-600{color:#000}
-    .input-wrapper{position:relative}
-    .clear-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#9ca3af;font-size:20px;cursor:pointer}
-    .venue-card{background:#111827;border:1px solid #374151;border-radius:12px;padding:12px 14px;margin:8px 0;transition:all .2s}
-    .venue-card:hover{background:#1b2433;border-color:#3b82f6;cursor:pointer}
-    .no-results{padding:12px 14px;background:#111827;border:1px solid #374151;border-radius:12px;text-align:center;font-size:.95rem;color:#9ca3af;margin:8px 0;cursor:pointer}
-    .no-results:hover{background:#1b2433;border-color:#3b82f6}
-    .img-wrapper{border-radius:.75rem;overflow:hidden;border:3px solid transparent;transition:border-color .25s}
-    .img-wrapper.selected{border-color:#3b82f6}
+    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh;}
+    .form-card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); padding:1.5rem; }
+    .input-dark { background:#0b1220; color:#fff; width:100%; border:1px solid #374151; border-radius:12px; padding:12px; transition:all 0.2s ease; }
+    .input-dark:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.3); }
+    .input-dark::placeholder { color:#9ca3af; }
+    select.input-dark option { background:#0b1220; color:#fff; }
+    label { font-size:0.95rem; color:#e5e7eb; margin-bottom:6px; display:block; }
+    .tab-btn { transition: all .25s; }
+    .tab-btn.bg-green-600 { color:#000; }
+    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; transition:all 0.2s ease; }
+    .venue-card:hover { background:#1b2433; border-color:#3b82f6; cursor:pointer; }
+    .no-results { padding:12px 14px; background:#111827; border:1px solid #374151; border-radius:12px; text-align:center; font-size:0.95rem; color:#9ca3af; margin:8px 0; cursor:pointer; }
+    .no-results:hover { background:#1b2433; border-color:#3b82f6; }
+    .input-wrapper { position:relative; }
+    .clear-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#9ca3af; font-size:20px; cursor:pointer; }
+    .img-wrapper { border-radius:0.75rem; overflow:hidden; border:3px solid transparent; transition:border-color 0.25s ease; }
+    .img-wrapper.selected { border-color:#3b82f6; }
   </style>
 </head>
 
@@ -62,36 +62,30 @@
         </select>
       </div>
 
-      <!-- placeholder then carousel -->
+      <!-- Placeholder Image -->
       <div id="placeholderImageWrapper">
-        <img
+        <img 
           src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
-          alt="Spondle placeholder"
+          alt="Spondle placeholder" 
           class="w-full h-96 object-cover rounded-lg">
       </div>
+
+      <!-- Carousel -->
       <div id="carouselWrapper" class="hidden"></div>
 
-      <!-- SCHEDULE -->
+      <!-- Schedule Tabs -->
       <div>
         <label class="font-medium">Schedule</label>
         <div class="flex gap-2 mb-4 mt-2">
-          <button type="button" class="tab-btn bg-green-600 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
-          <button type="button" class="tab-btn bg-gray-700  px-4 py-2 rounded-full w-1/3" data-type="recurring">Recurring</button>
-          <button type="button" class="tab-btn bg-gray-700  px-4 py-2 rounded-full w-1/3" data-type="tour">Tour</button>
+          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
+          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="recurring">Recurring</button>
+          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="tour">Tour</button>
         </div>
         <input type="hidden" name="event_type" id="eventType" value="single">
         <div id="tabContent"></div>
       </div>
 
-      <!-- VISIBILITY -->
-      <div>
-        <label>Event Visibility</label>
-        <select name="event_visibility" class="input-dark">
-          <option value="public">Public</option>
-        </select>
-      </div>
-
-      <!-- PUBLISH STATUS -->
+      <!-- Publish Status -->
       <div>
         <label>Publish Status</label>
         <select name="publish_status" required class="input-dark">
@@ -100,27 +94,25 @@
         </select>
       </div>
 
-      <!-- SUBMIT -->
+      <!-- Submit -->
       <button type="submit" class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg">
         Submit Event
       </button>
 
-      <!-- ORGANISER -->
       <div>
         <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
         <input type="text" id="organiser_id" name="organiser_id" readonly
-               class="input-dark text-green-400 text-sm" placeholder="Fetching..." />
+          class="input-dark text-green-400 text-sm"
+          placeholder="Fetching..." />
       </div>
 
-      <!-- banners / logger -->
       <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
-      <pre id="errorLog" class="hidden text-xs text-red-400 bg-red-950 p-2 rounded overflow-x-auto mt-2"></pre>
     </form>
   </div>
 
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
-  <script>window.addEventListener("DOMContentLoaded",()=>{window.Layout?.init({active:"dashboard"});});</script>
 
+  <!-- PAGE LOGIC -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
@@ -129,65 +121,73 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    // organiser
+    // Autofill organiser_id
     supabase.auth.getUser().then(({ data: { user } }) => {
-      document.getElementById("organiser_id").value = user ? user.id : "Not logged in";
+      const organiserInput = document.getElementById("organiser_id");
+      organiserInput.value = user ? user.id : "Not logged in";
     });
 
-    /* ---------- stock images + carousel ---------- */
+    /* ----------------------------
+       STOCK IMAGES BY CATEGORY
+    ----------------------------- */
     const stockImages = {
       music: [
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
       ],
       comedy: [
         "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
-        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png"
+        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
       ],
       theatre: [
         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80"
       ],
       sports: [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
       ],
       festival: [
-        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
       ],
       quiz: [
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80"
-      ]
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+      ],
     };
 
     const carouselWrapper = document.getElementById("carouselWrapper");
     const categorySelect = document.querySelector('select[name="category"]');
     const placeholderImageWrapper = document.getElementById("placeholderImageWrapper");
     const imageUrlInput = document.createElement("input");
-    imageUrlInput.type = "hidden"; imageUrlInput.name = "image_url";
+    imageUrlInput.type = "hidden";
+    imageUrlInput.name = "image_url";
     document.getElementById("eventForm").appendChild(imageUrlInput);
 
-    function buildCarousel(images=[]) {
+    function buildCarousel(images = []) {
       carouselWrapper.innerHTML = "";
       if (!images.length) return;
+
       const container = document.createElement("div");
       const track = document.createElement("div");
-      container.className = "relative mt-3";
-      track.className = "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
+      track.className = "flex overflow-x-auto no-scrollbar gap-2";
       container.appendChild(track);
 
       images.forEach((url, i) => {
         const wrap = document.createElement("div");
-        wrap.className = "img-wrapper w-full h-96 shrink-0 snap-center";
+        wrap.className = "img-wrapper w-full h-96 shrink-0";
         const img = document.createElement("img");
-        img.src = url; img.className = "w-full h-full object-cover cursor-pointer";
+        img.src = url;
+        img.className = "w-full h-full object-cover cursor-pointer";
         img.addEventListener("click", () => {
-          track.querySelectorAll(".img-wrapper").forEach(w => w.classList.remove("selected"));
-          wrap.classList.add("selected"); imageUrlInput.value = url;
+          track.querySelectorAll(".img-wrapper").forEach((w) => w.classList.remove("selected"));
+          wrap.classList.add("selected");
+          imageUrlInput.value = url;
         });
-        wrap.appendChild(img); track.appendChild(wrap);
-        if (i === 0) { wrap.classList.add("selected"); imageUrlInput.value = url; }
+        wrap.appendChild(img);
+        track.appendChild(wrap);
+        if (i === 0) {
+          wrap.classList.add("selected");
+          imageUrlInput.value = url;
+        }
       });
-
       carouselWrapper.appendChild(container);
     }
 
@@ -200,215 +200,6 @@
       } else {
         carouselWrapper.classList.add("hidden");
         placeholderImageWrapper.classList.remove("hidden");
-      }
-    });
-
-    /* ---------- schedule views (INJECTED) ---------- */
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    const tabContent = document.getElementById("tabContent");
-    const eventTypeInput = document.getElementById("eventType");
-
-    const venueSearchBlock = () => `
-      <div>
-        <div class="input-wrapper">
-          <input type="text" placeholder="Search by venue name..." class="search input-dark" />
-          <button type="button" class="clear-btn" title="Clear">&times;</button>
-        </div>
-        <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly
-               class="venue-id input-dark text-green-400 mt-2">
-        <div class="venue-list mt-2"></div>
-        <div class="no-results hidden">No results — <a href="#" class="create-venue-link text-blue-400">Create a new venue</a></div>
-        <div class="venue-form mt-4 hidden space-y-2">
-          <input type="text" placeholder="Venue name" class="venue-name input-dark">
-          <input type="text" placeholder="Street address" class="venue-street input-dark">
-          <input type="text" placeholder="Postcode" class="venue-postcode input-dark">
-          <button type="button" class="venue-submit bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
-        </div>
-      </div>
-    `;
-
-    const views = {
-      single: () => `
-        <div class="space-y-2">
-          ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <input type="date" name="event_date[]" required class="input-dark" />
-            <input type="time" name="event_time[]" required class="input-dark" />
-          </div>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
-        </div>
-      `,
-      recurring: () => `
-        <div class="space-y-2">
-          ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <input type="date" name="event_date[]" required class="input-dark" />
-            <input type="time" name="event_time[]" required class="input-dark" />
-          </div>
-          <label class="block text-sm mt-2">Recurring Dates:</label>
-          <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
-        </div>
-      `,
-      tour: () => `
-        <div id="scheduleSection" class="space-y-4">
-          ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <input type="date" name="event_date[]" required class="input-dark" />
-            <input type="time" name="event_time[]" required class="input-dark" />
-          </div>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
-          <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
-        </div>
-      `
-    };
-
-    // inject default schedule (THIS is what was missing)
-    function loadView(type){
-      eventTypeInput.value = type;
-      tabContent.innerHTML = views[type]();
-      wireVenueSearch(tabContent);
-
-      if(type === "recurring"){
-        const addDateBtn = document.getElementById("addRecurringDate");
-        addDateBtn.addEventListener("click", ()=>{
-          const newField = document.createElement("input");
-          newField.type = "date"; newField.name = "event_date[]"; newField.required = true;
-          newField.className = "input-dark mt-2";
-          addDateBtn.insertAdjacentElement("beforebegin", newField);
-        });
-      }
-
-      if(type === "tour"){
-        const addScheduleBtn = document.getElementById("addScheduleBtn");
-        addScheduleBtn.addEventListener("click", ()=>{
-          const section = document.getElementById("scheduleSection");
-          const wrapper = document.createElement("div");
-          wrapper.className = "space-y-2 border-t border-slate-700 pt-4";
-          wrapper.innerHTML = views.single();
-          section.appendChild(wrapper);
-          wireVenueSearch(wrapper);
-        });
-      }
-    }
-    // default to Single
-    loadView("single");
-
-    tabBtns.forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        tabBtns.forEach(b=>b.classList.remove("bg-green-600"));
-        btn.classList.add("bg-green-600");
-        loadView(btn.dataset.type);
-      });
-    });
-
-    /* ---------- venue search wiring ---------- */
-    async function searchVenues(q){
-      if(!q.trim()) return [];
-      const { data, error } = await supabase
-        .from("venues")
-        .select("id,venue_name,street_name,postcode")
-        .ilike("venue_name", `%${q}%`)
-        .limit(5);
-      return error ? [] : data;
-    }
-
-    function wireVenueSearch(scope=document){
-      scope.querySelectorAll(".input-wrapper").forEach(wrapper=>{
-        const searchInput = wrapper.querySelector(".search");
-        const parent = wrapper.closest("div");
-        const venueIdInput = parent.parentElement.querySelector(".venue-id");
-        const venueList = parent.parentElement.querySelector(".venue-list");
-        const noResults = parent.parentElement.querySelector(".no-results");
-        const venueForm = parent.parentElement.querySelector(".venue-form");
-        const clearBtn = wrapper.querySelector(".clear-btn");
-
-        searchInput.addEventListener("input", async ()=>{
-          const q = searchInput.value.trim();
-          venueList.innerHTML = ""; noResults.classList.add("hidden");
-          if(!q) return;
-          const venues = await searchVenues(q);
-          if(!venues.length){ noResults.classList.remove("hidden"); return; }
-          venues.forEach(v=>{
-            const card = document.createElement("div");
-            card.className = "venue-card";
-            card.innerHTML = `<div class='font-semibold'>${v.venue_name}</div>
-                              <div class='text-gray-300'>${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
-            card.addEventListener("click", ()=>{
-              searchInput.value = v.venue_name; venueIdInput.value = v.id;
-              venueList.innerHTML = ""; noResults.classList.add("hidden");
-            });
-            venueList.appendChild(card);
-          });
-        });
-
-        clearBtn.addEventListener("click", ()=>{
-          searchInput.value = ""; venueIdInput.value = "";
-          venueList.innerHTML = ""; venueForm.classList.add("hidden"); noResults.classList.add("hidden");
-        });
-
-        parent.parentElement.querySelector(".create-venue-link")?.addEventListener("click", e=>{
-          e.preventDefault(); venueForm.classList.remove("hidden");
-        });
-
-        parent.parentElement.querySelector(".venue-submit")?.addEventListener("click", async ()=>{
-          const name = parent.parentElement.querySelector(".venue-name").value.trim();
-          const street = parent.parentElement.querySelector(".venue-street").value.trim();
-          const postcode = parent.parentElement.querySelector(".venue-postcode").value.trim();
-          if(!name) return alert("Enter a venue name");
-          const { data, error } = await supabase
-            .from("venues")
-            .insert([{ venue_name:name, street_name:street, postcode }])
-            .select("id");
-          if(error) return alert("Error creating venue");
-          venueIdInput.value = data[0].id; searchInput.value = name;
-          venueForm.classList.add("hidden"); venueList.innerHTML = ""; noResults.classList.add("hidden");
-        });
-      });
-    }
-
-    /* ---------- submit + error log ---------- */
-    const form = document.getElementById("eventForm");
-    const banner = document.getElementById("banner");
-    const errorLog = document.getElementById("errorLog");
-
-    form.addEventListener("submit", async (e)=>{
-      e.preventDefault(); banner.classList.add("hidden"); errorLog.classList.add("hidden");
-
-      const fd = new FormData(form);
-      const payload = {
-        organiser_id: document.getElementById("organiser_id").value,
-        event_name: fd.get("event_name"),
-        description: fd.get("description"),
-        category: fd.get("category"),
-        image_url: fd.get("image_url"),
-        event_visibility: fd.get("event_visibility"),
-        publish_status: fd.get("publish_status"),
-        // single primary row
-        venue_id: fd.getAll("venue_id[]")[0] || null,
-        event_date: fd.getAll("event_date[]")[0] || null,
-        event_time: fd.getAll("event_time[]")[0] || null,
-        ticket_url: fd.getAll("ticket_url[]")[0] || null
-      };
-
-      const { error } = await supabase.from("events").insert([payload]);
-      if(error){
-        banner.textContent = "❌ Failed to upload event. Please try again.";
-        banner.className = "mt-4 text-center px-4 py-2 rounded text-sm bg-red-900 text-red-200";
-        banner.classList.remove("hidden");
-        errorLog.textContent = JSON.stringify(error, null, 2);
-        errorLog.classList.remove("hidden");
-      } else {
-        banner.textContent = "✅ Event uploaded successfully!";
-        banner.className = "mt-4 text-center px-4 py-2 rounded text-sm bg-green-900 text-green-200";
-        banner.classList.remove("hidden");
-        form.reset();
-        // reset schedule + image state
-        placeholderImageWrapper.classList.remove("hidden");
-        carouselWrapper.classList.add("hidden");
-        tabBtns.forEach(b=>b.classList.remove("bg-green-600"));
-        tabBtns[0].classList.add("bg-green-600");
-        loadView("single");
       }
     });
   </script>
