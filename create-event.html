@@ -6,7 +6,7 @@
   <title>Create Event – Spondle</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + styles -->
+  <!-- Shared layout + styles (keeps sidebar + sticky header exactly as your app) -->
   <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
   <link rel="stylesheet" href="./styles.css?v=global-9">
   <link rel="stylesheet" href="./hearts.css?v=global-9">
@@ -14,110 +14,169 @@
   <style>
     body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
     .form-card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); padding:1.5rem; }
-    .input-dark { background:#0b1220; color:#fff; width:100%; border:1px solid #374151; border-radius:12px; padding:12px; transition:all 0.2s ease; }
-    .input-dark:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.3); }
+    .input-dark { background:#0b1220; color:#fff; width:100%; border:1px solid #374151; border-radius:12px; padding:12px; transition:all .2s ease; }
+    .input-dark:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,.3); }
     .input-dark::placeholder { color:#9ca3af; }
     select.input-dark option { background:#0b1220; color:#fff; }
-    label { font-size:0.95rem; color:#e5e7eb; margin-bottom:6px; display:block; }
-    .tab-btn { transition:all .25s; }
-    .tab-btn.bg-green-600 { color:#000; }
-    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; transition:all 0.2s ease; }
+    label { font-size:.95rem; color:#e5e7eb; margin-bottom:6px; display:block; }
+
+    /* Venue search cards */
+    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; transition:all .2s; }
     .venue-card:hover { background:#1b2433; border-color:#3b82f6; cursor:pointer; }
-    .no-results { padding:12px 14px; background:#111827; border:1px solid #374151; border-radius:12px; text-align:center; color:#9ca3af; margin:8px 0; cursor:pointer; }
+    .no-results { padding:12px 14px; background:#111827; border:1px solid #374151; border-radius:12px; text-align:center; font-size:.95rem; color:#9ca3af; margin:8px 0; cursor:pointer; }
     .no-results:hover { background:#1b2433; border-color:#3b82f6; }
     .input-wrapper { position:relative; }
     .clear-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#9ca3af; font-size:20px; cursor:pointer; }
-    .img-wrapper { border-radius:0.75rem; overflow:hidden; border:3px solid transparent; transition:border-color 0.25s ease; }
+
+    /* Tabs */
+    .tab-btn { transition:all .25s; }
+    .tab-btn.bg-green-600 { color:#000; }
+
+    /* Carousel */
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+    .img-wrapper { border-radius:0.75rem; overflow:hidden; border:3px solid transparent; transition:border-color .25s ease; }
     .img-wrapper.selected { border-color:#3b82f6; }
+
+    /* Inline status banner */
+    #banner.success { background:#064e3b; color:#d1fae5; border:1px solid #065f46; }
+    #banner.error   { background:#4c1d1d; color:#fecaca; border:1px solid #7f1d1d; }
   </style>
 </head>
 
-<body class="flex items-start justify-center py-10">
-  <div class="form-card w-full max-w-xl">
-    <h1 class="text-3xl font-bold text-white mb-6">Create Event</h1>
+<body class="bg-black text-white">
+  <div id="layout-root"></div>
 
-    <form id="eventForm" class="space-y-6">
-      <!-- BASIC INFO -->
-      <div>
-        <label>Event Name</label>
-        <input type="text" name="event_name" required class="input-dark" placeholder="Enter event name">
-      </div>
+  <main class="px-4 sm:px-6 lg:px-8 mt-6 max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold">Create Event</h1>
 
-      <div>
-        <label>Description</label>
-        <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
-      </div>
+    <div class="form-card w-full mt-6">
+      <form id="eventForm" class="space-y-6">
+        <!-- BASIC INFO -->
+        <section data-block="basic-info">
+          <label>Event Name</label>
+          <input type="text" name="event_name" required class="input-dark" placeholder="Enter event name">
+        </section>
 
-      <div>
-        <label>Event Category & Image</label>
-        <select name="category" required class="input-dark">
-          <option value="">Select category</option>
-          <option value="music">Music</option>
-          <option value="comedy">Comedy</option>
-          <option value="theatre">Theatre</option>
-          <option value="sports">Sports</option>
-          <option value="festival">Festival</option>
-          <option value="quiz">Quiz Night</option>
-        </select>
-      </div>
+        <section data-block="description">
+          <label>Description</label>
+          <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
+        </section>
 
-      <!-- Placeholder Image -->
-      <div id="placeholderImageWrapper">
-        <img 
-          src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
-          alt="Spondle placeholder" 
-          class="w-full h-96 object-cover rounded-lg">
-      </div>
+        <!-- CATEGORY + IMAGE -->
+        <section data-block="category-image">
+          <label>Event Category & Image</label>
+          <select name="category" required class="input-dark">
+            <option value="">Select category</option>
+            <option value="music">Music</option>
+            <option value="comedy">Comedy</option>
+            <option value="theatre">Theatre</option>
+            <option value="sports">Sports</option>
+            <option value="festival">Festival</option>
+            <option value="quiz">Quiz Night</option>
+          </select>
 
-      <!-- Carousel (auto from category) -->
-      <div id="carouselWrapper" class="hidden"></div>
+          <!-- Placeholder Image (height 96) -->
+          <div id="placeholderImageWrapper" class="mt-3">
+            <img
+              src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
+              alt="Spondle placeholder"
+              class="w-full h-96 object-cover rounded-lg">
+          </div>
 
-      <!-- Schedule Tabs -->
-      <div>
-        <label class="font-medium">Schedule</label>
-        <div class="flex gap-2 mb-4 mt-2">
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="recurring">Recurring</button>
-          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="tour">Tour</button>
-        </div>
-        <div id="tabContent"></div>
-      </div>
+          <!-- Auto image carousel -->
+          <div id="carouselWrapper" class="hidden mt-3"></div>
+        </section>
 
-      <!-- Publish Status -->
-      <div>
-        <label>Publish Status</label>
-        <select name="publish_status" required class="input-dark">
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
-      </div>
+        <!-- SCHEDULE -->
+        <section data-block="schedule">
+          <label class="font-medium">Schedule</label>
+          <div class="flex gap-2 mb-4 mt-2">
+            <button type="button" class="tab-btn bg-green-600 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
+            <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="recurring">Recurring</button>
+            <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="tour">Tour</button>
+          </div>
+          <!-- We will NOT send a DB column for type; it only controls UI rendering -->
+          <input type="hidden" id="uiEventType" value="single">
+          <div id="tabContent"></div>
+        </section>
 
-      <!-- Submit -->
-      <button type="submit" class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg">Submit Event</button>
+        <!-- PUBLISH STATUS ONLY (visibility removed per your request) -->
+        <section data-block="publish-status">
+          <label>Publish Status</label>
+          <select name="publish_status" required class="input-dark">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </section>
 
-      <div>
-        <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
-        <input type="text" id="organiser_id" name="organiser_id" readonly
-          class="input-dark text-green-400 text-sm"
-          placeholder="Fetching..." />
-      </div>
-    </form>
-  </div>
+        <!-- SUBMIT -->
+        <button type="submit" class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg">
+          Submit Event
+        </button>
 
+        <!-- ORGANISER -->
+        <section>
+          <label class="block mt-2 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
+          <input type="text" id="organiser_id" name="organiser_id" readonly
+                 class="input-dark text-green-400 text-sm"
+                 placeholder="Fetching..." />
+        </section>
+
+        <!-- Inline banner -->
+        <div id="banner" class="hidden mt-2 text-center px-3 py-2 rounded text-sm"></div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Layout (keeps header/sidebar) -->
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      window.Layout?.init({ active: "dashboard" });
+    });
+  </script>
+
+  <!-- PAGE LOGIC -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const supabase = createClient(
+    /* --- Supabase: reuse shared client if the layout exposes one --- */
+    const sharedClient =
+      (window.Layout && (window.Layout.supabase || window.Layout.getSupabase?.())) ||
+      window.supabase || window.supabaseClient || null;
+
+    const supabase = sharedClient || createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    // Autofill organiser_id
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    /* --- UI helpers --- */
+    const banner = document.getElementById("banner");
+    const showBanner = (msg, type="success") => {
+      banner.textContent = msg;
+      banner.className = "mt-2 text-center px-3 py-2 rounded text-sm " + (type==="success" ? "success" : "error");
+      banner.classList.remove("hidden");
+      setTimeout(() => banner.classList.add("hidden"), 4500);
+    };
+
+    /* --- Session → organiser_id --- */
+    async function populateOrganiser() {
       const organiserInput = document.getElementById("organiser_id");
-      organiserInput.value = user ? user.id : "Not logged in";
-    });
+      // try user, then session
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) {
+        organiserInput.value = userData.user.id;
+        return;
+      }
+      const { data: sessionData } = await supabase.auth.getSession();
+      organiserInput.value = sessionData?.session?.user?.id || "Not logged in";
+      // keep listening so it fills in if auth arrives later
+      supabase.auth.onAuthStateChange((_e, session) => {
+        if (session?.user?.id) organiserInput.value = session.user.id;
+      });
+    }
+    populateOrganiser();
 
     /* ----------------------------
        STOCK IMAGES BY CATEGORY
@@ -125,62 +184,64 @@
     const stockImages = {
       music: [
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80"
       ],
       comedy: [
         "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
-        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
+        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png"
       ],
       theatre: [
         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80"
       ],
       sports: [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80"
       ],
       festival: [
-        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"
       ],
       quiz: [
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
-      ],
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80"
+      ]
     };
 
+    const formEl = document.getElementById("eventForm");
     const carouselWrapper = document.getElementById("carouselWrapper");
-    const categorySelect = document.querySelector('select[name="category"]');
+    const categorySelect = formEl.querySelector('select[name="category"]');
     const placeholderImageWrapper = document.getElementById("placeholderImageWrapper");
+
+    // Hidden input to submit the chosen image URL
     const imageUrlInput = document.createElement("input");
     imageUrlInput.type = "hidden";
     imageUrlInput.name = "image_url";
-    document.getElementById("eventForm").appendChild(imageUrlInput);
+    formEl.appendChild(imageUrlInput);
 
-    function buildCarousel(images = []) {
+    function buildCarousel(images=[]) {
       carouselWrapper.innerHTML = "";
       if (!images.length) return;
 
       const container = document.createElement("div");
-      container.className = "relative mt-3";
-
       const track = document.createElement("div");
+      container.className = "relative";
       track.className = "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
       container.appendChild(track);
 
-      images.forEach((url, index) => {
+      images.forEach((url, idx) => {
         const wrap = document.createElement("div");
         wrap.className = "img-wrapper w-full h-96 shrink-0 snap-center";
         const img = document.createElement("img");
         img.src = url;
         img.className = "w-full h-full object-cover cursor-pointer";
         img.addEventListener("click", () => {
-          track.querySelectorAll(".img-wrapper").forEach((w) => w.classList.remove("selected"));
+          track.querySelectorAll(".img-wrapper").forEach(w => w.classList.remove("selected"));
           wrap.classList.add("selected");
           imageUrlInput.value = url;
         });
         wrap.appendChild(img);
         track.appendChild(wrap);
 
-        // Auto-select first image
-        if (index === 0) {
+        // Auto-pick first in view
+        if (idx === 0) {
           wrap.classList.add("selected");
           imageUrlInput.value = url;
         }
@@ -198,41 +259,26 @@
       } else {
         carouselWrapper.classList.add("hidden");
         placeholderImageWrapper.classList.remove("hidden");
+        imageUrlInput.value = "";
       }
     });
 
     /* ----------------------------
-       VENUE SEARCH + SCHEDULING
+       VENUE SEARCH / CREATE
     ----------------------------- */
-
-    // ✅ Full working logic (search, recurring, tour, submission)
-    // ... [continued next message — PART C to fit limits] ...
-
-    /* ----------------------------
-       VENUE SEARCH + SCHEDULING
-    ----------------------------- */
-
-    // Keep track of the active schedule mode (not saved to DB)
-    let currentMode = "single";
-
-    // ---- Venue search helpers (limit 5, prioritise startsWith) ----
-    async function searchVenuesRelevance(query){
-      const clean = (query || "").replace(/[^a-zA-Z0-9\s'-]/g,"").trim();
-      if(!clean) return [];
+    async function searchVenues(query) {
+      if (!query.trim()) return [];
       const { data, error } = await supabase
         .from("venues")
         .select("id,venue_name,street_name,postcode")
-        .ilike("venue_name", `%${clean}%`);
-      if (error || !data) return [];
-      const lower = clean.toLowerCase();
-      const starts = data.filter(v => (v.venue_name||"").toLowerCase().startsWith(lower));
-      const others = data.filter(v => !(v.venue_name||"").toLowerCase().startsWith(lower));
-      return [...starts, ...others].slice(0, 5);
+        .ilike("venue_name", `%${query}%`)
+        .limit(5);
+      return error ? [] : data;
     }
 
-    function wireVenueSearch(scope=document){
-      scope.querySelectorAll(".input-wrapper").forEach(wrapper=>{
-        const search = wrapper.querySelector(".search");
+    function wireVenueSearch(scope=document) {
+      scope.querySelectorAll(".input-wrapper").forEach(wrapper => {
+        const searchInput = wrapper.querySelector(".search");
         const parent = wrapper.closest("div");
         const venueIdInput = parent.parentElement.querySelector(".venue-id");
         const venueList = parent.parentElement.querySelector(".venue-list");
@@ -240,59 +286,56 @@
         const venueForm = parent.parentElement.querySelector(".venue-form");
         const clearBtn = wrapper.querySelector(".clear-btn");
 
-        let t;
-        search.addEventListener("input", ()=>{
-          clearTimeout(t);
-          const q = search.value.trim();
+        searchInput.addEventListener("input", async () => {
+          const q = searchInput.value.trim();
           venueList.innerHTML = "";
           noResults.classList.add("hidden");
-          if(!q){ return; }
-          t = setTimeout(async ()=>{
-            const venues = await searchVenuesRelevance(q);
-            if(!venues.length){ noResults.classList.remove("hidden"); return; }
-            venues.forEach(v=>{
-              const card = document.createElement("div");
-              card.className = "venue-card";
-              card.innerHTML = `
-                <div class="font-semibold">${v.venue_name}</div>
-                <div class="text-gray-300">${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
-              card.onclick = ()=>{
-                search.value = v.venue_name;
-                venueIdInput.value = v.id;
-                venueList.innerHTML = "";
-                noResults.classList.add("hidden");
-              };
-              venueList.appendChild(card);
+          if (!q) return;
+          const venues = await searchVenues(q);
+          if (!venues.length) {
+            noResults.classList.remove("hidden");
+            return;
+          }
+          venues.forEach(v => {
+            const card = document.createElement("div");
+            card.className = "venue-card";
+            card.innerHTML = `<div class='font-semibold'>${v.venue_name}</div>
+              <div class='text-gray-300'>${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
+            card.addEventListener("click", () => {
+              searchInput.value = v.venue_name;
+              venueIdInput.value = v.id;
+              venueList.innerHTML = "";
+              noResults.classList.add("hidden");
             });
-          }, 250);
+            venueList.appendChild(card);
+          });
         });
 
-        clearBtn.addEventListener("click", ()=>{
-          search.value = "";
+        clearBtn.addEventListener("click", () => {
+          searchInput.value = "";
           venueIdInput.value = "";
           venueList.innerHTML = "";
           venueForm.classList.add("hidden");
           noResults.classList.add("hidden");
         });
 
-        parent.parentElement.querySelector(".create-venue-link")?.addEventListener("click",(e)=>{
+        parent.parentElement.querySelector(".create-venue-link")?.addEventListener("click", (e) => {
           e.preventDefault();
           venueForm.classList.remove("hidden");
         });
 
-        parent.parentElement.querySelector(".venue-submit")?.addEventListener("click", async ()=>{
-          const name = venueForm.querySelector(".venue-name").value.trim();
-          const street = venueForm.querySelector(".venue-street").value.trim();
-          const postcode = venueForm.querySelector(".venue-postcode").value.trim();
-          if(!name){ alert("Enter a venue name"); return; }
+        parent.parentElement.querySelector(".venue-submit")?.addEventListener("click", async () => {
+          const name = parent.parentElement.querySelector(".venue-name").value.trim();
+          const street = parent.parentElement.querySelector(".venue-street").value.trim();
+          const postcode = parent.parentElement.querySelector(".venue-postcode").value.trim();
+          if (!name) return alert("Enter a venue name");
           const { data, error } = await supabase
             .from("venues")
-            .insert([{ venue_name:name, street_name:street, postcode }])
-            .select("id")
-            .single();
-          if(error){ alert("Error creating venue"); return; }
-          search.value = name;
-          venueIdInput.value = data.id;
+            .insert([{ venue_name: name, street_name: street, postcode }])
+            .select("id");
+          if (error) return alert("Error creating venue");
+          searchInput.value = name;
+          venueIdInput.value = data[0].id;
           venueForm.classList.add("hidden");
           venueList.innerHTML = "";
           noResults.classList.add("hidden");
@@ -300,17 +343,20 @@
       });
     }
 
-    // ---- Views for Single / Recurring / Tour ----
+    /* ----------------------------
+       SCHEDULE TABS & VIEWS
+    ----------------------------- */
     const tabBtns = document.querySelectorAll(".tab-btn");
     const tabContent = document.getElementById("tabContent");
+    const uiEventType = document.getElementById("uiEventType");
 
     const venueSearchBlock = () => `
       <div>
         <div class="input-wrapper">
-          <input type="text" placeholder="Search by venue name..." class="search input-dark"/>
+          <input type="text" placeholder="Search by venue name..." class="search input-dark" />
           <button type="button" class="clear-btn" title="Clear">&times;</button>
         </div>
-        <input type="text" name="venue_id" readonly class="venue-id input-dark text-green-400 mt-2" placeholder="Venue ID will appear here">
+        <input type="text" name="venue_id" placeholder="Venue ID will appear here" readonly class="venue-id input-dark text-green-400 mt-2">
         <div class="venue-list mt-2"></div>
         <div class="no-results hidden">No results — <a href="#" class="create-venue-link text-blue-400">Create a new venue</a></div>
         <div class="venue-form mt-4 hidden space-y-2">
@@ -322,159 +368,175 @@
       </div>
     `;
 
+    const dateTimeRow = () => `
+      <div class="grid grid-cols-2 gap-4 items-end">
+        <input type="date" class="event_date input-dark" required />
+        <input type="time" class="event_time input-dark" required />
+      </div>
+    `;
+
     const views = {
       single: () => `
         <div class="space-y-2">
           ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4">
-            <input type="date" name="event_date" required class="input-dark">
-            <input type="time" name="event_time" required class="input-dark">
-          </div>
-          <input type="url" name="ticket_url" placeholder="Ticket URL (optional)" class="input-dark">
+          ${dateTimeRow()}
+          <input type="url" class="ticket_url input-dark" placeholder="Ticket URL (optional)">
         </div>
       `,
       recurring: () => `
         <div class="space-y-2">
           ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4">
-            <input type="date" name="event_date" required class="input-dark">
-            <input type="time" name="event_time" required class="input-dark">
-          </div>
+          ${dateTimeRow()}
           <label class="block text-sm mt-2">Recurring Dates:</label>
           <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-          <input type="url" name="ticket_url" placeholder="Ticket URL (optional)" class="input-dark">
+          <input type="url" class="ticket_url input-dark" placeholder="Ticket URL (optional)">
         </div>
       `,
       tour: () => `
-        <div id="scheduleSection" class="space-y-4">
-          ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4">
-            <input type="date" name="event_date" required class="input-dark">
-            <input type="time" name="event_time" required class="input-dark">
+        <div id="tourWrapper" class="space-y-4">
+          <div class="tourBlock space-y-2">
+            ${venueSearchBlock()}
+            ${dateTimeRow()}
+            <input type="url" class="ticket_url input-dark" placeholder="Ticket URL (optional)">
           </div>
-          <input type="url" name="ticket_url" placeholder="Ticket URL (optional)" class="input-dark">
-          <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+          <button type="button" id="addTourBlock" class="text-sm text-blue-400">+ Add Venue & Date</button>
         </div>
-      `,
+      `
     };
 
-    // Initial render
-    tabBtns[0].classList.add("bg-green-600");
-    tabContent.innerHTML = views.single();
-    wireVenueSearch(tabContent);
+    function mountView(type) {
+      tabContent.innerHTML = views[type]();
+      wireVenueSearch(tabContent);
 
-    // Tab switching
-    tabBtns.forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        tabBtns.forEach(b=>b.classList.remove("bg-green-600"));
+      if (type === "recurring") {
+        const addBtn = document.getElementById("addRecurringDate");
+        addBtn.addEventListener("click", () => {
+          const wrap = document.createElement("div");
+          wrap.className = "mt-2";
+          wrap.innerHTML = dateTimeRow();
+          addBtn.insertAdjacentElement("beforebegin", wrap);
+        });
+      }
+
+      if (type === "tour") {
+        const addBtn = document.getElementById("addTourBlock");
+        addBtn.addEventListener("click", () => {
+          const tourWrapper = document.getElementById("tourWrapper");
+          const block = document.createElement("div");
+          block.className = "tourBlock space-y-2 border-t border-slate-700 pt-4";
+          block.innerHTML = venueSearchBlock() + dateTimeRow() + `<input type="url" class="ticket_url input-dark" placeholder="Ticket URL (optional)">`;
+          tourWrapper.appendChild(block);
+          wireVenueSearch(block);
+        });
+      }
+    }
+
+    // default
+    mountView("single");
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabBtns.forEach(b => b.classList.remove("bg-green-600"));
         btn.classList.add("bg-green-600");
-        currentMode = btn.dataset.type; // "single" | "recurring" | "tour"
-        tabContent.innerHTML = views[currentMode]();
-        wireVenueSearch(tabContent);
-
-        if(currentMode==="recurring"){
-          const addBtn = document.getElementById("addRecurringDate");
-          addBtn.onclick = ()=>{
-            const n = document.createElement("input");
-            n.type = "date";
-            n.name = "event_date"; // same name, we'll collect all
-            n.required = true;
-            n.className = "input-dark mt-2";
-            addBtn.before(n);
-          };
-        }
-
-        if(currentMode==="tour"){
-          const addBtn = document.getElementById("addScheduleBtn");
-          addBtn.onclick = ()=>{
-            const section = document.getElementById("scheduleSection");
-            const wrap = document.createElement("div");
-            wrap.className = "space-y-2 border-t border-slate-700 pt-4";
-            wrap.innerHTML = views.single();
-            section.appendChild(wrap);
-            wireVenueSearch(wrap);
-          };
-        }
+        const type = btn.dataset.type;
+        uiEventType.value = type;
+        mountView(type);
       });
     });
 
     /* ----------------------------
-       SUBMIT TO SUPABASE
+       SUBMIT → events table
+       We only send flat columns (no [] names).
+       For multiple rows (recurring/tour), we insert many rows.
     ----------------------------- */
-    function getCommonFields(){
-      const f = document.getElementById("eventForm");
-      return {
-        event_name: f.querySelector('[name="event_name"]')?.value?.trim() || "",
-        description: f.querySelector('[name="description"]')?.value?.trim() || "",
-        category:    f.querySelector('[name="category"]')?.value || "",
-        image_url:   f.querySelector('[name="image_url"]')?.value || "",
-        publish_status: f.querySelector('[name="publish_status"]')?.value || "draft",
-        organiser_id:   f.querySelector('[name="organiser_id"]')?.value || null,
-      };
-    }
-
-    function gatherRowsSingle(scope){
-      const venue_id   = scope.querySelector('[name="venue_id"]')?.value || "";
-      const event_date = scope.querySelector('[name="event_date"]')?.value || "";
-      const event_time = scope.querySelector('[name="event_time"]')?.value || "";
-      const ticket_url = scope.querySelector('[name="ticket_url"]')?.value || "";
-      if(!venue_id || !event_date || !event_time) return [];
-      return [{ venue_id, event_date, event_time, ticket_url }];
-    }
-
-    function gatherRowsRecurring(scope){
-      const venue_id   = scope.querySelector('[name="venue_id"]')?.value || "";
-      const timeEl     = scope.querySelector('[name="event_time"]');
-      const event_time = timeEl ? timeEl.value : "";
-      const ticket_url = scope.querySelector('[name="ticket_url"]')?.value || "";
-      const dates = [...scope.querySelectorAll('[name="event_date"]')].map(i=>i.value).filter(Boolean);
-      if(!venue_id || !event_time || !dates.length) return [];
-      return dates.map(d => ({ venue_id, event_date:d, event_time, ticket_url }));
-    }
-
-    function gatherRowsTour(section){
-      const blocks = [...section.querySelectorAll(':scope > div')]; // each added group
-      const rows = [];
-      blocks.forEach(block=>{
-        const r = gatherRowsSingle(block);
-        rows.push(...r);
-      });
-      return rows;
-    }
-
-    // Submit handler
-    document.getElementById("eventForm").addEventListener("submit", async (e)=>{
+    formEl.addEventListener("submit", async (e) => {
       e.preventDefault();
+      banner.classList.add("hidden");
 
-      // Ensure session (for policies)
-      const { data:{ session } } = await supabase.auth.getSession();
-      if(!session){ alert("Not logged in. Please sign in again."); return; }
-
-      const base = getCommonFields();
-      let rows = [];
-
-      if(currentMode === "single"){
-        rows = gatherRowsSingle(tabContent);
-      }else if(currentMode === "recurring"){
-        rows = gatherRowsRecurring(tabContent);
-      }else{
-        const section = document.getElementById("scheduleSection");
-        rows = gatherRowsTour(section);
+      const organiserId = (document.getElementById("organiser_id").value || "").trim();
+      if (!organiserId || organiserId === "Not logged in") {
+        showBanner("You must be logged in to submit.", "error");
+        return;
       }
 
-      if(!rows.length){ alert("Please complete venue, date and time before submitting."); return; }
+      const name = formEl.event_name.value.trim();
+      const description = formEl.description.value.trim();
+      const category = formEl.category.value || null;
+      const image_url = imageUrlInput.value || null;
+      const publish_status = formEl.publish_status.value;
 
-      // Merge common fields into each row
-      const payload = rows.map(r => ({ ...base, ...r }));
+      const type = uiEventType.value; // UI only
+      const rows = [];
 
-      try{
-        const { error } = await supabase.from("events").insert(payload);
-        if(error) throw error;
-        alert("Event(s) created successfully.");
-        // Optional: reset minimal fields
-        // e.target.reset();
-      }catch(err){
-        alert("Error saving event(s): " + (err?.message || err));
+      if (type === "single" || type === "recurring") {
+        const root = tabContent;
+        const venueId = root.querySelector(".venue-id")?.value || null;
+        const ticketUrl = root.querySelector(".ticket_url")?.value?.trim() || null;
+
+        // gather all date/time pairs present in this view
+        const dates = [...root.querySelectorAll(".event_date")].map(i => i.value);
+        const times = [...root.querySelectorAll(".event_time")].map(i => i.value);
+
+        if (!venueId) return showBanner("Select a venue.", "error");
+        if (!dates.length || !times.length) return showBanner("Choose date and time.", "error");
+
+        dates.forEach((d, idx) => {
+          const t = times[idx] || times[0];
+          rows.push({
+            event_name: name,
+            description,
+            category,
+            image_url,
+            publish_status,
+            organiser_id: organiserId,
+            venue_id: venueId,
+            event_date: d,          // <-- flat columns (no arrays)
+            event_time: t,
+            ticket_url: ticketUrl
+          });
+        });
+      } else {
+        // tour = multiple blocks
+        const blocks = [...document.querySelectorAll("#tourWrapper .tourBlock")];
+        if (!blocks.length) return showBanner("Add at least one tour stop.", "error");
+
+        for (const b of blocks) {
+          const venueId = b.querySelector(".venue-id")?.value || null;
+          const ticketUrl = b.querySelector(".ticket_url")?.value?.trim() || null;
+          const d = b.querySelector(".event_date")?.value || null;
+          const t = b.querySelector(".event_time")?.value || null;
+          if (!venueId || !d || !t) continue;
+
+          rows.push({
+            event_name: name,
+            description,
+            category,
+            image_url,
+            publish_status,
+            organiser_id: organiserId,
+            venue_id: venueId,
+            event_date: d,
+            event_time: t,
+            ticket_url: ticketUrl
+          });
+        }
+      }
+
+      if (!rows.length) return showBanner("Nothing to submit yet.", "error");
+
+      const { data, error } = await supabase.from("events").insert(rows).select("id");
+      if (error) {
+        showBanner(error.message || "Failed to upload event.", "error");
+      } else {
+        showBanner("Event saved.", "success");
+        formEl.reset();
+        // reset UI bits
+        imageUrlInput.value = "";
+        placeholderImageWrapper.classList.remove("hidden");
+        carouselWrapper.classList.add("hidden");
+        mountView("single");
+        tabBtns.forEach(b => b.classList.remove("bg-green-600"));
+        tabBtns[0].classList.add("bg-green-600");
       }
     });
   </script>
