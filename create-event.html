@@ -1,46 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <!-- SECTION: META & TITLE -->
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Create Event – Spondle</title>
 
-  <!-- Tailwind & Flowbite -->
+  <!-- SECTION: TAILWIND & FLOWBITE -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Layout JS -->
-  <script src="./spondle-layout.js?v=global"></script>
+  <!-- SECTION: SHARED LAYOUT STYLES -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
+  <link rel="stylesheet" href="./styles.css?v=global-9">
+  <link rel="stylesheet" href="./hearts.css?v=global-9">
 
+  <!-- SECTION: PAGE STYLES -->
   <style>
+    :root { --card-bg:#0f172a; --field-bg:#0b1220; }
     body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
-
-    main { padding-top:80px; display:flex; justify-content:center; }
+    .page-wrap { padding: 2rem 0; }
     .card {
-      background:#0f172a;
+      background:var(--card-bg);
       border-radius:16px;
       box-shadow:0 10px 30px rgba(0,0,0,.45);
-      width:95%;
-      max-width:1200px;
-      padding:2rem;
     }
-
-    .input-dark { background:#0b1220; color:#fff; width:100%; }
-    .input-dark::placeholder { color:#9ca3af; }
+    .content-shell {
+      /* wider than schedule.html per your request */
+      max-width: 64rem; /* ~1024px */
+    }
+    .input-dark {
+      background:var(--field-bg);
+      color:#fff;
+      width:100%;
+      border:1px solid #374151;
+      border-radius:12px;
+      padding:12px;
+      transition:all .2s ease;
+    }
     .input-dark:focus {
-      border-color:#3b82f6 !important;
       outline:none;
-      box-shadow:0 0 0 1.5px #3b82f6;
+      border-color:#3b82f6 !important;
+      box-shadow:0 0 0 2px rgba(59,130,246,.3);
     }
+    .input-dark::placeholder { color:#9ca3af; }
+    select.input-dark option { background:var(--field-bg); color:#fff; }
 
-    .pill { border-radius:9999px; padding:.6rem 1rem; font-weight:600; text-align:center; width:50%; }
+    /* Image carousel styles (simple, no "Next" btn) */
+    .img-wrapper { border-radius:12px; overflow:hidden; border:3px solid transparent; transition:border-color .2s; }
+    .img-wrapper.selected { border-color:#3b82f6; }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+
+    /* Schedule tabs like schedule.html */
+    .pill { border-radius:9999px; padding:.6rem 1rem; font-weight:600; text-align:center; }
     .pill-on { background:#22c55e; color:#000; }
     .pill-off { background:#374151; color:#e5e7eb; }
 
+    /* Venue search popover (matches schedule.html) */
     .results-pop { position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
       z-index:60; background:#0f172a; border-radius:12px; padding:10px; }
     .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; }
@@ -48,346 +66,474 @@
     .no-results { padding:12px 14px; background:#111827; border:1px solid #374151; border-radius:12px; text-align:center; color:#9ca3af; margin:8px 0; cursor:pointer; }
     .no-results:hover { background:#1b2433; }
 
-    #imageBox { width:100%; height:320px; border-radius:14px; overflow:hidden; position:relative; background:#0b1220; }
-    #imageBox img { width:100%; height:100%; object-fit:cover; }
-
-    h1,h2 { font-weight:700; color:#fff; }
+    /* Inline status panel (silent unless error/success) */
+    #banner { display:none; }
+    #banner.show { display:block; }
+    #banner.ok { background:#052e16; color:#86efac; border:1px solid #14532d; }
+    #banner.err{ background:#3f1d1d; color:#fecaca; border:1px solid #7f1d1d; }
   </style>
 </head>
 
-<body>
-  <div id="sp-header"></div>
-  <div id="sp-sidebar"></div>
-  <div id="sp-overlay"></div>
+<body class="min-h-screen">
+  <!-- SECTION: LAYOUT SHELL (Sticky header + sidebar) -->
+  <script src="./spondle-layout.js?v=global-9" type="module"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      // restores sticky header + sidebar exactly like other pages
+      window.Layout?.init({ active: "dashboard" });
+    });
+  </script>
 
-  <main>
-    <div class="card">
-      <!-- ================================
-           SECTION: TITLE & BASIC INFO
-      ================================= -->
-      <h1 class="text-3xl font-bold mb-6">Create Event</h1>
+  <!-- SECTION: PAGE WRAP -->
+  <div class="page-wrap flex justify-center">
+    <div class="content-shell w-full px-4">
+      <div class="card w-full p-6">
+        <h1 class="text-3xl font-bold text-white mb-6">Create Event</h1>
 
-      <div class="mb-6">
-        <label class="block text-sm text-gray-300 mb-2">Event Name</label>
-        <input id="eventName" type="text" placeholder="Enter event name" class="input-dark p-3 rounded-lg border border-gray-700" />
-      </div>
-
-      <div class="mb-6">
-        <label class="block text-sm text-gray-300 mb-2">Description</label>
-        <textarea id="eventDescription" placeholder="Add event details" class="input-dark p-3 rounded-lg border border-gray-700 h-28"></textarea>
-      </div>
-
-      <!-- ================================
-           SECTION: CATEGORY + IMAGE
-      ================================= -->
-      <div class="mb-6">
-        <label class="block text-sm text-gray-300 mb-2">Event Category & Image</label>
-        <select id="eventCategory" class="input-dark p-3 rounded-lg border border-gray-700 mb-4">
-          <option>Select category</option>
-          <option>Music</option>
-          <option>Comedy</option>
-          <option>Theatre</option>
-          <option>Sports</option>
-          <option>Exhibition</option>
-          <option>Workshop</option>
-          <option>Festival</option>
-          <option>Beer Festivals</option>
-          <option>Archery</option>
-          <option>Frisbee Golf</option>
-          <option>Crazy Golf</option>
-          <option>Murder Mystery</option>
-        </select>
-        <div id="imageBox" class="border border-gray-700 flex items-center justify-center">
-          <img id="categoryImage" src="./images/placeholder.jpg" alt="Preview" />
-          <button id="nextImage" class="absolute bottom-4 right-4 bg-blue-500 hover:bg-blue-400 text-black font-semibold px-3 py-2 rounded-lg">Next</button>
-        </div>
-      </div>
-
-      <!-- ================================
-           SECTION: SCHEDULE TYPE BUTTONS
-      ================================= -->
-      <div class="flex space-x-2 mb-6">
-        <button id="tabSingle" class="pill pill-on">Single</button>
-        <button id="tabRecurring" class="pill pill-off">Recurring</button>
-        <button id="tabTour" class="pill pill-off">Tour</button>
-      </div>
-
-      <div id="panelSingle">
-        <!-- (venue search + date/time injected in Part 2) -->
-      </div>
-
-      <!-- ================================
-           SECTION: RECURRING PANEL
-      ================================= -->
-      <div id="panelRecurring" class="hidden">
-        <div class="mb-6 relative">
-          <label class="block text-sm text-gray-300 mb-2">Venue</label>
-          <div class="relative">
-            <input id="recVenueSearch" type="text" placeholder="Search by venue name..."
-                   class="input-dark p-3 rounded-lg border border-gray-700">
-            <button type="button" id="recVenueClear"
-                    class="absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
-            <div id="recResultsPop" class="results-pop hidden">
-              <div id="recVenueResults"></div>
-              <div id="recNoVenueResults" class="no-results hidden">
-                No matches found.<br><span class="text-blue-400 underline">+ Add new venue</span>
-              </div>
-            </div>
+        <!-- SECTION: FORM START -->
+        <form id="eventForm" class="space-y-6">
+          <!-- SECTION: BASIC INFO -->
+          <div>
+            <label class="block mb-2 text-gray-200">Event Name</label>
+            <input type="text" name="event_name" required class="input-dark" placeholder="Enter event name" />
           </div>
-          <input id="recVenueId" type="text" readonly placeholder="Venue ID will appear here"
-                 class="input-dark p-3 rounded-lg border border-gray-700 text-blue-400 mt-2">
-          <input id="recTicketLink" type="text" placeholder="Ticket link (optional) e.g. https://example.com/evt123"
-                 class="input-dark p-3 rounded-lg border border-gray-700 text-gray-300 mt-2">
-          <div id="recNewVenueForm" class="hidden mt-4 space-y-2">
-            <input id="recNewName"   type="text" placeholder="Venue name"     class="input-dark p-3 rounded-lg border border-gray-700 w-full">
-            <input id="recNewStreet" type="text" placeholder="Street address" class="input-dark p-3 rounded-lg border border-gray-700 w-full">
-            <input id="recNewPC"     type="text" placeholder="Postcode"       class="input-dark p-3 rounded-lg border border-gray-700 w-full">
-            <button id="recCreateVenue" class="bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+
+          <div>
+            <label class="block mb-2 text-gray-200">Description</label>
+            <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
           </div>
-        </div>
 
-        <div class="space-y-3 mb-4" id="recDatesWrap">
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <div>
-              <label class="block text-sm text-gray-300 mb-2">Date</label>
-              <input type="date" class="recDate input-dark p-3 rounded-lg border border-gray-700 w-full">
-            </div>
-            <div>
-              <label class="block text-sm text-gray-300 mb-2">Time</label>
-              <input type="time" class="recTime input-dark p-3 rounded-lg border border-gray-700 w-full">
-            </div>
+          <!-- SECTION: CATEGORY + IMAGE -->
+          <div>
+            <label class="block mb-2 text-gray-200">Event Category & Image</label>
+            <select id="categorySelect" name="category" required class="input-dark">
+              <option value="">Select category</option>
+              <option value="music">Music</option>
+              <option value="comedy">Comedy</option>
+              <option value="theatre">Theatre</option>
+              <option value="sports">Sports</option>
+              <option value="festival">Festival</option>
+              <option value="quiz">Quiz Night</option>
+            </select>
           </div>
-        </div>
-        <button id="recAddDate" type="button" class="text-blue-400 text-sm">+ Add another date</button>
-      </div>
 
-      <!-- ================================
-           SECTION: TOUR PANEL (start)
-      ================================= -->
-      <div id="panelTour" class="hidden">
-        <div id="tourRoot" class="space-y-6"></div>
-        <button id="addTourBlockBtn"
-                class="mt-4 bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">
-          + Add another venue/date
-        </button>
-      </div>
+          <!-- SECTION: IMAGE PLACEHOLDER + CAROUSEL -->
+          <div id="imageArea" class="space-y-3">
+            <!-- Always-visible placeholder so it feels full-width -->
+            <div id="placeholderImageWrapper" class="img-wrapper w-full h-72 md:h-96 border border-slate-700">
+              <img
+                src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
+                alt="Spondle placeholder"
+                class="w-full h-full object-cover"
+              />
+            </div>
 
-      <!-- ================================
-           SECTION: PUBLISH & SUBMIT
-      ================================= -->
-      <div class="mt-8">
-        <label class="block text-sm text-gray-300 mb-2">Publish Status</label>
-        <select id="publishStatus" class="input-dark p-3 rounded-lg border border-gray-700 w-full mb-6">
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
+            <!-- Auto-populated carousel -->
+            <div id="carouselWrapper" class="hidden"></div>
+          </div>
 
-        <button id="submitBtn"
-                class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg">
-          Submit Event
-        </button>
+          <!-- Hidden field for final chosen image -->
+          <input type="hidden" id="image_url" name="image_url" />
 
-        <div class="mt-6">
-          <label class="block text-sm text-gray-400 mb-2">Organiser ID (temporary)</label>
-          <input type="text" id="organiser_id" readonly
-                 class="input-dark p-3 rounded-lg border border-gray-700 text-green-400" placeholder="Fetching..." />
-        </div>
+          <!-- SECTION: SCHEDULE (tabs styled like schedule.html) -->
+          <div>
+            <label class="block mb-2 text-gray-200">Schedule</label>
+            <div class="flex gap-2 mb-4">
+              <button type="button" class="pill pill-on" data-type="single">Single</button>
+              <button type="button" class="pill pill-off" data-type="recurring">Recurring</button>
+              <button type="button" class="pill pill-off" data-type="tour">Tour</button>
+            </div>
+            <input type="hidden" id="activeView" value="single" />
+            <div id="tabContent"></div>
+          </div>
 
-        <pre id="statusBox"
-             class="mt-6 bg-[#0b1220] border border-gray-700 rounded-xl p-4 text-sm whitespace-pre-wrap"></pre>
+          <!-- SECTION: PUBLISH -->
+          <div>
+            <label class="block mb-2 text-gray-200">Publish Status</label>
+            <select name="publish_status" required class="input-dark">
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+
+          <!-- SECTION: SUBMIT -->
+          <button type="submit" class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg">
+            Submit Event
+          </button>
+
+          <!-- SECTION: ORGANISER -->
+          <div>
+            <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
+            <input type="text" id="organiser_id" name="organiser_id" readonly
+              class="input-dark text-green-400 text-sm"
+              placeholder="Not logged in" />
+          </div>
+
+          <!-- SECTION: SILENT BANNER -->
+          <div id="banner" class="mt-4 text-center px-4 py-2 rounded text-sm"></div>
+        </form>
+        <!-- /FORM END -->
       </div>
     </div>
-  </main>
+  </div>
 
-  <!-- =========================================
-       SECTION: PAGE SCRIPTS
-  ============================================ -->
-  <script>
-    /* ---------- Initialise sidebar/header ---------- */
-    window.addEventListener('DOMContentLoaded', () => {
-      window.Layout?.init?.({ active: 'dashboard' });
-    });
+  <!-- SECTION: PAGE SCRIPT -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     /* ---------- Supabase ---------- */
-    const supabase = window.supabase.createClient(
+    const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    /* ---------- Helpers ---------- */
-    const $ = (sel, root=document) => root.querySelector(sel);
-    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-    const log = (msg, ok=true) => {
-      const box = $('#statusBox');
-      const icon = ok ? '✅' : '❌';
-      box.textContent += `${icon} ${msg}\n`;
-    };
+    /* ---------- Silent banner helpers ---------- */
+    const banner = document.getElementById("banner");
+    function ok(msg){ banner.textContent = msg || "Done."; banner.className="mt-4 text-center px-4 py-2 rounded text-sm show ok"; }
+    function err(msg){ banner.textContent = msg || "Something went wrong."; banner.className="mt-4 text-center px-4 py-2 rounded text-sm show err"; }
 
-    /* ---------- Auth ---------- */
+    /* ---------- Auth (organiser id) ---------- */
     (async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      const out = $('#organiser_id');
-      if (error || !user) { out.value = 'Not logged in'; log('Auth error: not logged in', false); return; }
-      out.value = user.id;
-      log(`Logged in as ${user.email ?? user.id}`);
+      const { data: { user } } = await supabase.auth.getUser();
+      const el = document.getElementById("organiser_id");
+      el.value = user ? user.id : "Not logged in";
     })();
 
-    /* ---------- Category → Image carousel ---------- */
+    /* ---------- Stock images by category ---------- */
     const stockImages = {
-      'Music': [
+      music: [
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1600&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80"
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80",
       ],
-      'Comedy': [
+      comedy: [
         "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
-        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png"
+        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
       ],
-      'Theatre': [
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80"
+      theatre: [
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1600&q=80",
       ],
-      'Sports': [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1600&q=80"
+      sports: [
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1600&q=80",
       ],
-      'Festival': [
-        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1600&q=80"
+      festival: [
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1600&q=80",
       ],
-      'Beer Festivals': [
-        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1600&q=80"
+      quiz: [
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80",
       ],
-      'Archery': [
-        "https://images.unsplash.com/photo-1560697863-8a1c1c1ff717?auto=format&fit=crop&w=1600&q=80"
-      ],
-      'Frisbee Golf': [
-        "https://images.unsplash.com/photo-1516637090014-cb1ab0d08fc7?auto=format&fit=crop&w=1600&q=80"
-      ],
-      'Crazy Golf': [
-        "https://images.unsplash.com/photo-1519999482648-25049ddd37b1?auto=format&fit=crop&w=1600&q=80"
-      ],
-      'Murder Mystery': [
-        "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?auto=format&fit=crop&w=1600&q=80"
-      ]
     };
 
-    let carouselIdx = 0;
-    let currentImages = [];
-    const categorySel = $('#eventCategory');
-    const imgEl = $('#categoryImage');
-    const setImagesForCategory = () => {
-      currentImages = stockImages[categorySel.value] ?? ["./images/placeholder.jpg"];
-      carouselIdx = 0;
-      imgEl.src = currentImages[0];
-    };
-    categorySel.addEventListener('change', setImagesForCategory);
-    $('#nextImage').addEventListener('click', () => {
-      if (!currentImages.length) return;
-      carouselIdx = (carouselIdx + 1) % currentImages.length;
-      imgEl.src = currentImages[carouselIdx];
-    });
-    setImagesForCategory();
+    const categorySelect = document.getElementById("categorySelect");
+    const placeholderImageWrapper = document.getElementById("placeholderImageWrapper");
+    const carouselWrapper = document.getElementById("carouselWrapper");
+    const imageUrlInput = document.getElementById("image_url");
 
-    /* ---------- Venue search (shared wiring) ---------- */
-    function wireVenueSearch(cfg) {
-      const { search, clearBtn, pop, list, nores, idOut, newForm, nameIn, streetIn, pcIn, createBtn } = cfg;
-      let t;
-      async function queryVenues(q) {
-        const clean = q.replace(/[^a-zA-Z0-9\s'-]/g, '').trim();
-        if (!clean) return [];
-        const { data, error } = await supabase
-          .from('venues')
-          .select('id, venue_name, street_name, postcode')
-          .ilike('venue_name', `%${clean}%`)
-          .limit(5);
-        return error ? [] : data || [];
-      }
-      function render(items) {
-        list.innerHTML = '';
-        nores.classList.add('hidden');
-        if (!items.length) { nores.classList.remove('hidden'); return; }
-        items.forEach(v => {
-          const div = document.createElement('div');
-          div.className = 'venue-card';
-          div.innerHTML = `<div class="font-semibold">${v.venue_name}</div>
-                           <div class="text-gray-300">${[v.street_name, v.postcode].filter(Boolean).join(', ')}</div>`;
-          div.onclick = () => { search.value = v.venue_name; idOut.value = v.id; pop.classList.add('hidden'); };
-          list.appendChild(div);
+    function buildCarousel(urls=[]) {
+      carouselWrapper.classList.toggle("hidden", urls.length===0);
+      if (!urls.length) return;
+
+      const track = document.createElement("div");
+      track.className = "flex overflow-x-auto no-scrollbar gap-3 snap-x snap-mandatory scroll-smooth";
+
+      urls.forEach((url, i) => {
+        const wrap = document.createElement("div");
+        wrap.className = "img-wrapper w-[44rem] max-w-full h-72 md:h-96 shrink-0 snap-center border border-slate-700";
+        const img = document.createElement("img");
+        img.src = url;
+        img.className = "w-full h-full object-cover cursor-pointer";
+        img.addEventListener("click", () => {
+          track.querySelectorAll(".img-wrapper").forEach(w => w.classList.remove("selected"));
+          wrap.classList.add("selected");
+          imageUrlInput.value = url;
         });
-      }
-      search.addEventListener('input', () => {
-        clearTimeout(t);
-        const q = search.value.trim();
-        if (!q) { list.innerHTML=''; pop.classList.add('hidden'); return; }
-        t = setTimeout(async () => { const results = await queryVenues(q); render(results); pop.classList.remove('hidden'); }, 220);
+        if (i===0) { wrap.classList.add("selected"); imageUrlInput.value = url; }
+        wrap.appendChild(img);
+        track.appendChild(wrap);
       });
-      search.addEventListener('focus', () => { if (list.children.length) pop.classList.remove('hidden'); });
-      clearBtn.addEventListener('click', () => {
-        search.value = ''; idOut.value=''; list.innerHTML=''; pop.classList.add('hidden'); newForm?.classList.add('hidden');
-      });
-      nores?.addEventListener('click', () => { pop.classList.add('hidden'); newForm?.classList.remove('hidden'); });
-      createBtn?.addEventListener('click', async () => {
-        const n = nameIn.value.trim(), s = streetIn.value.trim(), p = pcIn.value.trim();
-        if (!n) return;
-        const { data, error } = await supabase.from('venues')
-          .insert([{ venue_name: n, street_name: s, postcode: p }]).select('id').single();
-        if (error) { log('Venue create failed', false); return; }
-        idOut.value = data.id; search.value = n; newForm.classList.add('hidden');
-        nameIn.value = streetIn.value = pcIn.value = '';
-      });
+
+      carouselWrapper.innerHTML = "";
+      carouselWrapper.appendChild(track);
     }
 
-    /* Wire Single + Recurring searches */
-    wireVenueSearch({
-      search: $('#recVenueSearch'), clearBtn: $('#recVenueClear'),
-      pop: $('#recResultsPop'), list: $('#recVenueResults'), nores: $('#recNoVenueResults'),
-      idOut: $('#recVenueId'), newForm: $('#recNewVenueForm'),
-      nameIn: $('#recNewName'), streetIn: $('#recNewStreet'), pcIn: $('#recNewPC'), createBtn: $('#recCreateVenue')
+    categorySelect.addEventListener("change", () => {
+      const cat = categorySelect.value;
+      if (stockImages[cat]) {
+        placeholderImageWrapper.classList.add("hidden");
+        buildCarousel(stockImages[cat]);
+      } else {
+        imageUrlInput.value = "";
+        carouselWrapper.innerHTML = "";
+        carouselWrapper.classList.add("hidden");
+        placeholderImageWrapper.classList.remove("hidden");
+      }
     });
 
-    /* ---------- Tabs ---------- */
-    function setTab(which) {
-      const s = $('#tabSingle'), r = $('#tabRecurring'), t = $('#tabTour');
-      const ps = $('#panelSingle'), pr = $('#panelRecurring'), pt = $('#panelTour');
-      [s, r, t].forEach(el => { el.classList.remove('pill-on'); el.classList.add('pill-off'); });
-      ps.classList.add('hidden'); pr.classList.add('hidden'); pt.classList.add('hidden');
-      if (which==='single'){ s.classList.add('pill-on'); ps.classList.remove('hidden'); }
-      if (which==='recurring'){ r.classList.add('pill-on'); pr.classList.remove('hidden'); }
-      if (which==='tour'){ t.classList.add('pill-on'); pt.classList.remove('hidden'); }
-    }
-    $('#tabSingle').addEventListener('click', ()=>setTab('single'));
-    $('#tabRecurring').addEventListener('click', ()=>setTab('recurring'));
-    $('#tabTour').addEventListener('click', ()=>setTab('tour'));
-    setTab('single');
-
-    /* ---------- Submit ---------- */
-    async function insertEvents(rows) {
-      if (!rows.length) return { error: { message:'No rows to insert' } };
-      const { data, error } = await supabase.from('events').insert(rows).select('id');
-      return { data, error };
+    /* ---------- Venue search (like schedule.html) ---------- */
+    async function searchVenuesRelevance(query) {
+      const clean = query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
+      if (!clean) return [];
+      const { data } = await supabase
+        .from("venues")
+        .select("id, venue_name, street_name, postcode")
+        .ilike("venue_name", `%${clean}%`);
+      if (!data) return [];
+      const starts = data.filter(v=>v.venue_name.toLowerCase().startsWith(clean.toLowerCase()));
+      const others = data.filter(v=>!v.venue_name.toLowerCase().startsWith(clean.toLowerCase()));
+      return [...starts, ...others].slice(0,5);
     }
 
-    $('#submitBtn').addEventListener('click', async () => {
-      $('#statusBox').textContent = 'Submitting...\n';
+    function venueBlock() {
+      return `
+        <div class="mb-6 relative">
+          <label class="block text-sm text-gray-300 mb-2">Venue</label>
+          <div class="relative">
+            <input type="text" placeholder="Search by venue name..." class="vs-input input-dark p-3 rounded-lg border border-gray-700">
+            <button type="button" class="vs-clear absolute right-3 top-3 text-gray-400 hover:text-gray-200">&times;</button>
+            <div class="vs-pop results-pop hidden">
+              <div class="vs-list"></div>
+              <div class="vs-none no-results hidden">No matches found.<br><span class="text-blue-400 underline">+ Add new venue</span></div>
+            </div>
+          </div>
+          <input type="text" readonly placeholder="Venue ID will appear here" class="vs-id input-dark p-3 rounded-lg border border-gray-700 text-blue-400 mt-2">
+          <input type="text" placeholder="Ticket link (optional) e.g. https://ticketsite.com/event123" class="vs-ticket input-dark p-3 rounded-lg border border-gray-700 text-gray-300 mt-2">
+          <div class="vs-new hidden mt-4 space-y-2">
+            <input type="text" placeholder="Venue name" class="vs-new-name input-dark p-3 rounded-lg border border-gray-700 w-full">
+            <input type="text" placeholder="Street address" class="vs-new-street input-dark p-3 rounded-lg border border-gray-700 w-full">
+            <input type="text" placeholder="Postcode" class="vs-new-pc input-dark p-3 rounded-lg border border-gray-700 w-full">
+            <button type="button" class="vs-create bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+          </div>
+        </div>
+      `;
+    }
 
-      const name = $('#eventName').value.trim();
-      const description = $('#eventDescription').value.trim();
-      const publish_status = $('#publishStatus').value;
-      const organiser_id = $('#organiser_id').value && $('#organiser_id').value!=='Not logged in' ? $('#organiser_id').value : null;
-      const image_url = $('#categoryImage').src;
+    function wireVenue(scope) {
+      const root = scope;
+      const input = root.querySelector(".vs-input");
+      const pop   = root.querySelector(".vs-pop");
+      const list  = root.querySelector(".vs-list");
+      const none  = root.querySelector(".vs-none");
+      const clear = root.querySelector(".vs-clear");
+      const idOut = root.querySelector(".vs-id");
+      const newBox= root.querySelector(".vs-new");
+      const nn = root.querySelector(".vs-new-name");
+      const ns = root.querySelector(".vs-new-street");
+      const np = root.querySelector(".vs-new-pc");
+      const create = root.querySelector(".vs-create");
+      let t;
 
-      if (!name) { log('Event name is required', false); return; }
-      if (!organiser_id) { log('Must be logged in', false); return; }
+      function open(){ pop.classList.remove("hidden"); }
+      function close(){ pop.classList.add("hidden"); }
 
-      const venue_id = $('#recVenueId').value.trim();
-      const ticket_url = $('#recTicketLink').value.trim() || null;
-      const date = $$('.recDate')[0]?.value;
-      const time = $$('.recTime')[0]?.value;
-      if (!venue_id || !date || !time) { log('Venue, date, and time required', false); return; }
+      input.addEventListener("input", () => {
+        clearTimeout(t);
+        const q = input.value.trim();
+        list.innerHTML = ""; none.classList.add("hidden");
+        if (!q) { close(); idOut.value=""; return; }
+        t = setTimeout(async ()=>{
+          const results = await searchVenuesRelevance(q);
+          list.innerHTML = ""; none.classList.add("hidden");
+          if (!results.length) { none.classList.remove("hidden"); open(); return; }
+          results.forEach(v=>{
+            const div = document.createElement("div");
+            div.className = "venue-card";
+            div.innerHTML = `<div class="font-semibold">${v.venue_name}</div>
+              <div class="text-gray-300">${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
+            div.addEventListener("click", ()=>{
+              input.value = v.venue_name;
+              idOut.value = v.id;
+              close(); newBox.classList.add("hidden");
+            });
+            list.appendChild(div);
+          });
+          open();
+        }, 250);
+      });
 
-      const rows = [{ event_name:name, description, image_url, publish_status, organiser_id,
-                      venue_id, ticket_url, event_date:date, event_time:time }];
+      input.addEventListener("focus", ()=>{
+        if (list.children.length || !none.classList.contains("hidden")) open();
+      });
 
-      const { data, error } = await insertEvents(rows);
-      if (error) { log(error.message, false); return; }
-      log(`Success: inserted ${data.length} row(s).`);
+      clear.addEventListener("click", ()=>{
+        input.value=""; idOut.value=""; list.innerHTML=""; none.classList.add("hidden"); close(); newBox.classList.add("hidden");
+      });
+
+      none.addEventListener("click", ()=>{
+        close(); newBox.classList.remove("hidden");
+      });
+
+      create.addEventListener("click", async ()=>{
+        const name = nn.value.trim(); if(!name) return;
+        const street = ns.value.trim(); const pc = np.value.trim();
+        const { data, error } = await supabase.from("venues").insert([{ venue_name:name, street_name:street, postcode:pc }]).select("id").single();
+        if (error) { err("Could not create venue."); return; }
+        idOut.value = data.id; input.value = name; newBox.classList.add("hidden");
+        nn.value = ns.value = np.value = "";
+      });
+    }
+
+    /* ---------- Schedule views (match schedule.html logic) ---------- */
+    const tabContent = document.getElementById("tabContent");
+    const viewBtns = Array.from(document.querySelectorAll(".pill"));
+    const activeView = document.getElementById("activeView");
+
+    function viewSingle() {
+      return `
+        ${venueBlock()}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Date</label>
+            <input type="date" class="sc-date input-dark" required />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Time</label>
+            <input type="time" class="sc-time input-dark" required />
+          </div>
+        </div>
+      `;
+    }
+
+    function viewRecurring() {
+      return `
+        ${venueBlock()}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">First date</label>
+            <input type="date" class="sc-date input-dark" required />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Time</label>
+            <input type="time" class="sc-time input-dark" required />
+          </div>
+        </div>
+        <div class="mt-4">
+          <label class="block text-sm text-gray-300 mb-2">More dates</label>
+          <button type="button" id="addRecurringDate" class="text-blue-400 underline">+ Add another date</button>
+          <div id="recurringDates" class="mt-2 space-y-2"></div>
+        </div>
+      `;
+    }
+
+    function viewTour() {
+      return `
+        <div id="tourRoot" class="space-y-6">
+          <div class="tour-block">${viewSingle()}</div>
+        </div>
+        <button type="button" id="addTourBlock" class="mt-2 text-blue-400 underline">+ Add another venue/date</button>
+      `;
+    }
+
+    function setView(name) {
+      activeView.value = name;
+      viewBtns.forEach(b=>{
+        b.classList.remove("pill-on"); b.classList.add("pill-off");
+        if (b.dataset.type===name) { b.classList.add("pill-on"); b.classList.remove("pill-off"); }
+      });
+
+      if (name==="single") tabContent.innerHTML = viewSingle();
+      if (name==="recurring") tabContent.innerHTML = viewRecurring();
+      if (name==="tour") tabContent.innerHTML = viewTour();
+
+      // wire venue search for current view(s)
+      if (name==="tour") {
+        // first block
+        wireVenue(tabContent.querySelector(".tour-block"));
+        // add blocks
+        tabContent.querySelector("#addTourBlock").addEventListener("click", ()=>{
+          const root = tabContent.querySelector("#tourRoot");
+          const div = document.createElement("div");
+          div.className = "tour-block pt-4 border-t border-slate-700";
+          div.innerHTML = viewSingle();
+          root.appendChild(div);
+          wireVenue(div);
+        });
+      } else {
+        wireVenue(tabContent);
+        // recurring date adder
+        if (name==="recurring") {
+          tabContent.querySelector("#addRecurringDate").addEventListener("click", ()=>{
+            const host = tabContent.querySelector("#recurringDates");
+            const row = document.createElement("div");
+            row.innerHTML = `<input type="date" class="sc-date input-dark w-full" required />`;
+            host.appendChild(row);
+          });
+        }
+      }
+    }
+
+    // init default view
+    setView("single");
+    viewBtns.forEach(b => b.addEventListener("click", () => setView(b.dataset.type)));
+
+    /* ---------- Submit handler (no event_visibility, no bracketed names) ---------- */
+    const form = document.getElementById("eventForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      banner.className = ""; banner.textContent = "";
+
+      const organiser_id = document.getElementById("organiser_id").value || null;
+      const formData = new FormData(form);
+      const payloadBase = {
+        event_name: formData.get("event_name")?.toString().trim() || "",
+        description: formData.get("description")?.toString().trim() || "",
+        image_url: document.getElementById("image_url").value || null,
+        publish_status: formData.get("publish_status") || "draft",
+        organiser_id,
+      };
+
+      if (!payloadBase.event_name) { err("Please enter an event name."); return; }
+
+      try {
+        const mode = activeView.value; // single | recurring | tour
+        const rows = [];
+
+        const collectOne = (scope) => {
+          const venue_id = scope.querySelector(".vs-id")?.value || null;
+          const ticket_url = scope.querySelector(".vs-ticket")?.value?.trim() || null;
+          const date = scope.querySelector(".sc-date")?.value || null;
+          const time = scope.querySelector(".sc-time")?.value || null;
+          if (!venue_id || !date || !time) return null;
+          return { ...payloadBase, venue_id, event_date: date, event_time: time, ticket_url };
+        };
+
+        if (mode === "single") {
+          const one = collectOne(tabContent);
+          if (!one) { err("Please complete venue, date and time."); return; }
+          rows.push(one);
+        }
+
+        if (mode === "recurring") {
+          const first = collectOne(tabContent);
+          if (!first) { err("Please complete venue, date and time."); return; }
+          rows.push(first);
+          tabContent.querySelectorAll("#recurringDates .sc-date").forEach(d => {
+            if (d.value) rows.push({ ...first, event_date: d.value });
+          });
+        }
+
+        if (mode === "tour") {
+          const blocks = tabContent.querySelectorAll(".tour-block");
+          blocks.forEach(b => {
+            const one = collectOne(b);
+            if (one) rows.push(one);
+          });
+          if (!rows.length) { err("Please add at least one valid venue/date."); return; }
+        }
+
+        // Insert one row per occurrence (matches your earlier working model)
+        const { error } = await supabase.from("events").insert(rows);
+        if (error) throw error;
+
+        ok("Event(s) created.");
+        form.reset();
+        document.getElementById("image_url").value = "";
+        placeholderImageWrapper.classList.remove("hidden");
+        carouselWrapper.innerHTML = "";
+        carouselWrapper.classList.add("hidden");
+        setView("single");
+      } catch (e2) {
+        err(e2?.message || "Failed to upload event.");
+      }
     });
   </script>
 </body>
