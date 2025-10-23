@@ -1,23 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Create Event – Spondle</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
-
-  <!-- Shared layout -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-9" />
-  <link rel="stylesheet" href="./styles.css?v=global-9" />
-  <link rel="stylesheet" href="./hearts.css?v=global-9" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- ===============================
        SECTION 1 — PAGE STYLES
@@ -30,71 +23,80 @@
       min-height: 100vh;
     }
 
-    .form-card {
+    .card {
       background: #0f172a;
-      border-radius: 0;
-      box-shadow: none;
-      padding: 1.5rem;
-      width: 100%;
-      margin: 0;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
     }
 
     .input-dark {
       background: #0b1220;
       color: #fff;
       width: 100%;
-      border: 1px solid #374151;
-      border-radius: 12px;
-      padding: 12px;
-      transition: all 0.2s;
+    }
+
+    .input-dark::placeholder {
+      color: #9ca3af;
     }
 
     .input-dark:focus {
-      outline: none;
       border-color: #3b82f6 !important;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+      outline: none;
+      box-shadow: 0 0 0 1.5px #3b82f6;
     }
 
-    select.input-dark option {
-      background: #0b1220;
-      color: #fff;
+    .venue-card {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 8px 0;
     }
 
-    label {
-      font-size: 0.95rem;
-      color: #e5e7eb;
-      margin-bottom: 6px;
-      display: block;
+    .venue-card:hover {
+      background: #1b2433;
+      cursor: pointer;
+    }
+
+    .no-results {
+      padding: 12px 14px;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      text-align: center;
+      color: #9ca3af;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+
+    .no-results:hover {
+      background: #1b2433;
     }
 
     .pill {
       border-radius: 9999px;
       padding: 0.6rem 1rem;
-      font-weight: 700;
+      font-weight: 600;
       text-align: center;
+      width: 33%;
     }
 
-    .pill.on {
+    .pill-on {
       background: #22c55e;
       color: #000;
     }
 
-    .pill.off {
+    .pill-off {
       background: #374151;
       color: #e5e7eb;
     }
 
-    .pill-wrap {
-      display: flex;
-      gap: 0.5rem;
-      margin: 0.25rem 0 1rem;
-      flex-wrap: wrap;
-    }
-
     .poster {
-      height: 24rem; /* h-96 equivalent */
       width: 100%;
+      height: 24rem; /* h-96 */
       object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #1e293b;
     }
 
     .banner {
@@ -113,196 +115,144 @@
       border: 1px solid #ef4444;
       color: #fecaca;
     }
-
-    .venue-card {
-      background: #111827;
-      border: 1px solid #374151;
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin: 8px 0;
-    }
-
-    .venue-card:hover {
-      background: #1b2433;
-      border-color: #3b82f6;
-      cursor: pointer;
-    }
-
-    .no-results {
-      padding: 12px 14px;
-      background: #111827;
-      border: 1px solid #374151;
-      border-radius: 12px;
-      text-align: center;
-      color: #9ca3af;
-      margin: 8px 0;
-      cursor: pointer;
-    }
-
-    .no-results:hover {
-      background: #1b2433;
-      border-color: #3b82f6;
-    }
   </style>
 </head>
 
-<body class="min-h-screen">
-  <!-- ===============================
-       SECTION 2 — LAYOUT INITIALISATION
-  ================================== -->
-  <script src="./spondle-layout.js?v=global-9" type="module"></script>
-  <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      window.Layout?.init({ active: "dashboard" });
-    });
-  </script>
+<body class="flex items-start justify-center py-10">
+  <div class="card w-full max-w-xl p-6">
+    <h1 class="text-3xl font-bold text-white mb-6">Create Event</h1>
 
-  <!-- ===============================
-       SECTION 3 — PAGE CONTENT
-  ================================== -->
-  <main class="px-4 py-8 sm:px-6 lg:px-12">
-    <div class="form-card w-full">
-      <h1 class="text-3xl font-bold text-white mb-6">Create Event</h1>
+    <form id="eventForm" class="space-y-6">
 
-      <form id="eventForm" class="space-y-6">
+      <!-- ===============================
+           SECTION 2 — BASIC INFO
+      ================================== -->
+      <section id="section-basic-info">
+        <label class="block text-sm text-gray-300 mb-2">Event Name</label>
+        <input type="text" name="event_name" required class="input-dark p-3 rounded-lg border border-gray-700" placeholder="Enter event name" />
 
-        <!-- ===============================
-             SECTION 4 — BASIC INFO
-        ================================== -->
-        <section id="section-basic-info">
-          <label>Event Name</label>
-          <input type="text" name="event_name" required class="input-dark" placeholder="Enter event name" />
+        <label class="block text-sm text-gray-300 mt-4 mb-2">Description</label>
+        <textarea name="description" rows="4" class="input-dark p-3 rounded-lg border border-gray-700" placeholder="Add event details"></textarea>
+      </section>
 
-          <label class="mt-4 block">Description</label>
-          <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
-        </section>
+      <!-- ===============================
+           SECTION 3 — CATEGORY & IMAGE
+      ================================== -->
+      <section id="section-category">
+        <label class="block text-sm text-gray-300 mb-2">Event Category & Image</label>
+        <select id="categorySelect" name="category" required class="input-dark p-3 rounded-lg border border-gray-700 mb-3">
+          <option value="">Select category</option>
+          <option value="music">Music</option>
+          <option value="comedy">Comedy</option>
+          <option value="theatre">Theatre</option>
+          <option value="sports">Sports</option>
+          <option value="festival">Festival</option>
+          <option value="quiz">Quiz Night</option>
+        </select>
 
-        <!-- ===============================
-             SECTION 5 — CATEGORY & IMAGE
-        ================================== -->
-        <section id="section-category" class="space-y-3">
-          <label>Event Category & Image</label>
-          <select id="categorySelect" name="category" required class="input-dark">
-            <option value="">Select category</option>
-            <option value="music">Music</option>
-            <option value="comedy">Comedy</option>
-            <option value="theatre">Theatre</option>
-            <option value="sports">Sports</option>
-            <option value="festival">Festival</option>
-            <option value="quiz">Quiz Night</option>
-          </select>
-
-          <div id="placeholderImageWrapper" class="img-wrapper selected">
-            <img
-              src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
-              alt="Spondle placeholder"
-              class="poster"
-            />
-          </div>
-
-          <div id="carouselWrapper" class="hidden"></div>
-          <input type="hidden" name="image_url" id="image_url" />
-        </section>
-
-        <!-- ===============================
-             SECTION 6 — SCHEDULE
-        ================================== -->
-        <section id="section-schedule" class="pt-4">
-          <label class="block text-lg font-semibold mb-2">Schedule</label>
-
-          <div class="pill-wrap">
-            <button type="button" class="pill on" data-tab="single">Single</button>
-            <button type="button" class="pill off" data-tab="recurring">Recurring</button>
-            <button type="button" class="pill off" data-tab="tour">Tour</button>
-          </div>
-
-          <div id="tabContent" class="space-y-4"></div>
-        </section>
-
-        <!-- ===============================
-             SECTION 7 — PUBLISH
-        ================================== -->
-        <section id="section-publish" class="space-y-3">
-          <label>Publish Status</label>
-          <select name="publish_status" required class="input-dark">
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-        </section>
-
-        <!-- ===============================
-             SECTION 8 — SUBMIT
-        ================================== -->
-        <section id="section-submit" class="space-y-3">
-          <button
-            type="submit"
-            class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg"
-          >
-            Submit Event
-          </button>
-
-          <label class="block mt-2 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
-          <input
-            type="text"
-            id="organiser_id"
-            name="organiser_id"
-            readonly
-            class="input-dark text-green-400 text-sm"
-            placeholder="Fetching..."
+        <div id="placeholderImageWrapper">
+          <img
+            src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
+            alt="Spondle placeholder"
+            class="poster"
           />
+        </div>
 
-          <pre id="statusBox" class="mt-3 whitespace-pre-wrap text-sm"></pre>
-          <div id="banner" class="hidden banner mt-2"></div>
-        </section>
-      </form>
-    </div>
-  </main>
+        <div id="carouselWrapper" class="hidden"></div>
+        <input type="hidden" name="image_url" id="image_url" />
+      </section>
+
+      <!-- ===============================
+           SECTION 4 — SCHEDULE
+      ================================== -->
+      <section id="section-schedule">
+        <label class="block text-lg font-semibold mb-3">Schedule Type</label>
+        <div class="flex space-x-2 mb-6 w-full">
+          <button type="button" class="pill pill-on" data-tab="single">Single</button>
+          <button type="button" class="pill pill-off" data-tab="recurring">Recurring</button>
+          <button type="button" class="pill pill-off" data-tab="tour">Tour</button>
+        </div>
+
+        <div id="tabContent" class="space-y-4"></div>
+      </section>
+
+      <!-- ===============================
+           SECTION 5 — PUBLISH STATUS
+      ================================== -->
+      <section id="section-publish">
+        <label class="block text-sm text-gray-300 mb-2">Publish Status</label>
+        <select name="publish_status" required class="input-dark p-3 rounded-lg border border-gray-700">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+      </section>
+
+      <!-- ===============================
+           SECTION 6 — SUBMIT
+      ================================== -->
+      <section id="section-submit">
+        <button
+          type="submit"
+          class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg mt-4"
+        >
+          Submit Event
+        </button>
+
+        <label class="block mt-4 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
+        <input
+          type="text"
+          id="organiser_id"
+          name="organiser_id"
+          readonly
+          class="input-dark p-3 rounded-lg border border-gray-700 text-green-400 text-sm w-full"
+          placeholder="Fetching..."
+        />
+
+        <pre id="statusBox" class="mt-3 whitespace-pre-wrap text-sm"></pre>
+        <div id="banner" class="hidden banner mt-2"></div>
+      </section>
+    </form>
+  </div>
 
   <!-- ===============================
-       SECTION 9 — SCRIPT INITIALISATION
+       SECTION 7 — SCRIPT INIT
   ================================== -->
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    const supabase = createClient(
+  <script>
+    const supabase = window.supabase.createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
     const $ = (sel, sc = document) => sc.querySelector(sel);
     const $$ = (sel, sc = document) => [...sc.querySelectorAll(sel)];
-    const statusBox = $("#statusBox"),
-      banner = $("#banner");
+    const banner = $("#banner"), statusBox = $("#statusBox");
 
-    function say(t) {
-      statusBox.textContent += t + "\n";
-    }
-    function ok(t) {
+    const say = (t) => (statusBox.textContent += t + "\\n");
+    const ok = (t) => {
       banner.className = "banner ok mt-2";
       banner.textContent = t;
       banner.classList.remove("hidden");
-    }
-    function err(t) {
+    };
+    const err = (t) => {
       banner.className = "banner err mt-2";
       banner.textContent = t;
       banner.classList.remove("hidden");
-    }
+    };
 
     (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       const id = $("#organiser_id");
       if (user) {
         id.value = user.id;
-        say("Ready.\nLogged in as " + user.email);
+        say("Ready. Logged in as " + user.email);
       } else {
         id.value = "Not logged in";
-        say("Ready.\nNot logged in");
+        say("Ready. Not logged in");
       }
     })();
 
     /* ===============================
-       SECTION 10 — IMAGE CAROUSEL LOGIC
+       SECTION 8 — IMAGE CAROUSEL LOGIC
     ================================== */
     const categorySelect = $("#categorySelect");
     const placeholderImageWrapper = $("#placeholderImageWrapper");
@@ -320,7 +270,6 @@
       ],
       theatre: [
         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
       ],
       sports: [
         "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
@@ -337,36 +286,28 @@
       carouselWrapper.innerHTML = "";
       if (!images.length) return;
 
-      const container = document.createElement("div");
-      container.className = "relative mt-3";
-
       const track = document.createElement("div");
-      track.className =
-        "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
-      container.appendChild(track);
+      track.className = "flex overflow-x-auto no-scrollbar gap-3 snap-x snap-mandatory scroll-smooth";
 
       images.forEach((url, index) => {
-        const wrap = document.createElement("div");
-        wrap.className = "img-wrapper w-full h-96 shrink-0 snap-center";
+        const imgWrap = document.createElement("div");
+        imgWrap.className = "relative w-full h-96 shrink-0 snap-center";
         const img = document.createElement("img");
         img.src = url;
-        img.className = "w-full h-full object-cover cursor-pointer";
+        img.className = "poster cursor-pointer";
         img.addEventListener("click", () => {
-          track.querySelectorAll(".img-wrapper").forEach((w) =>
-            w.classList.remove("selected")
+          track.querySelectorAll("img").forEach((i) =>
+            i.classList.remove("ring-4", "ring-blue-500")
           );
-          wrap.classList.add("selected");
+          img.classList.add("ring-4", "ring-blue-500");
           imageUrlInput.value = url;
         });
-        wrap.appendChild(img);
-        track.appendChild(wrap);
-
-        if (index === 0) {
-          wrap.classList.add("selected");
-          imageUrlInput.value = url;
-        }
+        imgWrap.appendChild(img);
+        track.appendChild(imgWrap);
+        if (index === 0) imageUrlInput.value = url;
       });
-      carouselWrapper.appendChild(container);
+
+      carouselWrapper.appendChild(track);
     }
 
     categorySelect.addEventListener("change", () => {
@@ -382,7 +323,7 @@
     });
 
     /* ===============================
-       SECTION 11 — VENUE SEARCH LOGIC
+       SECTION 9 — VENUE SEARCH LOGIC
     ================================== */
     async function searchVenues(query) {
       if (!query.trim()) return [];
@@ -395,105 +336,64 @@
     }
 
     function wireVenueSearch(scope = document) {
-      $$(".input-wrapper", scope).forEach((wrapper) => {
-        const searchInput = wrapper.querySelector(".search");
-        const venueIdInput = wrapper.parentElement.querySelector(".venue-id");
-        const venueList = wrapper.parentElement.querySelector(".venue-list");
-        const noResults = wrapper.parentElement.querySelector(".no-results");
-        const venueForm = wrapper.parentElement.querySelector(".venue-form");
-        const clearBtn = wrapper.querySelector(".clear-btn");
+      const searchInput = scope.querySelector(".search");
+      const venueIdInput = scope.querySelector(".venue-id");
+      const venueList = scope.querySelector(".venue-list");
+      const noResults = scope.querySelector(".no-results");
+      const clearBtn = scope.querySelector(".clear-btn");
 
-        searchInput.addEventListener("input", async () => {
-          const q = searchInput.value.trim();
-          venueList.innerHTML = "";
-          noResults.classList.add("hidden");
-          if (!q) return;
-          const venues = await searchVenues(q);
-          if (!venues.length) {
-            noResults.classList.remove("hidden");
-            return;
-          }
-          venues.forEach((v) => {
-            const card = document.createElement("div");
-            card.className = "venue-card";
-            card.innerHTML = `<div class='font-semibold'>${v.venue_name}</div>
-              <div class='text-gray-300'>${[v.street_name, v.postcode]
-                .filter(Boolean)
-                .join(", ")}</div>`;
-            card.addEventListener("click", () => {
-              searchInput.value = v.venue_name;
-              venueIdInput.value = v.id;
-              venueList.innerHTML = "";
-              noResults.classList.add("hidden");
-            });
-            venueList.appendChild(card);
-          });
-        });
+      if (!searchInput) return;
 
-        clearBtn.addEventListener("click", () => {
-          searchInput.value = "";
-          venueIdInput.value = "";
-          venueList.innerHTML = "";
-          venueForm.classList.add("hidden");
-          noResults.classList.add("hidden");
-        });
-
-        wrapper.parentElement
-          .querySelector(".create-venue-link")
-          ?.addEventListener("click", (e) => {
-            e.preventDefault();
-            venueForm.classList.remove("hidden");
-          });
-
-        wrapper.parentElement
-          .querySelector(".venue-submit")
-          ?.addEventListener("click", async () => {
-            const name = wrapper.parentElement
-              .querySelector(".venue-name")
-              .value.trim();
-            const street = wrapper.parentElement
-              .querySelector(".venue-street")
-              .value.trim();
-            const postcode = wrapper.parentElement
-              .querySelector(".venue-postcode")
-              .value.trim();
-            if (!name) return alert("Enter a venue name");
-            const { data, error } = await supabase
-              .from("venues")
-              .insert([{ venue_name: name, street_name: street, postcode }])
-              .select("id");
-            if (error) return alert("Error creating venue");
-            searchInput.value = name;
-            venueIdInput.value = data[0].id;
-            venueForm.classList.add("hidden");
+      searchInput.addEventListener("input", async () => {
+        const q = searchInput.value.trim();
+        venueList.innerHTML = "";
+        noResults.classList.add("hidden");
+        if (!q) return;
+        const venues = await searchVenues(q);
+        if (!venues.length) {
+          noResults.classList.remove("hidden");
+          return;
+        }
+        venues.forEach((v) => {
+          const card = document.createElement("div");
+          card.className = "venue-card";
+          card.innerHTML = `<div class='font-semibold'>${v.venue_name}</div>
+            <div class='text-gray-300'>${[v.street_name, v.postcode]
+              .filter(Boolean)
+              .join(", ")}</div>`;
+          card.addEventListener("click", () => {
+            searchInput.value = v.venue_name;
+            venueIdInput.value = v.id;
             venueList.innerHTML = "";
             noResults.classList.add("hidden");
           });
+          venueList.appendChild(card);
+        });
+      });
+
+      clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        venueIdInput.value = "";
+        venueList.innerHTML = "";
+        noResults.classList.add("hidden");
       });
     }
 
     /* ===============================
-       SECTION 12 — SCHEDULE TABS
+       SECTION 10 — SCHEDULE TABS
     ================================== */
     const tabContent = $("#tabContent");
     const tabButtons = $$(".pill");
-    const eventForm = $("#eventForm");
 
     const venueBlock = () => `
       <div class="space-y-2">
         <div class="input-wrapper relative">
-          <input type="text" placeholder="Search by venue name..." class="search input-dark pr-8" />
-          <button type="button" class="clear-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">&times;</button>
+          <input type="text" placeholder="Search by venue name..." class="search input-dark p-3 rounded-lg border border-gray-700 pr-8" />
+          <button type="button" class="clear-btn absolute right-3 top-3 text-gray-400 text-lg">&times;</button>
         </div>
-        <input type="text" name="venue_id" placeholder="Venue ID" readonly class="venue-id input-dark text-green-400 mt-2">
+        <input type="text" name="venue_id" placeholder="Venue ID will appear here" readonly class="venue-id input-dark p-3 rounded-lg border border-gray-700 text-green-400 mt-2">
         <div class="venue-list mt-2"></div>
-        <div class="no-results hidden">No results — <a href="#" class="create-venue-link text-blue-400">Create new venue</a></div>
-        <div class="venue-form mt-4 hidden space-y-2">
-          <input type="text" placeholder="Venue name" class="venue-name input-dark">
-          <input type="text" placeholder="Street address" class="venue-street input-dark">
-          <input type="text" placeholder="Postcode" class="venue-postcode input-dark">
-          <button type="button" class="venue-submit bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
-        </div>
+        <div class="no-results hidden no-results">No matches found</div>
       </div>
     `;
 
@@ -501,46 +401,48 @@
       single: () => `
         ${venueBlock()}
         <div class="grid grid-cols-2 gap-4 items-end mt-4">
-          <input type="date" name="event_date" required class="input-dark" />
-          <input type="time" name="event_time" required class="input-dark" />
+          <input type="date" name="event_date" required class="input-dark p-3 rounded-lg border border-gray-700" />
+          <input type="time" name="event_time" required class="input-dark p-3 rounded-lg border border-gray-700" />
         </div>
-        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-4">
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark p-3 rounded-lg border border-gray-700 mt-4">
       `,
       recurring: () => `
         ${venueBlock()}
         <div class="grid grid-cols-2 gap-4 items-end mt-4">
-          <input type="date" name="event_date" required class="input-dark" />
-          <input type="time" name="event_time" required class="input-dark" />
+          <input type="date" name="event_date" required class="input-dark p-3 rounded-lg border border-gray-700" />
+          <input type="time" name="event_time" required class="input-dark p-3 rounded-lg border border-gray-700" />
         </div>
         <label class="block text-sm mt-2">Repeat</label>
-        <select name="repeat" class="input-dark">
+        <select name="repeat" class="input-dark p-3 rounded-lg border border-gray-700">
           <option value="none">Does not repeat</option>
           <option value="daily">Every day</option>
           <option value="weekly">Every week</option>
           <option value="monthly">Every month</option>
         </select>
         <label class="block text-sm mt-2">Repeat until</label>
-        <input type="date" name="repeat_until" class="input-dark" />
-        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-4">
+        <input type="date" name="repeat_until" class="input-dark p-3 rounded-lg border border-gray-700" />
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark p-3 rounded-lg border border-gray-700 mt-4">
       `,
       tour: () => `
         <div id="tourRoot" class="space-y-6">${venueBlock()}</div>
         <div class="grid grid-cols-2 gap-4 items-end mt-4">
-          <input type="date" name="event_date" required class="input-dark" />
-          <input type="time" name="event_time" required class="input-dark" />
+          <input type="date" name="event_date" required class="input-dark p-3 rounded-lg border border-gray-700" />
+          <input type="time" name="event_time" required class="input-dark p-3 rounded-lg border border-gray-700" />
         </div>
-        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-4">
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark p-3 rounded-lg border border-gray-700 mt-4">
         <button type="button" id="addTourBlock" class="text-sm text-blue-400 mt-3">+ Add another venue/date</button>
       `,
     };
 
     function switchTab(tab) {
-      tabButtons.forEach((b) => b.classList.remove("on"));
-      tabButtons.forEach((b) => b.classList.add("off"));
+      tabButtons.forEach((b) => {
+        b.classList.remove("pill-on");
+        b.classList.add("pill-off");
+      });
       const active = tabButtons.find((b) => b.dataset.tab === tab);
       if (active) {
-        active.classList.add("on");
-        active.classList.remove("off");
+        active.classList.add("pill-on");
+        active.classList.remove("pill-off");
       }
       tabContent.innerHTML = views[tab]();
       wireVenueSearch(tabContent);
@@ -562,8 +464,9 @@
     switchTab("single");
 
     /* ===============================
-       SECTION 13 — SUBMIT HANDLER
+       SECTION 11 — SUBMIT HANDLER
     ================================== */
+    const eventForm = $("#eventForm");
     eventForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       banner.classList.add("hidden");
@@ -571,7 +474,6 @@
 
       const formData = new FormData(eventForm);
       const data = Object.fromEntries(formData.entries());
-      console.log("Submitting data", data);
 
       const { error } = await supabase.from("events").insert([data]);
       if (error) {
