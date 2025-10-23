@@ -12,28 +12,25 @@
   <link rel="stylesheet" href="./hearts.css?v=global-9">
 
   <style>
-    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh;}
-    .form-card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); padding:1.5rem; }
-    .input-dark { background:#0b1220; color:#fff; width:100%; border:1px solid #374151; border-radius:12px; padding:12px; transition:all 0.2s ease; }
-    .input-dark:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.3); }
-    .input-dark::placeholder { color:#9ca3af; }
-    select.input-dark option { background:#0b1220; color:#fff; }
-    label { font-size:0.95rem; color:#e5e7eb; margin-bottom:6px; display:block; }
-    .tab-btn { transition: all .25s; }
-    .tab-btn.bg-green-600 { color:#000; }
-
-    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; transition:all 0.2s ease; }
-    .venue-card:hover { background:#1b2433; border-color:#3b82f6; cursor:pointer; }
-    .no-results { padding:12px 14px; background:#111827; border:1px solid #374151; border-radius:12px; text-align:center; color:#9ca3af; margin:8px 0; cursor:pointer; }
-    .no-results:hover { background:#1b2433; border-color:#3b82f6; }
-
-    .input-wrapper { position:relative; }
-    .clear-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#9ca3af; font-size:20px; cursor:pointer; }
-
-    .img-wrapper { border-radius:0.75rem; overflow:hidden; border:3px solid transparent; transition:border-color 0.25s ease; }
-    .img-wrapper.selected { border-color:#3b82f6; }
-
-    .debug-log { margin-top:1rem; background:#111827; border:1px solid #374151; padding:12px; border-radius:8px; color:#9ca3af; font-size:0.9rem; white-space:pre-wrap; }
+    body{background:#000;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif;min-height:100vh;}
+    .form-card{background:#0f172a;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:1.5rem;}
+    .input-dark{background:#0b1220;color:#fff;width:100%;border:1px solid #374151;border-radius:12px;padding:12px;transition:all .2s ease;}
+    .input-dark:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.3);}
+    .input-dark::placeholder{color:#9ca3af;}
+    label{font-size:.95rem;color:#e5e7eb;margin-bottom:6px;display:block;}
+    .tab-btn{transition:all .25s;}
+    .tab-btn.bg-green-600{color:#000;}
+    .venue-card{background:#111827;border:1px solid #374151;border-radius:12px;padding:12px 14px;margin:8px 0;}
+    .venue-card:hover{background:#1b2433;border-color:#3b82f6;cursor:pointer;}
+    .no-results{padding:12px 14px;background:#111827;border:1px solid #374151;border-radius:12px;text-align:center;font-size:.95rem;color:#9ca3af;margin:8px 0;cursor:pointer;}
+    .no-results:hover{background:#1b2433;border-color:#3b82f6;}
+    .input-wrapper{position:relative;}
+    .clear-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#9ca3af;font-size:20px;cursor:pointer;}
+    .img-wrapper{border-radius:.75rem;overflow:hidden;border:3px solid transparent;transition:border-color .25s ease;}
+    .img-wrapper.selected{border-color:#3b82f6;}
+    .arrow-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.9);font-size:22px;width:40px;height:40px;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+    .arrow-btn:hover{background:rgba(0,0,0,0.6);}
+    #log{white-space:pre-wrap;font-size:.85rem;color:#ccc;margin-top:1rem;}
   </style>
 </head>
 
@@ -68,20 +65,18 @@
 
       <!-- Placeholder Image -->
       <div id="placeholderImageWrapper">
-        <img 
-          src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
-          alt="Spondle placeholder" 
-          class="w-full h-96 object-cover rounded-lg">
+        <img src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
+             alt="Spondle placeholder" class="w-full h-96 object-cover rounded-lg">
       </div>
 
-      <!-- Carousel (auto from category) -->
+      <!-- Carousel -->
       <div id="carouselWrapper" class="hidden"></div>
 
       <!-- Schedule Tabs -->
       <div>
         <label class="font-medium">Schedule</label>
         <div class="flex gap-2 mb-4 mt-2">
-          <button type="button" class="tab-btn bg-green-600 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
+          <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="single">Single</button>
           <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="recurring">Recurring</button>
           <button type="button" class="tab-btn bg-gray-700 px-4 py-2 rounded-full w-1/3" data-type="tour">Tour</button>
         </div>
@@ -105,218 +100,150 @@
         <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
         <input type="text" id="organiser_id" name="organiser_id" readonly class="input-dark text-green-400 text-sm" placeholder="Fetching..." />
       </div>
-    </form>
 
-    <!-- Debug Output -->
-    <div id="debugLog" class="debug-log hidden"></div>
+      <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
+      <div id="log"></div>
+    </form>
   </div>
 
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      window.Layout?.init({ active: "dashboard" });
-    });
+    window.addEventListener("DOMContentLoaded",()=>window.Layout?.init({active:"dashboard"}));
   </script>
 
   <!-- PAGE LOGIC -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    const supabase = createClient(
+    const supabase=createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    const debug = document.getElementById("debugLog");
-    function log(msg) {
-      debug.classList.remove("hidden");
-      debug.textContent += msg + "\\n";
-      debug.scrollTop = debug.scrollHeight;
-    }
+    const log=document.getElementById('log');
+    const logMsg=(msg)=>{log.textContent+=`\n${msg}`;};
+    logMsg("Ready.");
 
-    /* ---------- Session Fix ---------- */
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
-      const input = document.getElementById("organiser_id");
-      if (user) {
-        input.value = user.id;
-        log("✅ Logged in as: " + user.email);
-      } else {
-        input.value = "Not logged in";
-        log("⚠️ No active session found — please re-login");
-      }
+    /* AUTH */
+    (async()=>{
+      const {data:{session}}=await supabase.auth.getSession();
+      const user=session?.user;
+      const input=document.getElementById("organiser_id");
+      if(user){input.value=user.id;logMsg(`Logged in as ${user.email}`);}else{input.value="Not logged in";logMsg("No active session");}
     })();
 
     /* ----------------------------
        STOCK IMAGES BY CATEGORY
     ----------------------------- */
-    const stockImages = {
-      music: [
+    const stockImages={
+      music:[
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-      ],
-      comedy: [
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80"],
+      comedy:[
         "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
-        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
-      ],
-      theatre: [
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
-      ],
-      sports: [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-      ],
-      festival: [
-        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-      ],
-      quiz: [
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
-      ],
+        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png"],
+      theatre:[
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80"],
+      sports:[
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80"],
+      festival:[
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"],
+      quiz:[
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80"]
     };
 
-    const carouselWrapper = document.getElementById("carouselWrapper");
-    const categorySelect = document.querySelector('select[name="category"]');
-    const placeholderImageWrapper = document.getElementById("placeholderImageWrapper");
-    const imageUrlInput = document.createElement("input");
-    imageUrlInput.type = "hidden";
-    imageUrlInput.name = "image_url";
+    const carouselWrapper=document.getElementById("carouselWrapper");
+    const categorySelect=document.querySelector('select[name="category"]');
+    const placeholderImageWrapper=document.getElementById("placeholderImageWrapper");
+    const imageUrlInput=document.createElement("input");
+    imageUrlInput.type="hidden";imageUrlInput.name="image_url";
     document.getElementById("eventForm").appendChild(imageUrlInput);
 
-    function buildCarousel(images = []) {
-      carouselWrapper.innerHTML = "";
-      if (!images.length) return;
-
-      const container = document.createElement("div");
-      container.className = "relative mt-3";
-      const track = document.createElement("div");
-      track.className = "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
+    function buildCarousel(images=[]){
+      carouselWrapper.innerHTML="";
+      if(!images.length)return;
+      const container=document.createElement("div");
+      container.className="relative mt-3";
+      const track=document.createElement("div");
+      track.className="flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
       container.appendChild(track);
-
-      images.forEach((url, index) => {
-        const wrap = document.createElement("div");
-        wrap.className = "img-wrapper w-full h-96 shrink-0 snap-center";
-        const img = document.createElement("img");
-        img.src = url;
-        img.className = "w-full h-full object-cover cursor-pointer";
-        img.addEventListener("click", () => {
-          track.querySelectorAll(".img-wrapper").forEach(w => w.classList.remove("selected"));
-          wrap.classList.add("selected");
-          imageUrlInput.value = url;
-        });
-        wrap.appendChild(img);
-        track.appendChild(wrap);
-        if (index === 0) {
-          wrap.classList.add("selected");
-          imageUrlInput.value = url;
-        }
+      images.forEach((url,i)=>{
+        const wrap=document.createElement("div");
+        wrap.className="img-wrapper w-full h-96 shrink-0 snap-center";
+        const img=document.createElement("img");
+        img.src=url;img.className="w-full h-full object-cover cursor-pointer";
+        img.onclick=()=>{track.querySelectorAll(".img-wrapper").forEach(w=>w.classList.remove("selected"));wrap.classList.add("selected");imageUrlInput.value=url;};
+        wrap.appendChild(img);track.appendChild(wrap);
+        if(i===0){wrap.classList.add("selected");imageUrlInput.value=url;}
       });
       carouselWrapper.appendChild(container);
     }
 
-    categorySelect.addEventListener("change", () => {
-      const cat = categorySelect.value;
-      if (stockImages[cat]) {
-        placeholderImageWrapper.classList.add("hidden");
-        carouselWrapper.classList.remove("hidden");
-        buildCarousel(stockImages[cat]);
-      } else {
-        carouselWrapper.classList.add("hidden");
-        placeholderImageWrapper.classList.remove("hidden");
-      }
-    });
+    categorySelect.onchange=()=>{
+      const cat=categorySelect.value;
+      if(stockImages[cat]){placeholderImageWrapper.classList.add("hidden");carouselWrapper.classList.remove("hidden");buildCarousel(stockImages[cat]);}
+      else{carouselWrapper.classList.add("hidden");placeholderImageWrapper.classList.remove("hidden");}
+    };
 
     /* ----------------------------
-       VENUE SEARCH / CREATE LOGIC
+       VENUE SEARCH / CREATE
     ----------------------------- */
-    async function searchVenues(query) {
-      if (!query.trim()) return [];
-      const { data, error } = await supabase
-        .from("venues")
-        .select("id,venue_name,street_name,postcode")
-        .ilike("venue_name", `%${query}%`)
-        .limit(5);
-      if (error) log("❌ Venue search error: " + error.message);
-      return data || [];
+    async function searchVenues(query){
+      if(!query.trim())return[];
+      const{data,error}=await supabase.from("venues").select("id,venue_name,street_name,postcode").ilike("venue_name",`%${query}%`).limit(5);
+      return error?[]:data||[];
     }
 
-    function wireVenueSearch(scope = document) {
-      scope.querySelectorAll(".input-wrapper").forEach(wrapper => {
-        const searchInput = wrapper.querySelector(".search");
-        const venueIdInput = wrapper.closest("div").parentElement.querySelector(".venue-id");
-        const venueList = wrapper.closest("div").parentElement.querySelector(".venue-list");
-        const noResults = wrapper.closest("div").parentElement.querySelector(".no-results");
-        const venueForm = wrapper.closest("div").parentElement.querySelector(".venue-form");
-        const clearBtn = wrapper.querySelector(".clear-btn");
+    function wireVenueSearch(scope=document){
+      scope.querySelectorAll(".input-wrapper").forEach(wrapper=>{
+        const search=wrapper.querySelector(".search");
+        const parent=wrapper.closest("div");
+        const idInput=parent.parentElement.querySelector(".venue-id");
+        const list=parent.parentElement.querySelector(".venue-list");
+        const noRes=parent.parentElement.querySelector(".no-results");
+        const form=parent.parentElement.querySelector(".venue-form");
+        const clear=wrapper.querySelector(".clear-btn");
 
-        searchInput.addEventListener("input", async () => {
-          const q = searchInput.value.trim();
-          venueList.innerHTML = "";
-          noResults.classList.add("hidden");
-          if (!q) return;
-          const venues = await searchVenues(q);
-          if (!venues.length) { noResults.classList.remove("hidden"); return; }
-          venues.forEach(v => {
-            const card = document.createElement("div");
-            card.className = "venue-card";
-            card.innerHTML = `<div class='font-semibold'>${v.venue_name}</div>
-              <div class='text-gray-300'>${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
-            card.addEventListener("click", () => {
-              searchInput.value = v.venue_name;
-              venueIdInput.value = v.id;
-              venueList.innerHTML = "";
-              noResults.classList.add("hidden");
-            });
-            venueList.appendChild(card);
+        search.oninput=async()=>{
+          const q=search.value.trim();list.innerHTML="";noRes.classList.add("hidden");
+          if(!q)return;
+          const venues=await searchVenues(q);
+          if(!venues.length){noRes.classList.remove("hidden");return;}
+          venues.forEach(v=>{
+            const c=document.createElement("div");
+            c.className="venue-card";
+            c.innerHTML=`<div class='font-semibold'>${v.venue_name}</div>
+                         <div class='text-gray-300'>${[v.street_name,v.postcode].filter(Boolean).join(", ")}</div>`;
+            c.onclick=()=>{search.value=v.venue_name;idInput.value=v.id;list.innerHTML="";noRes.classList.add("hidden");};
+            list.appendChild(c);
           });
-        });
-
-        clearBtn.addEventListener("click", () => {
-          searchInput.value = "";
-          venueIdInput.value = "";
-          venueList.innerHTML = "";
-          venueForm.classList.add("hidden");
-          noResults.classList.add("hidden");
-        });
-
-        wrapper.closest("div").parentElement.querySelector(".create-venue-link")?.addEventListener("click", e => {
-          e.preventDefault();
-          venueForm.classList.remove("hidden");
-        });
-
-        wrapper.closest("div").parentElement.querySelector(".venue-submit")?.addEventListener("click", async () => {
-          const name = wrapper.closest("div").parentElement.querySelector(".venue-name").value.trim();
-          const street = wrapper.closest("div").parentElement.querySelector(".venue-street").value.trim();
-          const postcode = wrapper.closest("div").parentElement.querySelector(".venue-postcode").value.trim();
-          if (!name) return alert("Enter a venue name");
-          const { data, error } = await supabase
-            .from("venues")
-            .insert([{ venue_name: name, street_name: street, postcode }])
-            .select("id");
-          if (error) { log("❌ Venue insert error: " + error.message); return; }
-          searchInput.value = name;
-          venueIdInput.value = data[0].id;
-          venueForm.classList.add("hidden");
-          venueList.innerHTML = "";
-          noResults.classList.add("hidden");
+        };
+        clear.onclick=()=>{search.value="";idInput.value="";list.innerHTML="";form.classList.add("hidden");noRes.classList.add("hidden");};
+        parent.parentElement.querySelector(".create-venue-link")?.addEventListener("click",e=>{e.preventDefault();form.classList.remove("hidden");});
+        parent.parentElement.querySelector(".venue-submit")?.addEventListener("click",async()=>{
+          const name=form.querySelector(".venue-name").value.trim();
+          const street=form.querySelector(".venue-street").value.trim();
+          const pc=form.querySelector(".venue-postcode").value.trim();
+          if(!name)return alert("Enter a venue name");
+          const{data}=await supabase.from("venues").insert([{venue_name:name,street_name:street,postcode:pc}]).select("id").single();
+          search.value=name;idInput.value=data.id;form.classList.add("hidden");list.innerHTML="";noRes.classList.add("hidden");
         });
       });
     }
 
     /* ----------------------------
-       SCHEDULE LOGIC
+       SCHEDULE TABS
     ----------------------------- */
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    const tabContent = document.getElementById("tabContent");
-    const eventTypeInput = document.getElementById("eventType");
+    const tabs=document.querySelectorAll(".tab-btn");
+    const content=document.getElementById("tabContent");
+    const typeInput=document.getElementById("eventType");
 
-    const venueSearchBlock = () => `
+    const venueBlock=()=>`
       <div>
         <div class="input-wrapper">
-          <input type="text" placeholder="Search by venue name..." class="search input-dark" />
-          <button type="button" class="clear-btn" title="Clear">&times;</button>
+          <input type="text" placeholder="Search by venue name..." class="search input-dark"/>
+          <button type="button" class="clear-btn">&times;</button>
         </div>
-        <input type="text" name="venue_id[]" placeholder="Venue ID will appear here" readonly class="venue-id input-dark text-green-400 mt-2">
+        <input type="text" name="venue_id" readonly class="venue-id input-dark text-green-400 mt-2" placeholder="Venue ID will appear here">
         <div class="venue-list mt-2"></div>
         <div class="no-results hidden">No results — <a href="#" class="create-venue-link text-blue-400">Create a new venue</a></div>
         <div class="venue-form mt-4 hidden space-y-2">
@@ -325,99 +252,75 @@
           <input type="text" placeholder="Postcode" class="venue-postcode input-dark">
           <button type="button" class="venue-submit bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
         </div>
-      </div>
-    `;
+      </div>`;
 
-    const views = {
-      single: () => `
-        <div class="space-y-2">
-          ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <input type="date" name="event_date[]" required class="input-dark" />
-            <input type="time" name="event_time[]" required class="input-dark" />
+    const views={
+      single:()=>`
+        <div class="space-y-2">${venueBlock()}
+          <div class="grid grid-cols-2 gap-4">
+            <input type="date" name="event_date" required class="input-dark">
+            <input type="time" name="event_time" required class="input-dark">
           </div>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
-        </div>
-      `,
-      recurring: () => `
-        <div class="space-y-2">
-          ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <input type="date" name="event_date[]" required class="input-dark" />
-            <input type="time" name="event_time[]" required class="input-dark" />
+          <input type="url" name="ticket_url" placeholder="Ticket URL (optional)" class="input-dark">
+        </div>`,
+      recurring:()=>`
+        <div class="space-y-2">${venueBlock()}
+          <div class="grid grid-cols-2 gap-4">
+            <input type="date" name="event_date" required class="input-dark">
+            <input type="time" name="event_time" required class="input-dark">
           </div>
           <label class="block text-sm mt-2">Recurring Dates:</label>
           <button type="button" id="addRecurringDate" class="text-sm text-blue-400">+ Add Another Date</button>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
-        </div>
-      `,
-      tour: () => `
-        <div id="scheduleSection" class="space-y-4">
-          ${venueSearchBlock()}
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <input type="date" name="event_date[]" required class="input-dark" />
-            <input type="time" name="event_time[]" required class="input-dark" />
+          <input type="url" name="ticket_url" placeholder="Ticket URL (optional)" class="input-dark">
+        </div>`,
+      tour:()=>`
+        <div id="scheduleSection" class="space-y-4">${venueBlock()}
+          <div class="grid grid-cols-2 gap-4">
+            <input type="date" name="event_date" required class="input-dark">
+            <input type="time" name="event_time" required class="input-dark">
           </div>
-          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
+          <input type="url" name="ticket_url" placeholder="Ticket URL (optional)" class="input-dark">
           <button type="button" id="addScheduleBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
-        </div>
-      `,
-    };
+        </div>`};
 
-    tabContent.innerHTML = views.single();
-    wireVenueSearch(tabContent);
+    content.innerHTML=views.single();wireVenueSearch(content);
 
-    tabBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        tabBtns.forEach(b => b.classList.remove("bg-green-600"));
+    tabs.forEach(btn=>{
+      btn.onclick=()=>{
+        tabs.forEach(b=>b.classList.remove("bg-green-600"));
         btn.classList.add("bg-green-600");
-        const type = btn.dataset.type;
-        eventTypeInput.value = type;
-        tabContent.innerHTML = views[type]();
-        wireVenueSearch(tabContent);
+        const type=btn.dataset.type;
+        typeInput.value=type;content.innerHTML=views[type]();wireVenueSearch(content);
 
-        if (type === "recurring") {
-          const addDateBtn = document.getElementById("addRecurringDate");
-          addDateBtn.addEventListener("click", () => {
-            const newField = document.createElement("input");
-            newField.type = "date";
-            newField.name = "event_date[]";
-            newField.required = true;
-            newField.className = "input-dark mt-2";
-            addDateBtn.insertAdjacentElement("beforebegin", newField);
-          });
+        if(type==="recurring"){
+          const add=document.getElementById("addRecurringDate");
+          add.onclick=()=>{const n=document.createElement("input");
+            n.type="date";n.name="event_date";n.required=true;n.className="input-dark mt-2";
+            add.before(n);};
         }
-
-        if (type === "tour") {
-          const addScheduleBtn = document.getElementById("addScheduleBtn");
-          addScheduleBtn.addEventListener("click", () => {
-            const section = document.getElementById("scheduleSection");
-            const wrapper = document.createElement("div");
-            wrapper.className = "space-y-2 border-t border-slate-700 pt-4";
-            wrapper.innerHTML = views.single();
-            section.appendChild(wrapper);
-            wireVenueSearch(wrapper);
-          });
+        if(type==="tour"){
+          const add=document.getElementById("addScheduleBtn");
+          add.onclick=()=>{const sec=document.getElementById("scheduleSection");
+            const wrap=document.createElement("div");
+            wrap.className="space-y-2 border-t border-slate-700 pt-4";
+            wrap.innerHTML=views.single();sec.appendChild(wrap);wireVenueSearch(wrap);};
         }
-      });
+      };
     });
 
     /* ----------------------------
-       FORM SUBMIT
+       SUBMIT TO SUPABASE
     ----------------------------- */
-    document.getElementById("eventForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      log("Submitting event…");
-      const form = e.target;
-      const data = Object.fromEntries(new FormData(form).entries());
-      try {
-        const { error } = await supabase.from("events").insert([data]);
-        if (error) log("❌ Insert error: " + error.message);
-        else log("✅ Event successfully uploaded");
-      } catch (err) {
-        log("❌ Unexpected error: " + err.message);
-      }
-    });
+    const form=document.getElementById("eventForm");
+    form.onsubmit=async e=>{
+      e.preventDefault();logMsg("Submitting...");
+      const fd=new FormData(form);const obj=Object.fromEntries(fd.entries());
+      try{
+        const{error}=await supabase.from("events").insert([obj]);
+        if(error)throw error;
+        logMsg("✅ Event saved successfully");
+      }catch(err){logMsg("❌ "+(err.message||err));}
+    };
   </script>
 </body>
 </html>
