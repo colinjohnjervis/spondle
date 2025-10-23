@@ -29,6 +29,7 @@
     .clear-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#9ca3af; font-size:20px; cursor:pointer; }
     .img-wrapper { border-radius:0.75rem; overflow:hidden; border:3px solid transparent; transition:border-color 0.25s ease; }
     .img-wrapper.selected { border-color:#3b82f6; }
+    #debugLog { margin-top:20px; background:#111827; padding:10px 14px; border-radius:8px; font-size:0.9rem; color:#9ca3af; white-space:pre-wrap; }
   </style>
 </head>
 
@@ -107,6 +108,7 @@
       </div>
 
       <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
+      <div id="debugLog"></div>
     </form>
   </div>
 
@@ -121,14 +123,18 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
+    const debugLog = document.getElementById("debugLog");
+    function log(msg) {
+      debugLog.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
+    }
+
     // Autofill organiser_id
     supabase.auth.getUser().then(({ data: { user } }) => {
-      const organiserInput = document.getElementById("organiser_id");
-      organiserInput.value = user ? user.id : "Not logged in";
+      document.getElementById("organiser_id").value = user ? user.id : "Not logged in";
     });
 
     /* ----------------------------
-       STOCK IMAGES BY CATEGORY
+       STOCK IMAGES
     ----------------------------- */
     const stockImages = {
       music: [
@@ -164,7 +170,6 @@
     function buildCarousel(images = []) {
       carouselWrapper.innerHTML = "";
       if (!images.length) return;
-
       const container = document.createElement("div");
       const track = document.createElement("div");
       track.className = "flex overflow-x-auto no-scrollbar gap-2";
@@ -183,10 +188,7 @@
         });
         wrap.appendChild(img);
         track.appendChild(wrap);
-        if (i === 0) {
-          wrap.classList.add("selected");
-          imageUrlInput.value = url;
-        }
+        if (i === 0) { wrap.classList.add("selected"); imageUrlInput.value = url; }
       });
       carouselWrapper.appendChild(container);
     }
