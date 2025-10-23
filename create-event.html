@@ -12,24 +12,24 @@
   <link rel="stylesheet" href="./hearts.css?v=global-9">
 
   <style>
-    body { background:#000; color:#fff; font-family: ui-sans-serif,system-ui,sans-serif; min-height:100vh;}
+    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
     .form-card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); padding:1.5rem; }
-    .input-dark { background:#0b1220; color:#fff; width:100%; border:1px solid #374151; border-radius:12px; padding:12px; transition:all 0.2s ease; }
+    .input-dark { background:#0b1220; color:#fff; width:100%; border:1px solid #374151; border-radius:12px; padding:12px; transition:all .2s; }
     .input-dark:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,0.3); }
     .input-dark::placeholder { color:#9ca3af; }
     select.input-dark option { background:#0b1220; color:#fff; }
-    label { font-size:0.95rem; color:#e5e7eb; margin-bottom:6px; display:block; }
-    .tab-btn { transition: all .25s; }
-    .tab-btn.bg-green-600 { color:#000; }
-    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; transition:all 0.2s ease; }
-    .venue-card:hover { background:#1b2433; border-color:#3b82f6; cursor:pointer; }
-    .no-results { padding:12px 14px; background:#111827; border:1px solid #374151; border-radius:12px; text-align:center; font-size:0.95rem; color:#9ca3af; margin:8px 0; cursor:pointer; }
-    .no-results:hover { background:#1b2433; border-color:#3b82f6; }
-    .input-wrapper { position:relative; }
-    .clear-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#9ca3af; font-size:20px; cursor:pointer; }
-    .img-wrapper { border-radius:0.75rem; overflow:hidden; border:3px solid transparent; transition:border-color 0.25s ease; }
-    .img-wrapper.selected { border-color:#3b82f6; }
-    #debugLog { margin-top:20px; background:#111827; padding:10px 14px; border-radius:8px; font-size:0.9rem; color:#9ca3af; white-space:pre-wrap; }
+    label { font-size:.95rem; color:#e5e7eb; margin-bottom:6px; display:block; }
+    .venue-card{background:#111827;border:1px solid #374151;border-radius:12px;padding:12px 14px;margin:8px 0;}
+    .venue-card:hover{background:#1b2433;border-color:#3b82f6;cursor:pointer;}
+    .no-results{padding:12px 14px;background:#111827;border:1px solid #374151;border-radius:12px;text-align:center;color:#9ca3af;margin:8px 0;cursor:pointer;}
+    .no-results:hover{background:#1b2433;border-color:#3b82f6;}
+    .input-wrapper{position:relative;}
+    .clear-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#9ca3af;font-size:20px;cursor:pointer;}
+    .img-wrapper{border-radius:0.75rem;overflow:hidden;border:3px solid transparent;transition:border-color .25s;}
+    .img-wrapper.selected{border-color:#3b82f6;}
+    .arrow-btn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.9);font-size:22px;width:40px;height:40px;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .arrow-btn:hover{background:rgba(0,0,0,0.6);}
+    #debugLog{white-space:pre-wrap;background:#111827;border-radius:12px;padding:12px;margin-top:12px;color:#93c5fd;font-size:.85rem;}
   </style>
 </head>
 
@@ -49,7 +49,6 @@
         <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
       </div>
 
-      <!-- CATEGORY + IMAGE -->
       <div>
         <label>Event Category & Image</label>
         <select name="category" required class="input-dark">
@@ -65,10 +64,9 @@
 
       <!-- Placeholder Image -->
       <div id="placeholderImageWrapper">
-        <img 
-          src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
-          alt="Spondle placeholder" 
-          class="w-full h-96 object-cover rounded-lg">
+        <img src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
+             alt="Spondle placeholder"
+             class="w-full h-96 object-cover rounded-lg">
       </div>
 
       <!-- Carousel -->
@@ -100,110 +98,251 @@
         Submit Event
       </button>
 
+      <!-- organiser -->
       <div>
         <label class="block mt-6 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
         <input type="text" id="organiser_id" name="organiser_id" readonly
-          class="input-dark text-green-400 text-sm"
-          placeholder="Fetching..." />
+               class="input-dark text-green-400 text-sm"
+               placeholder="Fetching…" />
       </div>
 
       <div id="banner" class="hidden mt-4 text-center px-4 py-2 rounded text-sm"></div>
-      <div id="debugLog"></div>
+      <div id="debugLog" class="hidden"></div>
     </form>
   </div>
 
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded",()=>window.Layout?.init({active:"dashboard"}));
+  </script>
 
-  <!-- PAGE LOGIC -->
+  <!-- Page Logic -->
   <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const supabase = createClient(
+    const supabase=createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
     );
 
-    const debugLog = document.getElementById("debugLog");
-    function log(msg) {
-      debugLog.textContent = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
-    }
+    const debug=document.getElementById("debugLog");
+    const log=(msg)=>{debug.classList.remove("hidden");debug.textContent+=`\n${msg}`;}
 
-    // Autofill organiser_id
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      document.getElementById("organiser_id").value = user ? user.id : "Not logged in";
+    // Autofill organiser ID
+    supabase.auth.getUser().then(({data:{user}})=>{
+      const input=document.getElementById("organiser_id");
+      input.value=user?user.id:"Not logged in";
     });
 
-    /* ----------------------------
-       STOCK IMAGES
-    ----------------------------- */
-    const stockImages = {
-      music: [
+    /* ---------- Category Images ---------- */
+    const stockImages={
+      music:[
         "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
-      ],
-      comedy: [
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80"],
+      comedy:[
         "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
-        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
-      ],
-      theatre: [
+        "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png"],
+      theatre:[
         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-      ],
-      sports: [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
-      ],
-      festival: [
-        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
-      ],
-      quiz: [
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
-      ],
+        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80"],
+      sports:["https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80"],
+      festival:["https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80"],
+      quiz:["https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80"]
     };
 
-    const carouselWrapper = document.getElementById("carouselWrapper");
-    const categorySelect = document.querySelector('select[name="category"]');
-    const placeholderImageWrapper = document.getElementById("placeholderImageWrapper");
-    const imageUrlInput = document.createElement("input");
-    imageUrlInput.type = "hidden";
-    imageUrlInput.name = "image_url";
-    document.getElementById("eventForm").appendChild(imageUrlInput);
+    const categorySelect=document.querySelector('select[name="category"]');
+    const placeholder=document.getElementById("placeholderImageWrapper");
+    const carousel=document.getElementById("carouselWrapper");
+    const imgHidden=document.createElement("input");
+    imgHidden.type="hidden";imgHidden.name="image_url";
+    document.getElementById("eventForm").appendChild(imgHidden);
 
-    function buildCarousel(images = []) {
-      carouselWrapper.innerHTML = "";
-      if (!images.length) return;
-      const container = document.createElement("div");
-      const track = document.createElement("div");
-      track.className = "flex overflow-x-auto no-scrollbar gap-2";
-      container.appendChild(track);
-
-      images.forEach((url, i) => {
-        const wrap = document.createElement("div");
-        wrap.className = "img-wrapper w-full h-96 shrink-0";
-        const img = document.createElement("img");
-        img.src = url;
-        img.className = "w-full h-full object-cover cursor-pointer";
-        img.addEventListener("click", () => {
-          track.querySelectorAll(".img-wrapper").forEach((w) => w.classList.remove("selected"));
-          wrap.classList.add("selected");
-          imageUrlInput.value = url;
-        });
-        wrap.appendChild(img);
-        track.appendChild(wrap);
-        if (i === 0) { wrap.classList.add("selected"); imageUrlInput.value = url; }
+    function buildCarousel(imgs=[]){
+      carousel.innerHTML="";
+      if(!imgs.length)return;
+      const track=document.createElement("div");
+      track.className="flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
+      imgs.forEach((url,i)=>{
+        const wrap=document.createElement("div");
+        wrap.className="img-wrapper w-full h-96 shrink-0 snap-center";
+        const img=document.createElement("img");
+        img.src=url;img.className="w-full h-full object-cover cursor-pointer";
+        img.onclick=()=>{
+          track.querySelectorAll(".img-wrapper").forEach(w=>w.classList.remove("selected"));
+          wrap.classList.add("selected");imgHidden.value=url;
+        };
+        wrap.appendChild(img);track.appendChild(wrap);
+        if(i===0){wrap.classList.add("selected");imgHidden.value=url;}
       });
-      carouselWrapper.appendChild(container);
+      carousel.appendChild(track);
     }
 
-    categorySelect.addEventListener("change", () => {
-      const cat = categorySelect.value;
-      if (stockImages[cat]) {
-        placeholderImageWrapper.classList.add("hidden");
-        carouselWrapper.classList.remove("hidden");
-        buildCarousel(stockImages[cat]);
-      } else {
-        carouselWrapper.classList.add("hidden");
-        placeholderImageWrapper.classList.remove("hidden");
-      }
+    categorySelect.onchange=()=>{
+      const cat=categorySelect.value;
+      if(stockImages[cat]){placeholder.classList.add("hidden");carousel.classList.remove("hidden");buildCarousel(stockImages[cat]);}
+      else{carousel.classList.add("hidden");placeholder.classList.remove("hidden");}
+    };
+
+    /* ---------- Venue Search ---------- */
+    async function searchVenues(q){
+      if(!q.trim())return[];
+      const {data,error}=await supabase
+        .from("venues")
+        .select("id,venue_name,street_name,postcode")
+        .ilike("venue_name",`%${q}%`)
+        .limit(5);
+      if(error){log("Venue search error: "+error.message);return[];}
+      return data||[];
+    }
+
+    function wireVenueSearch(scope=document){
+      scope.querySelectorAll(".input-wrapper").forEach(wrapper=>{
+        const search=wrapper.querySelector(".search");
+        const parent=wrapper.closest("div");
+        const venueId=parent.parentElement.querySelector(".venue-id");
+        const list=parent.parentElement.querySelector(".venue-list");
+        const none=parent.parentElement.querySelector(".no-results");
+        const form=parent.parentElement.querySelector(".venue-form");
+        const clear=wrapper.querySelector(".clear-btn");
+
+        search.oninput=async()=>{
+          const q=search.value.trim();
+          list.innerHTML="";none.classList.add("hidden");
+          if(!q)return;
+          const venues=await searchVenues(q);
+          if(!venues.length){none.classList.remove("hidden");return;}
+          venues.sort((a,b)=>a.venue_name.localeCompare(b.venue_name));
+          venues.forEach(v=>{
+            const card=document.createElement("div");
+            card.className="venue-card";
+            card.innerHTML=`<div class='font-semibold'>${v.venue_name}</div>
+              <div class='text-gray-300'>${[v.street_name,v.postcode].filter(Boolean).join(", ")}</div>`;
+            card.onclick=()=>{
+              search.value=v.venue_name;venueId.value=v.id;
+              list.innerHTML="";none.classList.add("hidden");
+            };
+            list.appendChild(card);
+          });
+        };
+
+        clear.onclick=()=>{search.value="";venueId.value="";list.innerHTML="";form.classList.add("hidden");none.classList.add("hidden");};
+        parent.parentElement.querySelector(".create-venue-link")?.addEventListener("click",e=>{e.preventDefault();form.classList.remove("hidden");});
+        parent.parentElement.querySelector(".venue-submit")?.addEventListener("click",async()=>{
+          const n=form.querySelector(".venue-name").value.trim();
+          const s=form.querySelector(".venue-street").value.trim();
+          const p=form.querySelector(".venue-postcode").value.trim();
+          if(!n)return alert("Enter a venue name");
+          const {data,error}=await supabase.from("venues").insert([{venue_name:n,street_name:s,postcode:p}]).select("id");
+          if(error)return alert("Error creating venue");
+          search.value=n;venueId.value=data[0].id;form.classList.add("hidden");list.innerHTML="";none.classList.add("hidden");
+        });
+      });
+    }
+
+    /* ---------- Schedule Tabs ---------- */
+    const tabBtns=document.querySelectorAll(".tab-btn");
+    const tabContent=document.getElementById("tabContent");
+    const eventType=document.getElementById("eventType");
+
+    const venueSearchBlock=()=>`
+      <div>
+        <div class="input-wrapper">
+          <input type="text" placeholder="Search by venue name..." class="search input-dark"/>
+          <button type="button" class="clear-btn" title="Clear">&times;</button>
+        </div>
+        <input type="text" name="venue_id[]" placeholder="Venue ID" readonly class="venue-id input-dark text-green-400 mt-2">
+        <div class="venue-list mt-2"></div>
+        <div class="no-results hidden">No results — <a href="#" class="create-venue-link text-blue-400">Create new</a></div>
+        <div class="venue-form mt-4 hidden space-y-2">
+          <input type="text" placeholder="Venue name" class="venue-name input-dark">
+          <input type="text" placeholder="Street address" class="venue-street input-dark">
+          <input type="text" placeholder="Postcode" class="venue-postcode input-dark">
+          <button type="button" class="venue-submit bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+        </div>
+      </div>
+    `;
+
+    const views={
+      single:()=>`
+        <div class="space-y-2">
+          ${venueSearchBlock()}
+          <div class="grid grid-cols-2 gap-4">
+            <input type="date" name="event_date[]" required class="input-dark"/>
+            <input type="time" name="event_time[]" required class="input-dark"/>
+          </div>
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
+        </div>`,
+      recurring:()=>`
+        <div class="space-y-2">
+          ${venueSearchBlock()}
+          <div class="grid grid-cols-2 gap-4">
+            <input type="date" name="event_date[]" required class="input-dark"/>
+            <input type="time" name="event_time[]" required class="input-dark"/>
+          </div>
+          <label class="block text-sm mt-2">Repeat Until</label>
+          <input type="date" name="repeat_until" class="input-dark">
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
+        </div>`,
+      tour:()=>`
+        <div id="tourSection" class="space-y-4">
+          ${venueSearchBlock()}
+          <div class="grid grid-cols-2 gap-4">
+            <input type="date" name="event_date[]" required class="input-dark"/>
+            <input type="time" name="event_time[]" required class="input-dark"/>
+          </div>
+          <input type="url" name="ticket_url[]" placeholder="Ticket URL (optional)" class="input-dark">
+          <button type="button" id="addTourBtn" class="text-sm text-blue-400">+ Add Venue & Date</button>
+        </div>`
+    };
+
+    function renderTab(type){tabContent.innerHTML=views[type]();wireVenueSearch(tabContent);}
+    renderTab("single");
+    tabBtns.forEach(btn=>{
+      btn.onclick=()=>{
+        tabBtns.forEach(b=>b.classList.remove("bg-green-600"));
+        btn.classList.add("bg-green-600");
+        const t=btn.dataset.type;eventType.value=t;renderTab(t);
+        if(t==="tour"){
+          document.getElementById("addTourBtn").onclick=()=>{
+            const sec=document.getElementById("tourSection");
+            const wrap=document.createElement("div");
+            wrap.className="space-y-2 border-t border-slate-700 pt-4";
+            wrap.innerHTML=views.single();
+            sec.appendChild(wrap);wireVenueSearch(wrap);
+          };
+        }
+      };
     });
+
+    /* ---------- Submit ---------- */
+    const form=document.getElementById("eventForm");
+    form.onsubmit=async e=>{
+      e.preventDefault();log("Submitting…");
+      const fd=new FormData(form);
+      const organiserId=document.getElementById("organiser_id").value;
+      const base={
+        organiser_id:organiserId,
+        event_name:fd.get("event_name"),
+        description:fd.get("description"),
+        category:fd.get("category"),
+        image_url:fd.get("image_url"),
+        publish_status:fd.get("publish_status"),
+        event_type:fd.get("event_type")
+      };
+
+      const dates=fd.getAll("event_date[]");
+      const times=fd.getAll("event_time[]");
+      const venues=fd.getAll("venue_id[]");
+      const tickets=fd.getAll("ticket_url[]");
+
+      const events=[];
+      for(let i=0;i<dates.length;i++){
+        events.push({...base,event_date:dates[i],event_time:times[i]||null,venue_id:venues[i]||null,ticket_url:tickets[i]||null});
+      }
+
+      const {data,error}=await supabase.from("events").insert(events).select();
+      if(error){log("Error: "+error.message);}else{log("Success: "+JSON.stringify(data,null,2));}
+    };
   </script>
 </body>
 </html>
