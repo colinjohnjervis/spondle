@@ -8,57 +8,170 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Flowbite (to match schedule.html datepicker behaviour & focus styles) -->
+  <!-- Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
   <!-- Shared layout -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
-  <link rel="stylesheet" href="./styles.css?v=global-9">
-  <link rel="stylesheet" href="./hearts.css?v=global-9">
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-9" />
+  <link rel="stylesheet" href="./styles.css?v=global-9" />
+  <link rel="stylesheet" href="./hearts.css?v=global-9" />
 
   <style>
-    /* Match schedule.html look */
-    body{background:#000;color:#fff;font-family:ui-sans-serif,system-ui,sans-serif;min-height:100vh;}
-    .form-card{background:#0f172a;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45);padding:1.5rem;}
-    .input-dark{background:#0b1220;color:#fff;width:100%;border:1px solid #374151;border-radius:12px;padding:12px;transition:all .2s;}
-    .input-dark::placeholder{color:#9ca3af}
-    .input-dark:focus{outline:none;border-color:#3b82f6 !important;box-shadow:0 0 0 2px rgba(59,130,246,.3)}
-    select.input-dark option{background:#0b1220;color:#fff}
-    label{font-size:.95rem;color:#e5e7eb;margin-bottom:6px;display:block}
+    body {
+      background: #000;
+      color: #fff;
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      min-height: 100vh;
+    }
 
-    /* Tabs (same pills feel as schedule.html) */
-    .pill{border-radius:9999px;padding:.6rem 1rem;font-weight:700;text-align:center}
-    .pill.on{background:#22c55e;color:#000}
-    .pill.off{background:#374151;color:#e5e7eb}
-    .pill-wrap{display:flex;gap:.5rem;margin:.25rem 0 1rem}
+    .form-card {
+      background: #0f172a;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+    }
 
-    /* Venue popover list – schedule.html style */
-    .results-pop{position:absolute;left:-6px;right:-6px;top:calc(100% + 6px);z-index:60;background:#0f172a;border-radius:12px;padding:10px}
-    .venue-card{background:#111827;border:1px solid #374151;border-radius:12px;padding:12px 14px;margin:8px 0}
-    .venue-card:hover{background:#1b2433;border-color:#3b82f6;cursor:pointer}
-    .no-results{padding:12px 14px;background:#111827;border:1px solid #374151;border-radius:12px;text-align:center;color:#9ca3af;margin:8px 0;cursor:pointer}
-    .no-results:hover{background:#1b2433;border-color:#3b82f6}
+    .input-dark {
+      background: #0b1220;
+      color: #fff;
+      width: 100%;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 12px;
+      transition: all 0.2s;
+    }
 
-    .input-wrapper{position:relative}
-    .clear-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:#9ca3af;font-size:20px;cursor:pointer}
+    .input-dark:focus {
+      outline: none;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
 
-    /* Carousel – keep as-is; poster-like ratio */
-    .poster{height:20rem} /* h-80 to match schedule poster feel */
-    .img-wrapper{border-radius:12px;overflow:hidden;border:3px solid transparent;transition:border-color .2s}
-    .img-wrapper.selected{border-color:#3b82f6}
+    select.input-dark option {
+      background: #0b1220;
+      color: #fff;
+    }
 
-    /* Status banner */
-    .banner{border-radius:10px;padding:.75rem 1rem}
-    .banner.ok{background:#052e1a;border:1px solid #16a34a;color:#a7f3d0}
-    .banner.err{background:#2a1111;border:1px solid #ef4444;color:#fecaca}
+    label {
+      font-size: 0.95rem;
+      color: #e5e7eb;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .pill {
+      border-radius: 9999px;
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .pill.on {
+      background: #22c55e;
+      color: #000;
+    }
+
+    .pill.off {
+      background: #374151;
+      color: #e5e7eb;
+    }
+
+    .pill-wrap {
+      display: flex;
+      gap: 0.5rem;
+      margin: 0.25rem 0 1rem;
+      flex-wrap: wrap;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .img-wrapper {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 3px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .img-wrapper.selected {
+      border-color: #3b82f6;
+    }
+
+    .poster {
+      height: 22rem;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .banner {
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+    }
+
+    .banner.ok {
+      background: #052e1a;
+      border: 1px solid #16a34a;
+      color: #a7f3d0;
+    }
+
+    .banner.err {
+      background: #2a1111;
+      border: 1px solid #ef4444;
+      color: #fecaca;
+    }
+
+    .venue-card {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 8px 0;
+    }
+
+    .venue-card:hover {
+      background: #1b2433;
+      border-color: #3b82f6;
+      cursor: pointer;
+    }
+
+    .no-results {
+      padding: 12px 14px;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      text-align: center;
+      color: #9ca3af;
+      margin: 8px 0;
+      cursor: pointer;
+    }
+
+    .no-results:hover {
+      background: #1b2433;
+      border-color: #3b82f6;
+    }
   </style>
 </head>
 
 <body class="min-h-screen">
-  <!-- Sticky header + sidebar (your shared layout) -->
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
@@ -66,190 +179,204 @@
     });
   </script>
 
-  <!-- Page container -->
-  <main class="container mx-auto px-4 py-8">
-    <div class="form-card w-full max-w-3xl mx-auto">
+  <main class="px-4 py-8 sm:px-6 lg:px-8">
+    <div class="form-card">
       <h1 class="text-3xl font-bold text-white mb-6">Create Event</h1>
 
-      <!-- ========================== FORM ========================== -->
       <form id="eventForm" class="space-y-6">
-        <!-- SECTION: Basic info -->
-        <section id="sec-basic">
-          <div>
-            <label>Event Name</label>
-            <input type="text" name="event_name" required class="input-dark" placeholder="Enter event name">
-          </div>
 
-          <div class="mt-4">
-            <label>Description</label>
-            <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
-          </div>
+        <!-- ===============================
+             SECTION 1 — BASIC INFO
+        ================================== -->
+        <section id="section-basic-info">
+          <label>Event Name</label>
+          <input type="text" name="event_name" required class="input-dark" placeholder="Enter event name" />
+
+          <label class="mt-4 block">Description</label>
+          <textarea name="description" rows="4" class="input-dark" placeholder="Add event details"></textarea>
         </section>
 
-        <!-- SECTION: Category + Image -->
-        <section id="sec-category-image" class="space-y-3">
-          <div>
-            <label>Event Category & Image</label>
-            <select id="categorySelect" name="category" required class="input-dark">
-              <option value="">Select category</option>
-              <option value="music">Music</option>
-              <option value="comedy">Comedy</option>
-              <option value="theatre">Theatre</option>
-              <option value="sports">Sports</option>
-              <option value="festival">Festival</option>
-              <option value="quiz">Quiz Night</option>
-            </select>
-          </div>
+        <!-- ===============================
+             SECTION 2 — CATEGORY & IMAGE
+        ================================== -->
+        <section id="section-category" class="space-y-3">
+          <label>Event Category & Image</label>
+          <select id="categorySelect" name="category" required class="input-dark">
+            <option value="">Select category</option>
+            <option value="music">Music</option>
+            <option value="comedy">Comedy</option>
+            <option value="theatre">Theatre</option>
+            <option value="sports">Sports</option>
+            <option value="festival">Festival</option>
+            <option value="quiz">Quiz Night</option>
+          </select>
 
-          <!-- Placeholder poster (shown until a category is chosen) -->
           <div id="placeholderImageWrapper" class="img-wrapper selected">
             <img
               src="https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/file_000000002f686243b31639a2bca68eca.png"
-              alt="Spondle placeholder" class="w-full poster object-cover">
+              alt="Spondle placeholder"
+              class="poster"
+            />
           </div>
 
-          <!-- Auto-built carousel (kept as-is; single active image, click to select) -->
           <div id="carouselWrapper" class="hidden"></div>
-
-          <!-- Hidden field bound to selected image -->
-          <input type="hidden" name="image_url" id="image_url">
+          <input type="hidden" name="image_url" id="image_url" />
         </section>
 
-        <!-- SECTION: Schedule (tabs styled to match schedule.html) -->
-        <section id="sec-schedule" class="pt-2">
+        <!-- ===============================
+             SECTION 3 — SCHEDULE
+        ================================== -->
+        <section id="section-schedule" class="pt-4">
           <label class="block text-lg font-semibold mb-2">Schedule</label>
+
           <div class="pill-wrap">
-            <button type="button" class="pill on"  data-tab="single">Single</button>
+            <button type="button" class="pill on" data-tab="single">Single</button>
             <button type="button" class="pill off" data-tab="recurring">Recurring</button>
             <button type="button" class="pill off" data-tab="tour">Tour</button>
           </div>
 
-          <!-- Tab content -->
           <div id="tabContent" class="space-y-4"></div>
         </section>
 
-        <!-- SECTION: Publish -->
-        <section id="sec-publish" class="space-y-3">
-          <div>
-            <label>Publish Status</label>
-            <select name="publish_status" required class="input-dark">
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
+        <!-- ===============================
+             SECTION 4 — PUBLISH
+        ================================== -->
+        <section id="section-publish" class="space-y-3">
+          <label>Publish Status</label>
+          <select name="publish_status" required class="input-dark">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
         </section>
 
-        <!-- SECTION: Submit -->
-        <section id="sec-submit" class="space-y-3">
-          <button type="submit" class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg">
+        <!-- ===============================
+             SECTION 5 — SUBMIT
+        ================================== -->
+        <section id="section-submit" class="space-y-3">
+          <button
+            type="submit"
+            class="w-full bg-green-500 hover:bg-green-400 text-black font-semibold py-3 rounded-lg"
+          >
             Submit Event
           </button>
 
-          <div>
-            <label class="block mt-2 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
-            <input type="text" id="organiser_id" name="organiser_id" readonly
-                   class="input-dark text-green-400 text-sm" placeholder="Fetching..." />
-          </div>
+          <label class="block mt-2 mb-2 text-sm text-gray-400">Organiser ID (temporary)</label>
+          <input
+            type="text"
+            id="organiser_id"
+            name="organiser_id"
+            readonly
+            class="input-dark text-green-400 text-sm"
+            placeholder="Fetching..."
+          />
 
           <pre id="statusBox" class="mt-3 whitespace-pre-wrap text-sm"></pre>
           <div id="banner" class="hidden banner mt-2"></div>
         </section>
       </form>
-      <!-- ======================== /FORM ========================== -->
     </div>
   </main>
 
-  <!-- ============================================================
-       PAGE LOGIC
-  ============================================================ -->
+  <!-- ===============================
+       SECTION 6 — SCRIPT INITIALISATION
+  ================================== -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    /* ---------- Supabase ---------- */
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
     );
 
-    /* ---------- Helpers (style + messages) ---------- */
-    const $ = (s, sc=document)=>sc.querySelector(s);
-    const $$ = (s, sc=document)=>[...sc.querySelectorAll(s)];
-    const statusBox = $("#statusBox");
-    const banner = $("#banner");
+    const $ = (sel, sc = document) => sc.querySelector(sel);
+    const $$ = (sel, sc = document) => [...sc.querySelectorAll(sel)];
+    const statusBox = $("#statusBox"),
+      banner = $("#banner");
 
-    function say(line){ statusBox.textContent += (line + "\\n"); }
-    function ok(msg){ banner.className="banner ok mt-2"; banner.textContent=msg; banner.classList.remove("hidden"); }
-    function err(msg){ banner.className="banner err mt-2"; banner.textContent=msg; banner.classList.remove("hidden"); }
+    function say(t) {
+      statusBox.textContent += t + "\n";
+    }
+    function ok(t) {
+      banner.className = "banner ok mt-2";
+      banner.textContent = t;
+      banner.classList.remove("hidden");
+    }
+    function err(t) {
+      banner.className = "banner err mt-2";
+      banner.textContent = t;
+      banner.classList.remove("hidden");
+    }
 
-    /* ---------- Login display ---------- */
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      const organiser = $("#organiser_id");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const id = $("#organiser_id");
       if (user) {
-        organiser.value = user.id;
-        say("Ready.\\nLogged in as " + (user.email || user.id));
+        id.value = user.id;
+        say("Ready.\nLogged in as " + user.email);
       } else {
-        organiser.value = "Not logged in";
-        say("Ready.\\nNot logged in");
+        id.value = "Not logged in";
+        say("Ready.\nNot logged in");
       }
     })();
 
-    /* ============================================================
-       SECTION: Category + Image (carousel kept AS-IS)
-    ============================================================ */
+    /* ===============================
+       SECTION 7 — IMAGE CAROUSEL LOGIC
+    ================================== */
+    const categorySelect = $("#categorySelect");
+    const placeholderImageWrapper = $("#placeholderImageWrapper");
+    const carouselWrapper = $("#carouselWrapper");
+    const imageUrlInput = $("#image_url");
+
     const stockImages = {
       music: [
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1600&q=80",
-        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1200&q=80",
       ],
       comedy: [
         "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/voles.png",
         "https://raw.githubusercontent.com/colinjohnjervis/spondle/main/images/Screenshot_20251016-112458.png",
       ],
       theatre: [
-        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80",
-        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1505666287802-931dc83948e0?auto=format&fit=crop&w=1200&q=80",
       ],
       sports: [
-        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1505842465776-3acb9e92c0f0?auto=format&fit=crop&w=1200&q=80",
       ],
       festival: [
-        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=1200&q=80",
       ],
       quiz: [
-        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1600&q=80",
+        "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
       ],
     };
-
-    const categorySelect = $("#categorySelect");
-    const placeholderImageWrapper = $("#placeholderImageWrapper");
-    const carouselWrapper = $("#carouselWrapper");
-    const imageUrlInput = $("#image_url");
 
     function buildCarousel(images = []) {
       carouselWrapper.innerHTML = "";
       if (!images.length) return;
 
       const container = document.createElement("div");
-      container.className = "relative";
+      container.className = "relative mt-3";
 
       const track = document.createElement("div");
-      track.className = "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
+      track.className =
+        "flex overflow-x-auto no-scrollbar gap-2 snap-x snap-mandatory scroll-smooth";
       container.appendChild(track);
 
       images.forEach((url, index) => {
         const wrap = document.createElement("div");
-        wrap.className = "img-wrapper w-full poster shrink-0 snap-center";
-
+        wrap.className = "img-wrapper w-full h-80 shrink-0 snap-center";
         const img = document.createElement("img");
         img.src = url;
         img.className = "w-full h-full object-cover cursor-pointer";
         img.addEventListener("click", () => {
-          $$(".img-wrapper", track).forEach(w => w.classList.remove("selected"));
+          track.querySelectorAll(".img-wrapper").forEach((w) =>
+            w.classList.remove("selected")
+          );
           wrap.classList.add("selected");
           imageUrlInput.value = url;
         });
-
         wrap.appendChild(img);
         track.appendChild(wrap);
 
@@ -258,7 +385,6 @@
           imageUrlInput.value = url;
         }
       });
-
       carouselWrapper.appendChild(container);
     }
 
@@ -271,349 +397,210 @@
       } else {
         carouselWrapper.classList.add("hidden");
         placeholderImageWrapper.classList.remove("hidden");
-        imageUrlInput.value = "";
       }
     });
 
-    /* ============================================================
-       SECTION: Schedule – UI blocks (mirror schedule.html)
-    ============================================================ */
-
-    // time options 00:00..23:45 (15-min steps)
-    function fillTimes(select){
-      select.innerHTML = "";
-      for(let m=0;m<24*60;m+=15){
-        const hh = String(Math.floor(m/60)).padStart(2,"0");
-        const mm = String(m%60).padStart(2,"0");
-        const v = `${hh}:${mm}`;
-        select.add(new Option(v,v));
-      }
-    }
-
-    // Flowbite datepicker initializer (dd/mm/yyyy like schedule.html)
-    function initDatepicker(input, defaultDate=new Date()){
-      const dp = new Datepicker(input, {
-        autohide:true, language:"en-GB", format:"dd/mm/yyyy", defaultDate
-      });
-      input.addEventListener("click", ()=>dp.show());
-      return dp;
-    }
-
-    // Venue search helpers (same behaviour as schedule.html)
-    async function searchVenuesRelevance(query){
-      const clean = query.replace(/[^a-zA-Z0-9\s'-]/g,'').trim();
-      if(!clean) return [];
-      const { data } = await supabase
+    /* ===============================
+       SECTION 8 — VENUE SEARCH LOGIC
+    ================================== */
+    async function searchVenues(query) {
+      if (!query.trim()) return [];
+      const { data, error } = await supabase
         .from("venues")
         .select("id, venue_name, street_name, postcode")
-        .ilike("venue_name", `%${clean}%`);
-      if (!data) return [];
-      const starts = data.filter(v => v.venue_name.toLowerCase().startsWith(clean.toLowerCase()));
-      const rest   = data.filter(v => !v.venue_name.toLowerCase().startsWith(clean.toLowerCase()));
-      return [...starts, ...rest].slice(0,5);
+        .ilike("venue_name", `%${query}%`)
+        .limit(5);
+      return error ? [] : data;
     }
 
-    function wireVenueSearch(scope){
-      const search = $(".venue-search", scope);
-      const clear  = $(".venue-clear", scope);
-      const pop    = $(".results-pop", scope);
-      const list   = $(".venue-results", scope);
-      const empty  = $(".noVenueResults", scope);
-      const idOut  = $(".venue-id", scope);
-      const newForm= $(".newVenueForm", scope);
-      const nName  = $(".newName", scope);
-      const nStreet= $(".newStreet", scope);
-      const nPC    = $(".newPC", scope);
-      const create = $(".createVenue", scope);
-      let t;
+    function wireVenueSearch(scope = document) {
+      $$(".input-wrapper", scope).forEach((wrapper) => {
+        const searchInput = wrapper.querySelector(".search");
+        const venueIdInput = wrapper.parentElement.querySelector(".venue-id");
+        const venueList = wrapper.parentElement.querySelector(".venue-list");
+        const noResults = wrapper.parentElement.querySelector(".no-results");
+        const venueForm = wrapper.parentElement.querySelector(".venue-form");
+        const clearBtn = wrapper.querySelector(".clear-btn");
 
-      function render(items){
-        list.innerHTML = "";
-        empty.classList.add("hidden");
-        if(!items.length){ empty.classList.remove("hidden"); return; }
-        items.forEach(v=>{
-          const d = document.createElement("div");
-          d.className = "venue-card";
-          d.innerHTML = `<div class="font-semibold">${v.venue_name}</div>
-                         <div class="text-gray-300">${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
-          d.onclick = ()=>{
-            search.value = v.venue_name;
-            idOut.value  = v.id;
-            pop.classList.add("hidden");
-            newForm.classList.add("hidden");
-          };
-          list.appendChild(d);
+        searchInput.addEventListener("input", async () => {
+          const q = searchInput.value.trim();
+          venueList.innerHTML = "";
+          noResults.classList.add("hidden");
+          if (!q) return;
+          const venues = await searchVenues(q);
+          if (!venues.length) {
+            noResults.classList.remove("hidden");
+            return;
+          }
+          venues.forEach((v) => {
+            const card = document.createElement("div");
+            card.className = "venue-card";
+            card.innerHTML = `<div class='font-semibold'>${v.venue_name}</div>
+              <div class='text-gray-300'>${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
+            card.addEventListener("click", () => {
+              searchInput.value = v.venue_name;
+              venueIdInput.value = v.id;
+              venueList.innerHTML = "";
+              noResults.classList.add("hidden");
+            });
+            venueList.appendChild(card);
+          });
         });
-      }
 
-      search.oninput = ()=>{
-        clearTimeout(t);
-        const q = search.value.trim();
-        if(!q){ list.innerHTML=""; pop.classList.add("hidden"); return; }
-        t = setTimeout(async ()=>{
-          const items = await searchVenuesRelevance(q);
-          render(items);
-          pop.classList.remove("hidden");
-        }, 220);
-      };
-      search.onfocus = ()=>{ if(list.children.length) pop.classList.remove("hidden"); };
-      clear.onclick   = ()=>{ search.value=""; idOut.value=""; list.innerHTML=""; pop.classList.add("hidden"); newForm.classList.add("hidden"); };
-      empty.onclick   = ()=>{ pop.classList.add("hidden"); newForm.classList.remove("hidden"); };
-      create.onclick  = async ()=>{
-        const name = nName.value.trim(), street=nStreet.value.trim(), pc=nPC.value.trim();
-        if(!name) return;
-        const { data } = await supabase.from("venues").insert([{ venue_name:name, street_name:street, postcode:pc }]).select("id").single();
-        idOut.value = data.id; search.value = name; newForm.classList.add("hidden");
-        nName.value=""; nStreet.value=""; nPC.value="";
-      };
+        clearBtn.addEventListener("click", () => {
+          searchInput.value = "";
+          venueIdInput.value = "";
+          venueList.innerHTML = "";
+          venueForm.classList.add("hidden");
+          noResults.classList.add("hidden");
+        });
+
+        wrapper.parentElement
+          .querySelector(".create-venue-link")
+          ?.addEventListener("click", (e) => {
+            e.preventDefault();
+            venueForm.classList.remove("hidden");
+          });
+
+        wrapper.parentElement
+          .querySelector(".venue-submit")
+          ?.addEventListener("click", async () => {
+            const name = wrapper.parentElement
+              .querySelector(".venue-name")
+              .value.trim();
+            const street = wrapper.parentElement
+              .querySelector(".venue-street")
+              .value.trim();
+            const postcode = wrapper.parentElement
+              .querySelector(".venue-postcode")
+              .value.trim();
+            if (!name) return alert("Enter a venue name");
+            const { data, error } = await supabase
+              .from("venues")
+              .insert([{ venue_name: name, street_name: street, postcode }])
+              .select("id");
+            if (error) return alert("Error creating venue");
+            searchInput.value = name;
+            venueIdInput.value = data[0].id;
+            venueForm.classList.add("hidden");
+            venueList.innerHTML = "";
+            noResults.classList.add("hidden");
+          });
+      });
     }
 
-    // Tab views (HTML only; script continues in Part 2)
+    /* ===============================
+       SECTION 9 — SCHEDULE TABS
+    ================================== */
+    const tabContent = $("#tabContent");
+    const tabButtons = $$(".pill");
+    const eventForm = $("#eventForm");
+
+    const venueBlock = () => `
+      <div class="space-y-2">
+        <div class="input-wrapper">
+          <input type="text" placeholder="Search by venue name..." class="search input-dark" />
+          <button type="button" class="clear-btn">&times;</button>
+        </div>
+        <input type="text" name="venue_id" placeholder="Venue ID" readonly class="venue-id input-dark text-green-400 mt-2">
+        <div class="venue-list mt-2"></div>
+        <div class="no-results hidden">No results — <a href="#" class="create-venue-link text-blue-400">Create new venue</a></div>
+        <div class="venue-form mt-4 hidden space-y-2">
+          <input type="text" placeholder="Venue name" class="venue-name input-dark">
+          <input type="text" placeholder="Street address" class="venue-street input-dark">
+          <input type="text" placeholder="Postcode" class="venue-postcode input-dark">
+          <button type="button" class="venue-submit bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
+        </div>
+      </div>
+    `;
 
     const views = {
       single: () => `
-        <!-- SECTION: Venue Search (Single) -->
-        <div class="space-y-3">
-          <div class="relative">
-            <label class="block text-sm text-gray-300 mb-1">Venue</label>
-            <div class="input-wrapper">
-              <input type="text" class="venue-search input-dark" placeholder="Search by venue name..." />
-              <button type="button" class="venue-clear clear-btn" title="Clear">&times;</button>
-              <div class="results-pop hidden">
-                <div class="venue-results"></div>
-                <div class="noVenueResults no-results hidden">No matches found.<br><span class="text-blue-400 underline">+ Add new venue</span></div>
-              </div>
-            </div>
-            <input type="text" readonly class="venue-id input-dark text-blue-400 mt-2" placeholder="Venue ID will appear here">
-            <input type="text" class="ticket-link input-dark mt-2" placeholder="Ticket link (optional) e.g. https://ticketsite.com/xyz">
-            <div class="newVenueForm hidden mt-3 space-y-2">
-              <input type="text" class="newName input-dark"   placeholder="Venue name">
-              <input type="text" class="newStreet input-dark" placeholder="Street address">
-              <input type="text" class="newPC input-dark"     placeholder="Postcode">
-              <button type="button" class="createVenue bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">Create Venue</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <div>
-              <label class="block text-sm text-gray-300 mb-1">From</label>
-              <input type="text" class="fromDate input-dark" placeholder="DD/MM/YYYY" readonly>
-            </div>
-            <div>
-              <label class="block text-sm text-gray-300 mb-1">Time</label>
-              <select class="fromTime input-dark"></select>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 items-end">
-            <div>
-              <label class="block text-sm text-gray-300 mb-1">To</label>
-              <input type="text" class="toDate input-dark" placeholder="DD/MM/YYYY" readonly>
-            </div>
-            <div>
-              <label class="block text-sm text-gray-300 mb-1">Time</label>
-              <select class="toTime input-dark"></select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm text-gray-300 mb-1">Repeat</label>
-            <select class="repeatType input-dark">
-              <option value="none">Does not repeat</option>
-              <option value="everyday">Every day</option>
-              <option value="everyweek">Every week</option>
-              <option value="every2weeks">Every 2 weeks</option>
-              <option value="everymonth">Every month</option>
-              <option value="everyyear">Every year</option>
-            </select>
-          </div>
-
-          <div class="repeatUntilWrap hidden">
-            <label class="block text-sm text-gray-300 mb-1">Repeat until</label>
-            <input type="text" class="repeatUntil input-dark" placeholder="DD/MM/YYYY" readonly>
-          </div>
+        ${venueBlock()}
+        <div class="grid grid-cols-2 gap-4 items-end">
+          <input type="date" name="event_date" required class="input-dark" />
+          <input type="time" name="event_time" required class="input-dark" />
         </div>
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark">
       `,
-
       recurring: () => `
-        <!-- SECTION: Recurring (same UI as Single; repeat is always shown) -->
-        <div class="space-y-3">
-          ${views.single()}
+        ${venueBlock()}
+        <div class="grid grid-cols-2 gap-4 items-end">
+          <input type="date" name="event_date" required class="input-dark" />
+          <input type="time" name="event_time" required class="input-dark" />
         </div>
+        <label class="block text-sm mt-2">Repeat</label>
+        <select name="repeat" class="input-dark">
+          <option value="none">Does not repeat</option>
+          <option value="daily">Every day</option>
+          <option value="weekly">Every week</option>
+          <option value="monthly">Every month</option>
+        </select>
+        <label class="block text-sm mt-2">Repeat until</label>
+        <input type="date" name="repeat_until" class="input-dark" />
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-2">
       `,
-
       tour: () => `
-        <!-- SECTION: Tour Schedule -->
-        <div id="tourRoot" class="space-y-6">
-          ${views.single()}
+        <div id="tourRoot" class="space-y-6">${venueBlock()}</div>
+        <div class="grid grid-cols-2 gap-4 items-end mt-2">
+          <input type="date" name="event_date" required class="input-dark" />
+          <input type="time" name="event_time" required class="input-dark" />
         </div>
-        <button type="button" id="addTourBlockBtn" class="mt-2 bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-2 rounded-lg w-full">+ Add another venue/date</button>
-      `
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-2">
+        <button type="button" id="addTourBlock" class="text-sm text-blue-400 mt-3">+ Add another venue/date</button>
+      `,
     };
 
-    const tabContent = $("#tabContent");
-    const tabs = $$(".pill");
-    function setTab(which){
-      tabs.forEach(t => t.classList.toggle("on", t.dataset.tab===which));
-      tabs.forEach(t => t.classList.toggle("off", t.dataset.tab!==which));
-      tabContent.innerHTML = views[which]();
-      initScheduleSection(tabContent, which);
-    }
-
-    tabs.forEach(t => t.addEventListener("click", ()=>setTab(t.dataset.tab)));
-    setTab("single"); // default
-
-    /* ---------- init schedule section (wire pickers + venue search) ---------- */
-    function initScheduleSection(scope, mode){
-      // venue search
-      wireVenueSearch(scope);
-
-      // datepicker + time dropdowns (like schedule.html)
-      const today = new Date();
-      const fromDate = $(".fromDate", scope);
-      const toDate   = $(".toDate", scope);
-      const fromTime = $(".fromTime", scope);
-      const toTime   = $(".toTime", scope);
-
-      fillTimes(fromTime); fillTimes(toTime);
-      fromTime.value = "10:00"; toTime.value = "11:00";
-
-      const fromDP = initDatepicker(fromDate, today);
-      const toDP   = initDatepicker(toDate, today);
-      fromDate.value = formatUK(today);
-      toDate.value   = formatUK(today);
-
-      fromDate.addEventListener("changeDate", ()=>{
-        const f = parseUK(fromDate.value), t = parseUK(toDate.value);
-        if (t < f) { toDate.value = fromDate.value; toDP.setDate(f); }
-      });
-
-      // Repeat controls (show only if not 'none')
-      const rType = $(".repeatType", scope);
-      const rWrap = $(".repeatUntilWrap", scope);
-      const rUntil= $(".repeatUntil", scope);
-      let rDP;
-      if (rType){
-        rDP = initDatepicker(rUntil, today);
-        rType.addEventListener("change", ()=>{
-          const show = rType.value !== "none";
-          rWrap.classList.toggle("hidden", !show);
-          if (show){ rUntil.value = fromDate.value; }
+    function switchTab(tab) {
+      tabButtons.forEach((b) => b.classList.remove("on"));
+      tabButtons.forEach((b) => b.classList.add("off"));
+      const active = tabButtons.find((b) => b.dataset.tab === tab);
+      if (active) {
+        active.classList.add("on");
+        active.classList.remove("off");
+      }
+      tabContent.innerHTML = views[tab]();
+      wireVenueSearch(tabContent);
+      if (tab === "tour") {
+        $("#addTourBlock").addEventListener("click", () => {
+          const root = $("#tourRoot");
+          const block = document.createElement("div");
+          block.className = "border-t border-slate-700 pt-4 mt-4";
+          block.innerHTML = views.single();
+          root.appendChild(block);
+          wireVenueSearch(block);
         });
       }
-
-      // Tour "add another" block
-      const addTourBtn = $("#addTourBlockBtn");
-      if (addTourBtn){
-        addTourBtn.onclick = ()=>{
-          const root = $("#tourRoot");
-          const sep  = document.createElement("div");
-          sep.className="h-px bg-blue-500 my-4";
-          root.appendChild(sep);
-          const wrap = document.createElement("div");
-          wrap.innerHTML = views.single();
-          root.appendChild(wrap);
-          initScheduleSection(wrap, "tour");
-        };
-      }
     }
 
-    /* ---------- date helpers (UK) ---------- */
-    function formatUK(d){ return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
-    function parseUK(s){ const [dd,mm,yyyy]=s.split('/').map(n=>parseInt(n,10)); return new Date(yyyy,mm-1,dd); }
+    tabButtons.forEach((btn) =>
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab))
+    );
+    switchTab("single");
 
-    /* ============================================================
-       SUBMIT
-    ============================================================ */
-    const form = $("#eventForm");
-
-    form.addEventListener("submit", async (e)=>{
+    /* ===============================
+       SECTION 10 — SUBMIT HANDLER
+    ================================== */
+    eventForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       banner.classList.add("hidden");
-      statusBox.textContent = "Submitting...\\n";
+      statusBox.textContent = "Submitting event…";
 
-      const fd = new FormData(form);
-      const base = {
-        event_name:   fd.get("event_name")?.trim() || "",
-        description:  fd.get("description")?.trim() || "",
-        category:     $("#categorySelect").value || null,
-        image_url:    $("#image_url").value || null,
-        publish_status: fd.get("publish_status") || "draft",
-        organiser_id: $("#organiser_id").value && $("#organiser_id").value!=="Not logged in" ? $("#organiser_id").value : null,
-      };
+      const formData = new FormData(eventForm);
+      const data = Object.fromEntries(formData.entries());
+      console.log("Submitting data", data);
 
-      // Gather one or many event rows depending on tab
-      const currentTab = $$(".pill").find(p=>p.classList.contains("on"))?.dataset.tab || "single";
-      const rows = collectRowsForTab(currentTab);
-
-      // attach shared base props to each row
-      const payload = rows.map(r => ({...base, ...r}));
-
-      try{
-        const { data, error } = await supabase.from("events").insert(payload).select("id");
-        if (error) throw error;
-        ok("Event saved ✔");
-        say("Inserted rows: " + data.length);
-      }catch(ex){
-        err("Failed to upload event. Please try again.");
-        say(JSON.stringify(ex, null, 2));
+      const { error } = await supabase.from("events").insert([data]);
+      if (error) {
+        err("Error: " + error.message);
+        console.error(error);
+      } else {
+        ok("Event successfully created!");
+        eventForm.reset();
+        placeholderImageWrapper.classList.remove("hidden");
+        carouselWrapper.classList.add("hidden");
       }
     });
-
-    function collectRowsForTab(tab){
-      if (tab === "tour"){
-        // each block under #tourRoot
-        const blocks = $$("#tourRoot > div");
-        return blocks.filter(b => b.querySelector(".venue-search")) // skip separators
-          .map(block => buildRowFromScope(block));
-      }
-      // single / recurring use the single active scope (tabContent)
-      const row = buildRowFromScope(tabContent);
-      // expand recurrence into multiple rows if needed
-      const rType = $(".repeatType", tabContent)?.value || "none";
-      if (rType === "none") return [row];
-
-      const start = parseUK($(".fromDate", tabContent).value);
-      const until = parseUK($(".repeatUntil", tabContent).value);
-      const delta = {
-        everyday:    { days:1  },
-        everyweek:   { days:7  },
-        every2weeks: { days:14 },
-        everymonth:  { months:1},
-        everyyear:   { years:1 }
-      }[rType];
-
-      const rows = [];
-      let cursor = new Date(start);
-      while (cursor <= until){
-        const r = {...row};
-        r.event_date = formatUK(cursor);
-        rows.push(r);
-        cursor = addDate(cursor, delta);
-      }
-      return rows;
-    }
-
-    function buildRowFromScope(scope){
-      const venue_id = $(".venue-id", scope)?.value || null;
-      const ticket_url = $(".ticket-link", scope)?.value?.trim() || null;
-      const fromDate = $(".fromDate", scope)?.value;
-      const fromTime = $(".fromTime", scope)?.value;
-      return {
-        venue_id,
-        ticket_url,
-        event_date: fromDate,     // stored as dd/mm/yyyy (your existing pattern)
-        event_time: fromTime      // 24h HH:MM
-      };
-    }
-
-    function addDate(d, inc){
-      const x = new Date(d);
-      if (inc.days)   x.setDate(x.getDate()+inc.days);
-      if (inc.months) x.setMonth(x.getMonth()+inc.months);
-      if (inc.years)  x.setFullYear(x.getFullYear()+inc.years);
-      return x;
-    }
   </script>
 </body>
 </html>
