@@ -19,6 +19,9 @@
   <link rel="stylesheet" href="./styles.css?v=global-9" />
   <link rel="stylesheet" href="./hearts.css?v=global-9" />
 
+  <!-- ===============================
+       SECTION 1 — PAGE STYLES
+  ================================== -->
   <style>
     body {
       background: #000;
@@ -29,12 +32,11 @@
 
     .form-card {
       background: #0f172a;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      border-radius: 0;
+      box-shadow: none;
       padding: 1.5rem;
       width: 100%;
-      max-width: 960px;
-      margin: 0 auto;
+      margin: 0;
     }
 
     .input-dark {
@@ -89,35 +91,8 @@
       flex-wrap: wrap;
     }
 
-    .input-wrapper {
-      position: relative;
-    }
-
-    .clear-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: transparent;
-      border: none;
-      color: #9ca3af;
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .img-wrapper {
-      border-radius: 12px;
-      overflow: hidden;
-      border: 3px solid transparent;
-      transition: border-color 0.2s;
-    }
-
-    .img-wrapper.selected {
-      border-color: #3b82f6;
-    }
-
     .poster {
-      height: 22rem;
+      height: 24rem; /* h-96 equivalent */
       width: 100%;
       object-fit: cover;
     }
@@ -172,6 +147,9 @@
 </head>
 
 <body class="min-h-screen">
+  <!-- ===============================
+       SECTION 2 — LAYOUT INITIALISATION
+  ================================== -->
   <script src="./spondle-layout.js?v=global-9" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
@@ -179,14 +157,17 @@
     });
   </script>
 
-  <main class="px-4 py-8 sm:px-6 lg:px-8">
-    <div class="form-card">
+  <!-- ===============================
+       SECTION 3 — PAGE CONTENT
+  ================================== -->
+  <main class="px-4 py-8 sm:px-6 lg:px-12">
+    <div class="form-card w-full">
       <h1 class="text-3xl font-bold text-white mb-6">Create Event</h1>
 
       <form id="eventForm" class="space-y-6">
 
         <!-- ===============================
-             SECTION 1 — BASIC INFO
+             SECTION 4 — BASIC INFO
         ================================== -->
         <section id="section-basic-info">
           <label>Event Name</label>
@@ -197,7 +178,7 @@
         </section>
 
         <!-- ===============================
-             SECTION 2 — CATEGORY & IMAGE
+             SECTION 5 — CATEGORY & IMAGE
         ================================== -->
         <section id="section-category" class="space-y-3">
           <label>Event Category & Image</label>
@@ -224,7 +205,7 @@
         </section>
 
         <!-- ===============================
-             SECTION 3 — SCHEDULE
+             SECTION 6 — SCHEDULE
         ================================== -->
         <section id="section-schedule" class="pt-4">
           <label class="block text-lg font-semibold mb-2">Schedule</label>
@@ -239,7 +220,7 @@
         </section>
 
         <!-- ===============================
-             SECTION 4 — PUBLISH
+             SECTION 7 — PUBLISH
         ================================== -->
         <section id="section-publish" class="space-y-3">
           <label>Publish Status</label>
@@ -250,7 +231,7 @@
         </section>
 
         <!-- ===============================
-             SECTION 5 — SUBMIT
+             SECTION 8 — SUBMIT
         ================================== -->
         <section id="section-submit" class="space-y-3">
           <button
@@ -278,7 +259,7 @@
   </main>
 
   <!-- ===============================
-       SECTION 6 — SCRIPT INITIALISATION
+       SECTION 9 — SCRIPT INITIALISATION
   ================================== -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -321,7 +302,7 @@
     })();
 
     /* ===============================
-       SECTION 7 — IMAGE CAROUSEL LOGIC
+       SECTION 10 — IMAGE CAROUSEL LOGIC
     ================================== */
     const categorySelect = $("#categorySelect");
     const placeholderImageWrapper = $("#placeholderImageWrapper");
@@ -366,7 +347,7 @@
 
       images.forEach((url, index) => {
         const wrap = document.createElement("div");
-        wrap.className = "img-wrapper w-full h-80 shrink-0 snap-center";
+        wrap.className = "img-wrapper w-full h-96 shrink-0 snap-center";
         const img = document.createElement("img");
         img.src = url;
         img.className = "w-full h-full object-cover cursor-pointer";
@@ -401,7 +382,7 @@
     });
 
     /* ===============================
-       SECTION 8 — VENUE SEARCH LOGIC
+       SECTION 11 — VENUE SEARCH LOGIC
     ================================== */
     async function searchVenues(query) {
       if (!query.trim()) return [];
@@ -436,7 +417,9 @@
             const card = document.createElement("div");
             card.className = "venue-card";
             card.innerHTML = `<div class='font-semibold'>${v.venue_name}</div>
-              <div class='text-gray-300'>${[v.street_name, v.postcode].filter(Boolean).join(", ")}</div>`;
+              <div class='text-gray-300'>${[v.street_name, v.postcode]
+                .filter(Boolean)
+                .join(", ")}</div>`;
             card.addEventListener("click", () => {
               searchInput.value = v.venue_name;
               venueIdInput.value = v.id;
@@ -490,7 +473,7 @@
     }
 
     /* ===============================
-       SECTION 9 — SCHEDULE TABS
+       SECTION 12 — SCHEDULE TABS
     ================================== */
     const tabContent = $("#tabContent");
     const tabButtons = $$(".pill");
@@ -498,9 +481,9 @@
 
     const venueBlock = () => `
       <div class="space-y-2">
-        <div class="input-wrapper">
-          <input type="text" placeholder="Search by venue name..." class="search input-dark" />
-          <button type="button" class="clear-btn">&times;</button>
+        <div class="input-wrapper relative">
+          <input type="text" placeholder="Search by venue name..." class="search input-dark pr-8" />
+          <button type="button" class="clear-btn absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">&times;</button>
         </div>
         <input type="text" name="venue_id" placeholder="Venue ID" readonly class="venue-id input-dark text-green-400 mt-2">
         <div class="venue-list mt-2"></div>
@@ -517,15 +500,15 @@
     const views = {
       single: () => `
         ${venueBlock()}
-        <div class="grid grid-cols-2 gap-4 items-end">
+        <div class="grid grid-cols-2 gap-4 items-end mt-4">
           <input type="date" name="event_date" required class="input-dark" />
           <input type="time" name="event_time" required class="input-dark" />
         </div>
-        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark">
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-4">
       `,
       recurring: () => `
         ${venueBlock()}
-        <div class="grid grid-cols-2 gap-4 items-end">
+        <div class="grid grid-cols-2 gap-4 items-end mt-4">
           <input type="date" name="event_date" required class="input-dark" />
           <input type="time" name="event_time" required class="input-dark" />
         </div>
@@ -538,15 +521,15 @@
         </select>
         <label class="block text-sm mt-2">Repeat until</label>
         <input type="date" name="repeat_until" class="input-dark" />
-        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-2">
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-4">
       `,
       tour: () => `
         <div id="tourRoot" class="space-y-6">${venueBlock()}</div>
-        <div class="grid grid-cols-2 gap-4 items-end mt-2">
+        <div class="grid grid-cols-2 gap-4 items-end mt-4">
           <input type="date" name="event_date" required class="input-dark" />
           <input type="time" name="event_time" required class="input-dark" />
         </div>
-        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-2">
+        <input type="url" name="ticket_url" placeholder="Ticket link (optional)" class="input-dark mt-4">
         <button type="button" id="addTourBlock" class="text-sm text-blue-400 mt-3">+ Add another venue/date</button>
       `,
     };
@@ -579,7 +562,7 @@
     switchTab("single");
 
     /* ===============================
-       SECTION 10 — SUBMIT HANDLER
+       SECTION 13 — SUBMIT HANDLER
     ================================== */
     eventForm.addEventListener("submit", async (e) => {
       e.preventDefault();
