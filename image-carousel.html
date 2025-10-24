@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image Carousel – Spondle</title>
+  <meta name="color-scheme" content="dark" />
+
+  <!-- Tailwind + Flowbite (match schedule.html) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
+
+  <style>
+    /* Match schedule.html look & feel */
+    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
+    .input-dark { background:#0b1220; color:#fff; width:100%; }
+    .input-dark::placeholder { color:#9ca3af; }
+    .input-dark:focus {
+      border-color:#3b82f6 !important;
+      outline:none;
+      box-shadow:0 0 0 1.5px #3b82f6;
+    }
+
+    /* Carousel controls */
+    .nav-btn {
+      position:absolute; top:50%; transform:translateY(-50%);
+      background:rgba(0,0,0,.55); border:1px solid #374151;
+      width:40px; height:40px; border-radius:9999px;
+      display:flex; align-items:center; justify-content:center;
+      color:#e5e7eb;
+    }
+    .nav-btn:hover { background:rgba(0,0,0,.75); color:#fff; border-color:#4b5563; }
+    .nav-left  { left:10px; }
+    .nav-right { right:10px; }
+
+    .dot {
+      width:8px; height:8px; border-radius:9999px; display:inline-block;
+      background:#374151; margin:0 4px;
+    }
+    .dot-active { background:#22c55e; } /* green accent like schedule pills */
+  </style>
+</head>
+
+<body class="flex items-start justify-center py-10">
+  <div class="card w-full max-w-xl p-6">
+    <h1 class="text-3xl font-bold text-white mb-6">Image Carousel Demo</h1>
+
+    <!-- Category (inside the card, like schedule form sections) -->
+    <div class="mb-6">
+      <label for="category" class="block text-sm text-gray-300 mb-2">Event Category &amp; Image</label>
+      <select id="category" class="input-dark p-3 rounded-lg border border-gray-700">
+        <option value="">Select category</option>
+        <option value="music">Music</option>
+        <option value="comedy">Comedy</option>
+        <option value="theatre">Theatre</option>
+        <option value="sports">Sports</option>
+        <option value="festival">Festival</option>
+        <option value="quiz">Quiz Night</option>
+      </select>
+    </div>
+
+    <!-- Carousel -->
+    <div class="relative w-full">
+      <!-- Image area (match event tiles: h-80, object-cover, full width, rounded) -->
+      <div class="w-full h-80 overflow-hidden rounded-xl border border-gray-700 bg-[#0b1220]">
+        <img id="carouselImage"
+             src="./images/file_000000002f686243b31639a2bca68eca.png"
+             alt="Event image"
+             class="w-full h-full object-cover transition duration-300" />
+      </div>
+
+      <!-- Nav buttons -->
+      <button id="prevBtn" class="nav-btn nav-left hidden" aria-label="Previous image">
+        &#10094;
+      </button>
+      <button id="nextBtn" class="nav-btn nav-right hidden" aria-label="Next image">
+        &#10095;
+      </button>
+    </div>
+
+    <!-- Dots -->
+    <div id="dots" class="flex items-center justify-center mt-4 min-h-6"></div>
+
+    <!-- Debug (optional small line to show current index) -->
+    <div id="debugLine" class="text-xs text-gray-400 mt-2 hidden"></div>
+  </div>
+
+  <script>
+    // ----- Unsplash stock images (5 per category) -----
+    // Each URL includes transform params for reliable sizing.
+    const IMG_W = 1600, IMG_Q = 70;
+    const u = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${IMG_W}&q=${IMG_Q}`;
+
+    const stock = {
+      music: [
+        u("1511379938547-c1f69419868d"), // crowd + lights
+        u("1506157786151-b8491531f063"), // dj mixer
+        u("1507874457470-272b3c8d8ee2"), // guitar closeup
+        u("1470225620780-dba8ba36b745"), // stage lights
+        u("1497032628192-86f99bcd76bc")  // vinyl
+      ],
+      comedy: [
+        u("1511671782779-c97d3d27a1d4"), // mic on stage
+        u("1485217988980-11786ced9454"), // spotlight
+        u("1475724017904-b712052c192a"), // audience
+        u("1515165562835-c3b8c34a47af"), // red curtain + mic
+        u("1492684223066-81342ee5ff30")  // colorful crowd
+      ],
+      theatre: [
+        u("1500530855697-b586d89ba3ee"), // red seats
+        u("1485562298395-226cb9c57f45"), // backstage costume
+        u("1442504028989-ab58b5f29a4a"), // ornate theatre
+        u("1501785888041-af3ef285b470"), // stage curtain
+        u("1515169067865-5387ec356754")  // spotlight stage
+      ],
+      sports: [
+        u("1461896836934-ffe607ba8211"), // football boots
+        u("1502877338535-766e1452684a"), // running track
+        u("1505839673365-e3971f8d9184"), // basketball
+        u("1521412644187-c49fa049e84d"), // stadium
+        u("1508804185872-d7badad00f7d")  // tennis court
+      ],
+      festival: [
+        u("1533105079780-92b9be482077"), // night crowd
+        u("1492683513054-55277abccd3c"), // confetti
+        u("1500534314209-a25ddb2bd429"), // hands up
+        u("1502136969935-8d0710a0d652"), // ferris wheel vibes
+        u("1495567720989-cebdbdd97913")  // lasers crowd
+      ],
+      quiz: [
+        u("1483721310020-03333e577078"), // question mark neon
+        u("1512428559087-560fa5ceab42"), // notebook & pen
+        u("1496307042754-b4aa456c4a2d"), // bar scene
+        u("1504711434969-e33886168f5c"), // pub lights
+        u("1514525253161-7a46d19cd819")  // chalkboard letters
+      ]
+    };
+
+    // ----- State -----
+    const imgEl   = document.getElementById('carouselImage');
+    const dotsEl  = document.getElementById('dots');
+    const catSel  = document.getElementById('category');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const debug   = document.getElementById('debugLine');
+
+    let currentCategory = '';
+    let currentIndex = 0;
+
+    // ----- Helpers -----
+    function setImage(src) {
+      // simple fade swap (CSS transition is already set on <img>)
+      imgEl.style.opacity = 0.75;
+      imgEl.src = src;
+      imgEl.onload = () => { imgEl.style.opacity = 1; };
+    }
+
+    function renderDots(len) {
+      dotsEl.innerHTML = '';
+      for (let i = 0; i < len; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (i === currentIndex ? ' dot-active' : '');
+        dot.role = 'button';
+        dot.ariaLabel = `Go to image ${i+1}`;
+        dot.addEventListener('click', () => {
+          currentIndex = i;
+          updateCarousel();
+        });
+        dotsEl.appendChild(dot);
+      }
+    }
+
+    function setControlsVisible(visible) {
+      prevBtn.classList.toggle('hidden', !visible);
+      nextBtn.classList.toggle('hidden', !visible);
+      dotsEl.classList.toggle('invisible', !visible);
+    }
+
+    function updateDebug() {
+      // Toggle this on if you want to see index/category while testing
+      // debug.classList.remove('hidden');
+      debug.textContent = currentCategory ? `Category: ${currentCategory}  |  Image ${currentIndex+1} / ${stock[currentCategory].length}` : '';
+    }
+
+    function updateCarousel() {
+      if (!currentCategory) {
+        // No category selected — show placeholder and hide controls/dots
+        setImage('./images/file_000000002f686243b31639a2bca68eca.png');
+        setControlsVisible(false);
+        dotsEl.innerHTML = '';
+        updateDebug();
+        return;
+      }
+
+      const arr = stock[currentCategory] || [];
+      if (arr.length === 0) {
+        // Fallback safety
+        setImage('./images/file_000000002f686243b31639a2bca68eca.png');
+        setControlsVisible(false);
+        dotsEl.innerHTML = '';
+        updateDebug();
+        return;
+      }
+
+      // Guard index bounds (wrap)
+      currentIndex = (currentIndex + arr.length) % arr.length;
+      setImage(arr[currentIndex]);
+      renderDots(arr.length);
+      setControlsVisible(true);
+      updateDebug();
+    }
+
+    // ----- Events -----
+    catSel.addEventListener('change', () => {
+      const val = catSel.value.trim();
+      currentCategory = val;
+      currentIndex = 0;
+      updateCarousel();
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (!currentCategory) return;
+      currentIndex--;
+      updateCarousel();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (!currentCategory) return;
+      currentIndex++;
+      updateCarousel();
+    });
+
+    // Keyboard navigation for convenience
+    document.addEventListener('keydown', (e) => {
+      if (!currentCategory) return;
+      if (e.key === 'ArrowLeft')  { currentIndex--; updateCarousel(); }
+      if (e.key === 'ArrowRight') { currentIndex++; updateCarousel(); }
+    });
+
+    // Initial paint (placeholder)
+    updateCarousel();
+  </script>
+</body>
+</html>
