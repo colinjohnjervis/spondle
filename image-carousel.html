@@ -29,16 +29,15 @@
     .nav-right { right:10px; }
 
     .dot { width:8px; height:8px; border-radius:9999px; display:inline-block; background:#374151; margin:0 4px; }
-    .dot-active { background:#3b82f6; } /* updated blue */
+    .dot-active { background:#3b82f6; }
 
-    /* Slider container and animation */
     .slider-wrapper {
       position:relative;
       overflow:hidden;
       border-radius:12px;
       border:1px solid #374151;
       background:#0b1220;
-      height:20rem; /* h-80 */
+      height:24rem; /* h-96 to match event tiles */
     }
     .slider {
       display:flex;
@@ -77,7 +76,6 @@
       </select>
     </div>
 
-    <!-- Slider -->
     <div class="relative w-full">
       <div class="slider-wrapper">
         <div id="slider" class="slider">
@@ -87,7 +85,6 @@
         </div>
       </div>
 
-      <!-- Nav buttons -->
       <button id="prevBtn" class="nav-btn nav-left hidden" aria-label="Previous">&#10094;</button>
       <button id="nextBtn" class="nav-btn nav-right hidden" aria-label="Next">&#10095;</button>
     </div>
@@ -230,7 +227,6 @@
       updateSliderPosition();
     });
 
-    // Swipe gesture for mobile
     let startX = 0;
     slider.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, false);
     slider.addEventListener("touchend", e => {
