@@ -13,58 +13,42 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
 
-  <!-- Flowbite Datepicker (included now so schedule can drop in later) -->
+  <!-- Flowbite Datepicker (for later schedule drop-in) -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    /* Minimal helpers only (visual baseline preserved) */
-    .card {
-      @apply rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6;
-    }
-    .card-title {
-      @apply text-xl font-semibold mb-4;
-    }
-    .label {
-      @apply block text-sm font-medium mb-1;
-    }
-    .input, .select, .textarea {
-      @apply w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500;
-    }
-    .btn-primary {
-      @apply inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-50;
-    }
-    .btn-secondary {
-      @apply inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium bg-gray-700 hover:bg-gray-600;
-    }
-  </style>
+  <!-- Global styles to match existing pages -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
+  <link rel="stylesheet" href="./styles.css?v=global-9">
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
   <!-- Header / Sidebar hooks (handled by spondle-layout.js) -->
   <header id="spondle-header"></header>
 
-  <main class="max-w-4xl mx-auto pt-6 pb-16 px-3 sm:px-6">
+  <main class="max-w-5xl mx-auto pt-6 pb-16 px-3 sm:px-6">
     <form id="create-event-form" class="space-y-0">
+
       <!-- =========================
            CARD 1: EVENT BASICS
            ========================= -->
-      <section class="card" id="card-event-basics">
-        <h2 class="card-title">Event Basics</h2>
+      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-event-basics">
+        <h2 class="text-xl font-semibold mb-4">Event Basics</h2>
 
         <div class="grid gap-5">
           <!-- Event Name -->
           <div>
-            <label for="event_name" class="label">Event Name</label>
-            <input id="event_name" name="event_name" type="text" class="input" placeholder="e.g. Friday Night Comedy" />
+            <label for="event_name" class="block text-sm font-medium mb-1">Event Name</label>
+            <input id="event_name" name="event_name" type="text"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g. Friday Night Comedy" />
           </div>
 
           <!-- Description -->
           <div>
-            <label for="description" class="label">Description</label>
-            <textarea id="description" name="description" rows="6" class="textarea" placeholder="Tell people what this event is about..."></textarea>
+            <label for="description" class="block text-sm font-medium mb-1">Description</label>
+            <textarea id="description" name="description" rows="6"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Tell people what this event is about..."></textarea>
           </div>
         </div>
       </section>
@@ -72,15 +56,15 @@
       <!-- =========================
            ===== IMAGE CAROUSEL START =====
            CARD 2: IMAGE CAROUSEL PLACEHOLDER
-           (Real carousel + Category will be inserted here later)
+           (Real carousel + Category will be inserted here)
            ===== IMAGE CAROUSEL END =====
            ========================= -->
-      <section class="card" id="card-image-carousel">
-        <h2 class="card-title">Images & Category</h2>
+      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-image-carousel">
+        <h2 class="text-xl font-semibold mb-4">Images &amp; Category</h2>
         <div class="rounded-xl border border-dashed border-gray-700 p-6 text-gray-300">
           <p class="mb-2 font-medium">Placeholder</p>
           <p class="text-sm">
-            The full <strong>image carousel</strong> (including the <strong>Category</strong> selector) will be inserted here.
+            The full <span class="font-semibold">image carousel</span> (including the <span class="font-semibold">Category</span> selector) will be inserted here.
           </p>
         </div>
       </section>
@@ -91,12 +75,12 @@
            (Single / Recurring / Tour section to drop in here)
            ===== SCHEDULE END =====
            ========================= -->
-      <section class="card" id="card-schedule">
-        <h2 class="card-title">Schedule</h2>
+      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-schedule">
+        <h2 class="text-xl font-semibold mb-4">Schedule</h2>
         <div class="rounded-xl border border-dashed border-gray-700 p-6 text-gray-300">
           <p class="mb-2 font-medium">Placeholder</p>
           <p class="text-sm">
-            The full <strong>Schedule</strong> component (Single / Recurring / Tour) will be inserted here.
+            The full <span class="font-semibold">Schedule</span> component (Single / Recurring / Tour) will be inserted here.
           </p>
         </div>
       </section>
@@ -104,14 +88,15 @@
       <!-- =========================
            CARD 4: FINAL SETTINGS (Visibility + Publish + Submit)
            ========================= -->
-      <section class="card" id="card-final-settings">
-        <h2 class="card-title">Final Settings</h2>
+      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-final-settings">
+        <h2 class="text-xl font-semibold mb-4">Final Settings</h2>
 
         <div class="grid gap-5">
           <!-- Visibility -->
           <div>
-            <label for="visibility" class="label">Visibility</label>
-            <select id="visibility" name="visibility" class="select">
+            <label for="visibility" class="block text-sm font-medium mb-1">Visibility</label>
+            <select id="visibility" name="visibility"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="public" selected>Public</option>
               <option value="private">Private</option>
             </select>
@@ -119,8 +104,9 @@
 
           <!-- Publish Status -->
           <div>
-            <label for="publish_status" class="label">Publish Status</label>
-            <select id="publish_status" name="publish_status" class="select">
+            <label for="publish_status" class="block text-sm font-medium mb-1">Publish Status</label>
+            <select id="publish_status" name="publish_status"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="draft" selected>Draft</option>
               <option value="published">Published</option>
             </select>
@@ -128,16 +114,22 @@
 
           <!-- Organiser (User) ID display -->
           <div class="grid gap-2">
-            <label class="label">Organiser ID (temporary)</label>
-            <input id="organiser_id_display" class="input" type="text" value="Loading user..." readonly />
+            <label class="block text-sm font-medium">Organiser ID (temporary)</label>
+            <input id="organiser_id_display"
+              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none"
+              type="text" value="Loading user..." readonly />
             <input id="organiser_id" name="organiser_id" type="hidden" />
             <p class="text-xs text-gray-400">Shown for now; will be hidden/automatic later.</p>
           </div>
 
           <!-- Actions -->
           <div class="flex items-center gap-3 pt-2">
-            <button id="submitBtn" class="btn-primary" type="submit">Submit Event</button>
-            <button id="resetBtn" class="btn-secondary" type="button">Reset</button>
+            <button id="submitBtn" class="inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-50" type="submit">
+              Submit Event
+            </button>
+            <button id="resetBtn" class="inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium bg-gray-700 hover:bg-gray-600" type="button">
+              Reset
+            </button>
           </div>
         </div>
       </section>
@@ -147,9 +139,9 @@
   <!-- Layout / behaviour for header + sidebar etc. -->
   <script type="module" src="./spondle-layout.js"></script>
 
-  <!-- Page Script: minimal wiring only (template mode) -->
+  <!-- Supabase (kept so this can evolve) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // --- Supabase init (kept here so we can evolve into full form later) ---
     const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -162,8 +154,8 @@
         const hidden = document.getElementById("organiser_id");
 
         if (error) {
-          display.value = "Not signed in";
           console.error(error);
+          display.value = "Not signed in";
           return;
         }
 
@@ -182,7 +174,6 @@
     // Template-only submit handler (no DB writes yet)
     document.getElementById("create-event-form").addEventListener("submit", (e) => {
       e.preventDefault(); // keep template inert
-      // Keep visuals unchanged; just a quiet console log for now.
       console.log("[Template] Submit clicked. Wiring to Supabase will be added after carousel & schedule are inserted.");
     });
 
