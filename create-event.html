@@ -60,21 +60,131 @@
       </section>
 
       <!-- =========================
-           ===== IMAGE CAROUSEL START =====
-           SECTION 2: IMAGE CAROUSEL PLACEHOLDER
-           (Category + carousel will be inserted here)
-           ===== IMAGE CAROUSEL END =====
-           ========================= -->
-      <section class="card w-full px-3 sm:px-6 py-6" id="card-image-carousel">
-        <h2 class="text-3xl font-bold text-white mb-6">Images &amp; Category</h2>
-        <div class="placeholder-panel p-6 text-gray-300">
-          <p class="mb-2 font-medium text-gray-200">Placeholder</p>
-          <p class="text-sm">
-            The full <span class="font-semibold">image carousel</span> (including the
-            <span class="font-semibold">Category</span> selector) will be inserted here.
-          </p>
+     ===== IMAGE CAROUSEL START =====
+     SECTION 2: IMAGE CAROUSEL (Category + Carousel)
+     ===== IMAGE CAROUSEL END =====
+     ========================= -->
+<section class="card w-full px-3 sm:px-6 py-6" id="card-image-carousel">
+  <h2 class="text-3xl font-bold text-white mb-6">Images &amp; Category</h2>
+
+  <div class="mb-6">
+    <label for="category" class="block text-sm text-gray-300 mb-2">Event Category &amp; Image</label>
+    <select id="category" class="input-dark p-3 rounded-lg border border-gray-700">
+      <option value="">Select category</option>
+      <option value="music">Music</option>
+      <option value="comedy">Comedy</option>
+      <option value="theatre">Theatre</option>
+      <option value="sports">Sports</option>
+      <option value="festival">Festival</option>
+      <option value="quiz">Quiz Night</option>
+    </select>
+  </div>
+
+  <div class="relative w-full">
+    <div class="slider-wrapper">
+      <div id="slider" class="slider">
+        <div class="slide">
+          <img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" />
         </div>
-      </section>
+      </div>
+    </div>
+
+    <button id="prevBtn" class="nav-btn nav-left hidden" aria-label="Previous">&#10094;</button>
+    <button id="nextBtn" class="nav-btn nav-right hidden" aria-label="Next">&#10095;</button>
+  </div>
+
+  <div id="dots" class="flex items-center justify-center mt-4 min-h-6"></div>
+</section>
+
+<script>
+  // --- Image Carousel Logic (identical to image-carousel.html) ---
+  const IMG_W = 1600, IMG_Q = 70;
+  const u = id => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${IMG_W}&q=${IMG_Q}`;
+  const stock = {
+    music: [u("1511379938547-c1f69419868d"),u("1506157786151-b8491531f063"),u("1507874457470-272b3c8d8ee2"),u("1470225620780-dba8ba36b745"),u("1497032628192-86f99bcd76bc")],
+    comedy: [u("1511671782779-c97d3d27a1d4"),u("1485217988980-11786ced9454"),u("1475724017904-b712052c192a"),u("1515165562835-c3b8c34a47af"),u("1492684223066-81342ee5ff30")],
+    theatre: [u("1500530855697-b586d89ba3ee"),u("1485562298395-226cb9c57f45"),u("1442504028989-ab58b5f29a4a"),u("1501785888041-af3ef285b470"),u("1515169067865-5387ec356754")],
+    sports: [u("1461896836934-ffe607ba8211"),u("1502877338535-766e1452684a"),u("1505839673365-e3971f8d9184"),u("1521412644187-c49fa049e84d"),u("1508804185872-d7badad00f7d")],
+    festival: [u("1533105079780-92b9be482077"),u("1492683513054-55277abccd3c"),u("1500534314209-a25ddb2bd429"),u("1502136969935-8d0710a0d652"),u("1495567720989-cebdbdd97913")],
+    quiz: [u("1483721310020-03333e577078"),u("1512428559087-560fa5ceab42"),u("1496307042754-b4aa456c4a2d"),u("1504711434969-e33886168f5c"),u("1514525253161-7a46d19cd819")]
+  };
+
+  const catSel=document.getElementById("category"),
+        slider=document.getElementById("slider"),
+        dots=document.getElementById("dots"),
+        prevBtn=document.getElementById("prevBtn"),
+        nextBtn=document.getElementById("nextBtn");
+  let currentCategory="",currentIndex=0,slides=[];
+
+  function preloadImages(urls){urls.forEach(src=>{const img=new Image();img.src=src;});}
+  function renderSlides(images){
+    slider.innerHTML="";
+    slides=images.map(src=>{
+      const div=document.createElement("div");
+      div.className="slide";
+      const img=document.createElement("img");
+      img.src=src; img.alt="Event image";
+      div.appendChild(img);
+      slider.appendChild(div);
+      return div;
+    });
+    updateSliderPosition();
+  }
+  function renderDots(count){
+    dots.innerHTML="";
+    for(let i=0;i<count;i++){
+      const dot=document.createElement("span");
+      dot.className="dot"+(i===currentIndex?" dot-active":"");
+      dot.addEventListener("click",()=>{currentIndex=i;updateSliderPosition();});
+      dots.appendChild(dot);
+    }
+  }
+  function updateSliderPosition(){
+    slider.style.transform=`translateX(-${currentIndex*100}%)`;
+    dots.querySelectorAll(".dot").forEach((d,i)=>d.classList.toggle("dot-active",i===currentIndex));
+  }
+  function setControlsVisible(v){
+    prevBtn.classList.toggle("hidden",!v);
+    nextBtn.classList.toggle("hidden",!v);
+    dots.classList.toggle("invisible",!v);
+  }
+  function selectCategory(cat){
+    currentCategory=cat; currentIndex=0;
+    if(!cat){
+      slider.innerHTML=`<div class="slide"><img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" /></div>`;
+      setControlsVisible(false); dots.innerHTML="";
+      return;
+    }
+    const imgs=stock[cat];
+    preloadImages(imgs);
+    renderSlides(imgs);
+    renderDots(imgs.length);
+    setControlsVisible(true);
+  }
+  catSel.addEventListener("change",e=>selectCategory(e.target.value));
+  prevBtn.addEventListener("click",()=>{
+    if(!currentCategory)return;
+    currentIndex=(currentIndex-1+slides.length)%slides.length;
+    updateSliderPosition();
+  });
+  nextBtn.addEventListener("click",()=>{
+    if(!currentCategory)return;
+    currentIndex=(currentIndex+1)%slides.length;
+    updateSliderPosition();
+  });
+  let startX=0;
+  slider.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;},false);
+  slider.addEventListener("touchend",e=>{
+    if(!currentCategory)return;
+    const diff=e.changedTouches[0].clientX-startX;
+    if(Math.abs(diff)>50){
+      if(diff>0)currentIndex=(currentIndex-1+slides.length)%slides.length;
+      else currentIndex=(currentIndex+1)%slides.length;
+      updateSliderPosition();
+    }
+  },false);
+  selectCategory("");
+</script>
 
       <!-- =========================
            ===== SCHEDULE START =====
