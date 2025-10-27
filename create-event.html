@@ -59,6 +59,8 @@
         </div>
       </section>
 
+      
+
       <!-- =========================
      ===== IMAGE CAROUSEL START =====
      SECTION 2: IMAGE CAROUSEL (Category + Carousel)
@@ -97,7 +99,14 @@
 </section>
 
 <script>
-  // --- Image Carousel Logic (identical to image-carousel.html) ---
+  // --- Image Carousel Logic (patched for embedded version) ---
+  const carouselScope = document.querySelector('#card-image-carousel');
+  const catSel = carouselScope.querySelector('#category');
+  const slider = carouselScope.querySelector('#slider');
+  const dots = carouselScope.querySelector('#dots');
+  const prevBtn = carouselScope.querySelector('#prevBtn');
+  const nextBtn = carouselScope.querySelector('#nextBtn');
+
   const IMG_W = 1600, IMG_Q = 70;
   const u = id => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${IMG_W}&q=${IMG_Q}`;
   const stock = {
@@ -109,84 +118,86 @@
     quiz: [u("1483721310020-03333e577078"),u("1512428559087-560fa5ceab42"),u("1496307042754-b4aa456c4a2d"),u("1504711434969-e33886168f5c"),u("1514525253161-7a46d19cd819")]
   };
 
-  const catSel=document.getElementById("category"),
-        slider=document.getElementById("slider"),
-        dots=document.getElementById("dots"),
-        prevBtn=document.getElementById("prevBtn"),
-        nextBtn=document.getElementById("nextBtn");
-  let currentCategory="",currentIndex=0,slides=[];
+  let currentCategory = "", currentIndex = 0, slides = [];
 
-  function preloadImages(urls){urls.forEach(src=>{const img=new Image();img.src=src;});}
-  function renderSlides(images){
-    slider.innerHTML="";
-    slides=images.map(src=>{
-      const div=document.createElement("div");
-      div.className="slide";
-      const img=document.createElement("img");
-      img.src=src; img.alt="Event image";
+  function preloadImages(urls){ urls.forEach(src => { const img = new Image(); img.src = src; }); }
+
+  function renderSlides(images) {
+    slider.innerHTML = "";
+    slides = images.map(src => {
+      const div = document.createElement("div");
+      div.className = "slide";
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "Event image";
       div.appendChild(img);
       slider.appendChild(div);
       return div;
     });
     updateSliderPosition();
   }
-  function renderDots(count){
-    dots.innerHTML="";
-    for(let i=0;i<count;i++){
-      const dot=document.createElement("span");
-      dot.className="dot"+(i===currentIndex?" dot-active":"");
-      dot.addEventListener("click",()=>{currentIndex=i;updateSliderPosition();});
+
+  function renderDots(count) {
+    dots.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const dot = document.createElement("span");
+      dot.className = "dot" + (i === currentIndex ? " dot-active" : "");
+      dot.addEventListener("click", () => { currentIndex = i; updateSliderPosition(); });
       dots.appendChild(dot);
     }
   }
-  function updateSliderPosition(){
-    slider.style.transform=`translateX(-${currentIndex*100}%)`;
-    dots.querySelectorAll(".dot").forEach((d,i)=>d.classList.toggle("dot-active",i===currentIndex));
+
+  function updateSliderPosition() {
+    slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+    dots.querySelectorAll(".dot").forEach((d, i) => d.classList.toggle("dot-active", i === currentIndex));
   }
-  function setControlsVisible(v){
-    prevBtn.classList.toggle("hidden",!v);
-    nextBtn.classList.toggle("hidden",!v);
-    dots.classList.toggle("invisible",!v);
+
+  function setControlsVisible(v) {
+    prevBtn.classList.toggle("hidden", !v);
+    nextBtn.classList.toggle("hidden", !v);
+    dots.classList.toggle("invisible", !v);
   }
-  function selectCategory(cat){
-    currentCategory=cat; currentIndex=0;
-    if(!cat){
-      slider.innerHTML=`<div class="slide"><img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" /></div>`;
-      setControlsVisible(false); dots.innerHTML="";
+
+  function selectCategory(cat) {
+    currentCategory = cat; currentIndex = 0;
+    if (!cat) {
+      slider.innerHTML = `<div class="slide"><img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" /></div>`;
+      setControlsVisible(false); dots.innerHTML = "";
       return;
     }
-    const imgs=stock[cat];
+    const imgs = stock[cat];
     preloadImages(imgs);
     renderSlides(imgs);
     renderDots(imgs.length);
     setControlsVisible(true);
   }
-  catSel.addEventListener("change",e=>selectCategory(e.target.value));
-  prevBtn.addEventListener("click",()=>{
-    if(!currentCategory)return;
-    currentIndex=(currentIndex-1+slides.length)%slides.length;
+
+  catSel.addEventListener("change", e => selectCategory(e.target.value));
+  prevBtn.addEventListener("click", () => {
+    if (!currentCategory) return;
+    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
     updateSliderPosition();
   });
-  nextBtn.addEventListener("click",()=>{
-    if(!currentCategory)return;
-    currentIndex=(currentIndex+1)%slides.length;
+  nextBtn.addEventListener("click", () => {
+    if (!currentCategory) return;
+    currentIndex = (currentIndex + 1) % slides.length;
     updateSliderPosition();
   });
-  let startX=0;
-  slider.addEventListener("touchstart",e=>{startX=e.touches[0].clientX;},false);
-  slider.addEventListener("touchend",e=>{
-    if(!currentCategory)return;
-    const diff=e.changedTouches[0].clientX-startX;
-    if(Math.abs(diff)>50){
-      if(diff>0)currentIndex=(currentIndex-1+slides.length)%slides.length;
-      else currentIndex=(currentIndex+1)%slides.length;
+
+  let startX = 0;
+  slider.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, false);
+  slider.addEventListener("touchend", e => {
+    if (!currentCategory) return;
+    const diff = e.changedTouches[0].clientX - startX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+      else currentIndex = (currentIndex + 1) % slides.length;
       updateSliderPosition();
     }
-  },false);
+  }, false);
+
   selectCategory("");
 </script>
-      </div>
-    </section>
       
       <!-- =========================
            ===== SCHEDULE START =====
