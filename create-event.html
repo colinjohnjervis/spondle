@@ -794,5 +794,16 @@
       document.getElementById("create-event-form").reset();
     });
   </script>
+
+<script>
+  // ensure a shared Supabase client for all sections (including schedule)
+  if (window.supabase && !window.supabaseClient) {
+    window.supabaseClient = window.supabase.createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
+  }
+</script>
+  
 </body>
 </html>
