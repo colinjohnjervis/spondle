@@ -6,129 +6,143 @@
   <title>Create Event – Spondle (Template)</title>
   <meta name="color-scheme" content="dark" />
 
-  <!-- Tailwind -->
+  <!-- Tailwind + Flowbite -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
 
-  <!-- Datepicker (for later schedule drop-in) -->
+  <!-- Flowbite Datepicker (for schedule drop-in later) -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
 
-  <!-- Global styles to match existing pages -->
+  <!-- (Optional) Your global CSS -->
   <link rel="stylesheet" href="./spondle-layout.css?v=global-9">
   <link rel="stylesheet" href="./styles.css?v=global-9">
+
+  <style>
+    /* === Lifted 1:1 from image-carousel.html === */
+    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
+    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
+    .input-dark { background:#0b1220; color:#fff; width:100%; }
+    .input-dark::placeholder { color:#9ca3af; }
+    .input-dark:focus { border-color:#3b82f6 !important; outline:none; box-shadow:0 0 0 1.5px #3b82f6; }
+    /* dashed placeholder panels to mirror your demo look */
+    .placeholder-panel { border:1px dashed #374151; background:#0b1220; border-radius:12px; }
+  </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+
+<body>
+  <!-- Header / Sidebar hooks (if you want them visible on this page) -->
   <header id="spondle-header"></header>
 
-  <main class="max-w-5xl mx-auto pt-6 pb-16 px-3 sm:px-6">
-    <!-- Strong, consistent gaps between sections -->
-    <form id="create-event-form" class="space-y-8">
+  <main class="max-w-2xl mx-auto px-3 sm:px-6 py-10">
+    <form id="create-event-form" class="space-y-6">
 
-      <!-- SECTION: Event Basics -->
-      <section
-        class="rounded-3xl bg-slate-900 shadow-md ring-1 ring-black/10 px-3 sm:px-6 py-6"
-        id="card-event-basics">
-        <h2 class="text-2xl font-semibold mb-4">Event Basics</h2>
+      <!-- =========================
+           SECTION 1: EVENT BASICS
+           ========================= -->
+      <section class="card w-full px-3 sm:px-6 py-6" id="card-event-basics">
+        <h1 class="text-3xl font-bold text-white mb-6">Event Basics</h1>
 
-        <div class="grid gap-5">
-          <div>
-            <label for="event_name" class="block text-sm font-medium mb-1">Event Name</label>
-            <input id="event_name" name="event_name" type="text"
-              class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g. Friday Night Comedy" />
-          </div>
+        <div class="mb-5">
+          <label for="event_name" class="block text-sm text-gray-300 mb-2">Event Name</label>
+          <input id="event_name" name="event_name" type="text"
+                 class="input-dark p-3 rounded-lg border border-gray-700"
+                 placeholder="e.g. Friday Night Comedy" />
+        </div>
 
-          <div>
-            <label for="description" class="block text-sm font-medium mb-1">Description</label>
-            <textarea id="description" name="description" rows="6"
-              class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Tell people what this event is about..."></textarea>
-          </div>
+        <div>
+          <label for="description" class="block text-sm text-gray-300 mb-2">Description</label>
+          <textarea id="description" name="description" rows="6"
+                    class="input-dark p-3 rounded-lg border border-gray-700"
+                    placeholder="Tell people what this event is about..."></textarea>
         </div>
       </section>
 
-      <!-- ===== IMAGE CAROUSEL START ===== -->
-      <section
-        class="rounded-3xl bg-slate-900 shadow-md ring-1 ring-black/10 px-3 sm:px-6 py-6"
-        id="card-image-carousel">
-        <h2 class="text-2xl font-semibold mb-4">Images &amp; Category</h2>
-        <div class="rounded-2xl border border-dashed border-gray-700/70 p-6 text-gray-300">
-          <p class="mb-2 font-medium">Placeholder</p>
+      <!-- =========================
+           ===== IMAGE CAROUSEL START =====
+           SECTION 2: IMAGE CAROUSEL PLACEHOLDER
+           (Category + carousel will be inserted here)
+           ===== IMAGE CAROUSEL END =====
+           ========================= -->
+      <section class="card w-full px-3 sm:px-6 py-6" id="card-image-carousel">
+        <h2 class="text-3xl font-bold text-white mb-6">Images &amp; Category</h2>
+        <div class="placeholder-panel p-6 text-gray-300">
+          <p class="mb-2 font-medium text-gray-200">Placeholder</p>
           <p class="text-sm">
-            The full <span class="font-semibold">image carousel</span> (including the <span class="font-semibold">Category</span> selector) will be inserted here.
+            The full <span class="font-semibold">image carousel</span> (including the
+            <span class="font-semibold">Category</span> selector) will be inserted here.
           </p>
         </div>
       </section>
-      <!-- ===== IMAGE CAROUSEL END ===== -->
 
-      <!-- ===== SCHEDULE START ===== -->
-      <section
-        class="rounded-3xl bg-slate-900 shadow-md ring-1 ring-black/10 px-3 sm:px-6 py-6"
-        id="card-schedule">
-        <h2 class="text-2xl font-semibold mb-4">Schedule</h2>
-        <div class="rounded-2xl border border-dashed border-gray-700/70 p-6 text-gray-300">
-          <p class="mb-2 font-medium">Placeholder</p>
+      <!-- =========================
+           ===== SCHEDULE START =====
+           SECTION 3: SCHEDULE PLACEHOLDER
+           (Single / Recurring / Tour will be inserted here)
+           ===== SCHEDULE END =====
+           ========================= -->
+      <section class="card w-full px-3 sm:px-6 py-6" id="card-schedule">
+        <h2 class="text-3xl font-bold text-white mb-6">Schedule</h2>
+        <div class="placeholder-panel p-6 text-gray-300">
+          <p class="mb-2 font-medium text-gray-200">Placeholder</p>
           <p class="text-sm">
             The full <span class="font-semibold">Schedule</span> component (Single / Recurring / Tour) will be inserted here.
           </p>
         </div>
       </section>
-      <!-- ===== SCHEDULE END ===== -->
 
-      <!-- SECTION: Final Settings -->
-      <section
-        class="rounded-3xl bg-slate-900 shadow-md ring-1 ring-black/10 px-3 sm:px-6 py-6"
-        id="card-final-settings">
-        <h2 class="text-2xl font-semibold mb-4">Final Settings</h2>
+      <!-- =========================
+           SECTION 4: FINAL SETTINGS
+           (Visibility + Publish + Submit)
+           ========================= -->
+      <section class="card w-full px-3 sm:px-6 py-6" id="card-final-settings">
+        <h2 class="text-3xl font-bold text-white mb-6">Final Settings</h2>
 
         <div class="grid gap-5">
           <div>
-            <label for="visibility" class="block text-sm font-medium mb-1">Visibility</label>
+            <label for="visibility" class="block text-sm text-gray-300 mb-2">Visibility</label>
             <select id="visibility" name="visibility"
-              class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="input-dark p-3 rounded-lg border border-gray-700">
               <option value="public" selected>Public</option>
               <option value="private">Private</option>
             </select>
           </div>
 
           <div>
-            <label for="publish_status" class="block text-sm font-medium mb-1">Publish Status</label>
+            <label for="publish_status" class="block text-sm text-gray-300 mb-2">Publish Status</label>
             <select id="publish_status" name="publish_status"
-              class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="input-dark p-3 rounded-lg border border-gray-700">
               <option value="draft" selected>Draft</option>
               <option value="published">Published</option>
             </select>
           </div>
 
-          <div class="grid gap-2">
-            <label class="block text-sm font-medium">Organiser ID (temporary)</label>
-            <input id="organiser_id_display"
-              class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 text-white focus:outline-none"
-              type="text" value="Loading user..." readonly />
+          <div>
+            <label class="block text-sm text-gray-300 mb-2">Organiser ID (temporary)</label>
+            <input id="organiser_id_display" class="input-dark p-3 rounded-lg border border-gray-700"
+                   type="text" value="Loading user..." readonly />
             <input id="organiser_id" name="organiser_id" type="hidden" />
-            <p class="text-xs text-gray-400">Shown for now; will be hidden/automatic later.</p>
+            <p class="text-xs text-gray-400 mt-2">Shown for now; will be hidden/automatic later.</p>
           </div>
 
           <div class="flex items-center gap-3 pt-2">
             <button id="submitBtn"
-              class="inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
-              type="submit">Submit Event</button>
+                    class="rounded-2xl px-5 py-3 font-medium bg-blue-600 hover:bg-blue-700"
+                    type="submit">Submit Event</button>
             <button id="resetBtn"
-              class="inline-flex items-center justify-center rounded-2xl px-5 py-3 font-medium bg-gray-700 hover:bg-gray-600"
-              type="button">Reset</button>
+                    class="rounded-2xl px-5 py-3 font-medium bg-gray-700 hover:bg-gray-600"
+                    type="button">Reset</button>
           </div>
         </div>
       </section>
     </form>
   </main>
 
+  <!-- Optional layout script if you want header/sidebar -->
   <script type="module" src="./spondle-layout.js"></script>
 
-  <!-- Supabase (kept so this can evolve) -->
+  <!-- Supabase for organiser ID display -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
@@ -146,7 +160,6 @@
           display.value = "Not signed in";
           return;
         }
-
         if (user?.id) {
           display.value = user.id;
           hidden.value = user.id;
@@ -160,8 +173,8 @@
     })();
 
     document.getElementById("create-event-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      console.log("[Template] Submit clicked (placeholders in use).");
+      e.preventDefault(); // template-only (no DB writes yet)
+      console.log("[Template] Submit clicked.");
     });
 
     document.getElementById("resetBtn").addEventListener("click", () => {
