@@ -26,12 +26,12 @@
   <header id="spondle-header"></header>
 
   <main class="max-w-5xl mx-auto pt-6 pb-16 px-3 sm:px-6">
-    <form id="create-event-form" class="space-y-0">
+    <form id="create-event-form" class="space-y-6">
 
       <!-- =========================
            CARD 1: EVENT BASICS
            ========================= -->
-      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-event-basics">
+      <section class="rounded-2xl shadow-md bg-gray-900 px-3 sm:px-6 py-6" id="card-event-basics">
         <h2 class="text-xl font-semibold mb-4">Event Basics</h2>
 
         <div class="grid gap-5">
@@ -39,7 +39,7 @@
           <div>
             <label for="event_name" class="block text-sm font-medium mb-1">Event Name</label>
             <input id="event_name" name="event_name" type="text"
-              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="e.g. Friday Night Comedy" />
           </div>
 
@@ -47,7 +47,7 @@
           <div>
             <label for="description" class="block text-sm font-medium mb-1">Description</label>
             <textarea id="description" name="description" rows="6"
-              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Tell people what this event is about..."></textarea>
           </div>
         </div>
@@ -59,7 +59,7 @@
            (Real carousel + Category will be inserted here)
            ===== IMAGE CAROUSEL END =====
            ========================= -->
-      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-image-carousel">
+      <section class="rounded-2xl shadow-md bg-gray-900 px-3 sm:px-6 py-6" id="card-image-carousel">
         <h2 class="text-xl font-semibold mb-4">Images &amp; Category</h2>
         <div class="rounded-xl border border-dashed border-gray-700 p-6 text-gray-300">
           <p class="mb-2 font-medium">Placeholder</p>
@@ -75,7 +75,7 @@
            (Single / Recurring / Tour section to drop in here)
            ===== SCHEDULE END =====
            ========================= -->
-      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-schedule">
+      <section class="rounded-2xl shadow-md bg-gray-900 px-3 sm:px-6 py-6" id="card-schedule">
         <h2 class="text-xl font-semibold mb-4">Schedule</h2>
         <div class="rounded-xl border border-dashed border-gray-700 p-6 text-gray-300">
           <p class="mb-2 font-medium">Placeholder</p>
@@ -88,7 +88,7 @@
       <!-- =========================
            CARD 4: FINAL SETTINGS (Visibility + Publish + Submit)
            ========================= -->
-      <section class="rounded-2xl shadow-md bg-gray-800 px-3 sm:px-6 py-6 mb-6" id="card-final-settings">
+      <section class="rounded-2xl shadow-md bg-gray-900 px-3 sm:px-6 py-6" id="card-final-settings">
         <h2 class="text-xl font-semibold mb-4">Final Settings</h2>
 
         <div class="grid gap-5">
@@ -96,7 +96,7 @@
           <div>
             <label for="visibility" class="block text-sm font-medium mb-1">Visibility</label>
             <select id="visibility" name="visibility"
-              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="public" selected>Public</option>
               <option value="private">Private</option>
             </select>
@@ -106,7 +106,7 @@
           <div>
             <label for="publish_status" class="block text-sm font-medium mb-1">Publish Status</label>
             <select id="publish_status" name="publish_status"
-              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="draft" selected>Draft</option>
               <option value="published">Published</option>
             </select>
@@ -116,7 +116,7 @@
           <div class="grid gap-2">
             <label class="block text-sm font-medium">Organiser ID (temporary)</label>
             <input id="organiser_id_display"
-              class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none"
+              class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none"
               type="text" value="Loading user..." readonly />
             <input id="organiser_id" name="organiser_id" type="hidden" />
             <p class="text-xs text-gray-400">Shown for now; will be hidden/automatic later.</p>
@@ -173,8 +173,8 @@
 
     // Template-only submit handler (no DB writes yet)
     document.getElementById("create-event-form").addEventListener("submit", (e) => {
-      e.preventDefault(); // keep template inert
-      console.log("[Template] Submit clicked. Wiring to Supabase will be added after carousel & schedule are inserted.");
+      e.preventDefault();
+      console.log("[Template] Submit clicked. Supabase wiring to follow once carousel & schedule are inserted.");
     });
 
     // Reset helper
