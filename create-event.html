@@ -759,12 +759,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+
+    // ✅ Make Supabase client global so schedule section can access it
+    window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     (async () => {
       try {
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        const { data: { user }, error } = await window.supabaseClient.auth.getUser();
         const display = document.getElementById("organiser_id_display");
         const hidden = document.getElementById("organiser_id");
 
@@ -786,7 +788,7 @@
     })();
 
     document.getElementById("create-event-form").addEventListener("submit", (e) => {
-      e.preventDefault(); // template-only (no DB writes yet)
+      e.preventDefault();
       console.log("[Template] Submit clicked.");
     });
 
@@ -794,16 +796,5 @@
       document.getElementById("create-event-form").reset();
     });
   </script>
-
-<script>
-  // ensure a shared Supabase client for all sections (including schedule)
-  if (window.supabase && !window.supabaseClient) {
-    window.supabaseClient = window.supabase.createClient(
-      "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-    );
-  }
-</script>
-  
 </body>
 </html>
