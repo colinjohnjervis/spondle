@@ -31,6 +31,112 @@
   </style>
 </head>
 
+==========
+
+  <!-- ===== TEMP: Schedule Self-Test Card (remove after debugging) ===== -->
+<div class="card w-full max-w-xl mx-auto my-6 px-3 sm:px-6 py-6" id="schedule-selftest" style="background:#0f172a;border-radius:16px;">
+  <h3 class="text-xl font-semibold mb-4 text-white">Schedule Self-Test</h3>
+  <button id="runScheduleTest" class="bg-blue-600 hover:bg-blue-500 text-black font-semibold px-4 py-2 rounded-lg">
+    Run Schedule Test
+  </button>
+  <div id="scheduleTestLog" class="mt-4 text-sm text-gray-200 whitespace-pre-wrap"></div>
+</div>
+
+<script>
+(function(){
+  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+
+  const log = (msg) => {
+    const el = document.getElementById("scheduleTestLog");
+    el.textContent += msg + "\n";
+  };
+
+  async function run() {
+    document.getElementById("scheduleTestLog").textContent = "";
+
+    // 1) Check globals
+    log("1) Checking global libraries...");
+    log("   - window.supabase: " + (window.supabase ? "✅ present" : "❌ missing"));
+    log("   - Datepicker: " + (typeof window.Datepicker === "function" ? "✅ present" : "❌ missing (Flowbite datepicker)"));
+
+    // 2) Build local client (self-contained like schedule.html)
+    let supabaseClient = null;
+    if (window.supabase) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        log("2) Supabase client: ✅ created locally");
+      } catch (e) {
+        log("2) Supabase client: ❌ failed to create -> " + (e && e.message ? e.message : e));
+      }
+    } else {
+      log("2) Supabase client: ❌ cannot create (window.supabase missing)");
+    }
+
+    // 3) Query venues (prove RLS/connection)
+    if (supabaseClient) {
+      try {
+        const { data, error } = await supabaseClient
+          .from("venues")
+          .select("id, venue_name")
+          .limit(3);
+
+        if (error) {
+          log("3) Venues query: ❌ error -> " + error.message);
+        } else {
+          const count = (data || []).length;
+          log("3) Venues query: ✅ returned " + count + " row(s)");
+          if (count) {
+            data.forEach((v, i) => log(`   - ${i+1}. ${v.venue_name} (id: ${v.id})`));
+          }
+        }
+      } catch (e) {
+        log("3) Venues query: ❌ exception -> " + (e && e.message ? e.message : e));
+      }
+    }
+
+    // 4) Check schedule DOM elements
+    log("4) Checking schedule DOM elements...");
+    const checks = [
+      ["#srVenueSearch", !!document.getElementById("srVenueSearch")],
+      ["#srResultsPop", !!document.getElementById("srResultsPop")],
+      ["#fromDate", !!document.getElementById("fromDate")],
+      ["#toDate", !!document.getElementById("toDate")],
+      ["#tabSingle", !!document.getElementById("tabSingle")],
+      ["#tabTour", !!document.getElementById("tabTour")],
+      ["#tourRoot", !!document.getElementById("tourRoot")]
+    ];
+    for (const [name, ok] of checks) {
+      log(`   - ${name}: ${ok ? "✅" : "❌ missing"}`);
+    }
+
+    // 5) Minimal event-binding probe (non-invasive)
+    try {
+      const single = document.getElementById("tabSingle");
+      const tour = document.getElementById("tabTour");
+      if (single && tour) {
+        const tempHandler = () => {};
+        single.addEventListener("click", tempHandler, { once: true });
+        tour.addEventListener("click", tempHandler, { once: true });
+        log("5) Tab buttons: ✅ event listeners attachable");
+      } else {
+        log("5) Tab buttons: ❌ cannot attach (missing elements)");
+      }
+    } catch (e) {
+      log("5) Tab buttons: ❌ attach failed -> " + (e && e.message ? e.message : e));
+    }
+
+    log("\nSelf-test complete. Use results above to pinpoint what’s blocking venue search.");
+  }
+
+  const btn = document.getElementById("runScheduleTest");
+  if (btn) btn.addEventListener("click", run);
+})();
+</script>
+<!-- ===== /TEMP self-test ===== -->
+
+  ==========
+  
 <body>
   <!-- Header / Sidebar hooks (if you want them visible on this page) -->
   <header id="spondle-header"></header>
