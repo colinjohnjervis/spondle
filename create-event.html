@@ -244,65 +244,22 @@
   </script>
 </section>
 
-      
 <!-- =========================
      SECTION: Schedule
      ========================= -->
-<section class="card w-full px-3 sm:px-6 py-6" id="card-schedule">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite-datepicker/1.3.3/datepicker.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<section class="w-full px-3 sm:px-6 py-6" id="card-schedule">
+  <h2 class="text-3xl font-bold text-white mb-6">Schedule</h2>
 
-  <meta name="color-scheme" content="dark" />
-  <style>
-    body { background:#000; color:#fff; font-family:ui-sans-serif,system-ui,sans-serif; min-height:100vh; }
-    .card { background:#0f172a; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.45); }
-    .input-dark { background:#0b1220; color:#fff; width:100%; }
-    .input-dark::placeholder { color:#9ca3af; }
+  <div class="flex space-x-2 mb-6 w-full">
+    <button id="tabSingle" class="pill pill-on">Single / Recurring</button>
+    <button id="tabTour" class="pill pill-off">Tour Schedule</button>
+  </div>
 
-    .input-dark:focus {
-      border-color:#3b82f6 !important;
-      outline:none;
-      box-shadow:0 0 0 1.5px #3b82f6;
-    }
-
-    .results-pop {
-      position:absolute; left:-6px; right:-6px; top:calc(100% + 6px);
-      z-index:60; background:#0f172a; border-radius:12px; padding:10px;
-    }
-    .venue-card { background:#111827; border:1px solid #374151; border-radius:12px; padding:12px 14px; margin:8px 0; }
-    .venue-card:hover { background:#1b2433; cursor:pointer; }
-    .no-results {
-      padding:12px 14px; background:#111827; border:1px solid #374151;
-      border-radius:12px; text-align:center; color:#9ca3af; margin:8px 0; cursor:pointer;
-    }
-    .no-results:hover { background:#1b2433; }
-
-    .pill { border-radius:9999px; padding:.6rem 1rem; font-weight:600; text-align:center; width:50%; }
-    .pill-on { background:#22c55e; color:#000; }
-    .pill-off { background:#374151; color:#e5e7eb; }
-
-    .tour-inline-remove {
-      font-size:18px; line-height:1; width:28px; height:28px;
-      border-radius:9999px; display:flex; align-items:center; justify-content:center;
-      background:#0b1220; border:1px solid #374151; color:#cbd5e1;
-    }
-    .tour-inline-remove:hover { color:#fff; border-color:#4b5563; }
-  </style>
-</head>
-
-<body class="flex items-start justify-center py-10">
-  <div class="card w-full max-w-xl px-3 sm:px-6 py-6">
-    <h1 class="text-3xl font-bold text-white mb-6">Schedule</h1>
-
-    <div class="flex space-x-2 mb-6 w-full">
-      <button id="tabSingle" class="pill pill-on">Single / Recurring</button>
-      <button id="tabTour" class="pill pill-off">Tour Schedule</button>
-    </div>
+  <!-- SINGLE / RECURRING -->
+  <div id="panelSingle">
+    <div class="mb-6 relative">
+      <label class="block text-sm text-gray-300 mb-2">Venue</label>
+      ...
 
     <!-- SINGLE / RECURRING -->
     <div id="panelSingle">
