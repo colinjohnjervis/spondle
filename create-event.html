@@ -654,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </section>
 
-      <!-- =========================
+<!-- =========================
      SECTION 4: FINAL SETTINGS
      (Visibility + Publish + Submit)
      ========================= -->
@@ -701,40 +701,31 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- Supabase + global initialiser -->
+<!-- 1️⃣ Load classic Supabase build (for inline scripts) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  
-  
-<!-- ✅ Global Supabase initialisation with visible status -->
+
+<!-- 2️⃣ Load layout (sticky header + sidebar) -->
+<script type="module" src="./spondle-layout.js?v=global-9"></script>
+
+<!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
   window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
   window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-  try {
-    if (!window.supabaseClient) {
+  window.addEventListener("DOMContentLoaded", async () => {
+    // Initialise Supabase
+    try {
       window.supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-      const banner = document.createElement("div");
-      banner.textContent = "✅ Supabase Connected";
-      Object.assign(banner.style, {
-        background: "#16a34a",
-        color: "#fff",
-        padding: "8px 12px",
-        textAlign: "center",
-        fontWeight: "600",
-        position: "fixed",
-        top: "0",
-        left: "0",
-        right: "0",
-        zIndex: "9999"
-      });
-      document.body.appendChild(banner);
-      setTimeout(() => banner.remove(), 3000);
+    } catch (err) {
+      console.error("Supabase init error:", err);
     }
-  } catch (err) {
-    const fail = document.createElement("div");
-    fail.textContent = "❌ Supabase Connection Failed";
-    Object.assign(fail.style, {
-      background: "#dc2626",
+
+    // Banner for visual confirmation
+    const banner = document.createElement("div");
+    const connected = !!window.supabaseClient;
+    banner.textContent = connected ? "✅ Supabase Connected" : "❌ Supabase Connection Failed";
+    Object.assign(banner.style, {
+      background: connected ? "#16a34a" : "#dc2626",
       color: "#fff",
       padding: "8px 12px",
       textAlign: "center",
@@ -745,45 +736,37 @@ document.addEventListener('DOMContentLoaded', () => {
       right: "0",
       zIndex: "9999"
     });
-    document.body.appendChild(fail);
-    setTimeout(() => fail.remove(), 4000);
-  }
-</script>
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 3000);
 
-<!-- Organiser ID + form handlers -->
-<script>
-  (async () => {
+    // Fetch user + populate organiser ID
     try {
       const { data: { user }, error } = await window.supabaseClient.auth.getUser();
       const display = document.getElementById("organiser_id_display");
       const hidden = document.getElementById("organiser_id");
 
-      if (error) {
+      if (error || !user?.id) {
         display.value = "Not signed in";
         return;
       }
-      if (user?.id) {
-        display.value = user.id;
-        hidden.value = user.id;
-      } else {
-        display.value = "Not signed in";
-      }
+
+      display.value = user.id;
+      hidden.value = user.id;
     } catch {
       document.getElementById("organiser_id_display").value = "Error loading user";
     }
-  })();
 
-  document.getElementById("create-event-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    console.log("[Template] Submit clicked.");
+    // Form handlers
+    document.getElementById("create-event-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      console.log("[Template] Submit clicked.");
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      document.getElementById("create-event-form").reset();
+    });
   });
-
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    document.getElementById("create-event-form").reset();
-});
 </script>
-
-<script type="module" src="./spondle-layout.js?v=global-9"></script>
 
 </body>
 </html>
