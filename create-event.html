@@ -69,13 +69,14 @@
 #card-schedule .no-results:hover {
   background: #1b2433;
 }
-
-  </style>
+</style>
 </head>
-  
+
 <body>
-  <!-- Header / Sidebar hooks (if you want them visible on this page) -->
+  <!-- Header / Sidebar / Overlay hooks -->
   <header id="spondle-header"></header>
+  <aside id="spondle-sidebar"></aside>
+  <div id="overlay"></div>
 
   <main class="max-w-2xl mx-auto px-3 sm:px-6 py-10">
     <form id="create-event-form" class="space-y-6">
@@ -781,7 +782,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById("resetBtn").addEventListener("click", () => {
     document.getElementById("create-event-form").reset();
-  });
+});
 </script>
+
+<!-- Shared header / sidebar behaviour -->
+<script src="./spondle-layout.js?v=global-9"></script>
+
 </body>
 </html>
