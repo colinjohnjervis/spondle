@@ -28,33 +28,46 @@
     .input-dark:focus { border-color:#3b82f6 !important; outline:none; box-shadow:0 0 0 1.5px #3b82f6; }
     /* dashed placeholder panels to mirror your demo look */
     .placeholder-panel { border:1px dashed #374151; background:#0b1220; border-radius:12px; }
- 
-/* Fix for embedded Schedule dropdowns */
-#card-schedule .results-pop {
-  background: #0f172a;
-  border: 1px solid #374151;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-    /* Restore floating card style for venue search results */
+    
+/* === Restore original floating card dropdown behaviour === */
 #card-schedule .input-wrapper {
   position: relative;
   overflow: visible !important;
 }
 
 #card-schedule .results-pop {
-  position: absolute !important;
-  left: -6px;
-  right: -6px;
+  position: absolute;
+  left: 0;
+  right: 0;
   top: calc(100% + 6px);
-  z-index: 9999 !important;
+  z-index: 9999;
+  background: transparent;
+  padding: 0;
+}
+
+#card-schedule #srVenueResults,
+#card-schedule .venueResults {
   background: #0f172a;
   border: 1px solid #374151;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  overflow: hidden;
 }
 
-    
+#card-schedule .venue-card {
+  padding: 12px 14px;
+  border-bottom: 1px solid #1f2937;
+}
+
+#card-schedule .venue-card:last-child {
+  border-bottom: none;
+}
+
+#card-schedule .venue-card:hover {
+  background: #1b2433;
+  cursor: pointer;
+}
+
   </style>
 </head>
   
