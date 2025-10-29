@@ -707,6 +707,18 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 2️⃣ Load layout (sticky header + sidebar) -->
 <script type="module" src="./spondle-layout.js?v=global-9"></script>
 
+<!-- ✅ Initialise layout so sidebar + header appear -->
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    if (window.Layout && typeof window.Layout.init === "function") {
+      // 'events' highlights Events in sidebar, adjust if needed (e.g., 'home', 'favourites', etc.)
+      window.Layout.init({ active: "events" });
+    } else {
+      console.warn("Layout.init not found or not yet loaded.");
+    }
+  });
+</script>
+
 <!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
   window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
