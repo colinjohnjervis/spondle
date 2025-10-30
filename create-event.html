@@ -701,7 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- 1️⃣ Load classic Supabase build (for inline scripts) -->
+<!-- 1️⃣ Load classic Supabase build -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- 2️⃣ Load layout (sticky header + sidebar) -->
@@ -711,10 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
   window.addEventListener("DOMContentLoaded", () => {
     if (window.Layout && typeof window.Layout.init === "function") {
-      // 'events' highlights Events in sidebar, adjust if needed (e.g., 'home', 'favourites', etc.)
       window.Layout.init({ active: "events" });
-    } else {
-      console.warn("Layout.init not found or not yet loaded.");
     }
   });
 </script>
@@ -731,25 +728,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error("Supabase init error:", err);
     }
-
-    // Banner for visual confirmation
-    const banner = document.createElement("div");
-    const connected = !!window.supabaseClient;
-    banner.textContent = connected ? "✅ Supabase Connected" : "❌ Supabase Connection Failed";
-    Object.assign(banner.style, {
-      background: connected ? "#16a34a" : "#dc2626",
-      color: "#fff",
-      padding: "8px 12px",
-      textAlign: "center",
-      fontWeight: "600",
-      position: "fixed",
-      top: "0",
-      left: "0",
-      right: "0",
-      zIndex: "9999"
-    });
-    document.body.appendChild(banner);
-    setTimeout(() => banner.remove(), 3000);
 
     // Fetch user + populate organiser ID
     try {
@@ -781,4 +759,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 </body>
-</html>
+</html>    
