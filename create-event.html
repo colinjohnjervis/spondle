@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fetch user + populate organiser ID
     try {
-      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+      const { data: { user }, error } = await supabase.auth.getUser();
       const display = document.getElementById("organiser_id_display");
       const hidden = document.getElementById("organiser_id");
 
