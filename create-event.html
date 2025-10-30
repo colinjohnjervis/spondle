@@ -98,15 +98,19 @@
       background: #1b2433;
     }
 
-    /* === Fix faint top band under header === */
-    .sp-header {
-      margin-bottom: 0 !important;
-      box-shadow: none !important;
-      border-bottom: none !important;
-      background-color: transparent !important;
-    }
+/* === Fix clean spacing below sticky header === */
+.sp-header {
+  margin-bottom: 0 !important;
+  box-shadow: none !important;
+  border-bottom: none !important;
+  background-color: #000 !important; /* keep solid dark header */
+}
 
-    body {
+body {
+  padding-top: 72px !important; /* ensures content starts below sticky header */
+}
+
+    body 
       padding-top: 0 !important;
     }
 </style>
