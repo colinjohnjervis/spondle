@@ -760,45 +760,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
+  // Supabase credentials
   window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
   window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
   window.addEventListener("DOMContentLoaded", async () => {
-    // Initialise Supabase
+    // 1️⃣ Initialise Supabase properly
     try {
-      window.supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+      if (!window.Supabase) {
+        throw new Error("Supabase library not loaded yet");
+      }
+      // Create a global client instance (ensures availability across scripts)
+      window.supabase = window.Supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
     } catch (err) {
       console.error("Supabase init error:", err);
+      document.getElementById("organiser_id_display").value = "Init error";
+      return;
     }
 
-    // Fetch user + populate organiser ID
+    // 2️⃣ Fetch user + populate organiser ID
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data, error } = await window.supabase.auth.getUser();
+      const user = data?.user;
       const display = document.getElementById("organiser_id_display");
       const hidden = document.getElementById("organiser_id");
 
       if (error || !user?.id) {
         display.value = "Not signed in";
+        console.warn("User not signed in:", error);
         return;
       }
 
       display.value = user.id;
       hidden.value = user.id;
-    } catch {
+    } catch (err) {
+      console.error("Error fetching user:", err);
       document.getElementById("organiser_id_display").value = "Error loading user";
     }
 
-    // Form handlers
-    document.getElementById("create-event-form").addEventListener("submit", (e) => {
+    // 3️⃣ Form handlers
+    const form = document.getElementById("create-event-form");
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
       console.log("[Template] Submit clicked.");
     });
 
     document.getElementById("resetBtn").addEventListener("click", () => {
-      document.getElementById("create-event-form").reset();
+      form.reset();
     });
   });
 </script>
 
 </body>
-</html>    
+</html>
