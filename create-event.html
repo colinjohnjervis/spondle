@@ -98,12 +98,17 @@
       background: #1b2433;
     }
 
-/* === Fix clean spacing below sticky header === */
+/* === Final fix: clean start below sticky header (no dark band, no overlap) === */
 .sp-header {
   margin-bottom: 0 !important;
   box-shadow: none !important;
   border-bottom: none !important;
-  background-color: #000 !important; /* keep solid dark header */
+  background: transparent !important;
+}
+
+body {
+  padding-top: 80px !important; /* adds just enough space below header */
+  background: #000 !important;
 }
 
 body {
