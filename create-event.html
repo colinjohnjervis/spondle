@@ -814,5 +814,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 </script>
 
+<script>
+window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const { data: sessionData } = await window.supabaseClient.auth.getSession();
+    const msg = sessionData?.session
+      ? `✅ Session active for user: ${sessionData.session.user.id}`
+      : "❌ No active session detected";
+    alert(msg);
+  } catch (err) {
+    alert("⚠️ Session check failed: " + err.message);
+  }
+});
+</script>
+  
 </body>
 </html>
