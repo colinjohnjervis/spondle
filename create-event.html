@@ -749,19 +749,8 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 1️⃣ Load classic Supabase build (for inline scripts) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- 2️⃣ Load layout (sticky header + sidebar) -->
-<script type="module" src="./spondle-layout.js?v=global-9"></script>
-
-<!-- ✅ Initialise layout so sidebar + header appear -->
-<script>
-  window.addEventListener("DOMContentLoaded", () => {
-    if (window.Layout && typeof window.Layout.init === "function") {
-      window.Layout.init({ active: "events" });
-    } else {
-      console.warn("Layout.init not found or not yet loaded.");
-    }
-  });
-</script>
+<!-- 2️⃣ TEMPORARILY DISABLED LAYOUT (for testing organiser ID issue) -->
+<!-- <script type="module" src="./spondle-layout.js?v=global-9"></script> -->
 
 <!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
@@ -780,50 +769,14 @@ document.addEventListener('DOMContentLoaded', () => {
         window.SUPABASE_KEY
       );
     } catch (err) {
-      console.error("Supabase init error:", err);
       display.value = "Init error: " + err.message;
       return;
     }
 
-    // 2️⃣ Visual confirmation (temporary)
-    const banner = document.createElement("div");
-    const connected = !!window.supabaseClient;
-    banner.textContent = connected
-      ? "✅ Supabase Connected"
-      : "❌ Supabase Connection Failed";
-    Object.assign(banner.style, {
-      background: connected ? "#16a34a" : "#dc2626",
-      color: "#fff",
-      padding: "8px 12px",
-      textAlign: "center",
-      fontWeight: "600",
-      position: "fixed",
-      top: "0",
-      left: "0",
-      right: "0",
-      zIndex: "9999",
-    });
-    document.body.appendChild(banner);
-    setTimeout(() => banner.remove(), 3000);
-
-    // 3️⃣ Fetch user + populate organiser ID (safe version)
+    // 2️⃣ Fetch user + populate organiser ID
     try {
-      if (!window.supabaseClient) {
-        display.value = "Client init failed";
-        return;
-      }
+      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
 
-      // Refresh session first
-      const { data: sessionData, error: sessionError } =
-        await window.supabaseClient.auth.getSession();
-      if (sessionError || !sessionData?.session) {
-        display.value = "No session or auth error";
-        return;
-      }
-
-      // Now get user
-      const { data: { user }, error } =
-        await window.supabaseClient.auth.getUser();
       if (error) {
         display.value = "Auth error: " + error.message;
         return;
@@ -839,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
       display.value = "Error: " + err.message;
     }
 
-    // 4️⃣ Form handlers
+    // 3️⃣ Form handlers
     const form = document.getElementById("create-event-form");
     if (form) {
       form.addEventListener("submit", (e) => {
