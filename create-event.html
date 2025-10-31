@@ -701,6 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
      ========================= -->
 <section class="card w-full px-3 sm:px-6 py-6" id="card-final-settings">
   <h2 class="text-3xl font-bold text-white mb-6">Final Settings</h2>
+
   <div class="grid gap-5">
     <div>
       <label for="visibility" class="block text-sm text-gray-300 mb-2">Visibility</label>
@@ -746,40 +747,31 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- 1️⃣ Classic Supabase build -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ✅ Browser-safe Supabase ESM import -->
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<!-- 2️⃣ Layout (sticky header + sidebar) -->
-<script type="module" src="./spondle-layout.js?v=global-14"></script>
-<script>
-  window.addEventListener("DOMContentLoaded", () => {
+  // --- Global Supabase client (shared across venue search + organiser ID) ---
+  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+
+  // Attach globally so other scripts can reuse
+  window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // --- Layout (sticky header + sidebar) ---
+  import("./spondle-layout.js?v=global-14").then(() => {
     if (window.Layout && typeof window.Layout.init === "function") {
       window.Layout.init({ active: "events" });
     }
   });
-</script>
 
-<!-- 3️⃣ Supabase setup + organiser ID logic -->
-<script>
-  // ✅ Shared Supabase client for entire page (used by venue search + organiser ID)
-  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  window.SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-
-  // Create the global Supabase client ONCE
-  window.supabaseClient = window.supabase.createClient(
-    window.SUPABASE_URL,
-    window.SUPABASE_KEY
-  );
-
+  // --- Populate organiser ID ---
   window.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
     try {
-      // ✅ Use existing authenticated session
       const { data: { user }, error } = await window.supabaseClient.auth.getUser();
-
       if (error) {
         display.value = "Auth error: " + error.message;
         return;
@@ -789,43 +781,37 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // ✅ Success
       display.value = user.id;
       hidden.value = user.id;
     } catch (err) {
-      display.value = "Error: " + err.message;
+      display.value = "Init error: " + err.message;
     }
 
     // --- Form handlers ---
     const form = document.getElementById("create-event-form");
     const resetBtn = document.getElementById("resetBtn");
+
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         console.log("[Template] Submit clicked.");
       });
     }
+
     if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        if (form) form.reset();
-      });
+      resetBtn.addEventListener("click", () => form?.reset());
     }
   });
-</script>
 
-<!-- 4️⃣ Optional diagnostic (remove after confirming) -->
-<script>
-window.addEventListener("DOMContentLoaded", async () => {
-  try {
+  // --- Optional diagnostic (remove later) ---
+  window.addEventListener("DOMContentLoaded", async () => {
     const { data: sessionData } = await window.supabaseClient.auth.getSession();
-    const msg = sessionData?.session
-      ? `✅ Session active for user: ${sessionData.session.user.id}`
-      : "❌ No active session detected";
-    console.log(msg);
-  } catch (err) {
-    console.error("⚠️ Session check failed:", err.message);
-  }
-});
+    if (sessionData?.session) {
+      console.log("✅ Session active for user:", sessionData.session.user.id);
+    } else {
+      console.log("❌ No session active");
+    }
+  });
 </script>
 
 </body>
