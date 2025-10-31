@@ -746,36 +746,57 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- 1️⃣ Load Supabase (ESM compatible version) -->
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+<!-- 1️⃣ Load classic Supabase build -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  const SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+<!-- 2️⃣ Layout (sticky header + sidebar) -->
+<script type="module" src="./spondle-layout.js?v=global-9"></script>
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+<!-- ✅ Initialise layout so sidebar + header appear -->
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    if (window.Layout && typeof window.Layout.init === "function") {
+      window.Layout.init({ active: "events" });
+    }
+  });
+</script>
+
+<!-- 3️⃣ Supabase setup + organiser ID logic -->
+<script>
+  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
   window.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
+    // Ensure single global instance
+    if (!window.supabaseClient) {
+      window.supabaseClient = window.supabase.createClient(
+        window.SUPABASE_URL,
+        window.SUPABASE_KEY
+      );
+    }
+
     try {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const { data: sessionData, error: sessionError } = await window.supabaseClient.auth.getSession();
       if (sessionError) {
         display.value = "Session error: " + sessionError.message;
         return;
       }
+
       if (!sessionData?.session) {
-        display.value = "No session found";
+        display.value = "No active session";
         return;
       }
 
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+
       if (error) {
         display.value = "Auth error: " + error.message;
         return;
       }
+
       if (!user) {
         display.value = "Not signed in";
         return;
@@ -787,6 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
       display.value = "Init error: " + err.message;
     }
 
+    // Form handlers
     const form = document.getElementById("create-event-form");
     const resetBtn = document.getElementById("resetBtn");
 
@@ -796,14 +818,14 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("[Template] Submit clicked.");
       });
     }
+
     if (resetBtn) {
-      resetBtn.addEventListener("click", () => form?.reset());
+      resetBtn.addEventListener("click", () => {
+        if (form) form.reset();
+      });
     }
   });
 </script>
-
-<!-- 2️⃣ Layout (keep sidebar + header active) -->
-<script type="module" src="./spondle-layout.js?v=global-9"></script>
 
 </body>
 </html>
