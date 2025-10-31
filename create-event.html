@@ -749,18 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 1️⃣ Classic Supabase build -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- 2️⃣ Create ONE shared client early -->
-<script>
-  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  window.SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-  window.supabaseClient = window.supabase.createClient(
-    window.SUPABASE_URL,
-    window.SUPABASE_KEY
-  );
-</script>
-
-<!-- 3️⃣ Layout (sticky header + sidebar) -->
+<!-- 2️⃣ Layout (sticky header + sidebar) -->
 <script type="module" src="./spondle-layout.js?v=global-14"></script>
 <script>
   window.addEventListener("DOMContentLoaded", () => {
@@ -770,14 +759,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 </script>
 
-<!-- 4️⃣ Organiser ID logic -->
+<!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
+  // ✅ Shared Supabase client for entire page (used by venue search + organiser ID)
+  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  window.SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+
+  // Create the global Supabase client ONCE
+  window.supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_KEY
+  );
+
   window.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
     try {
-      // Use the shared global client
+      // ✅ Use existing authenticated session
       const { data: { user }, error } = await window.supabaseClient.auth.getUser();
 
       if (error) {
@@ -789,23 +789,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // ✅ Success
       display.value = user.id;
       hidden.value = user.id;
     } catch (err) {
       display.value = "Error: " + err.message;
     }
 
-    // Form handlers
+    // --- Form handlers ---
     const form = document.getElementById("create-event-form");
     const resetBtn = document.getElementById("resetBtn");
-
     if (form) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         console.log("[Template] Submit clicked.");
       });
     }
-
     if (resetBtn) {
       resetBtn.addEventListener("click", () => {
         if (form) form.reset();
@@ -814,6 +813,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 </script>
 
+<!-- 4️⃣ Optional diagnostic (remove after confirming) -->
 <script>
 window.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -821,12 +821,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     const msg = sessionData?.session
       ? `✅ Session active for user: ${sessionData.session.user.id}`
       : "❌ No active session detected";
-    alert(msg);
+    console.log(msg);
   } catch (err) {
-    alert("⚠️ Session check failed: " + err.message);
+    console.error("⚠️ Session check failed:", err.message);
   }
 });
 </script>
-  
+
 </body>
 </html>
