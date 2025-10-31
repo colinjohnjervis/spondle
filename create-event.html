@@ -743,8 +743,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- 1️⃣ Load classic Supabase build -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 1️⃣ Load Supabase (ESM build, replaces classic script) -->
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+  window.supabase = { createClient };
+</script>
 
 <!-- 2️⃣ Load layout (sticky header + sidebar) -->
 <script type="module" src="./spondle-layout.js?v=global-9"></script>
@@ -757,9 +760,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 </script>
+
 <!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
-  // ✅ Use your correct, working anon key and URL (confirmed 25 Sept)
+  // ✅ Use your confirmed working Supabase project credentials
   const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
   const SUPABASE_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
@@ -769,8 +773,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const hidden = document.getElementById("organiser_id");
 
     try {
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      // ✅ Check active session
+      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+      if (sessionError) {
+        display.value = "Session error: " + sessionError.message;
+        return;
+      }
+
+      // ✅ Get user info
+      const { data: { user }, error } = await supabaseClient.auth.getUser();
 
       if (error) {
         display.value = "Auth error: " + error.message;
