@@ -762,48 +762,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
-  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  window.SUPABASE_KEY =
+  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  const SUPABASE_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-  window.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
     try {
-      // one shared client for everything on this page
-      window.supabaseClient = window.supabase.createClient(
-        window.SUPABASE_URL,
-        window.SUPABASE_KEY
-      );
+      // ✅ Shared client (used by venue search too)
+      const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // ensure active session before fetching user
-      const { data: sessionData, error: sessionErr } = await window.supabaseClient.auth.getSession();
+      // ✅ Ensure current session exists
+      const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
       if (sessionErr) {
         display.value = "Session error: " + sessionErr.message;
         return;
       }
-
-      if (!sessionData?.session) {
+      if (!session) {
         display.value = "Not signed in";
         return;
       }
 
-      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+      // ✅ Fetch user ID from active session
+      const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user?.id) {
         display.value = "Auth error: " + (error?.message || "No user");
         return;
       }
 
-      // success
+      // ✅ Success
       display.value = user.id;
       hidden.value = user.id;
-
     } catch (err) {
       display.value = "Init error: " + err.message;
     }
 
-    // Form handlers
+    // --- Form handlers ---
     const form = document.getElementById("create-event-form");
     const resetBtn = document.getElementById("resetBtn");
     if (form) {
@@ -815,6 +811,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetBtn) {
       resetBtn.addEventListener("click", () => form?.reset());
     }
+  });
+</script>
+
+<!-- 4️⃣ Diagnostic -->
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const supabase = window.supabaseClient || window.supabase.createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
+    const { data: { session } } = await supabase.auth.getSession();
+    console.log(session ? `✅ Session active: ${session.user.id}` : "❌ No active session detected");
   });
 </script>
 
