@@ -757,54 +757,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 </script>
-<!-- 3️⃣ Supabase setup + organiser ID logic (debug version) -->
+<!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
-  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+  // ✅ Use your correct, working anon key and URL (confirmed 25 Sept)
+  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  const SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-  window.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
-    function log(msg) {
-      display.value = msg;
-    }
-
-    // 1️⃣ Initialise Supabase
-    let supabaseClient;
     try {
-      if (!window.supabase) throw new Error("Supabase library missing");
-      supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-      log("Supabase loaded");
-    } catch (err) {
-      log("Init error: " + err.message);
-      return;
-    }
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data: { user }, error } = await supabase.auth.getUser();
 
-    // 2️⃣ Refresh session
-    try {
-      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-      if (sessionError) {
-        log("Session error: " + sessionError.message);
+      if (error) {
+        display.value = "Auth error: " + error.message;
         return;
       }
-      if (!sessionData?.session) {
-        log("No session found");
-        return;
-      }
-      log("Session OK");
-
-      // 3️⃣ Fetch user
-      const { data: { user }, error } = await supabaseClient.auth.getUser();
-      if (error || !user?.id) {
-        log("User error: " + (error?.message || "no user"));
+      if (!user) {
+        display.value = "Not signed in";
         return;
       }
 
-      display.value = "User: " + user.id.slice(0, 8) + "...";
+      display.value = user.id;
       hidden.value = user.id;
     } catch (err) {
-      log("Catch error: " + err.message);
+      display.value = "Init error: " + err.message;
     }
   });
 </script>
