@@ -701,7 +701,6 @@ document.addEventListener('DOMContentLoaded', () => {
      ========================= -->
 <section class="card w-full px-3 sm:px-6 py-6" id="card-final-settings">
   <h2 class="text-3xl font-bold text-white mb-6">Final Settings</h2>
-
   <div class="grid gap-5">
     <div>
       <label for="visibility" class="block text-sm text-gray-300 mb-2">Visibility</label>
@@ -723,10 +722,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div>
       <label class="block text-sm text-gray-300 mb-2">Organiser ID (temporary)</label>
-      <input id="organiser_id_display" class="input-dark p-3 rounded-lg border border-gray-700"
-             type="text" value="Loading user..." readonly />
+      <input id="organiser_id_display"
+             class="input-dark p-3 rounded-lg border border-gray-700"
+             type="text"
+             value="Loading user..."
+             readonly />
       <input id="organiser_id" name="organiser_id" type="hidden" />
-      <p class="text-xs text-gray-400 mt-2">Shown for now; will be hidden/automatic later.</p>
+      <p class="text-xs text-gray-400 mt-2">
+        Shown for now; will be hidden/automatic later.
+      </p>
     </div>
 
     <div class="flex items-center gap-3 pt-2">
@@ -752,7 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
   window.addEventListener("DOMContentLoaded", () => {
     if (window.Layout && typeof window.Layout.init === "function") {
-      // 'events' highlights Events in sidebar, adjust if needed (e.g., 'home', 'favourites', etc.)
       window.Layout.init({ active: "events" });
     } else {
       console.warn("Layout.init not found or not yet loaded.");
@@ -763,20 +766,31 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
   window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+  window.SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
   window.addEventListener("DOMContentLoaded", async () => {
-    // Initialise Supabase
+    const display = document.getElementById("organiser_id_display");
+    const hidden = document.getElementById("organiser_id");
+
+    // 1️⃣ Initialise Supabase
     try {
-      window.supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+      window.supabaseClient = window.supabase.createClient(
+        window.SUPABASE_URL,
+        window.SUPABASE_KEY
+      );
     } catch (err) {
       console.error("Supabase init error:", err);
+      display.value = "Init error: " + err.message;
+      return;
     }
 
-    // Banner for visual confirmation
+    // 2️⃣ Visual confirmation (temporary)
     const banner = document.createElement("div");
     const connected = !!window.supabaseClient;
-    banner.textContent = connected ? "✅ Supabase Connected" : "❌ Supabase Connection Failed";
+    banner.textContent = connected
+      ? "✅ Supabase Connected"
+      : "❌ Supabase Connection Failed";
     Object.assign(banner.style, {
       background: connected ? "#16a34a" : "#dc2626",
       color: "#fff",
@@ -787,37 +801,59 @@ document.addEventListener('DOMContentLoaded', () => {
       top: "0",
       left: "0",
       right: "0",
-      zIndex: "9999"
+      zIndex: "9999",
     });
     document.body.appendChild(banner);
     setTimeout(() => banner.remove(), 3000);
 
-    // Fetch user + populate organiser ID
+    // 3️⃣ Fetch user + populate organiser ID (safe version)
     try {
-      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
-      const display = document.getElementById("organiser_id_display");
-      const hidden = document.getElementById("organiser_id");
+      if (!window.supabaseClient) {
+        display.value = "Client init failed";
+        return;
+      }
 
-      if (error || !user?.id) {
+      // Refresh session first
+      const { data: sessionData, error: sessionError } =
+        await window.supabaseClient.auth.getSession();
+      if (sessionError || !sessionData?.session) {
+        display.value = "No session or auth error";
+        return;
+      }
+
+      // Now get user
+      const { data: { user }, error } =
+        await window.supabaseClient.auth.getUser();
+      if (error) {
+        display.value = "Auth error: " + error.message;
+        return;
+      }
+      if (!user) {
         display.value = "Not signed in";
         return;
       }
 
       display.value = user.id;
       hidden.value = user.id;
-    } catch {
-      document.getElementById("organiser_id_display").value = "Error loading user";
+    } catch (err) {
+      display.value = "Error: " + err.message;
     }
 
-    // Form handlers
-    document.getElementById("create-event-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      console.log("[Template] Submit clicked.");
-    });
+    // 4️⃣ Form handlers
+    const form = document.getElementById("create-event-form");
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        console.log("[Template] Submit clicked.");
+      });
+    }
 
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      document.getElementById("create-event-form").reset();
-    });
+    const resetBtn = document.getElementById("resetBtn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => {
+        if (form) form.reset();
+      });
+    }
   });
 </script>
 
