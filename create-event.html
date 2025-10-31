@@ -757,8 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 </script>
-
-<!-- 3️⃣ Supabase setup + organiser ID logic -->
+<!-- 3️⃣ Supabase setup + organiser ID logic (debug version) -->
 <script>
   window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
   window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
@@ -767,50 +766,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
+    function log(msg) {
+      display.value = msg;
+    }
+
     // 1️⃣ Initialise Supabase
     let supabaseClient;
     try {
-      if (!window.supabase) throw new Error("Supabase not loaded");
+      if (!window.supabase) throw new Error("Supabase library missing");
       supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+      log("Supabase loaded");
     } catch (err) {
-      console.error("Supabase init error:", err);
-      display.value = "Init error";
+      log("Init error: " + err.message);
       return;
     }
 
-    // 2️⃣ Refresh session before fetching user
+    // 2️⃣ Refresh session
     try {
       const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-      if (sessionError) console.warn("Session error:", sessionError);
-      if (!sessionData?.session) {
-        display.value = "Not signed in";
+      if (sessionError) {
+        log("Session error: " + sessionError.message);
         return;
       }
+      if (!sessionData?.session) {
+        log("No session found");
+        return;
+      }
+      log("Session OK");
 
+      // 3️⃣ Fetch user
       const { data: { user }, error } = await supabaseClient.auth.getUser();
       if (error || !user?.id) {
-        display.value = "Not signed in";
+        log("User error: " + (error?.message || "no user"));
         return;
       }
 
-      display.value = user.id;
+      display.value = "User: " + user.id.slice(0, 8) + "...";
       hidden.value = user.id;
-      console.log("User loaded:", user.id);
     } catch (err) {
-      console.error("Error loading user:", err);
-      display.value = "Error loading user";
+      log("Catch error: " + err.message);
     }
-
-    // 3️⃣ Form handlers
-    const form = document.getElementById("create-event-form");
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      console.log("[Template] Submit clicked.");
-    });
-
-    document.getElementById("resetBtn").addEventListener("click", () => {
-      form.reset();
-    });
   });
 </script>
 
