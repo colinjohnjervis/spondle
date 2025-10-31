@@ -746,54 +746,78 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- Shared layout (sticky header + sidebar) -->
+<!-- 1️⃣ Classic Supabase build -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- 2️⃣ Layout (sticky header + sidebar) -->
 <script type="module" src="./spondle-layout.js?v=global-14"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    if (window.Layout && typeof window.Layout.init === "function") {
+      window.Layout.init({ active: "events" });
+    }
+  });
+</script>
 
-<!-- Supabase (ESM) -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<!-- 3️⃣ Supabase setup + organiser ID logic -->
+<script>
+  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  window.SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-  const SUPABASE_URL = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  window.addEventListener('DOMContentLoaded', async () => {
-    const display = document.getElementById('organiser_id_display');
-    const hidden = document.getElementById('organiser_id');
+  window.addEventListener("DOMContentLoaded", async () => {
+    const display = document.getElementById("organiser_id_display");
+    const hidden = document.getElementById("organiser_id");
 
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      // Initialise Supabase globally (so venue search still works)
+      window.supabaseClient = window.supabase.createClient(
+        window.SUPABASE_URL,
+        window.SUPABASE_KEY
+      );
 
-      if (error) {
-        display.value = 'Auth error: ' + error.message;
+      // Refresh current session before fetching user
+      const { data: sessionData, error: sessionError } = await window.supabaseClient.auth.getSession();
+      if (sessionError) {
+        display.value = "Session error: " + sessionError.message;
         return;
       }
 
-      if (!user) {
-        display.value = 'Not signed in';
+      if (!sessionData?.session) {
+        display.value = "Not signed in";
         return;
       }
 
+      // Now safely get user
+      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+      if (error || !user?.id) {
+        display.value = "Auth error: " + (error?.message || "No user");
+        return;
+      }
+
+      // Success
       display.value = user.id;
       hidden.value = user.id;
+
     } catch (err) {
-      display.value = 'Init error: ' + err.message;
+      display.value = "Init error: " + err.message;
     }
 
     // Form handlers
-    const form = document.getElementById('create-event-form');
-    const resetBtn = document.getElementById('resetBtn');
+    const form = document.getElementById("create-event-form");
+    const resetBtn = document.getElementById("resetBtn");
 
     if (form) {
-      form.addEventListener('submit', e => {
+      form.addEventListener("submit", (e) => {
         e.preventDefault();
-        console.log('[Template] Submit clicked.');
+        console.log("[Template] Submit clicked.");
       });
     }
 
     if (resetBtn) {
-      resetBtn.addEventListener('click', () => form && form.reset());
+      resetBtn.addEventListener("click", () => {
+        if (form) form.reset();
+      });
     }
   });
 </script>
