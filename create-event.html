@@ -725,9 +725,13 @@ document.addEventListener('DOMContentLoaded', () => {
       <label class="block text-sm text-gray-300 mb-2">Organiser ID (temporary)</label>
       <input id="organiser_id_display"
              class="input-dark p-3 rounded-lg border border-gray-700"
-             type="text" value="Loading user..." readonly />
+             type="text"
+             value="Loading user..."
+             readonly />
       <input id="organiser_id" name="organiser_id" type="hidden" />
-      <p class="text-xs text-gray-400 mt-2">Shown for now; will be hidden/automatic later.</p>
+      <p class="text-xs text-gray-400 mt-2">
+        Shown for now; will be hidden/automatic later.
+      </p>
     </div>
 
     <div class="flex items-center gap-3 pt-2">
@@ -743,9 +747,10 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- DO NOT include the UMD build here -->
+<!-- 1️⃣ Correct UMD build for window.supabase (keeps venue search working) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
 
-<!-- Keep your layout as-is -->
+<!-- 2️⃣ Layout (sticky header + sidebar) -->
 <script type="module" src="./spondle-layout.js?v=global-14"></script>
 <script>
   window.addEventListener("DOMContentLoaded", () => {
@@ -755,48 +760,45 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 </script>
 
-<!-- Supabase (ESM) + compatibility shim for code that expects window.supabase -->
-<script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+<!-- 3️⃣ Supabase setup + organiser ID logic -->
+<script>
+  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  window.SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-
-  // One shared client for the whole page
-  const client = createClient(SUPABASE_URL, SUPABASE_KEY);
-  window.supabaseClient = client;
-
-  // 👉 Compatibility shim so older code that does:
-  //    const supabase = window.supabase.createClient(...);
-  //    will still get the SAME client without breaking.
-  window.supabase = window.supabase || {};
-  window.supabase.createClient = () => client;
-
-  // Populate organiser ID
   window.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
     try {
-      // Ensure session is loaded first (avoids intermittent "Invalid API key" noise)
-      const { data: sessionData, error: sessionErr } = await client.auth.getSession();
+      // one shared client for everything on this page
+      window.supabaseClient = window.supabase.createClient(
+        window.SUPABASE_URL,
+        window.SUPABASE_KEY
+      );
+
+      // ensure active session before fetching user
+      const { data: sessionData, error: sessionErr } = await window.supabaseClient.auth.getSession();
       if (sessionErr) {
         display.value = "Session error: " + sessionErr.message;
         return;
       }
+
       if (!sessionData?.session) {
         display.value = "Not signed in";
         return;
       }
 
-      const { data: { user }, error } = await client.auth.getUser();
+      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
       if (error || !user?.id) {
         display.value = "Auth error: " + (error?.message || "No user");
         return;
       }
 
+      // success
       display.value = user.id;
-      hidden.value  = user.id;
+      hidden.value = user.id;
+
     } catch (err) {
       display.value = "Init error: " + err.message;
     }
@@ -804,8 +806,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form handlers
     const form = document.getElementById("create-event-form");
     const resetBtn = document.getElementById("resetBtn");
-    form?.addEventListener("submit", (e) => { e.preventDefault(); console.log("[Template] Submit clicked."); });
-    resetBtn?.addEventListener("click", () => form?.reset());
+    if (form) {
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        console.log("[Template] Submit clicked.");
+      });
+    }
+    if (resetBtn) {
+      resetBtn.addEventListener("click", () => form?.reset());
+    }
   });
 </script>
 
