@@ -749,10 +749,10 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 1️⃣ Load classic Supabase build -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- 2️⃣ Layout (sticky header + sidebar) -->
+<!-- 2️⃣ Load layout (sticky header + sidebar) -->
 <script type="module" src="./spondle-layout.js?v=global-9"></script>
 
-<!-- ✅ Initialise layout so sidebar + header appear -->
+<!-- ✅ Initialise layout -->
 <script>
   window.addEventListener("DOMContentLoaded", () => {
     if (window.Layout && typeof window.Layout.init === "function") {
@@ -770,26 +770,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
-    // Ensure single global instance
+    // ✅ Global singleton for all pages
     if (!window.supabaseClient) {
       window.supabaseClient = window.supabase.createClient(
         window.SUPABASE_URL,
-        window.SUPABASE_KEY
+        window.SUPABASE_KEY,
+        {
+          auth: {
+            persistSession: true,
+            detectSessionInUrl: true,
+            storage: localStorage
+          }
+        }
       );
     }
 
     try {
-      const { data: sessionData, error: sessionError } = await window.supabaseClient.auth.getSession();
+      // ✅ Restore any existing session from localStorage
+      const { data: { session }, error: sessionError } = await window.supabaseClient.auth.getSession();
+
       if (sessionError) {
         display.value = "Session error: " + sessionError.message;
         return;
       }
 
-      if (!sessionData?.session) {
+      if (!session) {
         display.value = "No active session";
         return;
       }
 
+      // ✅ Fetch the logged-in user
       const { data: { user }, error } = await window.supabaseClient.auth.getUser();
 
       if (error) {
@@ -808,7 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
       display.value = "Init error: " + err.message;
     }
 
-    // Form handlers
+    // ✅ Form handlers
     const form = document.getElementById("create-event-form");
     const resetBtn = document.getElementById("resetBtn");
 
