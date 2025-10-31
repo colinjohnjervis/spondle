@@ -746,41 +746,49 @@ document.addEventListener('DOMContentLoaded', () => {
 </form>
 </main>
 
-<!-- 1️⃣ Load classic Supabase build (for inline scripts) -->
+<!-- 1️⃣ Load classic Supabase build -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- 2️⃣ TEMPORARILY DISABLED LAYOUT (for testing organiser ID issue) -->
-<!-- <script type="module" src="./spondle-layout.js?v=global-9"></script> -->
+<!-- 2️⃣ Load layout (sticky header + sidebar) -->
+<script type="module" src="./spondle-layout.js?v=global-9"></script>
+
+<!-- ✅ Initialise layout so sidebar + header appear -->
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    if (window.Layout && typeof window.Layout.init === "function") {
+      window.Layout.init({ active: "events" });
+    }
+  });
+</script>
 
 <!-- 3️⃣ Supabase setup + organiser ID logic -->
 <script>
-  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  window.SUPABASE_KEY =
+  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  const SUPABASE_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-  window.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
-    // 1️⃣ Initialise Supabase
     try {
-      window.supabaseClient = window.supabase.createClient(
-        window.SUPABASE_URL,
-        window.SUPABASE_KEY
-      );
-    } catch (err) {
-      display.value = "Init error: " + err.message;
-      return;
-    }
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 2️⃣ Fetch user + populate organiser ID
-    try {
-      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+      // 1️⃣ Ensure session exists
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        display.value = "No active session";
+        return;
+      }
+
+      // 2️⃣ Fetch the logged-in user
+      const { data: { user }, error } = await supabase.auth.getUser();
 
       if (error) {
         display.value = "Auth error: " + error.message;
         return;
       }
+
       if (!user) {
         display.value = "Not signed in";
         return;
@@ -792,7 +800,7 @@ document.addEventListener('DOMContentLoaded', () => {
       display.value = "Error: " + err.message;
     }
 
-    // 3️⃣ Form handlers
+    // 3️⃣ Form handling
     const form = document.getElementById("create-event-form");
     if (form) {
       form.addEventListener("submit", (e) => {
