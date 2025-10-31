@@ -749,7 +749,18 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 1️⃣ Classic Supabase build -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- 2️⃣ Layout (sticky header + sidebar) -->
+<!-- 2️⃣ Create ONE shared client early -->
+<script>
+  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+  window.SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+  window.supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_KEY
+  );
+</script>
+
+<!-- 3️⃣ Layout (sticky header + sidebar) -->
 <script type="module" src="./spondle-layout.js?v=global-14"></script>
 <script>
   window.addEventListener("DOMContentLoaded", () => {
@@ -759,48 +770,29 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 </script>
 
-<!-- 3️⃣ Supabase setup + organiser ID logic -->
+<!-- 4️⃣ Organiser ID logic -->
 <script>
-  window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  window.SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-
   window.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
     try {
-      // Initialise Supabase globally (so venue search still works)
-      window.supabaseClient = window.supabase.createClient(
-        window.SUPABASE_URL,
-        window.SUPABASE_KEY
-      );
+      // Use the shared global client
+      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
 
-      // Refresh current session before fetching user
-      const { data: sessionData, error: sessionError } = await window.supabaseClient.auth.getSession();
-      if (sessionError) {
-        display.value = "Session error: " + sessionError.message;
+      if (error) {
+        display.value = "Auth error: " + error.message;
         return;
       }
-
-      if (!sessionData?.session) {
+      if (!user) {
         display.value = "Not signed in";
         return;
       }
 
-      // Now safely get user
-      const { data: { user }, error } = await window.supabaseClient.auth.getUser();
-      if (error || !user?.id) {
-        display.value = "Auth error: " + (error?.message || "No user");
-        return;
-      }
-
-      // Success
       display.value = user.id;
       hidden.value = user.id;
-
     } catch (err) {
-      display.value = "Init error: " + err.message;
+      display.value = "Error: " + err.message;
     }
 
     // Form handlers
