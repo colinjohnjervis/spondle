@@ -742,49 +742,31 @@ document.addEventListener('DOMContentLoaded', () => {
 </section>
 </form>
 </main>
-
-<!-- 1️⃣ Load Supabase (ESM build, replaces classic script) -->
+<!-- 1️⃣ Load Supabase ESM build -->
 <script type="module">
   import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-  window.supabase = { createClient };
-</script>
+  window.supabase = createClient(
+    "https://jvuunvnbpdfrttusgelz.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+  );
 
-<!-- 2️⃣ Load layout (sticky header + sidebar) -->
-<script type="module" src="./spondle-layout.js?v=global-9"></script>
+  // 2️⃣ Load layout
+  import "./spondle-layout.js?v=global-9";
 
-<!-- ✅ Initialise layout so sidebar + header appear -->
-<script>
+  // 3️⃣ Initialise layout
   window.addEventListener("DOMContentLoaded", () => {
     if (window.Layout && typeof window.Layout.init === "function") {
       window.Layout.init({ active: "events" });
     }
   });
-</script>
 
-<!-- 3️⃣ Supabase setup + organiser ID logic -->
-<script>
-  // ✅ Use your confirmed working Supabase project credentials
-  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  const SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
-
-  document.addEventListener("DOMContentLoaded", async () => {
+  // 4️⃣ Fetch current Supabase user + populate organiser ID
+  window.addEventListener("DOMContentLoaded", async () => {
     const display = document.getElementById("organiser_id_display");
     const hidden = document.getElementById("organiser_id");
 
     try {
-      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-      // ✅ Check active session
-      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
-      if (sessionError) {
-        display.value = "Session error: " + sessionError.message;
-        return;
-      }
-
-      // ✅ Get user info
-      const { data: { user }, error } = await supabaseClient.auth.getUser();
-
+      const { data: { user }, error } = await window.supabase.auth.getUser();
       if (error) {
         display.value = "Auth error: " + error.message;
         return;
