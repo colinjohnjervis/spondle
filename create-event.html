@@ -705,8 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="grid gap-5">
     <div>
       <label for="visibility" class="block text-sm text-gray-300 mb-2">Visibility</label>
-      <select id="visibility" name="visibility"
-              class="input-dark p-3 rounded-lg border border-gray-700">
+      <select id="visibility" name="visibility" class="input-dark p-3 rounded-lg border border-gray-700">
         <option value="public" selected>Public</option>
         <option value="private">Private</option>
       </select>
@@ -714,8 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div>
       <label for="publish_status" class="block text-sm text-gray-300 mb-2">Publish Status</label>
-      <select id="publish_status" name="publish_status"
-              class="input-dark p-3 rounded-lg border border-gray-700">
+      <select id="publish_status" name="publish_status" class="input-dark p-3 rounded-lg border border-gray-700">
         <option value="draft" selected>Draft</option>
         <option value="published">Published</option>
       </select>
@@ -723,107 +721,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
     <div>
       <label class="block text-sm text-gray-300 mb-2">Organiser ID (temporary)</label>
-      <input id="organiser_id_display"
-             class="input-dark p-3 rounded-lg border border-gray-700"
-             type="text"
-             value="Loading user..."
-             readonly />
+      <input id="organiser_id_display" class="input-dark p-3 rounded-lg border border-gray-700" type="text" value="Loading user…" readonly />
       <input id="organiser_id" name="organiser_id" type="hidden" />
-      <p class="text-xs text-gray-400 mt-2">
-        Shown for now; will be hidden/automatic later.
-      </p>
+      <p class="text-xs text-gray-400 mt-2">Shown for now; will be hidden/automatic later.</p>
     </div>
 
     <div class="flex items-center gap-3 pt-2">
-      <button id="submitBtn"
-              class="rounded-2xl px-5 py-3 font-medium bg-blue-600 hover:bg-blue-700"
-              type="submit">Submit Event</button>
-      <button id="resetBtn"
-              class="rounded-2xl px-5 py-3 font-medium bg-gray-700 hover:bg-gray-600"
-              type="button">Reset</button>
+      <button id="submitBtn" class="rounded-2xl px-5 py-3 font-medium bg-blue-600 hover:bg-blue-700" type="submit">
+        Submit Event
+      </button>
+      <button id="resetBtn" class="rounded-2xl px-5 py-3 font-medium bg-gray-700 hover:bg-gray-600" type="button">
+        Reset
+      </button>
     </div>
   </div>
 </section>
 </form>
 </main>
 
-<!-- 1️⃣ Correct UMD build for window.supabase (keeps venue search working) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.1/dist/umd/supabase.js"></script>
+<!-- 1️⃣ Supabase Library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- 2️⃣ Layout (sticky header + sidebar) -->
+<!-- 2️⃣ Layout -->
 <script type="module" src="./spondle-layout.js?v=global-14"></script>
 <script>
-  window.addEventListener("DOMContentLoaded", () => {
-    if (window.Layout && typeof window.Layout.init === "function") {
-      window.Layout.init({ active: "events" });
-    }
-  });
+window.addEventListener("DOMContentLoaded", () => {
+  if (window.Layout && typeof window.Layout.init === "function") {
+    window.Layout.init({ active: "events" });
+  }
+});
 </script>
 
-<!-- 3️⃣ Supabase setup + organiser ID logic -->
+<!-- 3️⃣ Supabase Client + Organiser ID -->
 <script>
-  const SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
-  const SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
+window.SUPABASE_URL = "https://jvuunvnbpdfrttusgelz.supabase.co";
+window.SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY";
 
-  document.addEventListener("DOMContentLoaded", async () => {
-    const display = document.getElementById("organiser_id_display");
-    const hidden = document.getElementById("organiser_id");
+window.supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
-    try {
-      // ✅ Shared client (used by venue search too)
-      const supabase = window.supabaseClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.addEventListener("DOMContentLoaded", async () => {
+  const display = document.getElementById("organiser_id_display");
+  const hidden = document.getElementById("organiser_id");
 
-      // ✅ Ensure current session exists
-      const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
-      if (sessionErr) {
-        display.value = "Session error: " + sessionErr.message;
-        return;
-      }
-      if (!session) {
-        display.value = "Not signed in";
-        return;
-      }
-
-      // ✅ Fetch user ID from active session
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error || !user?.id) {
-        display.value = "Auth error: " + (error?.message || "No user");
-        return;
-      }
-
-      // ✅ Success
-      display.value = user.id;
-      hidden.value = user.id;
-    } catch (err) {
-      display.value = "Init error: " + err.message;
+  try {
+    // Refresh session first
+    const { data: sessionData, error: sessionErr } = await window.supabaseClient.auth.getSession();
+    if (sessionErr) {
+      display.value = "Session error: " + sessionErr.message;
+      return;
     }
 
-    // --- Form handlers ---
-    const form = document.getElementById("create-event-form");
-    const resetBtn = document.getElementById("resetBtn");
-    if (form) {
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        console.log("[Template] Submit clicked.");
-      });
+    if (!sessionData?.session) {
+      display.value = "Not signed in";
+      return;
     }
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => form?.reset());
+
+    // Now get user ID
+    const { data: { user }, error } = await window.supabaseClient.auth.getUser();
+    if (error || !user?.id) {
+      display.value = "Auth error: " + (error?.message || "No user");
+      return;
     }
-  });
+
+    display.value = user.id;
+    hidden.value = user.id;
+  } catch (err) {
+    display.value = "Init error: " + err.message;
+  }
+
+  // Form reset logic
+  const form = document.getElementById("create-event-form");
+  const resetBtn = document.getElementById("resetBtn");
+  if (resetBtn && form) resetBtn.addEventListener("click", () => form.reset());
+});
 </script>
 
-<!-- 4️⃣ Diagnostic -->
+<!-- 4️⃣ Diagnostic (optional – remove later) -->
 <script>
-  document.addEventListener("DOMContentLoaded", async () => {
-    const supabase = window.supabaseClient || window.supabase.createClient(
-      "https://jvuunvnbpdfrttusgelz.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-    );
-    const { data: { session } } = await supabase.auth.getSession();
-    console.log(session ? `✅ Session active: ${session.user.id}` : "❌ No active session detected");
-  });
+window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const { data: sessionData } = await window.supabaseClient.auth.getSession();
+    const msg = sessionData?.session
+      ? `✅ Session active for user: ${sessionData.session.user.id}`
+      : "⚠️ No active session detected";
+    console.log(msg);
+  } catch (err) {
+    console.error("Auth diagnostic error:", err.message);
+  }
+});
 </script>
 
 </body>
