@@ -336,7 +336,6 @@
   <h2 class="text-3xl font-bold text-white mb-6">Schedule</h2>
 
   <style>
-    /* === Pills reinstated (50/50 buttons) === */
     .pill {
       width: 50%;
       text-align: center;
@@ -361,8 +360,8 @@
   </style>
 
   <div class="flex w-full gap-3 mb-6">
-    <button id="tabSingle" class="pill pill-on">Single / Recurring</button>
-    <button id="tabTour" class="pill pill-off">Tour Schedule</button>
+    <button id="tabSingle" type="button" class="pill pill-on">Single / Recurring</button>
+    <button id="tabTour" type="button" class="pill pill-off">Tour Schedule</button>
   </div>
 
   <!-- SINGLE / RECURRING -->
@@ -455,17 +454,20 @@
   <!-- TOUR SCHEDULE -->
   <div id="panelTour" class="hidden">
     <div id="tourRoot"></div>
-    <button id="addTourBlockBtn"
+    <button id="addTourBlockBtn" type="button"
             class="mt-6 bg-blue-500 hover:bg-blue-400 text-black font-semibold px-4 py-3 rounded-lg w-full">
       + Add another venue/date
     </button>
   </div>
+
   <script>
 document.addEventListener('DOMContentLoaded', () => {
-  const supabase = window.supabase.createClient(
-    "https://jvuunvnbpdfrttusgelz.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
-  );
+  // ✅ Reuse global Supabase client
+  const supabase = window.supabaseClient 
+    || window.supabase.createClient(
+      "https://jvuunvnbpdfrttusgelz.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
+    );
 
   /* ---------- Helpers ---------- */
   const formatUK = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
@@ -473,7 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const addMonths = (d,n)=>{const x=new Date(d);x.setMonth(x.getMonth()+n);return x;};
   const fillTimes = sel => { sel.innerHTML=''; for(let m=0;m<24*60;m+=15){ const hh=Math.floor(m/60),mm=m%60; const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; sel.add(new Option(label,label)); }};
-
   /* ---------- Venue Search (Single/Recurring) ---------- */
   const srSearch = document.getElementById('srVenueSearch');
   const srClear = document.getElementById('srVenueClear');
