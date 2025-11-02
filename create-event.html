@@ -144,7 +144,7 @@
         </div>
       </section>
 
-      <!-- =========================
+<!-- =========================
      ===== IMAGE CAROUSEL START =====
      SECTION 2: IMAGE CAROUSEL (Category + Carousel)
      ===== IMAGE CAROUSEL END =====
@@ -152,9 +152,8 @@
 <section class="card w-full px-3 sm:px-6 py-6" id="card-image-carousel">
   <h2 class="text-3xl font-bold text-white mb-6">Images &amp; Category</h2>
 
-  <!-- Scoped CSS so the carousel behaves like the standalone page -->
   <style>
-    #card-image-carousel .input-dark { background:#0b1220; color:#fff; width:100%; }
+    #card-image-carousel .input-dark { background:#0b1220; color:#fff; width:100%; appearance:auto; }
     #card-image-carousel .input-dark::placeholder { color:#9ca3af; }
     #card-image-carousel .input-dark:focus { border-color:#3b82f6 !important; outline:none; box-shadow:0 0 0 1.5px #3b82f6; }
 
@@ -178,7 +177,7 @@
       border-radius:12px;
       border:1px solid #374151;
       background:#0b1220;
-      height:24rem; /* h-96 to match event tiles */
+      height:24rem;
     }
     #card-image-carousel .slider {
       display:flex;
@@ -201,7 +200,7 @@
 
   <div class="mb-6">
     <label for="category" class="block text-sm text-gray-300 mb-2">Event Category &amp; Image</label>
-    <select id="category" class="input-dark p-3 rounded-lg border border-gray-700">
+    <select id="category" class="input-dark p-3 rounded-lg border border-gray-700 appearance-auto">
       <option value="">Select category</option>
       <option value="music">Music</option>
       <option value="comedy">Comedy</option>
@@ -221,14 +220,14 @@
       </div>
     </div>
 
-    <button id="prevBtn" class="nav-btn nav-left hidden" aria-label="Previous">&#10094;</button>
-    <button id="nextBtn" class="nav-btn nav-right hidden" aria-label="Next">&#10095;</button>
+    <!-- FIX: added type="button" -->
+    <button id="prevBtn" type="button" class="nav-btn nav-left hidden" aria-label="Previous">&#10094;</button>
+    <button id="nextBtn" type="button" class="nav-btn nav-right hidden" aria-label="Next">&#10095;</button>
   </div>
 
   <div id="dots" class="flex items-center justify-center mt-4 min-h-6"></div>
 
   <script>
-    // --- Image Carousel Logic (scoped for embedded version) ---
     const carouselScope = document.querySelector('#card-image-carousel');
     const catSel = carouselScope.querySelector('#category');
     const slider = carouselScope.querySelector('#slider');
@@ -328,7 +327,7 @@
     selectCategory("");
   </script>
 </section>
-
+    
 <!-- =========================
      SECTION: Schedule
      ========================= -->
