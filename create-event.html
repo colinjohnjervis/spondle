@@ -857,7 +857,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 });
 </script>
-
+  
 <!-- =========================
      SECTION 5: FORM SUBMISSION (Supabase Insert)
      ========================= -->
@@ -880,9 +880,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const visibility     = document.getElementById("visibility").value.trim();
     const publish_status = document.getElementById("publish_status").value.trim();
 
-    // --- Derive image URL from category carousel ---
-    const slider = document.querySelector("#card-image-carousel #slider img");
-    const image_url = slider ? slider.src : "";
+    // --- Derive image URL from current carousel position ---
+    const imageUrl =
+      window.currentCategory && window.stock && window.stock[window.currentCategory]
+        ? window.stock[window.currentCategory][window.currentIndex]
+        : document.querySelector("#card-image-carousel #slider img")?.src || "";
 
     // --- Determine which schedule tab is active ---
     const isTour = document.getElementById("tabTour").classList.contains("pill-on");
@@ -916,7 +918,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const pushEvent = d => {
         eventsToInsert.push({
-          event_name, description, category, image_url,
+          event_name, description, category, image_url: imageUrl,
           venue_id, event_date: d.toISOString().split("T")[0],
           event_time: fromTime, end_date: toDate ? parseUK(toDate) : null,
           end_time: toTime, ticket_url,
@@ -957,7 +959,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
           };
           eventsToInsert.push({
-            event_name, description, category, image_url,
+            event_name, description, category, image_url: imageUrl,
             venue_id, event_date: parseUK(fromDate),
             event_time: fromTime, end_date: toDate ? parseUK(toDate) : null,
             end_time: toTime, ticket_url,
