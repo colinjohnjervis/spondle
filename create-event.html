@@ -986,21 +986,12 @@ document.addEventListener("DOMContentLoaded", () => {
       form.reset();
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      // --- Manual resets for non-form elements ---
-      const catSel = document.getElementById("category");
-      const slider = document.querySelector("#card-image-carousel #slider");
-      const dots = document.querySelector("#card-image-carousel #dots");
-      if (catSel) catSel.value = "";
-      if (slider) {
-        slider.innerHTML = `<div class="slide"><img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" /></div>`;
+      // --- Reset carousel safely using existing function ---
+      if (typeof selectCategory === "function") {
+        selectCategory("");
       }
-      if (dots) dots.innerHTML = "";
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-      if (prevBtn) prevBtn.classList.add("hidden");
-      if (nextBtn) nextBtn.classList.add("hidden");
 
-      // --- Re-fetch organiser ID to avoid "Loading user..." flicker ---
+      // --- Re-fetch organiser ID cleanly ---
       const display = document.getElementById("organiser_id_display");
       const hidden = document.getElementById("organiser_id");
       if (supabase && display && hidden) {
@@ -1020,7 +1011,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-              </script>
+        </script>
   
 </body>
 </html>
