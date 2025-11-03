@@ -880,22 +880,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const visibility     = document.getElementById("visibility").value.trim();
     const publish_status = document.getElementById("publish_status").value.trim();
 
-    // --- Derive image URL from the CURRENT visible slide (via active dot) ---
+    // --- Derive image URL from CURRENT visible slide (via active dot) ---
     const dotsWrap = document.querySelector("#card-image-carousel #dots");
     const dotEls = dotsWrap ? Array.from(dotsWrap.querySelectorAll(".dot")) : [];
     let activeIdx = dotEls.findIndex(d => d.classList.contains("dot-active"));
     if (activeIdx < 0) activeIdx = 0;
-
     const slideImgs = Array.from(document.querySelectorAll("#card-image-carousel #slider .slide img"));
     const imageUrl = (slideImgs[activeIdx]?.src) || (slideImgs[0]?.src) || "";
 
     // --- Determine which schedule tab is active ---
     const isTour = document.getElementById("tabTour").classList.contains("pill-on");
-
     const eventsToInsert = [];
 
     if (!isTour) {
-      // ========== SINGLE / RECURRING ==========
+      // SINGLE / RECURRING
       const venue_id   = document.getElementById("srVenueId").value.trim();
       const ticket_url = document.getElementById("srTicketLink").value.trim();
       const fromDate   = document.getElementById("fromDate").value.trim();
@@ -946,7 +944,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     } else {
-      // ========== TOUR SCHEDULE ==========
+      // TOUR
       const tourBlocks = document.querySelectorAll("#tourRoot > div:not(.h-px)");
       tourBlocks.forEach(block => {
         const venue_id = block.querySelector(".venueId")?.value.trim();
@@ -984,45 +982,25 @@ document.addEventListener("DOMContentLoaded", () => {
       if (error) throw error;
       alert(`✅ ${eventsToInsert.length} event(s) saved successfully!`);
 
-      // --- Reset the form ---
+      // --- Reset form + scroll to top ---
       form.reset();
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      // --- HARD RESET the carousel to avoid 'blank slide' from stale transform ---
-      const carouselScope = document.querySelector('#card-image-carousel');
-      if (carouselScope) {
-        const catSel   = carouselScope.querySelector('#category');
-        const sliderEl = carouselScope.querySelector('#slider');
-        const dotsEl   = carouselScope.querySelector('#dots');
-        const prevBtn  = carouselScope.querySelector('#prevBtn');
-        const nextBtn  = carouselScope.querySelector('#nextBtn');
-
-        if (catSel)   catSel.value = "";
-        if (dotsEl)   dotsEl.innerHTML = "";
-        if (prevBtn)  prevBtn.classList.add('hidden');
-        if (nextBtn)  nextBtn.classList.add('hidden');
-
-        if (sliderEl) {
-          sliderEl.style.transform = 'translateX(0%)'; // <-- critical fix
-          sliderEl.innerHTML = `
-            <div class="slide">
-              <img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" />
-            </div>`;
-        }
+      // --- Properly reset carousel state (no ghost slides) ---
+      if (typeof selectCategory === "function") {
+        selectCategory(""); // built-in reset (placeholder + disables arrows/dots)
       }
 
-      // --- Re-fetch organiser ID (keeps it visible after reset) ---
+      // --- Restore organiser ID ---
       const display = document.getElementById("organiser_id_display");
       const hidden  = document.getElementById("organiser_id");
-      if (supabase && display && hidden) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.id) {
-          display.value = user.id;
-          hidden.value  = user.id;
-        } else {
-          display.value = "Not signed in";
-          hidden.value  = "";
-        }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        display.value = user.id;
+        hidden.value  = user.id;
+      } else {
+        display.value = "Not signed in";
+        hidden.value  = "";
       }
 
     } catch (err) {
@@ -1034,7 +1012,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-          </script>
+</script>
   
 </body>
 </html>
