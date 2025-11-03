@@ -884,7 +884,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dotsWrap = document.querySelector("#card-image-carousel #dots");
     const dotEls = dotsWrap ? Array.from(dotsWrap.querySelectorAll(".dot")) : [];
     let activeIdx = dotEls.findIndex(d => d.classList.contains("dot-active"));
-    if (activeIdx < 0) activeIdx = 0; // fallback to first
+    if (activeIdx < 0) activeIdx = 0;
 
     const slideImgs = Array.from(document.querySelectorAll("#card-image-carousel #slider .slide img"));
     const imageUrl = (slideImgs[activeIdx]?.src) || (slideImgs[0]?.src) || "";
@@ -910,7 +910,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // convert dd/mm/yyyy → yyyy-mm-dd
       const parseUK = s => {
         const [dd, mm, yyyy] = s.split("/").map(n => parseInt(n, 10));
         return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
@@ -942,7 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
             case "every2weeks":cur = addDays(cur, 14); break;
             case "everymonth": cur.setMonth(cur.getMonth() + 1); break;
             case "everyyear":  cur.setFullYear(cur.getFullYear() + 1); break;
-            default: cur = addDays(cur, 9999); // safety break
+            default: cur = addDays(cur, 9999);
           }
         }
       }
@@ -986,6 +985,32 @@ document.addEventListener("DOMContentLoaded", () => {
       alert(`✅ ${eventsToInsert.length} event(s) saved successfully!`);
       form.reset();
       window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // --- Manual resets for non-form elements ---
+      const catSel = document.getElementById("category");
+      const slider = document.querySelector("#card-image-carousel #slider");
+      const dots = document.querySelector("#card-image-carousel #dots");
+      if (catSel) catSel.value = "";
+      if (slider) {
+        slider.innerHTML = `<div class="slide"><img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" /></div>`;
+      }
+      if (dots) dots.innerHTML = "";
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      if (prevBtn) prevBtn.classList.add("hidden");
+      if (nextBtn) nextBtn.classList.add("hidden");
+
+      // --- Re-fetch organiser ID to avoid "Loading user..." flicker ---
+      const display = document.getElementById("organiser_id_display");
+      const hidden = document.getElementById("organiser_id");
+      if (supabase && display && hidden) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.id) {
+          display.value = user.id;
+          hidden.value = user.id;
+        }
+      }
+
     } catch (err) {
       console.error("Insert error:", err);
       alert("❌ Error saving event(s): " + err.message);
@@ -995,7 +1020,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-          </script>
+              </script>
   
 </body>
 </html>
