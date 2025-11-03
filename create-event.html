@@ -880,11 +880,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const visibility     = document.getElementById("visibility").value.trim();
     const publish_status = document.getElementById("publish_status").value.trim();
 
-    // --- Derive image URL from current carousel position ---
-    const imageUrl =
-      window.currentCategory && window.stock && window.stock[window.currentCategory]
-        ? window.stock[window.currentCategory][window.currentIndex]
-        : document.querySelector("#card-image-carousel #slider img")?.src || "";
+    // --- Derive image URL from the CURRENT visible slide (via active dot) ---
+    const dotsWrap = document.querySelector("#card-image-carousel #dots");
+    const dotEls = dotsWrap ? Array.from(dotsWrap.querySelectorAll(".dot")) : [];
+    let activeIdx = dotEls.findIndex(d => d.classList.contains("dot-active"));
+    if (activeIdx < 0) activeIdx = 0; // fallback to first
+
+    const slideImgs = Array.from(document.querySelectorAll("#card-image-carousel #slider .slide img"));
+    const imageUrl = (slideImgs[activeIdx]?.src) || (slideImgs[0]?.src) || "";
 
     // --- Determine which schedule tab is active ---
     const isTour = document.getElementById("tabTour").classList.contains("pill-on");
@@ -992,7 +995,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-</script>
+          </script>
   
 </body>
 </html>
