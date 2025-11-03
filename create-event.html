@@ -858,5 +858,139 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 
+<!-- =========================
+     SECTION 5: FORM SUBMISSION (Supabase Insert)
+     ========================= -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("create-event-form");
+  const submitBtn = document.getElementById("submitBtn");
+  const supabase = window.supabaseClient;
+
+  if (!form || !supabase) return;
+
+  submitBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    // --- Gather base form fields ---
+    const organiser_id   = document.getElementById("organiser_id").value.trim();
+    const event_name     = document.getElementById("event_name").value.trim();
+    const description    = document.getElementById("description").value.trim();
+    const category       = document.getElementById("category").value.trim();
+    const visibility     = document.getElementById("visibility").value.trim();
+    const publish_status = document.getElementById("publish_status").value.trim();
+
+    // --- Derive image URL from category carousel ---
+    const slider = document.querySelector("#card-image-carousel #slider img");
+    const image_url = slider ? slider.src : "";
+
+    // --- Determine which schedule tab is active ---
+    const isTour = document.getElementById("tabTour").classList.contains("pill-on");
+
+    const eventsToInsert = [];
+
+    if (!isTour) {
+      // ========== SINGLE / RECURRING ==========
+      const venue_id   = document.getElementById("srVenueId").value.trim();
+      const ticket_url = document.getElementById("srTicketLink").value.trim();
+      const fromDate   = document.getElementById("fromDate").value.trim();
+      const toDate     = document.getElementById("toDate").value.trim();
+      const fromTime   = document.getElementById("fromTime").value.trim();
+      const toTime     = document.getElementById("toTime").value.trim();
+      const repeatType = document.getElementById("repeatType").value;
+      const repeatUntil = document.getElementById("repeatUntil").value.trim();
+
+      if (!venue_id || !event_name || !category) {
+        alert("Please fill out Event Name, Category, and Venue before submitting.");
+        return;
+      }
+
+      // convert dd/mm/yyyy → yyyy-mm-dd
+      const parseUK = s => {
+        const [dd, mm, yyyy] = s.split("/").map(n => parseInt(n, 10));
+        return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+      };
+
+      const start = new Date(parseUK(fromDate));
+      const endRepeat = repeatUntil ? new Date(parseUK(repeatUntil)) : start;
+
+      const pushEvent = d => {
+        eventsToInsert.push({
+          event_name, description, category, image_url,
+          venue_id, event_date: d.toISOString().split("T")[0],
+          event_time: fromTime, end_date: toDate ? parseUK(toDate) : null,
+          end_time: toTime, ticket_url,
+          event_visibility: visibility, publish_status, organiser_id
+        });
+      };
+
+      if (repeatType === "none") {
+        pushEvent(start);
+      } else {
+        const addDays = (d, n) => { const c = new Date(d); c.setDate(c.getDate() + n); return c; };
+        let cur = new Date(start);
+        while (cur <= endRepeat) {
+          pushEvent(cur);
+          switch (repeatType) {
+            case "everyday":   cur = addDays(cur, 1); break;
+            case "everyweek":  cur = addDays(cur, 7); break;
+            case "every2weeks":cur = addDays(cur, 14); break;
+            case "everymonth": cur.setMonth(cur.getMonth() + 1); break;
+            case "everyyear":  cur.setFullYear(cur.getFullYear() + 1); break;
+            default: cur = addDays(cur, 9999); // safety break
+          }
+        }
+      }
+    } else {
+      // ========== TOUR SCHEDULE ==========
+      const tourBlocks = document.querySelectorAll("#tourRoot > div:not(.h-px)");
+      tourBlocks.forEach(block => {
+        const venue_id = block.querySelector(".venueId")?.value.trim();
+        const ticket_url = block.querySelector(".ticketLink")?.value.trim();
+        const fromDate = block.querySelector(".fromDate")?.value.trim();
+        const toDate = block.querySelector(".toDate")?.value.trim();
+        const fromTime = block.querySelector(".fromTime")?.value.trim();
+        const toTime = block.querySelector(".toTime")?.value.trim();
+        if (venue_id && fromDate) {
+          const parseUK = s => {
+            const [dd, mm, yyyy] = s.split("/").map(n => parseInt(n, 10));
+            return `${yyyy}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+          };
+          eventsToInsert.push({
+            event_name, description, category, image_url,
+            venue_id, event_date: parseUK(fromDate),
+            event_time: fromTime, end_date: toDate ? parseUK(toDate) : null,
+            end_time: toTime, ticket_url,
+            event_visibility: visibility, publish_status, organiser_id
+          });
+        }
+      });
+    }
+
+    if (!eventsToInsert.length) {
+      alert("No valid event data to insert.");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting…";
+
+    try {
+      const { data, error } = await supabase.from("events").insert(eventsToInsert);
+      if (error) throw error;
+      alert(`✅ ${eventsToInsert.length} event(s) saved successfully!`);
+      form.reset();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      console.error("Insert error:", err);
+      alert("❌ Error saving event(s): " + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Event";
+    }
+  });
+});
+</script>
+  
 </body>
 </html>
