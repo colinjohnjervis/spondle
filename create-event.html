@@ -331,6 +331,9 @@
 <!-- =========================
      SECTION: Schedule
      ========================= -->
+<!-- =========================
+     SECTION: Schedule
+     ========================= -->
 <section class="card w-full px-3 sm:px-6 py-6" id="card-schedule">
   <h2 class="text-3xl font-bold text-white mb-6">Schedule</h2>
 
@@ -474,6 +477,78 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const addMonths = (d,n)=>{const x=new Date(d);x.setMonth(x.getMonth()+n);return x;};
   const fillTimes = sel => { sel.innerHTML=''; for(let m=0;m<24*60;m+=15){ const hh=Math.floor(m/60),mm=m%60; const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; sel.add(new Option(label,label)); }};
+  /* =====================================================
+     Subsection: Date & Time Logic (universal initializer)
+     ===================================================== */
+  function initDateTimePair({
+    fromDateEl,
+    toDateEl,
+    fromTimeEl,
+    toTimeEl,
+    defaultFromDate = today,
+    defaultFromTime = '10:00',
+    defaultToTime   = '11:00'
+  }) {
+    // Fill time dropdowns if empty
+    if (fromTimeEl && !fromTimeEl.options.length) fillTimes(fromTimeEl);
+    if (toTimeEl && !toTimeEl.options.length) fillTimes(toTimeEl);
+
+    // Defaults
+    if (fromTimeEl) fromTimeEl.value = defaultFromTime;
+    if (toTimeEl)   toTimeEl.value   = defaultToTime;
+
+    if (fromDateEl && !fromDateEl.value) fromDateEl.value = formatUK(defaultFromDate);
+    if (toDateEl   && !toDateEl.value)   toDateEl.value   = formatUK(defaultFromDate);
+
+    // Datepickers
+    const fromDP = new Datepicker(fromDateEl, { autohide:true, defaultDate: defaultFromDate, language:'en-GB', format:'dd/mm/yyyy' });
+    const toDP   = new Datepicker(toDateEl,   { autohide:true, defaultDate: defaultFromDate, language:'en-GB', format:'dd/mm/yyyy' });
+
+    // Open on click
+    fromDateEl.onclick = () => fromDP.show();
+    toDateEl.onclick   = () => toDP.show();
+
+    // Track if user manually changed "to" fields
+    let toDateTouched = false;
+    let toTimeTouched = false;
+
+    toDateEl.addEventListener('changeDate', () => { toDateTouched = true; });
+    toTimeEl.addEventListener('change',     () => { toTimeTouched = true; });
+
+    // Sync date
+    fromDateEl.addEventListener('changeDate', () => {
+      const f = parseUK(fromDateEl.value);
+      const t = parseUK(toDateEl.value);
+      if (!toDateTouched) {
+        toDateEl.value = fromDateEl.value;
+        toDP.setDate(f);
+      } else if (t < f) {
+        toDateEl.value = fromDateEl.value;
+        toDP.setDate(f);
+      }
+    });
+
+    // Sync time
+    fromTimeEl.addEventListener('change', () => {
+      const [fh,fm] = fromTimeEl.value.split(':').map(Number);
+      const [th,tm] = toTimeEl.value.split(':').map(Number);
+      const fmins = fh*60 + fm;
+      const tmins = th*60 + tm;
+
+      if (!toTimeTouched) {
+        toTimeEl.value = fromTimeEl.value;
+      } else if (tmins <= fmins) {
+        const bump = fmins + 60;
+        const hh = String(Math.floor(bump/60) % 24).padStart(2,'0');
+        const mm = String(bump % 60).padStart(2,'0');
+        toTimeEl.value = `${hh}:${mm}`;
+      }
+    });
+
+    return { fromDP, toDP };
+  }
+  /* ===== End of Date & Time Logic ===== */
+
   /* ---------- Venue Search (Single/Recurring) ---------- */
   const srSearch = document.getElementById('srVenueSearch');
   const srClear = document.getElementById('srVenueClear');
@@ -536,17 +611,19 @@ document.addEventListener('DOMContentLoaded', () => {
     srNewName.value=''; srNewStreet.value=''; srNewPC.value='';
   };
 
-  /* ---------- Dates & Repeat ---------- */
+  /* ---------- Dates & Repeat (Single/Recurring) ---------- */
   const fromDateEl=document.getElementById('fromDate');
   const toDateEl=document.getElementById('toDate');
   const fromTimeEl=document.getElementById('fromTime');
   const toTimeEl=document.getElementById('toTime');
-  fillTimes(fromTimeEl); fillTimes(toTimeEl);
-  fromTimeEl.value='10:00'; toTimeEl.value='11:00';
-  fromDateEl.value=formatUK(today); toDateEl.value=formatUK(today);
-  const fromDP=new Datepicker(fromDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-  const toDP=new Datepicker(toDateEl,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-  fromDateEl.onclick=()=>fromDP.show(); toDateEl.onclick=()=>toDP.show();
+
+  // Initialize main pair via the universal initializer
+  initDateTimePair({
+    fromDateEl, toDateEl, fromTimeEl, toTimeEl,
+    defaultFromDate: today,
+    defaultFromTime: '10:00',
+    defaultToTime: '11:00'
+  });
 
   const repeatTypeEl=document.getElementById('repeatType');
   const repeatUntilWrap=document.getElementById('repeatUntilWrap');
@@ -671,10 +748,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const nStreet=scope.querySelector('.newVenueStreet');
     const nPost=scope.querySelector('.newVenuePostcode');
     const createBtn=scope.querySelector('.createVenueBtn');
+
     const fromDate=scope.querySelector('.fromDate');
     const toDate=scope.querySelector('.toDate');
     const fromTime=scope.querySelector('.fromTime');
     const toTime=scope.querySelector('.toTime');
+
     let timeout;
 
     function open(){results.classList.remove('hidden');}
@@ -713,28 +792,16 @@ document.addEventListener('DOMContentLoaded', () => {
       nName.value=''; nStreet.value=''; nPost.value='';
     };
 
-    fromDate.value=formatUK(today); toDate.value=formatUK(today);
-    fillTimes(fromTime); fillTimes(toTime);
-    fromTime.value='10:00'; toTime.value='11:00';
-    const fp=new Datepicker(fromDate,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-    const tp=new Datepicker(toDate,{autohide:true,defaultDate:today,language:'en-GB',format:'dd/mm/yyyy'});
-    fromDate.onclick=()=>fp.show(); toDate.onclick=()=>tp.show();
-    fromDate.addEventListener('changeDate',()=>{
-      const f=parseUK(fromDate.value);
-      const t=parseUK(toDate.value);
-      if(t<f){toDate.value=fromDate.value;tp.setDate(f);}
+    // Initialize this tour block's date/time pair via the universal initializer
+    initDateTimePair({
+      fromDateEl: fromDate,
+      toDateEl: toDate,
+      fromTimeEl: fromTime,
+      toTimeEl: toTime,
+      defaultFromDate: today,
+      defaultFromTime: '10:00',
+      defaultToTime: '11:00'
     });
-    fromTime.onchange=()=>{
-      const[fh,fm]=fromTime.value.split(':').map(Number);
-      const[th,tm]=toTime.value.split(':').map(Number);
-      const fmins=fh*60+fm,tmins=th*60+tm;
-      if(tmins<=fmins){
-        const bump=fmins+60;
-        const hh=String(Math.floor(bump/60)%24).padStart(2,'0');
-        const mm=String(bump%60).padStart(2,'0');
-        toTime.value=`${hh}:${mm}`;
-      }
-    };
   }
 
   setTab('single');
