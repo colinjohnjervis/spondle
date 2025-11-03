@@ -983,22 +983,45 @@ document.addEventListener("DOMContentLoaded", () => {
       const { data, error } = await supabase.from("events").insert(eventsToInsert);
       if (error) throw error;
       alert(`✅ ${eventsToInsert.length} event(s) saved successfully!`);
+
+      // --- Reset the form ---
       form.reset();
       window.scrollTo({ top: 0, behavior: "smooth" });
 
-      // --- Reset carousel safely using existing function ---
-      if (typeof selectCategory === "function") {
-        selectCategory("");
+      // --- HARD RESET the carousel to avoid 'blank slide' from stale transform ---
+      const carouselScope = document.querySelector('#card-image-carousel');
+      if (carouselScope) {
+        const catSel   = carouselScope.querySelector('#category');
+        const sliderEl = carouselScope.querySelector('#slider');
+        const dotsEl   = carouselScope.querySelector('#dots');
+        const prevBtn  = carouselScope.querySelector('#prevBtn');
+        const nextBtn  = carouselScope.querySelector('#nextBtn');
+
+        if (catSel)   catSel.value = "";
+        if (dotsEl)   dotsEl.innerHTML = "";
+        if (prevBtn)  prevBtn.classList.add('hidden');
+        if (nextBtn)  nextBtn.classList.add('hidden');
+
+        if (sliderEl) {
+          sliderEl.style.transform = 'translateX(0%)'; // <-- critical fix
+          sliderEl.innerHTML = `
+            <div class="slide">
+              <img src="./images/file_000000002f686243b31639a2bca68eca.png" alt="Placeholder" />
+            </div>`;
+        }
       }
 
-      // --- Re-fetch organiser ID cleanly ---
+      // --- Re-fetch organiser ID (keeps it visible after reset) ---
       const display = document.getElementById("organiser_id_display");
-      const hidden = document.getElementById("organiser_id");
+      const hidden  = document.getElementById("organiser_id");
       if (supabase && display && hidden) {
         const { data: { user } } = await supabase.auth.getUser();
         if (user?.id) {
           display.value = user.id;
-          hidden.value = user.id;
+          hidden.value  = user.id;
+        } else {
+          display.value = "Not signed in";
+          hidden.value  = "";
         }
       }
 
@@ -1011,7 +1034,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-        </script>
+          </script>
   
 </body>
 </html>
