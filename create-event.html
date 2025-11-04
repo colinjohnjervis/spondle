@@ -474,7 +474,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const addMonths = (d,n)=>{const x=new Date(d);x.setMonth(x.getMonth()+n);return x;};
   const fillTimes = sel => { sel.innerHTML=''; for(let m=0;m<24*60;m+=15){ const hh=Math.floor(m/60),mm=m%60; const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; sel.add(new Option(label,label)); }};
-  
+
+/* =====================================================
    Subsection: Date & Time Logic (universal initializer)
    ===================================================== */
 function initDateTimePair({
@@ -510,43 +511,22 @@ function initDateTimePair({
   fromDateEl.onclick = () => fromDP.show();
   toDateEl.onclick   = () => toDP.show();
 
-  // --- Track manual vs programmatic changes ---
-  let toDateManuallyEdited = false;
-  let toTimeManuallyEdited = false;
-  let programmaticToDateSet = false;
-  let userIntendsToEditToDate = false;
+  // --- Track manual changes ---
+  let toDateTouched = false;
+  let toTimeTouched = false;
 
-  // Detect user intention to edit "To" date (mouse/touch/focus)
-  ['mousedown','touchstart','focus'].forEach(evt =>
-    toDateEl.addEventListener(evt, () => { userIntendsToEditToDate = true; }, { passive: true })
-  );
+  toDateEl.addEventListener('changeDate', () => { toDateTouched = true; });
+  toTimeEl.addEventListener('change',     () => { toTimeTouched = true; });
 
-  // Mark manual edit only when changeDate fires without our programmatic guard
-  toDateEl.addEventListener('changeDate', () => {
-    if (programmaticToDateSet) {
-      // Clear guard set around setDate() calls
-      programmaticToDateSet = false;
-    } else {
-      // Truly user-initiated change
-      toDateManuallyEdited = true;
-    }
-    // Reset intent flag either way
-    userIntendsToEditToDate = false;
-  });
-
-  // Track manual "To" time edits
-  toTimeEl.addEventListener('change', () => { toTimeManuallyEdited = true; });
-
-  // --- Date sync logic (mirror both forward and backward unless manually edited) ---
+  // --- Date sync logic ---
   fromDateEl.addEventListener('changeDate', () => {
-    const f = parseUK(fromDateEl.value);
-    const t = parseUK(toDateEl.value);
+    const fromVal = parseUK(fromDateEl.value);
+    const toVal   = parseUK(toDateEl.value);
 
-    // Sync if user hasn't manually edited OR if "to" is now earlier than "from"
-    if (!toDateManuallyEdited || t < f) {
+    // Mirror or correct if needed
+    if (!toDateTouched || toVal < fromVal) {
       toDateEl.value = fromDateEl.value;
-      programmaticToDateSet = true;  // prevent marking as manual
-      toDP.setDate(f);
+      toDP.setDate(fromVal);
     }
   });
 
@@ -557,42 +537,39 @@ function initDateTimePair({
     const fmins = fh * 60 + fm;
     const tmins = th * 60 + tm;
 
-    // If user hasn't manually changed "To" time, mirror directly
-    if (!toTimeManuallyEdited) {
+    // If user hasn't touched "to" time, mirror directly
+    if (!toTimeTouched) {
       toTimeEl.value = fromTimeEl.value;
       return;
     }
 
-    // If "To" time is <= "From" time, bump +1 hour and handle potential midnight wrap
+    // If "To" time is earlier or equal to "From", bump +1 hour
     if (tmins <= fmins) {
       const bump = fmins + 60;
       const hh = String(Math.floor(bump / 60) % 24).padStart(2, '0');
       const mm = String(bump % 60).padStart(2, '0');
       toTimeEl.value = `${hh}:${mm}`;
 
-      // If we wrapped past midnight, advance the "To" date by 1
+      // --- Overnight handling: bump To Date if time wrapped past midnight ---
       if (Math.floor(bump / 60) >= 24) {
         const curToDate = parseUK(toDateEl.value);
         curToDate.setDate(curToDate.getDate() + 1);
         toDateEl.value = formatUK(curToDate);
-        programmaticToDateSet = true; // guard programmatic setDate
         toDP.setDate(curToDate);
       }
     }
   });
 
-  // If user sets "To" time manually to before "From" time, assume next day
+  // --- Also handle if user changes To Time manually to before From Time ---
   toTimeEl.addEventListener('change', () => {
     const [fh,fm] = fromTimeEl.value.split(':').map(Number);
     const [th,tm] = toTimeEl.value.split(':').map(Number);
     const fmins = fh * 60 + fm;
     const tmins = th * 60 + tm;
-
     if (tmins < fmins) {
       const curToDate = parseUK(toDateEl.value);
       curToDate.setDate(curToDate.getDate() + 1);
       toDateEl.value = formatUK(curToDate);
-      programmaticToDateSet = true; // guard programmatic setDate
       toDP.setDate(curToDate);
     }
   });
@@ -600,7 +577,7 @@ function initDateTimePair({
   return { fromDP, toDP };
 }
 /* ===== End of Date & Time Logic ===== */
-  
+
   /* ---------- Venue Search (Single/Recurring) ---------- */
   const srSearch = document.getElementById('srVenueSearch');
   const srClear = document.getElementById('srVenueClear');
