@@ -331,9 +331,6 @@
 <!-- =========================
      SECTION: Schedule
      ========================= -->
-<!-- =========================
-     SECTION: Schedule
-     ========================= -->
 <section class="card w-full px-3 sm:px-6 py-6" id="card-schedule">
   <h2 class="text-3xl font-bold text-white mb-6">Schedule</h2>
 
@@ -477,77 +474,109 @@ document.addEventListener('DOMContentLoaded', () => {
   const today = new Date();
   const addMonths = (d,n)=>{const x=new Date(d);x.setMonth(x.getMonth()+n);return x;};
   const fillTimes = sel => { sel.innerHTML=''; for(let m=0;m<24*60;m+=15){ const hh=Math.floor(m/60),mm=m%60; const label=`${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; sel.add(new Option(label,label)); }};
+  
   /* =====================================================
-     Subsection: Date & Time Logic (universal initializer)
-     ===================================================== */
-  function initDateTimePair({
-    fromDateEl,
-    toDateEl,
-    fromTimeEl,
-    toTimeEl,
-    defaultFromDate = today,
-    defaultFromTime = '10:00',
-    defaultToTime   = '11:00'
-  }) {
-    // Fill time dropdowns if empty
-    if (fromTimeEl && !fromTimeEl.options.length) fillTimes(fromTimeEl);
-    if (toTimeEl && !toTimeEl.options.length) fillTimes(toTimeEl);
+   Subsection: Date & Time Logic (universal initializer)
+   ===================================================== */
+function initDateTimePair({
+  fromDateEl,
+  toDateEl,
+  fromTimeEl,
+  toTimeEl,
+  defaultFromDate = today,
+  defaultFromTime = '10:00',
+  defaultToTime   = '11:00'
+}) {
+  // --- Populate time dropdowns if needed ---
+  if (fromTimeEl && !fromTimeEl.options.length) fillTimes(fromTimeEl);
+  if (toTimeEl && !toTimeEl.options.length) fillTimes(toTimeEl);
 
-    // Defaults
-    if (fromTimeEl) fromTimeEl.value = defaultFromTime;
-    if (toTimeEl)   toTimeEl.value   = defaultToTime;
+  // --- Set default values ---
+  if (fromTimeEl) fromTimeEl.value = defaultFromTime;
+  if (toTimeEl)   toTimeEl.value   = defaultToTime;
+  if (fromDateEl && !fromDateEl.value) fromDateEl.value = formatUK(defaultFromDate);
+  if (toDateEl   && !toDateEl.value)   toDateEl.value   = formatUK(defaultFromDate);
 
-    if (fromDateEl && !fromDateEl.value) fromDateEl.value = formatUK(defaultFromDate);
-    if (toDateEl   && !toDateEl.value)   toDateEl.value   = formatUK(defaultFromDate);
+  // --- Initialise datepickers ---
+  const fromDP = new Datepicker(fromDateEl, {
+    autohide: true, defaultDate: defaultFromDate,
+    language: 'en-GB', format: 'dd/mm/yyyy'
+  });
+  const toDP = new Datepicker(toDateEl, {
+    autohide: true, defaultDate: defaultFromDate,
+    language: 'en-GB', format: 'dd/mm/yyyy'
+  });
 
-    // Datepickers
-    const fromDP = new Datepicker(fromDateEl, { autohide:true, defaultDate: defaultFromDate, language:'en-GB', format:'dd/mm/yyyy' });
-    const toDP   = new Datepicker(toDateEl,   { autohide:true, defaultDate: defaultFromDate, language:'en-GB', format:'dd/mm/yyyy' });
+  // --- Open pickers on click ---
+  fromDateEl.onclick = () => fromDP.show();
+  toDateEl.onclick   = () => toDP.show();
 
-    // Open on click
-    fromDateEl.onclick = () => fromDP.show();
-    toDateEl.onclick   = () => toDP.show();
+  // --- Track manual changes ---
+  let toDateTouched = false;
+  let toTimeTouched = false;
 
-    // Track if user manually changed "to" fields
-    let toDateTouched = false;
-    let toTimeTouched = false;
+  toDateEl.addEventListener('changeDate', () => { toDateTouched = true; });
+  toTimeEl.addEventListener('change',     () => { toTimeTouched = true; });
 
-    toDateEl.addEventListener('changeDate', () => { toDateTouched = true; });
-    toTimeEl.addEventListener('change',     () => { toTimeTouched = true; });
+  // --- Date sync logic ---
+  fromDateEl.addEventListener('changeDate', () => {
+    const fromVal = parseUK(fromDateEl.value);
+    const toVal   = parseUK(toDateEl.value);
 
-    // Sync date
-    fromDateEl.addEventListener('changeDate', () => {
-      const f = parseUK(fromDateEl.value);
-      const t = parseUK(toDateEl.value);
-      if (!toDateTouched) {
-        toDateEl.value = fromDateEl.value;
-        toDP.setDate(f);
-      } else if (t < f) {
-        toDateEl.value = fromDateEl.value;
-        toDP.setDate(f);
+    // Mirror or correct if needed
+    if (!toDateTouched || toVal < fromVal) {
+      toDateEl.value = fromDateEl.value;
+      toDP.setDate(fromVal);
+    }
+  });
+
+  // --- Time sync + overnight handling ---
+  fromTimeEl.addEventListener('change', () => {
+    const [fh,fm] = fromTimeEl.value.split(':').map(Number);
+    const [th,tm] = toTimeEl.value.split(':').map(Number);
+    const fmins = fh * 60 + fm;
+    const tmins = th * 60 + tm;
+
+    // If user hasn't touched "to" time, mirror directly
+    if (!toTimeTouched) {
+      toTimeEl.value = fromTimeEl.value;
+      return;
+    }
+
+    // If "To" time is earlier or equal to "From", bump +1 hour
+    if (tmins <= fmins) {
+      const bump = fmins + 60;
+      const hh = String(Math.floor(bump / 60) % 24).padStart(2, '0');
+      const mm = String(bump % 60).padStart(2, '0');
+      toTimeEl.value = `${hh}:${mm}`;
+
+      // --- Overnight handling: bump To Date if time wrapped past midnight ---
+      if (Math.floor(bump / 60) >= 24) {
+        const curToDate = parseUK(toDateEl.value);
+        curToDate.setDate(curToDate.getDate() + 1);
+        toDateEl.value = formatUK(curToDate);
+        toDP.setDate(curToDate);
       }
-    });
+    }
+  });
 
-    // Sync time
-    fromTimeEl.addEventListener('change', () => {
-      const [fh,fm] = fromTimeEl.value.split(':').map(Number);
-      const [th,tm] = toTimeEl.value.split(':').map(Number);
-      const fmins = fh*60 + fm;
-      const tmins = th*60 + tm;
+  // --- Also handle if user changes To Time manually to before From Time ---
+  toTimeEl.addEventListener('change', () => {
+    const [fh,fm] = fromTimeEl.value.split(':').map(Number);
+    const [th,tm] = toTimeEl.value.split(':').map(Number);
+    const fmins = fh * 60 + fm;
+    const tmins = th * 60 + tm;
+    if (tmins < fmins) {
+      const curToDate = parseUK(toDateEl.value);
+      curToDate.setDate(curToDate.getDate() + 1);
+      toDateEl.value = formatUK(curToDate);
+      toDP.setDate(curToDate);
+    }
+  });
 
-      if (!toTimeTouched) {
-        toTimeEl.value = fromTimeEl.value;
-      } else if (tmins <= fmins) {
-        const bump = fmins + 60;
-        const hh = String(Math.floor(bump/60) % 24).padStart(2,'0');
-        const mm = String(bump % 60).padStart(2,'0');
-        toTimeEl.value = `${hh}:${mm}`;
-      }
-    });
-
-    return { fromDP, toDP };
-  }
-  /* ===== End of Date & Time Logic ===== */
+  return { fromDP, toDP };
+}
+/* ===== End of Date & Time Logic ===== */
 
   /* ---------- Venue Search (Single/Recurring) ---------- */
   const srSearch = document.getElementById('srVenueSearch');
