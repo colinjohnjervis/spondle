@@ -45,7 +45,7 @@
 
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
     const eventsGrid = document.getElementById('eventsGrid');
@@ -250,6 +250,17 @@
       page++;
     }
 
+    /* ---------- Scroll position save & restore ---------- */
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('eventsScroll', window.scrollY);
+    });
+
+    async function restoreScrollAfterLoad() {
+      const saved = sessionStorage.getItem('eventsScroll');
+      if (!saved) return;
+      setTimeout(() => window.scrollTo(0, parseFloat(saved)), 100);
+    }
+
     // ---------- Initial load ----------
     async function initialLoad(filters) {
       eventsGrid.innerHTML = '';
@@ -266,6 +277,7 @@
           usingBuffer = false;
           await loadEventsServerPaged(filters);
         }
+        await restoreScrollAfterLoad();
       } catch (err) {
         eventsError.textContent = 'Couldn’t load events: ' + (err?.message || JSON.stringify(err));
         eventsError.classList.remove('hidden');
@@ -292,15 +304,6 @@
     }, { rootMargin: '200px' });
 
     observer.observe(sentinel);
-
-    /* ---------- Scroll position restore ---------- */
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('eventsScroll', window.scrollY);
-    });
-    window.addEventListener('load', () => {
-      const saved = sessionStorage.getItem('eventsScroll');
-      if (saved) window.scrollTo(0, parseFloat(saved));
-    });
 
     // ---------- Boot ----------
     (async () => {
