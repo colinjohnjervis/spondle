@@ -122,7 +122,6 @@
 
         const card = document.createElement('a');
         card.href = `/event-page.html?id=${event.id}`;
-        // Removed green ring + delay
         card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90';
 
         const image = event.image_url
@@ -181,7 +180,7 @@
           .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
           .gte('event_date', startDate)
           .lte('event_date', endDate)
-          .ilike('venues.location_id.town_city', `%${location}%`);
+          .ilike('venues.location.town_city', `%${location}%`);
       }
 
       const { data } = await q;
@@ -202,7 +201,7 @@
           .ilike('event_name', `%${text}%`)
           .gte('event_date', startDate)
           .lte('event_date', endDate)
-          .ilike('venues.location_id.town_city', `%${location}%`)
+          .ilike('venues.location.town_city', `%${location}%`)
           .limit(500);
 
         q2 = supabase
@@ -213,7 +212,7 @@
           .ilike('venues.venue_name', `%${text}%`)
           .gte('event_date', startDate)
           .lte('event_date', endDate)
-          .ilike('venues.location_id.town_city', `%${location}%`)
+          .ilike('venues.location.town_city', `%${location}%`)
           .limit(500);
       } else {
         q1 = supabase
