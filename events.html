@@ -122,7 +122,13 @@
 
         const card = document.createElement('a');
         card.href = `/event-page.html?id=${event.id}`;
+        card.dataset.eventId = event.id;
         card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90';
+
+        // Save clicked event ID before navigation
+        card.addEventListener('click', () => {
+          sessionStorage.setItem('lastClickedEventId', event.id);
+        });
 
         const image = event.image_url
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-96 object-cover">`
@@ -250,15 +256,17 @@
       page++;
     }
 
-    /* ---------- Scroll position save & restore ---------- */
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('eventsScroll', window.scrollY);
-    });
-
-    async function restoreScrollAfterLoad() {
-      const saved = sessionStorage.getItem('eventsScroll');
-      if (!saved) return;
-      setTimeout(() => window.scrollTo(0, parseFloat(saved)), 100);
+    /* ---------- Scroll restoration logic ---------- */
+    async function restoreScrollToClickedEvent() {
+      const lastId = sessionStorage.getItem('lastClickedEventId');
+      if (!lastId) return;
+      const card = eventsGrid.querySelector(`[data-event-id="${lastId}"]`);
+      if (card) {
+        setTimeout(() => {
+          card.scrollIntoView({ block: "start", behavior: "instant" });
+          sessionStorage.removeItem('lastClickedEventId');
+        }, 150);
+      }
     }
 
     // ---------- Initial load ----------
@@ -277,7 +285,7 @@
           usingBuffer = false;
           await loadEventsServerPaged(filters);
         }
-        await restoreScrollAfterLoad();
+        await restoreScrollToClickedEvent();
       } catch (err) {
         eventsError.textContent = 'Couldn’t load events: ' + (err?.message || JSON.stringify(err));
         eventsError.classList.remove('hidden');
