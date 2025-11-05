@@ -45,7 +45,7 @@
 
     const supabase = createClient(
       'https://jvuunvnbpdfrttusgelz.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dVVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
     );
 
     const eventsGrid = document.getElementById('eventsGrid');
@@ -122,7 +122,7 @@
 
         const card = document.createElement('a');
         card.href = `/event-page.html?id=${event.id}`;
-        card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:ring-2 hover:ring-[color:var(--brand)] transition';
+        card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90';
 
         const image = event.image_url
           ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-96 object-cover">`
@@ -289,6 +289,18 @@
     }, { rootMargin: '200px' });
 
     observer.observe(sentinel);
+
+    // ---------- Scroll position restore ----------
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('eventsScroll', window.scrollY);
+    });
+
+    window.addEventListener('load', () => {
+      const saved = sessionStorage.getItem('eventsScroll');
+      if (saved) {
+        window.scrollTo(0, parseFloat(saved));
+      }
+    });
 
     // ---------- Boot ----------
     (async () => {
