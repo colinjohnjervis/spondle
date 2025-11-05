@@ -517,7 +517,7 @@ function initDateTimePair({
   let programmaticToDateSet = false;
   let userIntendsToEditToDate = false;
 
-  // Detect user intention to edit "To" date (mouse/touch/focus)
+  // Detect user intention to edit "To" date
   ['mousedown','touchstart','focus'].forEach(evt =>
     toDateEl.addEventListener(evt, () => { userIntendsToEditToDate = true; }, { passive: true })
   );
@@ -525,20 +525,17 @@ function initDateTimePair({
   // Mark manual edit only when changeDate fires without our programmatic guard
   toDateEl.addEventListener('changeDate', () => {
     if (programmaticToDateSet) {
-      // Clear guard set around setDate() calls
       programmaticToDateSet = false;
     } else {
-      // Truly user-initiated change
       toDateManuallyEdited = true;
     }
-    // Reset intent flag either way
     userIntendsToEditToDate = false;
   });
 
   // Track manual "To" time edits
   toTimeEl.addEventListener('change', () => { toTimeManuallyEdited = true; });
 
-  // --- Date sync logic (mirror both forward and backward unless manually edited) ---
+  // --- Date sync logic ---
   fromDateEl.addEventListener('changeDate', () => {
     const f = parseUK(fromDateEl.value);
     const t = parseUK(toDateEl.value);
@@ -546,7 +543,7 @@ function initDateTimePair({
     // Sync if user hasn't manually edited OR if "to" is now earlier than "from"
     if (!toDateManuallyEdited || t < f) {
       toDateEl.value = fromDateEl.value;
-      programmaticToDateSet = true;  // prevent marking as manual
+      programmaticToDateSet = true;
       toDP.setDate(f);
     }
   });
@@ -558,25 +555,37 @@ function initDateTimePair({
     const fmins = fh * 60 + fm;
     const tmins = th * 60 + tm;
 
-    // If user hasn't manually changed "To" time, mirror directly
+    // If user hasn't manually changed "To" time, maintain +1h offset
     if (!toTimeManuallyEdited) {
-      toTimeEl.value = fromTimeEl.value;
+      const bump = fmins + 60;
+      const hh = String(Math.floor(bump / 60) % 24).padStart(2, '0');
+      const mm = String(bump % 60).padStart(2, '0');
+      toTimeEl.value = `${hh}:${mm}`;
+
+      // If bump passed midnight, move To Date +1
+      if (Math.floor(bump / 60) >= 24) {
+        const curToDate = parseUK(toDateEl.value);
+        curToDate.setDate(curToDate.getDate() + 1);
+        toDateEl.value = formatUK(curToDate);
+        programmaticToDateSet = true;
+        toDP.setDate(curToDate);
+      }
       return;
     }
 
-    // If "To" time is <= "From" time, bump +1 hour and handle potential midnight wrap
+    // If "To" time is <= "From" time, bump +1h to maintain logical order
     if (tmins <= fmins) {
       const bump = fmins + 60;
       const hh = String(Math.floor(bump / 60) % 24).padStart(2, '0');
       const mm = String(bump % 60).padStart(2, '0');
       toTimeEl.value = `${hh}:${mm}`;
 
-      // If we wrapped past midnight, advance the "To" date by 1
+      // Overnight bump if needed
       if (Math.floor(bump / 60) >= 24) {
         const curToDate = parseUK(toDateEl.value);
         curToDate.setDate(curToDate.getDate() + 1);
         toDateEl.value = formatUK(curToDate);
-        programmaticToDateSet = true; // guard programmatic setDate
+        programmaticToDateSet = true;
         toDP.setDate(curToDate);
       }
     }
@@ -593,7 +602,7 @@ function initDateTimePair({
       const curToDate = parseUK(toDateEl.value);
       curToDate.setDate(curToDate.getDate() + 1);
       toDateEl.value = formatUK(curToDate);
-      programmaticToDateSet = true; // guard programmatic setDate
+      programmaticToDateSet = true;
       toDP.setDate(curToDate);
     }
   });
