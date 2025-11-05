@@ -256,16 +256,56 @@
       page++;
     }
 
-    /* ---------- Scroll restoration logic ---------- */
+    /* ---------- Helpers for refined scroll restore ---------- */
+    function headerHeightPx() {
+      // Try common sticky header selectors produced by spondle-layout
+      const header =
+        document.querySelector('header.sticky, header.fixed, header') ||
+        document.querySelector('[data-sticky-header]') ||
+        document.querySelector('#app-header');
+      const h = header ? (header.offsetHeight || 0) : 0;
+      return h || 64; // sensible fallback
+    }
+
+    async function loadNextBatchIfAvailable() {
+      if (usingBuffer) {
+        if (page * PAGE_SIZE >= buffer.length) return false;
+        loadFromBuffer();
+        return true;
+      } else {
+        const prevPage = page;
+        await loadEventsServerPaged(currentFilters);
+        return page > prevPage; // true if something actually loaded
+      }
+    }
+
+    function scrollCardToTop(card) {
+      const top = card.getBoundingClientRect().top + window.scrollY - headerHeightPx() - 8;
+      window.scrollTo({ top, behavior: 'auto' });
+    }
+
     async function restoreScrollToClickedEvent() {
       const lastId = sessionStorage.getItem('lastClickedEventId');
       if (!lastId) return;
-      const card = eventsGrid.querySelector(`[data-event-id="${lastId}"]`);
-      if (card) {
-        setTimeout(() => {
-          card.scrollIntoView({ block: "start", behavior: "instant" });
-          sessionStorage.removeItem('lastClickedEventId');
-        }, 150);
+
+      // Try to find card; if not present, keep loading pages until found or no more data
+      let attempts = 0;
+      const maxAttempts = 30; // protects against endless loops
+      while (attempts < maxAttempts) {
+        const card = eventsGrid.querySelector(`[data-event-id="${lastId}"]`);
+        if (card) {
+          // allow layout to paint, then align cleanly below the sticky header
+          setTimeout(() => {
+            scrollCardToTop(card);
+            sessionStorage.removeItem('lastClickedEventId');
+          }, 50);
+          return;
+        }
+        const loaded = await loadNextBatchIfAvailable();
+        if (!loaded) break;
+        attempts++;
+        // tiny pause helps the browser paint the new batch
+        await new Promise(r => setTimeout(r, 20));
       }
     }
 
