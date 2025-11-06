@@ -7,11 +7,13 @@
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
-  <link rel="stylesheet" href="./styles.css?v=3">
-  <link rel="stylesheet" href="./hearts.css?v=2">
+  <!-- Match events.html baseline styles -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-14">
+  <link rel="stylesheet" href="./styles.css?v=global-14">
+  <link rel="stylesheet" href="./hearts.css?v=global-14">
 
   <style>
+    /* Keep your confirmation overlay exactly as before */
     .confirm-overlay {
       position: absolute;
       inset: 0;
@@ -44,12 +46,11 @@
       color: #ffffff;
       border: none;
     }
-    .confirm-btn + .confirm-btn {
-      margin-left: 0.75rem;
-    }
+    .confirm-btn + .confirm-btn { margin-left: 0.75rem; }
   </style>
 </head>
 <body>
+  <!-- LAYOUT ROOT -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
@@ -60,44 +61,120 @@
 
     <section>
       <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
-      <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load favourites.</p>
+      <!-- sentinel for infinite scroll will be inserted after the grid -->
     </section>
   </main>
 
-  <script src="./spondle-layout.js?v=layout-fixed1" type="module"></script>
+  <!-- Shared layout -->
+  <script src="./spondle-layout.js?v=global-14" type="module"></script>
   <script>
     window.addEventListener("DOMContentLoaded", () => {
-      Layout.init({ active: 'favourites' });
+      window.Layout.init({ active: 'favourites' });
     });
   </script>
 
+  <!-- Page logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://jvuunvnbpdfrttusgelz.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY';
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
 
     const eventsGrid = document.getElementById('eventsGrid');
-    const eventsError = document.getElementById('eventsError');
-    let user = null;
-    let favouriteEventIds = new Set();
 
-    async function loadUserAndFavourites() {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      user = currentUser;
-      if (!user) {
-        eventsGrid.innerHTML = '<p class="text-gray-400">Please log in to view your favourites.</p>';
-        return false;
-      }
-      const { data, error } = await supabase
+    const PAGE_SIZE = 12;
+    let page = 0;
+    let user = null;
+    let favIds = [];
+    let sortedFavIds = []; // ordered by event_date asc
+    let favouriteEventIds = new Set(); // for quick membership checks
+    let usingBuffer = true; // favourites are client-buffered by sorted IDs
+
+    /* ---------- User + favourites (IDs) ---------- */
+    async function loadUserAndFavouriteIds() {
+      const { data: { user: u } } = await supabase.auth.getUser();
+      user = u;
+      if (!user) return false;
+      const { data } = await supabase
         .from('event_favourites')
         .select('event_id')
         .eq('user_id', user.id);
-      if (!error && data) favouriteEventIds = new Set(data.map(f => f.event_id));
+      favIds = (data || []).map(r => r.event_id);
+      favouriteEventIds = new Set(favIds);
       return true;
     }
 
+    /* ---------- Sort favourites by event_date ---------- */
+    async function buildSortedFavIds() {
+      if (!favIds.length) return;
+      // fetch minimal fields to sort by event_date
+      const { data } = await supabase
+        .from('events')
+        .select('id,event_date')
+        .in('id', favIds)
+        .order('event_date', { ascending: true });
+      sortedFavIds = (data || []).map(e => e.id);
+    }
+
+    /* ---------- Render ---------- */
+    function renderCards(rows) {
+      const seen = new Set();
+      for (const event of rows) {
+        if (seen.has(event.id)) continue;
+        seen.add(event.id);
+
+        const card = document.createElement('a');
+        card.href = `/event-page.html?id=${event.id}`;
+        card.dataset.eventId = event.id;
+        // match events.html class list (no green ring)
+        card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90 event-card';
+
+        // Save clicked event ID for precise scroll restore
+        card.addEventListener('click', () => {
+          sessionStorage.setItem('lastClickedEventId', event.id);
+        });
+
+        const image = event.image_url
+          ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-96 object-cover">`
+          : `<div class="w-full h-96 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
+
+        const date = new Date(event.event_date).toLocaleDateString('en-GB', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        const venue = event.venues?.venue_name || 'Venue TBA';
+        const town = event.venues?.location?.town_city || '';
+        const place = town ? `${venue}, ${town}` : venue;
+
+        const fav = favouriteEventIds.has(event.id);
+        card.innerHTML = `
+          ${image}
+          <button class="heart-btn ${fav ? 'fav-on' : ''}" onclick="event.preventDefault();" aria-label="Favourite">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
+          </button>
+          <div class="p-4">
+            <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
+            <p class="text-sm text-gray-400 mb-1">${date}</p>
+            <p class="text-sm text-gray-400">${place}</p>
+          </div>`;
+
+        // Heart (with confirmation flow preserved)
+        const heartBtn = card.querySelector('.heart-btn');
+        heartBtn.addEventListener('click', e => {
+          e.preventDefault();
+          showConfirmation(card, event.id, heartBtn);
+        });
+
+        eventsGrid.appendChild(card);
+      }
+    }
+
+    /* ---------- Confirmation overlay (unchanged behaviour) ---------- */
     function showConfirmation(card, eventId, btn) {
       if (card.querySelector('.confirm-overlay')) return;
       const overlay = document.createElement('div');
@@ -132,88 +209,119 @@
         .delete()
         .eq('user_id', user.id)
         .eq('event_id', eventId);
+
       favouriteEventIds.delete(eventId);
       btn.classList.remove('fav-on');
+
+      // Remove from local arrays so paging stays consistent
+      favIds = favIds.filter(id => id !== eventId);
+      sortedFavIds = sortedFavIds.filter(id => id !== eventId);
+
       card.remove();
-      if (favouriteEventIds.size === 0) {
+
+      if (!sortedFavIds.length) {
         eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
       }
     }
 
-    function toggleFavourite(eventId, btn, e) {
-      e.stopPropagation();
-      e.preventDefault();
-      const card = btn.closest('.event-card');
-      if (!user) return;
-      if (favouriteEventIds.has(eventId)) showConfirmation(card, eventId, btn);
-      else addFavourite(eventId, btn);
-    }
+    /* ---------- Server load for a page of favourites ---------- */
+    async function loadFavouritesPage() {
+      // get next slice of IDs
+      const start = page * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+      const sliceIds = sortedFavIds.slice(start, end);
+      if (!sliceIds.length) return false;
 
-    async function addFavourite(eventId, btn) {
-      await supabase.from('event_favourites').insert([{ user_id: user.id, event_id: eventId }]);
-      favouriteEventIds.add(eventId);
-      btn.classList.add('fav-on');
-    }
-
-    async function loadFavouriteEvents() {
-      if (!user) return;
       const { data, error } = await supabase
         .from('events')
         .select('*, venues(venue_name, location:location_id(town_city))')
-        .in('id', [...favouriteEventIds])
-        .order('event_date', { ascending: true });
+        .in('id', sliceIds);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        eventsError.classList.remove('hidden');
+      if (error) return false;
+
+      // sort this batch by event_date client-side, then render
+      (data || []).sort((a, b) => String(a.event_date).localeCompare(String(b.event_date)));
+      renderCards(data || []);
+      page++;
+      return true;
+    }
+
+    /* ---------- Infinite scroll helpers (match events baseline) ---------- */
+    function headerHeightPx() {
+      const header =
+        document.querySelector('header.sticky, header.fixed, header') ||
+        document.querySelector('[data-sticky-header]') ||
+        document.querySelector('#app-header');
+      const h = header ? (header.offsetHeight || 0) : 0;
+      return h || 64; // fallback
+    }
+    function scrollCardToTop(card) {
+      const top = card.getBoundingClientRect().top + window.scrollY - headerHeightPx() - 8;
+      window.scrollTo({ top, behavior: 'auto' });
+    }
+
+    async function loadNextBatchIfAvailable() {
+      return await loadFavouritesPage();
+    }
+
+    async function restoreScrollToClickedEvent() {
+      const lastId = sessionStorage.getItem('lastClickedEventId');
+      if (!lastId) return;
+
+      let attempts = 0;
+      const maxAttempts = 30;
+      while (attempts < maxAttempts) {
+        const card = eventsGrid.querySelector(`[data-event-id="${lastId}"]`);
+        if (card) {
+          setTimeout(() => {
+            scrollCardToTop(card);
+            sessionStorage.removeItem('lastClickedEventId');
+          }, 50);
+          return;
+        }
+        const loaded = await loadNextBatchIfAvailable();
+        if (!loaded) break;
+        attempts++;
+        await new Promise(r => setTimeout(r, 20));
+      }
+    }
+
+    /* ---------- Initial load ---------- */
+    async function initialLoad() {
+      eventsGrid.innerHTML = '';
+      page = 0;
+
+      const ok = await loadUserAndFavouriteIds();
+      if (!ok) {
+        // Page is not accessible unless logged in per your nav, so do nothing
         return;
       }
-      if (!data || !data.length) {
+      if (!favIds.length) {
         eventsGrid.innerHTML = '<p class="text-gray-400">No favourites yet.</p>';
         return;
       }
 
-      eventsGrid.innerHTML = '';
-      data.forEach(event => {
-        const cardLink = document.createElement('a');
-        cardLink.href = `/event-page.html?id=${event.id}`;
-        cardLink.className = 'event-card block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90 transition';
-
-        const imageContent = event.image_url
-          ? `<img src="${event.image_url}" alt="${event.event_name}" class="w-full h-40 object-cover">`
-          : `<div class="w-full h-40 flex items-center justify-center bg-gray-800 text-gray-400 text-sm">Image Coming Soon</div>`;
-
-        const formattedDate = new Date(event.event_date).toLocaleDateString('en-GB', {
-          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-        });
-
-        const venueName = event.venues?.venue_name || 'Venue TBA';
-        const townCity = event.venues?.location?.town_city || '';
-        const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
-
-        cardLink.innerHTML = `
-          ${imageContent}
-          <button class="heart-btn fav-on absolute top-2 right-2 z-10" aria-label="Favourite">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733C11.285 4.876 9.623 3.75 7.688 3.75 5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-            </svg>
-          </button>
-          <div class="p-4">
-            <h3 class="text-xl font-semibold mb-1">${event.event_name}</h3>
-            <p class="text-sm text-gray-400 mb-1">${formattedDate}</p>
-            <p class="text-sm text-gray-400">${venueDisplay}</p>
-          </div>`;
-
-        const heartBtn = cardLink.querySelector('.heart-btn');
-        heartBtn.addEventListener('click', (e) => toggleFavourite(event.id, heartBtn, e));
-        eventsGrid.appendChild(cardLink);
-      });
+      await buildSortedFavIds();
+      await loadFavouritesPage();
+      await restoreScrollToClickedEvent();
     }
 
+    /* ---------- Infinite scroll ---------- */
+    const sentinel = document.createElement('div');
+    sentinel.className = 'h-8';
+    eventsGrid.insertAdjacentElement('afterend', sentinel);
+
+    const observer = new IntersectionObserver(async entries => {
+      const [entry] = entries;
+      if (!entry.isIntersecting) return;
+      await loadFavouritesPage();
+    }, { rootMargin: '200px' });
+
+    observer.observe(sentinel);
+
+    /* ---------- Boot ---------- */
     (async () => {
-      const ok = await loadUserAndFavourites();
-      if (ok) await loadFavouriteEvents();
+      await initialLoad();
     })();
   </script>
 </body>
