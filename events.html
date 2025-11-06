@@ -21,13 +21,6 @@
 
     <section>
       <div id="eventsGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
-      <div class="flex justify-center mt-6">
-        <button id="loadMoreBtn"
-          class="px-4 py-2 bg-[color:var(--brand)] text-black font-medium rounded-md hover:opacity-90 transition">
-          Load More
-        </button>
-      </div>
-      <p id="eventsError" class="text-red-400 mt-4 hidden">Couldn’t load events.</p>
     </section>
   </main>
 
@@ -49,8 +42,6 @@
     );
 
     const eventsGrid = document.getElementById('eventsGrid');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    const eventsError = document.getElementById('eventsError');
 
     const PAGE_SIZE = 12;
     let page = 0;
@@ -124,8 +115,6 @@
         card.href = `/event-page.html?id=${event.id}`;
         card.dataset.eventId = event.id;
         card.className = 'block relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90';
-
-        // Save clicked event ID before navigation
         card.addEventListener('click', () => {
           sessionStorage.setItem('lastClickedEventId', event.id);
         });
@@ -251,20 +240,18 @@
     }
 
     function loadFromBuffer() {
-      const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+      const slice = buffer.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
       renderCards(slice);
       page++;
     }
 
-    /* ---------- Helpers for refined scroll restore ---------- */
     function headerHeightPx() {
-      // Try common sticky header selectors produced by spondle-layout
       const header =
         document.querySelector('header.sticky, header.fixed, header') ||
         document.querySelector('[data-sticky-header]') ||
         document.querySelector('#app-header');
       const h = header ? (header.offsetHeight || 0) : 0;
-      return h || 64; // sensible fallback
+      return h || 64;
     }
 
     async function loadNextBatchIfAvailable() {
@@ -275,7 +262,7 @@
       } else {
         const prevPage = page;
         await loadEventsServerPaged(currentFilters);
-        return page > prevPage; // true if something actually loaded
+        return page > prevPage;
       }
     }
 
@@ -288,13 +275,11 @@
       const lastId = sessionStorage.getItem('lastClickedEventId');
       if (!lastId) return;
 
-      // Try to find card; if not present, keep loading pages until found or no more data
       let attempts = 0;
-      const maxAttempts = 30; // protects against endless loops
+      const maxAttempts = 30;
       while (attempts < maxAttempts) {
         const card = eventsGrid.querySelector(`[data-event-id="${lastId}"]`);
         if (card) {
-          // allow layout to paint, then align cleanly below the sticky header
           setTimeout(() => {
             scrollCardToTop(card);
             sessionStorage.removeItem('lastClickedEventId');
@@ -304,7 +289,6 @@
         const loaded = await loadNextBatchIfAvailable();
         if (!loaded) break;
         attempts++;
-        // tiny pause helps the browser paint the new batch
         await new Promise(r => setTimeout(r, 20));
       }
     }
@@ -313,42 +297,28 @@
     async function initialLoad(filters) {
       eventsGrid.innerHTML = '';
       page = 0;
-      eventsError.classList.add('hidden');
-      loadMoreBtn.style.display = 'block';
       currentFilters = filters;
 
-      try {
-        if (filters.text) {
-          await buildBuffer(filters);
-          loadFromBuffer();
-        } else {
-          usingBuffer = false;
-          await loadEventsServerPaged(filters);
-        }
-        await restoreScrollToClickedEvent();
-      } catch (err) {
-        eventsError.textContent = 'Couldn’t load events: ' + (err?.message || JSON.stringify(err));
-        eventsError.classList.remove('hidden');
-        loadMoreBtn.style.display = 'none';
+      if (filters.text) {
+        await buildBuffer(filters);
+        loadFromBuffer();
+      } else {
+        usingBuffer = false;
+        await loadEventsServerPaged(filters);
       }
+      await restoreScrollToClickedEvent();
     }
 
     // ---------- Infinite scroll ----------
-    loadMoreBtn.style.display = 'none';
     const sentinel = document.createElement('div');
     sentinel.className = 'h-8';
-    loadMoreBtn.insertAdjacentElement('afterend', sentinel);
+    eventsGrid.insertAdjacentElement('afterend', sentinel);
 
     const observer = new IntersectionObserver(async entries => {
       const [entry] = entries;
       if (!entry.isIntersecting) return;
-      try {
-        if (usingBuffer) loadFromBuffer();
-        else await loadEventsServerPaged(currentFilters);
-      } catch (e) {
-        eventsError.textContent = 'Couldn’t load events: ' + (e?.message || JSON.stringify(e));
-        eventsError.classList.remove('hidden');
-      }
+      if (usingBuffer) loadFromBuffer();
+      else await loadEventsServerPaged(currentFilters);
     }, { rootMargin: '200px' });
 
     observer.observe(sentinel);
