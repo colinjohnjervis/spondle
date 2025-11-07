@@ -7,9 +7,9 @@
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Shared layout + styles (locked) -->
-  <link rel="stylesheet" href="./spondle-layout.css?v=layout-fixed1">
-  <link rel="stylesheet" href="./styles.css?v=3">
+  <!-- Shared layout + styles (global baseline) -->
+  <link rel="stylesheet" href="./spondle-layout.css?v=global-14">
+  <link rel="stylesheet" href="./styles.css?v=global-14">
 
   <style>
     .tab { cursor: pointer; padding: 10px 16px; border-bottom: 2px solid transparent; font-weight: 600; color: var(--muted); transition: color .2s, border .2s; }
@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <!-- Sidebar + Header (locked) -->
+  <!-- Sidebar + Sticky Header -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-4 space-y-8">
@@ -35,8 +35,8 @@
       <div class="flex items-center gap-4">
         <img src="https://via.placeholder.com/100" alt="Profile" class="w-20 h-20 rounded-full border border-gray-600 object-cover">
         <div>
-          <h1 class="text-2xl font-bold">Alex Eventlover</h1>
-          <p class="muted">📍 Bristol, UK</p>
+          <h1 id="profile-name" class="text-2xl font-bold">My Profile</h1>
+          <p class="muted" id="profile-location">📍 Bristol, UK</p>
         </div>
       </div>
       <div class="flex gap-6">
@@ -94,7 +94,7 @@
         </div>
       </div>
 
-      <!-- Lists (placeholder, unchanged) -->
+      <!-- Lists -->
       <div id="lists" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">My Lists</h2>
         <p class="muted">Group events into themed lists (e.g. “Summer Plans”).</p>
@@ -104,7 +104,7 @@
         </div>
       </div>
 
-      <!-- Following (placeholder, unchanged) -->
+      <!-- Following -->
       <div id="following" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">You’re Following</h2>
         <ul class="space-y-3">
@@ -113,7 +113,7 @@
         </ul>
       </div>
 
-      <!-- Preferences (placeholder, unchanged) -->
+      <!-- Preferences -->
       <div id="preferences" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">Preferences</h2>
         <ul class="space-y-3 muted">
@@ -123,7 +123,7 @@
         </ul>
       </div>
 
-      <!-- Privacy (placeholder, unchanged) -->
+      <!-- Privacy -->
       <div id="privacy" class="tab-content mt-6">
         <h2 class="text-xl font-semibold mb-3">Privacy Settings</h2>
         <p class="muted">Control visibility of your favourites and data export options.</p>
@@ -131,56 +131,62 @@
     </section>
   </main>
 
-  <!-- Shared layout JS (locked) -->
-  <script src="./spondle-layout.js?v=layout-fixed1"></script>
+  <!-- Shared layout JS (global baseline) -->
+  <script src="./spondle-layout.js?v=global-14" type="module"></script>
 
-  <!-- Your events dataset (already in repo) -->
-  <script src="./events-data.js?v=3"></script>
+  <!-- Supabase + profile logic -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient(
+      'https://jvuunvnbpdfrttusgelz.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY'
+    );
 
-  <script>
-    // Keep layout highlight (optional)
-    Layout.init({ active: 'profile' });
+    window.addEventListener("DOMContentLoaded", async () => {
+      window.Layout.init({ active: 'profile' });
 
-    // ---- Helpers to read existing data without changing other pages ----
+      // Fetch current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const name = user.user_metadata?.full_name || user.email || "My Profile";
+        document.getElementById("profile-name").textContent = name;
+      }
+    });
+
+    // Tabs (unchanged)
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Placeholder renderers (unchanged logic)
     function getAllEvents() {
-      // Try a few common globals used earlier
       return (window.EVENTS || window.sampleEvents || window.events || []);
     }
-
     function getFavourites() {
-      // Support either key name to match earlier implementations
       const raw = localStorage.getItem('spondle_favourites') ?? localStorage.getItem('favourites');
       if (!raw) return [];
       try {
         const parsed = JSON.parse(raw);
-        // Can be array of ids or object map; normalise to array of ids
         if (Array.isArray(parsed)) return parsed;
         if (parsed && typeof parsed === 'object') return Object.keys(parsed).filter(k => parsed[k]);
         return [];
       } catch { return []; }
     }
+    function parseDate(d) { const t = Date.parse(d); return isNaN(t) ? null : new Date(t); }
 
-    function parseDate(d) {
-      // Accept ISO or 'YYYY-MM-DD', fallback to invalid
-      const t = Date.parse(d);
-      return isNaN(t) ? null : new Date(t);
-    }
-
-    // ---- Renderers (non-invasive; no style changes) ----
     function renderFavourites(allEvents, favIds) {
       const container = document.getElementById('favs-grid');
       const empty = document.getElementById('favs-empty');
       container.innerHTML = '';
-
       const favEvents = allEvents.filter(ev => favIds.includes(String(ev.id)));
       document.getElementById('stat-favs').textContent = favEvents.length;
-
-      if (favEvents.length === 0) {
-        empty.classList.remove('hidden');
-        return;
-      }
+      if (favEvents.length === 0) { empty.classList.remove('hidden'); return; }
       empty.classList.add('hidden');
-
       favEvents.forEach(ev => {
         const a = document.createElement('a');
         a.href = ev.url || `./event.html?id=${encodeURIComponent(ev.id)}`;
@@ -193,8 +199,7 @@
               <div class="muted text-sm">${ev.venue || ev.location || ''}</div>
               <div class="muted text-sm">${ev.date || ev.datetime || ''}</div>
             </div>
-          </div>
-        `;
+          </div>`;
         container.appendChild(a);
       });
     }
@@ -203,20 +208,14 @@
       const container = document.getElementById('overview-upcoming');
       const empty = document.getElementById('overview-upcoming-empty');
       container.innerHTML = '';
-
       const now = new Date();
       const favEvents = allEvents.filter(ev => favIds.includes(String(ev.id)));
       const withDates = favEvents.map(ev => ({ ev, dt: parseDate(ev.date || ev.datetime) }))
-                                 .filter(x => x.dt && x.dt >= now)
-                                 .sort((a,b)=> a.dt - b.dt)
-                                 .slice(0, 6);
-
-      if (withDates.length === 0) {
-        empty.classList.remove('hidden');
-        return;
-      }
+        .filter(x => x.dt && x.dt >= now)
+        .sort((a,b)=> a.dt - b.dt)
+        .slice(0, 6);
+      if (withDates.length === 0) { empty.classList.remove('hidden'); return; }
       empty.classList.add('hidden');
-
       withDates.forEach(({ev}) => {
         const a = document.createElement('a');
         a.href = ev.url || `./event.html?id=${encodeURIComponent(ev.id)}`;
@@ -229,30 +228,16 @@
               <div class="muted text-sm">${ev.venue || ev.location || ''}</div>
               <div class="muted text-sm">${ev.date || ev.datetime || ''}</div>
             </div>
-          </div>
-        `;
+          </div>`;
         container.appendChild(a);
       });
     }
 
-    // ---- Tabs (unchanged behaviour) ----
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.tab).classList.add('active');
-      });
-    });
-
-    // ---- Initialise rendering ----
     (function initProfileData(){
       const events = getAllEvents();
       const favIds = getFavourites().map(String);
-
       renderFavourites(events, favIds);
       renderUpcoming(events, favIds);
-      // Following count remains placeholder (0) until we wire follows
       document.getElementById('stat-following').textContent = '0';
     })();
   </script>
