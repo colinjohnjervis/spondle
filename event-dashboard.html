@@ -20,7 +20,7 @@
         Manage and review your published and draft events.
       </p>
 
-      <!-- Create Event Button -->
+      <!-- Buttons -->
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="/create-event.html"
            class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
@@ -48,25 +48,22 @@
         <!-- Published -->
         <div id="published" class="tab-panel">
           <h2 class="text-xl font-semibold mb-4">Published Events</h2>
-          <div id="published-list" class="space-y-4"></div>
+          <div id="published-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
         </div>
 
         <!-- Drafts -->
         <div id="drafts" class="tab-panel hidden">
           <h2 class="text-xl font-semibold mb-4">Draft Events</h2>
-          <div id="drafts-list" class="space-y-4"></div>
+          <div id="drafts-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Shared layout -->
+  <!-- JS -->
   <script src="./spondle-layout.js?v=1003" type="module"></script>
-
-  <!-- Page Logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
@@ -92,26 +89,33 @@
     });
 
     function formatDate(d) {
-      return new Date(d).toLocaleDateString("en-GB", {
+      const date = new Date(d);
+      if (isNaN(date)) return "";
+      return date.toLocaleDateString("en-GB", {
         weekday: "short", day: "numeric", month: "short", year: "numeric"
       });
     }
 
-    function renderEventCard(event) {
+    function renderEventTile(event) {
       const venueName = event.venues?.venue_name || "Venue TBA";
       const townCity = event.venues?.location?.town_city || "";
       const venueDisplay = townCity ? `${venueName}, ${townCity}` : venueName;
+      const imageUrl = event.image_url || "https://spondle-uk.vercel.app/images/placeholder.jpg";
+
       return `
-        <div class="p-4 bg-gray-800 rounded shadow relative">
-          <a href="/edit-event.html?id=${event.id}" title="Edit Event">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute top-3 right-3 text-gray-400 hover:text-gray-200 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90 transition">
+          <a href="/edit-event.html?id=${event.id}" class="absolute top-3 right-3 z-10 text-gray-200 hover:text-white" title="Edit Event">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15.232 5.232l3.536 3.536M9 13l6.768-6.768a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-.828.515L7 17l1.657-4.001a2 2 0 01.515-.767z" />
             </svg>
           </a>
-          <h3 class="font-semibold text-lg">${event.event_name}</h3>
-          <p class="text-sm text-gray-300">${formatDate(event.event_date)} @ ${venueDisplay}</p>
-          <p class="text-xs text-gray-400 uppercase">${event.publish_status}</p>
+          <img src="${imageUrl}" alt="${event.event_name}" class="w-full h-80 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-semibold mb-1">${event.event_name}</h3>
+            <p class="text-sm text-gray-400 mb-1">${formatDate(event.event_date)}</p>
+            <p class="text-sm text-gray-400">${venueDisplay}</p>
+          </div>
         </div>
       `;
     }
@@ -124,7 +128,6 @@
       }));
 
       const sorted = Array.from(months).sort();
-
       select.innerHTML = `<option value="all">All Events</option>` +
         sorted.map(val => {
           const [y,m] = val.split("-");
@@ -155,12 +158,12 @@
       const published = filtered.filter(e => e.publish_status === "published");
 
       document.getElementById("drafts-list").innerHTML = drafts.length
-        ? drafts.map(renderEventCard).join("")
-        : `<p class="text-gray-400">No draft events found.</p>`;
+        ? drafts.map(renderEventTile).join("")
+        : `<p class='text-gray-400'>No draft events found.</p>`;
 
       document.getElementById("published-list").innerHTML = published.length
-        ? published.map(renderEventCard).join("")
-        : `<p class="text-gray-400">No published events found.</p>`;
+        ? published.map(renderEventTile).join("")
+        : `<p class='text-gray-400'>No published events found.</p>`;
     }
 
     async function loadEvents() {
@@ -174,6 +177,7 @@
           event_name,
           event_date,
           publish_status,
+          image_url,
           venues (
             venue_name,
             location:location_id (town_city)
@@ -181,7 +185,10 @@
         `)
         .eq("organiser_id", user.id);
 
-      if (error) return;
+      if (error) {
+        console.error(error);
+        return;
+      }
 
       allEvents = events.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
       populateMonthFilter(events);
@@ -190,10 +197,9 @@
 
     document.getElementById("monthFilter").addEventListener("change", renderLists);
 
-    loadEvents();
-
-    window.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("DOMContentLoaded", async () => {
       window.Layout?.init({ active: "dashboard" });
+      await loadEvents();
     });
   </script>
 </body>
