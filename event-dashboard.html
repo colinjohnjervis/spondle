@@ -6,8 +6,8 @@
   <title>Event Dashboard — Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./spondle-layout.css?v=1003">
-  <link rel="stylesheet" href="./styles.css?v=1003">
+  <link rel="stylesheet" href="./spondle-layout.css?v=1004">
+  <link rel="stylesheet" href="./styles.css?v=1004">
 </head>
 <body class="bg-black text-white">
   <!-- Header + Sidebar -->
@@ -44,24 +44,16 @@
         </nav>
       </div>
 
-      <div id="tab-content">
-        <!-- Published -->
-        <div id="published" class="tab-panel">
-          <h2 class="text-xl font-semibold mb-4">Published Events</h2>
-          <div id="published-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
-        </div>
+      <!-- Published -->
+      <div id="published" class="tab-panel grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
 
-        <!-- Drafts -->
-        <div id="drafts" class="tab-panel hidden">
-          <h2 class="text-xl font-semibold mb-4">Draft Events</h2>
-          <div id="drafts-list" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
-        </div>
-      </div>
+      <!-- Drafts -->
+      <div id="drafts" class="tab-panel hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
     </section>
   </main>
 
   <!-- JS -->
-  <script src="./spondle-layout.js?v=1003" type="module"></script>
+  <script src="./spondle-layout.js?v=1004" type="module"></script>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
@@ -92,7 +84,7 @@
       const date = new Date(d);
       if (isNaN(date)) return "";
       return date.toLocaleDateString("en-GB", {
-        weekday: "short", day: "numeric", month: "short", year: "numeric"
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
       });
     }
 
@@ -157,13 +149,13 @@
       const drafts = filtered.filter(e => e.publish_status === "draft");
       const published = filtered.filter(e => e.publish_status === "published");
 
-      document.getElementById("drafts-list").innerHTML = drafts.length
+      document.getElementById("drafts").innerHTML = drafts.length
         ? drafts.map(renderEventTile).join("")
-        : `<p class='text-gray-400'>No draft events found.</p>`;
+        : `<p class='text-gray-400 col-span-full'>No draft events found.</p>`;
 
-      document.getElementById("published-list").innerHTML = published.length
+      document.getElementById("published").innerHTML = published.length
         ? published.map(renderEventTile).join("")
-        : `<p class='text-gray-400'>No published events found.</p>`;
+        : `<p class='text-gray-400 col-span-full'>No published events found.</p>`;
     }
 
     async function loadEvents() {
