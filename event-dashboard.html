@@ -6,29 +6,25 @@
   <title>Event Dashboard — Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./spondle-layout.css?v=1002">
-  <link rel="stylesheet" href="./styles.css?v=1002">
+  <link rel="stylesheet" href="./spondle-layout.css?v=1003">
+  <link rel="stylesheet" href="./styles.css?v=1003">
 </head>
 <body class="bg-black text-white">
-  <!-- Header + Sidebar injected -->
+  <!-- Header + Sidebar -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
     <section class="panel p-6 md:p-8">
       <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Event Dashboard</h1>
       <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
-        Manage your events — drafts, published, and past.
+        Manage and review your published and draft events.
       </p>
 
-      <!-- Buttons -->
+      <!-- Create Event Button -->
       <div class="mt-6 flex flex-wrap gap-3">
         <a href="/create-event.html"
            class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
           + Create Event
-        </a>
-        <a href="/events-miniview01.html"
-           class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-400 transition">
-          View Mini Events
         </a>
       </div>
 
@@ -43,23 +39,16 @@
       <!-- Tabs -->
       <div class="border-b border-gray-700 mt-8 mb-4">
         <nav class="-mb-px flex space-x-6" id="dashboard-tabs">
-          <button data-tab="overview" class="tab-button border-b-2 border-green-500 text-green-500 px-3 py-2 text-sm font-medium">Overview</button>
+          <button data-tab="published" class="tab-button border-b-2 border-green-500 text-green-500 px-3 py-2 text-sm font-medium">Published</button>
           <button data-tab="drafts" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Drafts</button>
-          <button data-tab="published" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Published</button>
-          <button data-tab="past" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Past Events</button>
         </nav>
       </div>
 
       <div id="tab-content">
-        <!-- Overview -->
-        <div id="overview" class="tab-panel">
-          <h2 class="text-xl font-semibold mb-4">Quick snapshot of your events:</h2>
-          <ul class="list-disc pl-5 text-gray-300">
-            <li>Drafts: <span id="count-drafts">0</span></li>
-            <li>Published: <span id="count-published">0</span></li>
-            <li>Past Events: <span id="count-past">0</span></li>
-            <li>Total: <span id="count-total">0</span></li>
-          </ul>
+        <!-- Published -->
+        <div id="published" class="tab-panel">
+          <h2 class="text-xl font-semibold mb-4">Published Events</h2>
+          <div id="published-list" class="space-y-4"></div>
         </div>
 
         <!-- Drafts -->
@@ -67,26 +56,17 @@
           <h2 class="text-xl font-semibold mb-4">Draft Events</h2>
           <div id="drafts-list" class="space-y-4"></div>
         </div>
-
-        <!-- Published -->
-        <div id="published" class="tab-panel hidden">
-          <h2 class="text-xl font-semibold mb-4">Published Events</h2>
-          <div id="published-list" class="space-y-4"></div>
-        </div>
-
-        <!-- Past -->
-        <div id="past" class="tab-panel hidden">
-          <h2 class="text-xl font-semibold mb-4">Past Events</h2>
-          <div id="past-list" class="space-y-4"></div>
-        </div>
       </div>
     </section>
   </main>
 
-  <!-- JS -->
-  <script src="./spondle-layout.js?v=1002" type="module"></script>
+  <!-- Shared layout -->
+  <script src="./spondle-layout.js?v=1003" type="module"></script>
+
+  <!-- Page Logic -->
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
     const supabase = createClient(
       "https://jvuunvnbpdfrttusgelz.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2dXVudm5icGRmcnR0dXNnZWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0Nzk0NjksImV4cCI6MjA3MzA1NTQ2OX0.i5-X-GsirwcZl0CdAfGsA6qM4ml5itnekPh0RoDCPVY"
@@ -169,22 +149,18 @@
 
     function renderLists() {
       const filtered = filterEvents(allEvents);
-
-      // ✅ sort by event_date ascending
       filtered.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
 
       const drafts = filtered.filter(e => e.publish_status === "draft");
       const published = filtered.filter(e => e.publish_status === "published");
-      const past = filtered.filter(e => new Date(e.event_date) < new Date());
 
-      document.getElementById("count-drafts").textContent = drafts.length;
-      document.getElementById("count-published").textContent = published.length;
-      document.getElementById("count-past").textContent = past.length;
-      document.getElementById("count-total").textContent = filtered.length;
+      document.getElementById("drafts-list").innerHTML = drafts.length
+        ? drafts.map(renderEventCard).join("")
+        : `<p class="text-gray-400">No draft events found.</p>`;
 
-      document.getElementById("drafts-list").innerHTML = drafts.map(renderEventCard).join("");
-      document.getElementById("published-list").innerHTML = published.map(renderEventCard).join("");
-      document.getElementById("past-list").innerHTML = past.map(renderEventCard).join("");
+      document.getElementById("published-list").innerHTML = published.length
+        ? published.map(renderEventCard).join("")
+        : `<p class="text-gray-400">No published events found.</p>`;
     }
 
     async function loadEvents() {
@@ -205,12 +181,8 @@
         `)
         .eq("organiser_id", user.id);
 
-      if (error) {
-        console.error(error);
-        return;
-      }
+      if (error) return;
 
-      // ✅ sort here once after fetch
       allEvents = events.sort((a, b) => new Date(a.event_date) - new Date(b.event_date));
       populateMonthFilter(events);
       renderLists();
