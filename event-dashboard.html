@@ -6,54 +6,55 @@
   <title>Event Dashboard — Spondle</title>
   <meta name="color-scheme" content="dark" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="./spondle-layout.css?v=1004">
-  <link rel="stylesheet" href="./styles.css?v=1004">
+  <link rel="stylesheet" href="./spondle-layout.css?v=1005">
+  <link rel="stylesheet" href="./styles.css?v=1005">
 </head>
 <body class="bg-black text-white">
   <!-- Header + Sidebar -->
   <div id="layout-root"></div>
 
   <main class="px-4 sm:px-6 lg:px-8 mt-6 space-y-8">
-    <section class="panel p-6 md:p-8">
+    <!-- Dashboard Header -->
+    <div>
       <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">Event Dashboard</h1>
       <p class="text-[color:var(--muted)] mt-3 max-w-2xl">
         Manage and review your published and draft events.
       </p>
+    </div>
 
-      <!-- Buttons -->
-      <div class="mt-6 flex flex-wrap gap-3">
-        <a href="/create-event.html"
-           class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
-          + Create Event
-        </a>
-      </div>
+    <!-- Buttons -->
+    <div class="flex flex-wrap gap-3">
+      <a href="/create-event.html"
+         class="px-6 py-3 bg-green-500 text-black font-semibold rounded-md hover:bg-green-400 transition">
+        + Create Event
+      </a>
+    </div>
 
-      <!-- Month-Year Filter -->
-      <div class="mt-6">
-        <label for="monthFilter" class="block text-sm text-gray-400 mb-1">Filter by Month/Year</label>
-        <select id="monthFilter" class="w-full sm:w-64 p-2 bg-gray-800 border border-gray-600 rounded">
-          <!-- Options populated dynamically -->
-        </select>
-      </div>
+    <!-- Month-Year Filter -->
+    <div>
+      <label for="monthFilter" class="block text-sm text-gray-400 mb-1">Filter by Month/Year</label>
+      <select id="monthFilter" class="w-full sm:w-64 p-2 bg-gray-800 border border-gray-600 rounded">
+        <!-- Options populated dynamically -->
+      </select>
+    </div>
 
-      <!-- Tabs -->
-      <div class="border-b border-gray-700 mt-8 mb-4">
-        <nav class="-mb-px flex space-x-6" id="dashboard-tabs">
-          <button data-tab="published" class="tab-button border-b-2 border-green-500 text-green-500 px-3 py-2 text-sm font-medium">Published</button>
-          <button data-tab="drafts" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Drafts</button>
-        </nav>
-      </div>
+    <!-- Tabs -->
+    <div class="border-b border-gray-700 mt-4 mb-4">
+      <nav class="-mb-px flex space-x-6" id="dashboard-tabs">
+        <button data-tab="published" class="tab-button border-b-2 border-green-500 text-green-500 px-3 py-2 text-sm font-medium">Published</button>
+        <button data-tab="drafts" class="tab-button text-gray-400 hover:text-gray-200 px-3 py-2 text-sm font-medium">Drafts</button>
+      </nav>
+    </div>
 
-      <!-- Published -->
-      <div id="published" class="tab-panel grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
+    <!-- Published -->
+    <div id="published" class="tab-panel grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
 
-      <!-- Drafts -->
-      <div id="drafts" class="tab-panel hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6"></div>
-    </section>
+    <!-- Drafts -->
+    <div id="drafts" class="tab-panel hidden grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
   </main>
 
   <!-- JS -->
-  <script src="./spondle-layout.js?v=1004" type="module"></script>
+  <script src="./spondle-layout.js?v=1005" type="module"></script>
   <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient(
@@ -96,8 +97,8 @@
 
       return `
         <div class="relative rounded-xl overflow-hidden shadow bg-gray-900 hover:opacity-90 transition">
-          <a href="/edit-event.html?id=${event.id}" class="absolute top-3 right-3 z-10 text-gray-200 hover:text-white" title="Edit Event">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <a href="/edit-event.html?id=${event.id}" class="absolute top-3 right-3 z-10 text-gray-300 hover:text-white opacity-70 hover:opacity-100 transition" title="Edit Event">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15.232 5.232l3.536 3.536M9 13l6.768-6.768a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-.828.515L7 17l1.657-4.001a2 2 0 01.515-.767z" />
             </svg>
